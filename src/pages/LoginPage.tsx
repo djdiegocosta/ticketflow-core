@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
 import {
   Form,
   FormControl,
@@ -26,6 +27,14 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const { login, isAuthenticated, userRole } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && userRole === 'admin') {
+      navigate({ to: '/admin' });
+    }
+  }, [isAuthenticated, userRole, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -37,9 +46,15 @@ export default function LoginPage() {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    toast.info("Funcionalidade em desenvolvimento");
-    console.log("Login data:", data);
+    const success = login(data.email, data.password);
+    if (success) {
+      toast.success("Login realizado com sucesso!");
+      navigate({ to: '/admin' });
+    } else {
+      form.setError("password", { message: "E-mail ou senha incorretos" });
+    }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
