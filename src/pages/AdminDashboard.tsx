@@ -115,9 +115,9 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
 };
 
 export function AdminDashboard() {
-  const [selectedContext, setSelectedContext] = useState<string>("overview"); // Start with Overview per requirement if possible, but user asked "starts with last active". 
-  // Let's stick to "Festa de Verão" (id: 1) as default per prompt: "selecionado por padrão"
   const [currentEvent, setCurrentEvent] = useState<string>("1");
+
+  const isOverview = currentEvent === "overview";
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -127,7 +127,7 @@ export function AdminDashboard() {
         {/* Context Selector */}
         <div className="flex border-b border-border-subtle gap-1">
           <button
-            onClick={() => setSelectedContext("overview")}
+            onClick={() => setCurrentEvent("overview")}
             className={cn(
               "px-4 py-2 text-body transition-all relative border-b-2",
               isOverview 
@@ -140,10 +140,10 @@ export function AdminDashboard() {
           {MOCK_EVENTS.map((event) => (
             <button
               key={event.id}
-              onClick={() => setSelectedContext(event.id)}
+              onClick={() => setCurrentEvent(event.id)}
               className={cn(
                 "px-4 py-2 text-body transition-all relative border-b-2",
-                selectedContext === event.id 
+                currentEvent === event.id 
                   ? "bg-accent-muted text-accent-text border-accent" 
                   : "text-text-secondary hover:bg-bg-tertiary border-transparent"
               )}
