@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
@@ -59,6 +60,11 @@ const AdminRoute = AdminRouteImport.update({
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteRoute = ClienteRouteImport.update({
+  id: '/cliente',
+  path: '/cliente',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -137,24 +143,24 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
-  id: '/cliente/',
-  path: '/cliente/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => ClienteRoute,
 } as any)
 const ClienteIngressosRoute = ClienteIngressosRouteImport.update({
-  id: '/cliente/ingressos',
-  path: '/cliente/ingressos',
-  getParentRoute: () => rootRouteImport,
+  id: '/ingressos',
+  path: '/ingressos',
+  getParentRoute: () => ClienteRoute,
 } as any)
 const ClientePerfilRoute = ClientePerfilRouteImport.update({
-  id: '/cliente/perfil',
-  path: '/cliente/perfil',
-  getParentRoute: () => rootRouteImport,
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => ClienteRoute,
 } as any)
 const ClientePontosRoute = ClientePontosRouteImport.update({
-  id: '/cliente/pontos',
-  path: '/cliente/pontos',
-  getParentRoute: () => rootRouteImport,
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => ClienteRoute,
 } as any)
 const IngressoTicket_codeRoute = IngressoTicket_codeRouteImport.update({
   id: '/ingresso/$ticket_code',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
@@ -308,6 +315,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
@@ -348,6 +356,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/cliente'
     | '/login'
     | '/meus-ingressos'
     | '/recuperar-senha'
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/cliente'
     | '/login'
     | '/meus-ingressos'
     | '/recuperar-senha'
@@ -462,17 +472,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
-  ClienteIngressosRoute: typeof ClienteIngressosRoute
-  ClientePerfilRoute: typeof ClientePerfilRoute
-  ClientePontosRoute: typeof ClientePontosRoute
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
   SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
   SuperadminPlanosRoute: typeof SuperadminPlanosRoute
-  ClienteIndexRoute: typeof ClienteIndexRoute
   SuperadminIndexRoute: typeof SuperadminIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
@@ -500,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente': {
+      id: '/cliente'
+      path: '/cliente'
+      fullPath: '/cliente'
+      preLoaderRoute: typeof ClienteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -609,31 +623,31 @@ declare module '@tanstack/react-router' {
     }
     '/cliente/': {
       id: '/cliente/'
-      path: '/cliente'
+      path: '/'
       fullPath: '/cliente/'
       preLoaderRoute: typeof ClienteIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ClienteRoute
     }
     '/cliente/ingressos': {
       id: '/cliente/ingressos'
-      path: '/cliente/ingressos'
+      path: '/ingressos'
       fullPath: '/cliente/ingressos'
       preLoaderRoute: typeof ClienteIngressosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ClienteRoute
     }
     '/cliente/perfil': {
       id: '/cliente/perfil'
-      path: '/cliente/perfil'
+      path: '/perfil'
       fullPath: '/cliente/perfil'
       preLoaderRoute: typeof ClientePerfilRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ClienteRoute
     }
     '/cliente/pontos': {
       id: '/cliente/pontos'
-      path: '/cliente/pontos'
+      path: '/pontos'
       fullPath: '/cliente/pontos'
       preLoaderRoute: typeof ClientePontosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ClienteRoute
     }
     '/ingresso/$ticket_code': {
       id: '/ingresso/$ticket_code'
@@ -780,21 +794,35 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ClienteRouteChildren {
+  ClienteIngressosRoute: typeof ClienteIngressosRoute
+  ClientePerfilRoute: typeof ClientePerfilRoute
+  ClientePontosRoute: typeof ClientePontosRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
+}
+
+const ClienteRouteChildren: ClienteRouteChildren = {
+  ClienteIngressosRoute: ClienteIngressosRoute,
+  ClientePerfilRoute: ClientePerfilRoute,
+  ClientePontosRoute: ClientePontosRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
+}
+
+const ClienteRouteWithChildren =
+  ClienteRoute._addFileChildren(ClienteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
-  ClienteIngressosRoute: ClienteIngressosRoute,
-  ClientePerfilRoute: ClientePerfilRoute,
-  ClientePontosRoute: ClientePontosRoute,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
   SuperadminOrganizacoesRoute: SuperadminOrganizacoesRoute,
   SuperadminPlanosRoute: SuperadminPlanosRoute,
-  ClienteIndexRoute: ClienteIndexRoute,
   SuperadminIndexRoute: SuperadminIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
