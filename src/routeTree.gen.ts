@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
@@ -85,6 +86,11 @@ const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
   id: '/redefinir-senha',
   path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminRoute = SuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -168,19 +174,19 @@ const IngressoTicket_codeRoute = IngressoTicket_codeRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
-  id: '/superadmin/',
-  path: '/superadmin/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SuperadminRoute,
 } as any)
 const SuperadminOrganizacoesRoute = SuperadminOrganizacoesRouteImport.update({
-  id: '/superadmin/organizacoes',
-  path: '/superadmin/organizacoes',
-  getParentRoute: () => rootRouteImport,
+  id: '/organizacoes',
+  path: '/organizacoes',
+  getParentRoute: () => SuperadminRoute,
 } as any)
 const SuperadminPlanosRoute = SuperadminPlanosRouteImport.update({
-  id: '/superadmin/planos',
-  path: '/superadmin/planos',
-  getParentRoute: () => rootRouteImport,
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => SuperadminRoute,
 } as any)
 const AdminClientesIndexRoute = AdminClientesIndexRouteImport.update({
   id: '/clientes/',
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
@@ -320,6 +327,7 @@ export interface FileRoutesById {
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
@@ -361,6 +369,7 @@ export interface FileRouteTypes {
     | '/meus-ingressos'
     | '/recuperar-senha'
     | '/redefinir-senha'
+    | '/superadmin'
     | '/admin/checkin'
     | '/admin/configuracoes'
     | '/admin/cortesias'
@@ -437,6 +446,7 @@ export interface FileRouteTypes {
     | '/meus-ingressos'
     | '/recuperar-senha'
     | '/redefinir-senha'
+    | '/superadmin'
     | '/admin/checkin'
     | '/admin/configuracoes'
     | '/admin/cortesias'
@@ -477,10 +487,8 @@ export interface RootRouteChildren {
   MeusIngressosRoute: typeof MeusIngressosRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  SuperadminRoute: typeof SuperadminRouteWithChildren
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
-  SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
-  SuperadminPlanosRoute: typeof SuperadminPlanosRoute
-  SuperadminIndexRoute: typeof SuperadminIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
   ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
@@ -542,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/redefinir-senha'
       fullPath: '/redefinir-senha'
       preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/superadmin': {
+      id: '/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof SuperadminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -658,24 +673,24 @@ declare module '@tanstack/react-router' {
     }
     '/superadmin/': {
       id: '/superadmin/'
-      path: '/superadmin'
+      path: '/'
       fullPath: '/superadmin/'
       preLoaderRoute: typeof SuperadminIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SuperadminRoute
     }
     '/superadmin/organizacoes': {
       id: '/superadmin/organizacoes'
-      path: '/superadmin/organizacoes'
+      path: '/organizacoes'
       fullPath: '/superadmin/organizacoes'
       preLoaderRoute: typeof SuperadminOrganizacoesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SuperadminRoute
     }
     '/superadmin/planos': {
       id: '/superadmin/planos'
-      path: '/superadmin/planos'
+      path: '/planos'
       fullPath: '/superadmin/planos'
       preLoaderRoute: typeof SuperadminPlanosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SuperadminRoute
     }
     '/admin/clientes/': {
       id: '/admin/clientes/'
@@ -811,6 +826,22 @@ const ClienteRouteChildren: ClienteRouteChildren = {
 const ClienteRouteWithChildren =
   ClienteRoute._addFileChildren(ClienteRouteChildren)
 
+interface SuperadminRouteChildren {
+  SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
+  SuperadminPlanosRoute: typeof SuperadminPlanosRoute
+  SuperadminIndexRoute: typeof SuperadminIndexRoute
+}
+
+const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminOrganizacoesRoute: SuperadminOrganizacoesRoute,
+  SuperadminPlanosRoute: SuperadminPlanosRoute,
+  SuperadminIndexRoute: SuperadminIndexRoute,
+}
+
+const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
+  SuperadminRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -820,10 +851,8 @@ const rootRouteChildren: RootRouteChildren = {
   MeusIngressosRoute: MeusIngressosRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  SuperadminRoute: SuperadminRouteWithChildren,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
-  SuperadminOrganizacoesRoute: SuperadminOrganizacoesRoute,
-  SuperadminPlanosRoute: SuperadminPlanosRoute,
-  SuperadminIndexRoute: SuperadminIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
   ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
