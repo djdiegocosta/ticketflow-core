@@ -248,10 +248,10 @@ const ChartLegendContent = React.forwardRef<
       hideIcon?: boolean;
       nameKey?: string;
     }
->(({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }, ref) => {
+>(({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }: any, ref) => {
   const { config } = useChart();
 
-  if (!payload?.length) {
+  if (!payload || (Array.isArray(payload) && payload.length === 0)) {
     return null;
   }
 
