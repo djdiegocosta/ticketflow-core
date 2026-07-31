@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import SignupPage from "@/pages/SignupPage";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({
@@ -10,9 +10,5 @@ export const Route = createFileRoute("/cadastro")({
       { property: "og:description", content: "Criação de conta completa." },
     ],
   }),
-  component: Page_cadastro,
+  component: SignupPage,
 });
-
-function Page_cadastro() {
-  return <Placeholder title="Cadastro" description="Criação de conta completa." />;
-}

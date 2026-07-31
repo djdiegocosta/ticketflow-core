@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 export const Route = createFileRoute("/redefinir-senha")({
   head: () => ({
@@ -10,9 +10,5 @@ export const Route = createFileRoute("/redefinir-senha")({
       { property: "og:description", content: "Definição de nova senha." },
     ],
   }),
-  component: Page_redefinir_senha,
+  component: ResetPasswordPage,
 });
-
-function Page_redefinir_senha() {
-  return <Placeholder title="Redefinir senha" description="Definição de nova senha." />;
-}
