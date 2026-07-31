@@ -73,7 +73,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
         </div>
         
         {gaugeValue !== undefined && (
-          <div className="w-20 h-20 relative">
+          <div className="w-[120px] h-[120px] relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -81,8 +81,8 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                     { value: gaugeValue },
                     { value: 100 - gaugeValue },
                   ]}
-                  innerRadius={25}
-                  outerRadius={35}
+                  innerRadius={40}
+                  outerRadius={55}
                   startAngle={180}
                   endAngle={0}
                   dataKey="value"
@@ -93,8 +93,8 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center pt-4">
-              <span className="text-small font-bold text-text-primary">{gaugeValue}%</span>
+            <div className="absolute inset-0 flex items-center justify-center pt-8">
+              <span className="text-heading-2 font-semibold text-text-primary">{gaugeValue}%</span>
             </div>
           </div>
         )}
@@ -227,7 +227,7 @@ export function AdminDashboard() {
                   type="monotone" 
                   dataKey="value" 
                   stroke="var(--accent)" 
-                  strokeWidth={1.5} 
+                  strokeWidth={1} 
                   fillOpacity={1} 
                   fill="url(#colorSales)" 
                 />
