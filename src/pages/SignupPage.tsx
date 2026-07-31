@@ -110,10 +110,11 @@ export default function SignupPage() {
                     <FormControl>
                       <Input
                         placeholder="Nome Sobrenome"
-                        {...field}
+                        value={field.value}
                         onChange={(e) => {
                           field.onChange(formatName(e.target.value));
                         }}
+
                         className="bg-bg-secondary border-border-default focus-visible:ring-accent"
                       />
                     </FormControl>
@@ -131,10 +132,11 @@ export default function SignupPage() {
                     <FormControl>
                       <Input
                         placeholder="(00) 00000-0000"
-                        {...field}
+                        value={field.value}
                         onChange={(e) => {
                           field.onChange(maskWhatsApp(e.target.value));
                         }}
+
                         className="bg-bg-secondary border-border-default focus-visible:ring-accent"
                       />
                     </FormControl>
