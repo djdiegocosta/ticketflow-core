@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const menu = [
+const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/eventos", label: "Eventos", icon: CalendarDays },
   { to: "/admin/vendas", label: "Vendas", icon: Receipt },
