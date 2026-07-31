@@ -33,7 +33,7 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/sorteios", label: "Sorteios", icon: Trophy },
   { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
-] as const;
+];
 
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
