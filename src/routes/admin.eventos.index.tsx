@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Placeholder } from "@/components/Placeholder";
 
-export const Route = createFileRoute("/admin/eventos")({
+export const Route = createFileRoute("/admin/eventos/")({
   head: () => ({
     meta: [
       { title: "Eventos | TicketFlow" },
