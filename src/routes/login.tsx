@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import LoginPage from "@/pages/LoginPage";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -10,9 +10,5 @@ export const Route = createFileRoute("/login")({
       { property: "og:description", content: "Tela de acesso do produtor e do cliente." },
     ],
   }),
-  component: Page_login,
+  component: LoginPage,
 });
-
-function Page_login() {
-  return <Placeholder title="Login" description="Tela de acesso do produtor e do cliente." />;
-}

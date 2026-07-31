@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import RecoverPasswordPage from "@/pages/RecoverPasswordPage";
 
 export const Route = createFileRoute("/recuperar-senha")({
   head: () => ({
@@ -10,9 +10,5 @@ export const Route = createFileRoute("/recuperar-senha")({
       { property: "og:description", content: "Solicitação de link de recuperação." },
     ],
   }),
-  component: Page_recuperar_senha,
+  component: RecoverPasswordPage,
 });
-
-function Page_recuperar_senha() {
-  return <Placeholder title="Recuperar senha" description="Solicitação de link de recuperação." />;
-}
