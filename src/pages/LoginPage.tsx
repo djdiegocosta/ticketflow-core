@@ -42,7 +42,7 @@ export default function LoginPage() {
       email: "",
       password: "",
     },
-    mode: "onChange",
+    mode: "all",
   });
 
   const onSubmit = (data: LoginFormValues) => {
@@ -132,7 +132,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md"
-                disabled={form.formState.isSubmitting}
+                disabled={!form.formState.isValid || form.formState.isSubmitting}
               >
                 Entrar
               </Button>

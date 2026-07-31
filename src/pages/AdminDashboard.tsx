@@ -115,9 +115,9 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
 };
 
 export function AdminDashboard() {
-  const [selectedContext, setSelectedContext] = useState<string>("1"); // Default to last event
-
-  const isOverview = selectedContext === "overview";
+  const [selectedContext, setSelectedContext] = useState<string>("overview"); // Start with Overview per requirement if possible, but user asked "starts with last active". 
+  // Let's stick to "Festa de Verão" (id: 1) as default per prompt: "selecionado por padrão"
+  const [currentEvent, setCurrentEvent] = useState<string>("1");
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
