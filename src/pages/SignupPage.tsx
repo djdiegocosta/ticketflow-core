@@ -18,25 +18,27 @@ import {
 } from "@/components/ui/form";
 
 const formatName = (name: string) => {
-  const words = name.toLowerCase().split(" ");
+  const words = name.split(" ");
   const connectives = ["de", "da", "do", "dos", "das", "e"];
   
   return words
     .map((word) => {
       if (word.length === 0) return "";
-      if (connectives.includes(word)) return word;
-      return word.charAt(0).toUpperCase() + word.slice(1);
+      const lowerWord = word.toLowerCase();
+      if (connectives.includes(lowerWord)) return lowerWord;
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(" ");
 };
 
 const maskWhatsApp = (value: string) => {
-  const digits = value.replace(/\D/g, "");
+  const digits = value.replace(/\D/g, "").slice(0, 11);
   if (digits.length === 0) return "";
   if (digits.length <= 2) return `(${digits}`;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 };
+
 
 const signupSchema = z
   .object({
