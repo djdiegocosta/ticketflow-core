@@ -3,7 +3,8 @@ import { ClienteLayout } from "@/components/layouts/ClienteLayout";
 
 export const Route = createFileRoute("/cliente")({
   beforeLoad: () => {
-    const auth = localStorage.getItem('ticketflow_auth');
+    if (typeof window === 'undefined') return;
+    const auth = window.localStorage.getItem('ticketflow_auth');
     if (!auth) {
       throw redirect({ to: '/login' });
     }
@@ -14,3 +15,4 @@ export const Route = createFileRoute("/cliente")({
   },
   component: ClienteLayout,
 });
+

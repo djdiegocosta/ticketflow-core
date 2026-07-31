@@ -3,7 +3,8 @@ import LoginPage from "@/pages/LoginPage";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: () => {
-    const auth = localStorage.getItem('ticketflow_auth');
+    if (typeof window === 'undefined') return;
+    const auth = window.localStorage.getItem('ticketflow_auth');
     if (auth) {
       const data = JSON.parse(auth);
       if (data.isAuthenticated && data.userRole === 'admin') {
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/login")({
       }
     }
   },
+
   head: () => ({
     meta: [
       { title: "Login | TicketFlow" },

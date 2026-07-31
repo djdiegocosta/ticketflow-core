@@ -3,7 +3,8 @@ import { AdminLayout } from "@/components/layouts/AdminLayout";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: () => {
-    const auth = localStorage.getItem('ticketflow_auth');
+    if (typeof window === 'undefined') return;
+    const auth = window.localStorage.getItem('ticketflow_auth');
     if (!auth) {
       throw redirect({ to: '/login' });
     }
@@ -14,3 +15,4 @@ export const Route = createFileRoute("/admin")({
   },
   component: AdminLayout,
 });
+
