@@ -15,8 +15,12 @@ import {
   UsersRound,
   Wallet,
   Calculator,
+  LogOut,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+
 
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -37,9 +41,11 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { logout, userName } = useAuth();
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
@@ -71,10 +77,22 @@ export function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center justify-end gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-8">
-          <span className="text-body text-[var(--text-secondary)]">Marina Duarte</span>
+        <header className="flex h-16 items-center justify-end gap-6 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-8">
+          <div className="flex items-center gap-4">
+            <span className="text-body text-[var(--text-secondary)]">{userName}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="flex items-center gap-2 text-text-secondary hover:text-error"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sair</span>
+            </Button>
+          </div>
           <ThemeToggle />
         </header>
+
         <main className="flex-1 p-8">
           <Outlet />
         </main>
