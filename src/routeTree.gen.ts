@@ -10,33 +10,488 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as ClienteRouteImport } from './routes/cliente'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as SuperadminRouteImport } from './routes/superadmin'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminCortesiasRouteImport } from './routes/admin.cortesias'
+import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
+import { Route as AdminImportacaoRouteImport } from './routes/admin.importacao'
+import { Route as AdminRelatoriosRouteImport } from './routes/admin.relatorios'
+import { Route as AdminRemarketingRouteImport } from './routes/admin.remarketing'
+import { Route as AdminSimuladorRouteImport } from './routes/admin.simulador'
+import { Route as AdminSorteiosRouteImport } from './routes/admin.sorteios'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
+import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
+import { Route as ClientePontosRouteImport } from './routes/cliente.pontos'
+import { Route as IngressoTicket_codeRouteImport } from './routes/ingresso.$ticket_code'
+import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
+import { Route as SuperadminOrganizacoesRouteImport } from './routes/superadmin.organizacoes'
+import { Route as SuperadminPlanosRouteImport } from './routes/superadmin.planos'
+import { Route as AdminClientesIndexRouteImport } from './routes/admin.clientes.index'
+import { Route as AdminClientesIdRouteImport } from './routes/admin.clientes.$id'
+import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
+import { Route as AdminEventosIdRouteImport } from './routes/admin.eventos.$id'
+import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.novo'
+import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.index'
+import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
+import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
+import { Route as ESlugCheckoutRouteImport } from './routes/e.$slug.checkout'
+import { Route as ESlugConfirmacaoSale_codeRouteImport } from './routes/e.$slug.confirmacao.$sale_code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClienteRoute = ClienteRouteImport.update({
+  id: '/cliente',
+  path: '/cliente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeusIngressosRoute = MeusIngressosRouteImport.update({
+  id: '/meus-ingressos',
+  path: '/meus-ingressos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminRoute = SuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCheckinRoute = AdminCheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCortesiasRoute = AdminCortesiasRouteImport.update({
+  id: '/cortesias',
+  path: '/cortesias',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFinanceiroRoute = AdminFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminImportacaoRoute = AdminImportacaoRouteImport.update({
+  id: '/importacao',
+  path: '/importacao',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRelatoriosRoute = AdminRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRemarketingRoute = AdminRemarketingRouteImport.update({
+  id: '/remarketing',
+  path: '/remarketing',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSimuladorRoute = AdminSimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSorteiosRoute = AdminSorteiosRouteImport.update({
+  id: '/sorteios',
+  path: '/sorteios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ClienteIndexRoute = ClienteIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClienteIngressosRoute = ClienteIngressosRouteImport.update({
+  id: '/ingressos',
+  path: '/ingressos',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClientePerfilRoute = ClientePerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClientePontosRoute = ClientePontosRouteImport.update({
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const IngressoTicket_codeRoute = IngressoTicket_codeRouteImport.update({
+  id: '/ingresso/$ticket_code',
+  path: '/ingresso/$ticket_code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SuperadminRoute,
+} as any)
+const SuperadminOrganizacoesRoute = SuperadminOrganizacoesRouteImport.update({
+  id: '/organizacoes',
+  path: '/organizacoes',
+  getParentRoute: () => SuperadminRoute,
+} as any)
+const SuperadminPlanosRoute = SuperadminPlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => SuperadminRoute,
+} as any)
+const AdminClientesIndexRoute = AdminClientesIndexRouteImport.update({
+  id: '/clientes/',
+  path: '/clientes/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClientesIdRoute = AdminClientesIdRouteImport.update({
+  id: '/clientes/$id',
+  path: '/clientes/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
+  id: '/eventos/',
+  path: '/eventos/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosIdRoute = AdminEventosIdRouteImport.update({
+  id: '/eventos/$id',
+  path: '/eventos/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosNovoRoute = AdminEventosNovoRouteImport.update({
+  id: '/eventos/novo',
+  path: '/eventos/novo',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVendasIndexRoute = AdminVendasIndexRouteImport.update({
+  id: '/vendas/',
+  path: '/vendas/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVendasIdRoute = AdminVendasIdRouteImport.update({
+  id: '/vendas/$id',
+  path: '/vendas/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ESlugIndexRoute = ESlugIndexRouteImport.update({
+  id: '/e/$slug/',
+  path: '/e/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ESlugCheckoutRoute = ESlugCheckoutRouteImport.update({
+  id: '/e/$slug/checkout',
+  path: '/e/$slug/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ESlugConfirmacaoSale_codeRoute =
+  ESlugConfirmacaoSale_codeRouteImport.update({
+    id: '/e/$slug/confirmacao/$sale_code',
+    path: '/e/$slug/confirmacao/$sale_code',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/cadastro': typeof CadastroRoute
+  '/cliente': typeof ClienteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/meus-ingressos': typeof MeusIngressosRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
+  '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/importacao': typeof AdminImportacaoRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/remarketing': typeof AdminRemarketingRoute
+  '/admin/simulador': typeof AdminSimuladorRoute
+  '/admin/sorteios': typeof AdminSorteiosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
+  '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
+  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
+  '/superadmin/planos': typeof SuperadminPlanosRoute
+  '/admin/': typeof AdminIndexRoute
+  '/cliente/': typeof ClienteIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
+  '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/eventos/$id': typeof AdminEventosIdRoute
+  '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/vendas/$id': typeof AdminVendasIdRoute
+  '/e/$slug/checkout': typeof ESlugCheckoutRoute
+  '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/eventos/': typeof AdminEventosIndexRoute
+  '/admin/vendas/': typeof AdminVendasIndexRoute
+  '/e/$slug/': typeof ESlugIndexRoute
+  '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
+  '/login': typeof LoginRoute
+  '/meus-ingressos': typeof MeusIngressosRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/importacao': typeof AdminImportacaoRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/remarketing': typeof AdminRemarketingRoute
+  '/admin/simulador': typeof AdminSimuladorRoute
+  '/admin/sorteios': typeof AdminSorteiosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
+  '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
+  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
+  '/superadmin/planos': typeof SuperadminPlanosRoute
+  '/admin': typeof AdminIndexRoute
+  '/cliente': typeof ClienteIndexRoute
+  '/superadmin': typeof SuperadminIndexRoute
+  '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/eventos/$id': typeof AdminEventosIdRoute
+  '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/vendas/$id': typeof AdminVendasIdRoute
+  '/e/$slug/checkout': typeof ESlugCheckoutRoute
+  '/admin/clientes': typeof AdminClientesIndexRoute
+  '/admin/eventos': typeof AdminEventosIndexRoute
+  '/admin/vendas': typeof AdminVendasIndexRoute
+  '/e/$slug': typeof ESlugIndexRoute
+  '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/cadastro': typeof CadastroRoute
+  '/cliente': typeof ClienteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/meus-ingressos': typeof MeusIngressosRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
+  '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/importacao': typeof AdminImportacaoRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/remarketing': typeof AdminRemarketingRoute
+  '/admin/simulador': typeof AdminSimuladorRoute
+  '/admin/sorteios': typeof AdminSorteiosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
+  '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
+  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
+  '/superadmin/planos': typeof SuperadminPlanosRoute
+  '/admin/': typeof AdminIndexRoute
+  '/cliente/': typeof ClienteIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
+  '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/eventos/$id': typeof AdminEventosIdRoute
+  '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/vendas/$id': typeof AdminVendasIdRoute
+  '/e/$slug/checkout': typeof ESlugCheckoutRoute
+  '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/eventos/': typeof AdminEventosIndexRoute
+  '/admin/vendas/': typeof AdminVendasIndexRoute
+  '/e/$slug/': typeof ESlugIndexRoute
+  '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/cadastro'
+    | '/cliente'
+    | '/login'
+    | '/meus-ingressos'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
+    | '/superadmin'
+    | '/admin/checkin'
+    | '/admin/configuracoes'
+    | '/admin/cortesias'
+    | '/admin/financeiro'
+    | '/admin/importacao'
+    | '/admin/relatorios'
+    | '/admin/remarketing'
+    | '/admin/simulador'
+    | '/admin/sorteios'
+    | '/admin/usuarios'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
+    | '/ingresso/$ticket_code'
+    | '/superadmin/organizacoes'
+    | '/superadmin/planos'
+    | '/admin/'
+    | '/cliente/'
+    | '/superadmin/'
+    | '/admin/clientes/$id'
+    | '/admin/eventos/$id'
+    | '/admin/eventos/novo'
+    | '/admin/vendas/$id'
+    | '/e/$slug/checkout'
+    | '/admin/clientes/'
+    | '/admin/eventos/'
+    | '/admin/vendas/'
+    | '/e/$slug/'
+    | '/e/$slug/confirmacao/$sale_code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cadastro'
+    | '/login'
+    | '/meus-ingressos'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
+    | '/admin/checkin'
+    | '/admin/configuracoes'
+    | '/admin/cortesias'
+    | '/admin/financeiro'
+    | '/admin/importacao'
+    | '/admin/relatorios'
+    | '/admin/remarketing'
+    | '/admin/simulador'
+    | '/admin/sorteios'
+    | '/admin/usuarios'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
+    | '/ingresso/$ticket_code'
+    | '/superadmin/organizacoes'
+    | '/superadmin/planos'
+    | '/admin'
+    | '/cliente'
+    | '/superadmin'
+    | '/admin/clientes/$id'
+    | '/admin/eventos/$id'
+    | '/admin/eventos/novo'
+    | '/admin/vendas/$id'
+    | '/e/$slug/checkout'
+    | '/admin/clientes'
+    | '/admin/eventos'
+    | '/admin/vendas'
+    | '/e/$slug'
+    | '/e/$slug/confirmacao/$sale_code'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/cadastro'
+    | '/cliente'
+    | '/login'
+    | '/meus-ingressos'
+    | '/recuperar-senha'
+    | '/redefinir-senha'
+    | '/superadmin'
+    | '/admin/checkin'
+    | '/admin/configuracoes'
+    | '/admin/cortesias'
+    | '/admin/financeiro'
+    | '/admin/importacao'
+    | '/admin/relatorios'
+    | '/admin/remarketing'
+    | '/admin/simulador'
+    | '/admin/sorteios'
+    | '/admin/usuarios'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
+    | '/ingresso/$ticket_code'
+    | '/superadmin/organizacoes'
+    | '/superadmin/planos'
+    | '/admin/'
+    | '/cliente/'
+    | '/superadmin/'
+    | '/admin/clientes/$id'
+    | '/admin/eventos/$id'
+    | '/admin/eventos/novo'
+    | '/admin/vendas/$id'
+    | '/e/$slug/checkout'
+    | '/admin/clientes/'
+    | '/admin/eventos/'
+    | '/admin/vendas/'
+    | '/e/$slug/'
+    | '/e/$slug/confirmacao/$sale_code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  CadastroRoute: typeof CadastroRoute
+  ClienteRoute: typeof ClienteRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  MeusIngressosRoute: typeof MeusIngressosRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  SuperadminRoute: typeof SuperadminRouteWithChildren
+  IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
+  ESlugCheckoutRoute: typeof ESlugCheckoutRoute
+  ESlugIndexRoute: typeof ESlugIndexRoute
+  ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +503,360 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cliente': {
+      id: '/cliente'
+      path: '/cliente'
+      fullPath: '/cliente'
+      preLoaderRoute: typeof ClienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meus-ingressos': {
+      id: '/meus-ingressos'
+      path: '/meus-ingressos'
+      fullPath: '/meus-ingressos'
+      preLoaderRoute: typeof MeusIngressosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/superadmin': {
+      id: '/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof SuperadminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/checkin': {
+      id: '/admin/checkin'
+      path: '/checkin'
+      fullPath: '/admin/checkin'
+      preLoaderRoute: typeof AdminCheckinRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cortesias': {
+      id: '/admin/cortesias'
+      path: '/cortesias'
+      fullPath: '/admin/cortesias'
+      preLoaderRoute: typeof AdminCortesiasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/financeiro': {
+      id: '/admin/financeiro'
+      path: '/financeiro'
+      fullPath: '/admin/financeiro'
+      preLoaderRoute: typeof AdminFinanceiroRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/importacao': {
+      id: '/admin/importacao'
+      path: '/importacao'
+      fullPath: '/admin/importacao'
+      preLoaderRoute: typeof AdminImportacaoRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/relatorios': {
+      id: '/admin/relatorios'
+      path: '/relatorios'
+      fullPath: '/admin/relatorios'
+      preLoaderRoute: typeof AdminRelatoriosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/remarketing': {
+      id: '/admin/remarketing'
+      path: '/remarketing'
+      fullPath: '/admin/remarketing'
+      preLoaderRoute: typeof AdminRemarketingRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/simulador': {
+      id: '/admin/simulador'
+      path: '/simulador'
+      fullPath: '/admin/simulador'
+      preLoaderRoute: typeof AdminSimuladorRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/sorteios': {
+      id: '/admin/sorteios'
+      path: '/sorteios'
+      fullPath: '/admin/sorteios'
+      preLoaderRoute: typeof AdminSorteiosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/cliente/': {
+      id: '/cliente/'
+      path: '/'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/ingressos': {
+      id: '/cliente/ingressos'
+      path: '/ingressos'
+      fullPath: '/cliente/ingressos'
+      preLoaderRoute: typeof ClienteIngressosRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/perfil': {
+      id: '/cliente/perfil'
+      path: '/perfil'
+      fullPath: '/cliente/perfil'
+      preLoaderRoute: typeof ClientePerfilRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/pontos': {
+      id: '/cliente/pontos'
+      path: '/pontos'
+      fullPath: '/cliente/pontos'
+      preLoaderRoute: typeof ClientePontosRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/ingresso/$ticket_code': {
+      id: '/ingresso/$ticket_code'
+      path: '/ingresso/$ticket_code'
+      fullPath: '/ingresso/$ticket_code'
+      preLoaderRoute: typeof IngressoTicket_codeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/superadmin/': {
+      id: '/superadmin/'
+      path: '/'
+      fullPath: '/superadmin/'
+      preLoaderRoute: typeof SuperadminIndexRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
+    '/superadmin/organizacoes': {
+      id: '/superadmin/organizacoes'
+      path: '/organizacoes'
+      fullPath: '/superadmin/organizacoes'
+      preLoaderRoute: typeof SuperadminOrganizacoesRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
+    '/superadmin/planos': {
+      id: '/superadmin/planos'
+      path: '/planos'
+      fullPath: '/superadmin/planos'
+      preLoaderRoute: typeof SuperadminPlanosRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
+    '/admin/clientes/': {
+      id: '/admin/clientes/'
+      path: '/clientes'
+      fullPath: '/admin/clientes/'
+      preLoaderRoute: typeof AdminClientesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clientes/$id': {
+      id: '/admin/clientes/$id'
+      path: '/clientes/$id'
+      fullPath: '/admin/clientes/$id'
+      preLoaderRoute: typeof AdminClientesIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/': {
+      id: '/admin/eventos/'
+      path: '/eventos'
+      fullPath: '/admin/eventos/'
+      preLoaderRoute: typeof AdminEventosIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/$id': {
+      id: '/admin/eventos/$id'
+      path: '/eventos/$id'
+      fullPath: '/admin/eventos/$id'
+      preLoaderRoute: typeof AdminEventosIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/novo': {
+      id: '/admin/eventos/novo'
+      path: '/eventos/novo'
+      fullPath: '/admin/eventos/novo'
+      preLoaderRoute: typeof AdminEventosNovoRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/vendas/': {
+      id: '/admin/vendas/'
+      path: '/vendas'
+      fullPath: '/admin/vendas/'
+      preLoaderRoute: typeof AdminVendasIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/vendas/$id': {
+      id: '/admin/vendas/$id'
+      path: '/vendas/$id'
+      fullPath: '/admin/vendas/$id'
+      preLoaderRoute: typeof AdminVendasIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/e/$slug/': {
+      id: '/e/$slug/'
+      path: '/e/$slug'
+      fullPath: '/e/$slug/'
+      preLoaderRoute: typeof ESlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e/$slug/checkout': {
+      id: '/e/$slug/checkout'
+      path: '/e/$slug/checkout'
+      fullPath: '/e/$slug/checkout'
+      preLoaderRoute: typeof ESlugCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e/$slug/confirmacao/$sale_code': {
+      id: '/e/$slug/confirmacao/$sale_code'
+      path: '/e/$slug/confirmacao/$sale_code'
+      fullPath: '/e/$slug/confirmacao/$sale_code'
+      preLoaderRoute: typeof ESlugConfirmacaoSale_codeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminCheckinRoute: typeof AdminCheckinRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminCortesiasRoute: typeof AdminCortesiasRoute
+  AdminFinanceiroRoute: typeof AdminFinanceiroRoute
+  AdminImportacaoRoute: typeof AdminImportacaoRoute
+  AdminRelatoriosRoute: typeof AdminRelatoriosRoute
+  AdminRemarketingRoute: typeof AdminRemarketingRoute
+  AdminSimuladorRoute: typeof AdminSimuladorRoute
+  AdminSorteiosRoute: typeof AdminSorteiosRoute
+  AdminUsuariosRoute: typeof AdminUsuariosRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminClientesIdRoute: typeof AdminClientesIdRoute
+  AdminEventosIdRoute: typeof AdminEventosIdRoute
+  AdminEventosNovoRoute: typeof AdminEventosNovoRoute
+  AdminVendasIdRoute: typeof AdminVendasIdRoute
+  AdminClientesIndexRoute: typeof AdminClientesIndexRoute
+  AdminEventosIndexRoute: typeof AdminEventosIndexRoute
+  AdminVendasIndexRoute: typeof AdminVendasIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCheckinRoute: AdminCheckinRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminCortesiasRoute: AdminCortesiasRoute,
+  AdminFinanceiroRoute: AdminFinanceiroRoute,
+  AdminImportacaoRoute: AdminImportacaoRoute,
+  AdminRelatoriosRoute: AdminRelatoriosRoute,
+  AdminRemarketingRoute: AdminRemarketingRoute,
+  AdminSimuladorRoute: AdminSimuladorRoute,
+  AdminSorteiosRoute: AdminSorteiosRoute,
+  AdminUsuariosRoute: AdminUsuariosRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminClientesIdRoute: AdminClientesIdRoute,
+  AdminEventosIdRoute: AdminEventosIdRoute,
+  AdminEventosNovoRoute: AdminEventosNovoRoute,
+  AdminVendasIdRoute: AdminVendasIdRoute,
+  AdminClientesIndexRoute: AdminClientesIndexRoute,
+  AdminEventosIndexRoute: AdminEventosIndexRoute,
+  AdminVendasIndexRoute: AdminVendasIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface ClienteRouteChildren {
+  ClienteIngressosRoute: typeof ClienteIngressosRoute
+  ClientePerfilRoute: typeof ClientePerfilRoute
+  ClientePontosRoute: typeof ClientePontosRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
+}
+
+const ClienteRouteChildren: ClienteRouteChildren = {
+  ClienteIngressosRoute: ClienteIngressosRoute,
+  ClientePerfilRoute: ClientePerfilRoute,
+  ClientePontosRoute: ClientePontosRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
+}
+
+const ClienteRouteWithChildren =
+  ClienteRoute._addFileChildren(ClienteRouteChildren)
+
+interface SuperadminRouteChildren {
+  SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
+  SuperadminPlanosRoute: typeof SuperadminPlanosRoute
+  SuperadminIndexRoute: typeof SuperadminIndexRoute
+}
+
+const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminOrganizacoesRoute: SuperadminOrganizacoesRoute,
+  SuperadminPlanosRoute: SuperadminPlanosRoute,
+  SuperadminIndexRoute: SuperadminIndexRoute,
+}
+
+const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
+  SuperadminRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  CadastroRoute: CadastroRoute,
+  ClienteRoute: ClienteRouteWithChildren,
+  LoginRoute: LoginRoute,
+  MeusIngressosRoute: MeusIngressosRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
+  SuperadminRoute: SuperadminRouteWithChildren,
+  IngressoTicket_codeRoute: IngressoTicket_codeRoute,
+  ESlugCheckoutRoute: ESlugCheckoutRoute,
+  ESlugIndexRoute: ESlugIndexRoute,
+  ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
