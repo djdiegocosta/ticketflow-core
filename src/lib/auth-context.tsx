@@ -21,12 +21,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Persist state in localStorage for dev purposes
   useEffect(() => {
-    const saved = localStorage.getItem('ticketflow_auth');
+    if (typeof window === 'undefined') return;
+    const saved = window.localStorage.getItem('ticketflow_auth');
     if (saved) {
-      const data = JSON.parse(saved);
-      setIsAuthenticated(data.isAuthenticated);
-      setUserRole(data.userRole);
-      setUserName(data.userName);
+      try {
+        const data = JSON.parse(saved);
+        setIsAuthenticated(data.isAuthenticated);
+        setUserRole(data.userRole);
+        setUserName(data.userName);
+      } catch (e) {
+        console.error("Failed to parse auth data", e);
+      }
     }
   }, []);
 
@@ -40,7 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
       setUserRole('admin');
       setUserName('Administrador');
-      localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
+      }
       return true;
     }
     return false;
@@ -50,7 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName('');
-    localStorage.removeItem('ticketflow_auth');
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('ticketflow_auth');
+    }
     navigate({ to: '/login' });
   };
 
