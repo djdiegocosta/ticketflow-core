@@ -65,6 +65,12 @@ import {
 } from "@/lib/remarketing-data";
 import { formatCurrency } from "@/lib/sales-data";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const statusTone: Record<AbandonStatus, PillTone> = {
   "Não contactado": "neutral",
@@ -284,74 +290,138 @@ export function RemarketingPage() {
       {/* Table */}
       <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
         <div className="overflow-x-auto">
-          <DataTable className="min-w-[980px]">
-            <DataTableHeadRow
-              columns={[
-                "Nome",
-                "WhatsApp",
-                "Evento",
-                "Lote de interesse",
-                "Tipo de abandono",
-                "Data/hora",
-                "Status",
-                "Ações",
-              ]}
-            />
-            <tbody>
-              {paginated.length === 0 ? (
-                <tr>
-                  <DataTableCell colSpan={8} className="py-10 text-center text-body">
-                    Nenhum abandono encontrado.
-                  </DataTableCell>
-                </tr>
-              ) : (
-                paginated.map((row) => (
-                  <DataTableRow key={row.id}>
-                    <DataTableCell variant="primary">{row.name ?? "—"}</DataTableCell>
-                    <DataTableCell>{row.whatsapp ?? "—"}</DataTableCell>
-                    <DataTableCell>{row.event}</DataTableCell>
-                    <DataTableCell>{row.lot}</DataTableCell>
-                    <DataTableCell>
-                      <StatusPill tone={typeTone[row.type]}>{row.type}</StatusPill>
-                    </DataTableCell>
-                    <DataTableCell variant="muted">{row.createdAt}</DataTableCell>
-                    <DataTableCell>
-                      <StatusPill tone={statusTone[row.status]}>{row.status}</StatusPill>
-                    </DataTableCell>
-                    <DataTableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={!row.whatsapp}
-                          onClick={() => setPreview(row)}
-                          className="flex items-center gap-2"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          Abrir WhatsApp
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                              Status
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {NEXT_STATUS.map((s) => (
-                              <DropdownMenuItem key={s} onClick={() => updateStatus(row.id, s)}>
-                                {s}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+          <TooltipProvider>
+            <DataTable className="min-w-[980px]">
+              <DataTableHeadRow
+                columns={[
+                  "Nome",
+                  "WhatsApp",
+                  "Evento",
+                  "Lote de interesse",
+                  "Tipo de abandono",
+                  "Data/hora",
+                  <div key="status-head" className="flex items-center gap-3">
+                    <span>Status</span>
+                    <div className="flex items-center gap-3 font-normal text-micro text-[var(--text-secondary)]">
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 w-2 rounded-full bg-[var(--text-disabled)]" />
+                        <span>Não contactado</span>
                       </div>
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 w-2 rounded-full bg-[var(--warning)]" />
+                        <span>Contactado</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+                        <span>Convertido</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
+                        <span>Descartado</span>
+                      </div>
+                    </div>
+                  </div>,
+                  "Ações",
+                ]}
+              />
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <DataTableCell colSpan={8} className="py-10 text-center text-body">
+                      Nenhum abandono encontrado.
                     </DataTableCell>
-                  </DataTableRow>
-                ))
-              )}
-            </tbody>
-          </DataTable>
+                  </tr>
+                ) : (
+                  paginated.map((row) => (
+                    <DataTableRow key={row.id}>
+                      <DataTableCell variant="primary" className="max-w-[200px]">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="block truncate cursor-default">
+                              {row.name ?? "—"}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{row.name ?? "—"}</TooltipContent>
+                        </Tooltip>
+                      </DataTableCell>
+                      <DataTableCell className="whitespace-nowrap">
+                        {row.whatsapp ?? "—"}
+                      </DataTableCell>
+                      <DataTableCell className="whitespace-nowrap">
+                        {row.event}
+                      </DataTableCell>
+                      <DataTableCell className="whitespace-nowrap">
+                        {row.lot}
+                      </DataTableCell>
+                      <DataTableCell>
+                        <StatusPill
+                          tone={typeTone[row.type]}
+                          className="whitespace-nowrap text-[10px]"
+                        >
+                          {row.type}
+                        </StatusPill>
+                      </DataTableCell>
+                      <DataTableCell variant="muted" className="whitespace-nowrap">
+                        {row.createdAt}
+                      </DataTableCell>
+                      <DataTableCell>
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <div
+                            className={[
+                              "h-2 w-2 rounded-full shrink-0",
+                              row.status === "Não contactado" && "bg-[var(--text-disabled)]",
+                              row.status === "Contactado" && "bg-[var(--warning)]",
+                              row.status === "Convertido" && "bg-[var(--accent)]",
+                              row.status === "Descartado" && "bg-[var(--error)]",
+                            ].join(" ")}
+                          />
+                          <span className="text-small">{row.status}</span>
+                        </div>
+                      </DataTableCell>
+                      <DataTableCell>
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={!row.whatsapp}
+                                onClick={() => setPreview(row)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                                <span className="sr-only">Abrir WhatsApp</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Abrir WhatsApp</TooltipContent>
+                          </Tooltip>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1 h-8"
+                              >
+                                Status
+                                <ChevronDown className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {NEXT_STATUS.map((s) => (
+                                <DropdownMenuItem key={s} onClick={() => updateStatus(row.id, s)}>
+                                  {s}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </DataTableCell>
+                    </DataTableRow>
+                  ))
+                )}
+              </tbody>
+            </DataTable>
+          </TooltipProvider>
         </div>
 
         {/* Pagination */}
