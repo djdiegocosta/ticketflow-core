@@ -77,7 +77,6 @@ export function CreateClientPanel({
       id: `c${Date.now()}`,
       name: formatName(name),
       whatsapp,
-      email: email || undefined,
       age: birthDate ? calculateAge(birthDate) : 0,
       totalEvents: 0,
       totalTickets: 0,
@@ -86,6 +85,8 @@ export function CreateClientPanel({
       lastPurchaseAt: "N/A",
       registeredAt: new Date().toLocaleDateString("pt-BR"),
     };
+
+    if (email) newClient.email = email;
 
     onSave(newClient);
     toast.success("Cliente cadastrado com sucesso");
