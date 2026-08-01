@@ -15,7 +15,8 @@ import {
   Trophy,
   Users,
   Clock,
-  ChevronDown
+  ChevronDown,
+  Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import {
   whatsappLink,
   type Client,
 } from "@/lib/clients-data";
+import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
 
 type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
 
