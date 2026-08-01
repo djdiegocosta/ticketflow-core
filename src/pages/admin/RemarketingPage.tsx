@@ -287,43 +287,45 @@ export function RemarketingPage() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Table */}
-      <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
-        <div className="overflow-x-auto">
-          <TooltipProvider>
-            <DataTable className="min-w-[980px]">
-              <DataTableHeadRow
-                columns={[
-                  "Nome",
-                  "WhatsApp",
-                  "Evento",
-                  "Lote de interesse",
-                  "Tipo de abandono",
-                  "Data/hora",
-                  <div key="status-head" className="flex items-center gap-3">
-                    <span>Status</span>
-                    <div className="flex items-center gap-3 font-normal text-micro text-[var(--text-secondary)]">
-                      <div className="flex items-center gap-1">
-                        <div className="h-2 w-2 rounded-full bg-[var(--text-disabled)]" />
-                        <span>Não contactado</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="h-2 w-2 rounded-full bg-[var(--warning)]" />
-                        <span>Contactado</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
-                        <span>Convertido</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
-                        <span>Descartado</span>
-                      </div>
-                    </div>
-                  </div>,
-                  "Ações",
-                ]}
-              />
+      {/* Table Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-end px-1">
+          <div className="flex items-center gap-3 font-normal text-micro text-[var(--text-secondary)]">
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full bg-[var(--text-disabled)]" />
+              <span>Não contactado</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full bg-[var(--warning)]" />
+              <span>Contactado</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+              <span>Convertido</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
+              <span>Descartado</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
+          <div className="overflow-x-auto">
+            <TooltipProvider>
+              <DataTable className="min-w-[980px]">
+                <DataTableHeadRow
+                  columns={[
+                    "Nome",
+                    "WhatsApp",
+                    "Evento",
+                    "Lote de interesse",
+                    "Tipo de abandono",
+                    "Data/hora",
+                    "Status",
+                    "Ações",
+                  ]}
+                />
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
