@@ -85,26 +85,18 @@ function MiniMetricCard({
 
 function StatusBadge({ status }: { status: Sale["status"] }) {
   return (
-    <span
-      className={cn(
-        "inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-        status === "Pago" && "bg-accent-muted text-accent-text",
-        status === "Pendente" && "bg-warning/15 text-warning",
-        status === "Cancelado" && "bg-error/15 text-error",
-      )}
+    <StatusPill
+      tone={status === "Pago" ? "accent" : status === "Pendente" ? "warning" : "error"}
     >
       {status}
-    </span>
+    </StatusPill>
   );
 }
 
 function OriginBadge({ origin }: { origin: Sale["origin"] }) {
-  return (
-    <span className="inline-block rounded-[var(--radius-full)] bg-bg-tertiary px-2.5 py-0.5 text-micro font-medium text-text-secondary">
-      {origin}
-    </span>
-  );
+  return <StatusPill tone="neutral">{origin}</StatusPill>;
 }
+
 
 export function SalesListPage() {
   const [sales, setSales] = useState<Sale[]>(MOCK_SALES);
