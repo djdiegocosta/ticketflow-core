@@ -202,10 +202,10 @@ export function SalesListPage() {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+          className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
         >
           <Plus className="h-4 w-4" />
-          Lançar venda manual
+          Nova Venda
         </button>
       </div>
 

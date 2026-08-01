@@ -14,6 +14,8 @@ import {
   Trash2,
   Trophy,
   Users,
+  Clock,
+  ChevronDown
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,12 +45,43 @@ function MiniMetricCard({
   iconColor?: string;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
+    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
       <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-micro text-text-secondary">{title}</span>
+        <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("h-4 w-4", iconColor ?? "text-text-secondary")} />
       </div>
       <div className="flex flex-1 flex-col justify-end">{children}</div>
+    </div>
+  );
+}
+
+function NewClientsCard() {
+  const [period, setPeriod] = useState("30");
+  
+  const data = {
+    "7": 12,
+    "15": 23,
+    "30": 41
+  };
+
+  return (
+    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
+      <div className="mb-1.5 flex items-start justify-between">
+        <span className="text-small text-text-secondary">Novos Clientes</span>
+        <select 
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+          className="text-micro bg-transparent border-none outline-none text-accent-text font-medium cursor-pointer"
+        >
+          <option value="7">Últimos 7 dias</option>
+          <option value="15">Últimos 15 dias</option>
+          <option value="30">Últimos 30 dias</option>
+        </select>
+      </div>
+      <div className="flex flex-1 flex-col justify-end">
+        <div className="text-heading-1 text-text-primary">{data[period as keyof typeof data]}</div>
+        <div className="mt-0.5 text-small text-text-secondary">novos cadastros</div>
+      </div>
     </div>
   );
 }
@@ -159,25 +192,27 @@ export function ClientsListPage() {
       <h1 className="text-heading-1 text-text-primary">Clientes</h1>
 
       {/* Dashboard */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <MiniMetricCard title="Clientes" icon={Users} iconColor="text-accent-text">
-          <div className="text-heading-2 text-text-primary">{totalClients}</div>
-          <div className="mt-0.5 text-micro text-text-secondary">cadastrados na base</div>
+          <div className="text-heading-1 text-text-primary">{totalClients}</div>
+          <div className="mt-0.5 text-small text-text-secondary">cadastrados na base</div>
         </MiniMetricCard>
 
         <MiniMetricCard title="Idade média" icon={CalendarDays}>
-          <div className="text-heading-2 text-text-primary">{averageAge} anos</div>
-          <div className="mt-0.5 text-micro text-text-secondary">
+          <div className="text-heading-1 text-text-primary">{averageAge} anos</div>
+          <div className="mt-0.5 text-small text-text-secondary">
             média de idade dos clientes
           </div>
         </MiniMetricCard>
 
-        <div className="rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)] sm:col-span-2">
+        <NewClientsCard />
+
+        <div className="bg-bg-secondary border border-border-subtle p-3.5 shadow-[var(--shadow-sm)] lg:col-span-2 flex flex-col">
           <div className="mb-2 flex items-start justify-between">
-            <span className="text-micro text-text-secondary">Top 3 clientes</span>
+            <span className="text-small text-text-secondary">Top 3 clientes</span>
             <Trophy className="h-4 w-4 text-accent-text" />
           </div>
-          <ul className="space-y-1.5">
+          <ul className="space-y-1.5 flex-1 flex flex-col justify-end">
             {topThree.map((client, index) => (
               <li key={client.id}>
                 <Link
