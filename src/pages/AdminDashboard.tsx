@@ -58,22 +58,22 @@ const MOCK_LAST_SALES = [
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaugeValue, iconColor, subtext }: any) => {
   return (
-    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm">
+    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm h-full flex flex-col justify-between">
       <div className="flex items-start justify-between mb-2">
         <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("w-5 h-5", iconColor)} />
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-1">
         <div className="flex-1">
-          <div className="text-heading-1 text-text-primary mb-1">{value}</div>
+          {value && <div className="text-heading-1 text-text-primary mb-1">{value}</div>}
           {trend && <div className="text-small text-success">{trend}</div>}
           {secondary && <div className="text-small text-text-secondary">{secondary}</div>}
           {subtext && <div className="text-small text-text-secondary mt-1">{subtext}</div>}
         </div>
         
         {gaugeValue !== undefined && (
-          <div className="w-[120px] h-[120px] relative">
+          <div className="w-[120px] h-[120px] relative flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -81,10 +81,10 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                     { value: gaugeValue },
                     { value: 100 - gaugeValue },
                   ]}
-                  innerRadius={40}
-                  outerRadius={55}
-                  startAngle={180}
-                  endAngle={0}
+                  innerRadius={45}
+                  outerRadius={60}
+                  startAngle={90}
+                  endAngle={-270}
                   dataKey="value"
                   stroke="none"
                 >
@@ -93,7 +93,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center pt-8">
+            <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-heading-2 font-semibold text-text-primary">{gaugeValue}%</span>
             </div>
           </div>
@@ -155,7 +155,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <MetricCard
           title="Receita Total"
           value="R$ 4.230,00"
@@ -175,6 +175,7 @@ export function AdminDashboard() {
           title="Aguardando Pagamento"
           icon={Clock}
           gaugeValue={18}
+          value={undefined}
           subtext="7 pedidos pendentes"
           iconColor="text-warning"
         />
