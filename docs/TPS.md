@@ -573,9 +573,12 @@ Exportar dados (CSV) em todos os relatórios.
 - Evento e lote de interesse.
 - Data e hora do abandono.
 
-**Mini dashboard da área:**
-- Card "Abandonos" com filtro de período: Últimas 24h / Últimas 72h / Última semana.
-- Card "Recuperados" — quantidade de abandonos que depois converteram em venda paga (status "Convertido"), no mesmo período selecionado.
+**Mini dashboard da área (referência de estrutura: dashboard de recuperação de carrinho de ticketeiras do mercado, adaptado ao nosso Design System — ícones Lucide, cantos retos, sem ilustrações coloridas):**
+- Seletor de período no topo do bloco, aplicado aos 4 cards: Últimas 24h / Últimas 72h / Última semana.
+- Card "Vendas Recuperadas" (R$) — valor total das vendas que converteram após abandono, no período.
+- Card "Ingressos Recuperados" — quantidade de ingressos gerados a partir de conversões pós-abandono.
+- Card "Total de Abandonos" — quantidade de abandonos no período.
+- Card "Taxa de Recuperação" (%) — Vendas Recuperadas ÷ Total de Abandonos.
 
 **Modelos de mensagem para WhatsApp:**
 - Seção com 2–3 modelos de mensagem sugeridos (ex: para quem não gerou Pix, para quem gerou Pix e não pagou), com variáveis substituíveis: {nome}, {evento}, {lote}.
