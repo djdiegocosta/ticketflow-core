@@ -65,10 +65,21 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <label className="text-small text-[var(--text-secondary)]">{children}</label>;
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({
+  title,
+  titleAdornment,
+  children,
+}: {
+  title: string;
+  titleAdornment?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6">
-      <h2 className="text-heading-2 text-[var(--text-primary)]">{title}</h2>
+      <div className="flex flex-wrap items-center gap-4">
+        <h2 className="text-heading-2 text-[var(--text-primary)]">{title}</h2>
+        {titleAdornment}
+      </div>
       <div className="mt-6 space-y-6">{children}</div>
     </div>
   );
