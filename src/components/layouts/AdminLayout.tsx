@@ -48,36 +48,41 @@ export function AdminLayout() {
 
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-primary)]">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
-        <div className="flex h-16 items-center gap-2 px-6">
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-primary)]">
+      {/* Sidebar - Fixed Height and Independent Scroll */}
+      <aside className="flex h-full w-60 shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
+        <div className="flex h-16 shrink-0 items-center gap-2 px-6">
           <Ticket className="h-5 w-5 text-[var(--accent-text)]" />
           <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 px-3 pb-6">
-          {menu.map((item) => {
-            const active = isActive(item.to, item.exact);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={[
-                  "flex items-center gap-3 rounded-[var(--radius-md)] border-l-[3px] px-3 py-2 text-body transition-colors",
-                  active
-                    ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)]"
-                    : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]",
-                ].join(" ")}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 pb-6 scrollbar-thin">
+          <div className="flex flex-col gap-1">
+            {menu.map((item) => {
+              const active = isActive(item.to, item.exact);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={[
+                    "flex items-center gap-3 rounded-none border-l-[3px] px-3 py-2 text-body transition-colors",
+                    active
+                      ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)]"
+                      : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]",
+                  ].join(" ")}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center justify-end gap-6 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-8">
+      {/* Main Container */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Header - Fixed at top */}
+        <header className="flex h-16 shrink-0 items-center justify-end gap-6 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-8">
           <div className="flex items-center gap-4">
             <span className="text-body text-[var(--text-secondary)]">{userName}</span>
             <Button
@@ -93,7 +98,8 @@ export function AdminLayout() {
           <ThemeToggle />
         </header>
 
-        <main className="flex-1 p-8">
+        {/* Content Area - Independent Scroll */}
+        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin">
           <Outlet />
         </main>
       </div>
