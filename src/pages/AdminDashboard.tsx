@@ -1,4 +1,4 @@
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import { DollarSign, Ticket, Clock, Eye, TrendingUp } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
