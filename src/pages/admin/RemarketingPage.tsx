@@ -19,12 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -84,7 +78,7 @@ const typeTone: Record<AbandonType, PillTone> = {
   "Pix não pago": "accent",
 };
 
-const NEXT_STATUS: AbandonStatus[] = ["Contactado", "Convertido"];
+
 
 function MetricCard({
   icon: Icon,
