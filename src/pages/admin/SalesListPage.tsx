@@ -137,6 +137,19 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
+  const metrics = useMemo(() => {
+    const paid = filtered.filter((s) => s.status === "Pago");
+    const pending = filtered.filter((s) => s.status === "Pendente");
+    const revenue = paid.reduce((acc, s) => acc + s.amount, 0);
+    const ticketsSold = paid.reduce((acc, s) => acc + s.quantity, 0);
+    const avgTicket = paid.length === 0 ? 0 : revenue / paid.length;
+    const considered = paid.length + pending.length;
+    const pendingRate = considered === 0 ? 0 : Math.round((pending.length / considered) * 100);
+    return { revenue, ticketsSold, avgTicket, pendingCount: pending.length, pendingRate };
+  }, [filtered]);
+
+
+
   const exportCsv = () => {
     const header = [
       "Comprador",
