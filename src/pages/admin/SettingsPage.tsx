@@ -188,7 +188,7 @@ export function SettingsPage() {
           )}
 
           {active === "mercadopago" && (
-            <Panel title="Mercado Pago">
+            <Panel title="Mercado Pago" titleAdornment={<MercadoPagoLogo height={24} />}>
               <div className={`border p-6 ${status.wrapper}`}>
                 <div className="flex flex-wrap items-center gap-3">
                   <StatusIcon className="h-5 w-5" />
