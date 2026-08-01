@@ -152,7 +152,7 @@ export const MOCK_ABANDONS: Abandon[] = [
   },
 ];
 
-export function buildMessage(template: string, data: { name?: string; event: string; lot: string }) {
+export function buildMessage(template: string, data: { name?: string | undefined; event: string; lot: string }) {
   return template
     .replaceAll("{nome}", data.name ?? "tudo bem")
     .replaceAll("{evento}", data.event)
