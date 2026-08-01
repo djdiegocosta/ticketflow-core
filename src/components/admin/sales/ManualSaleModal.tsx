@@ -21,8 +21,8 @@ export function ManualSaleModal({
   onClose: () => void;
   onCreate: (sale: Sale) => void;
 }) {
-  const [eventId, setEventId] = useState(EVENTS[0].id);
-  const [lotId, setLotId] = useState(EVENTS[0].lots[0].id);
+  const [eventId, setEventId] = useState(EVENTS[0]!.id);
+  const [lotId, setLotId] = useState(EVENTS[0]!.lots[0]!.id);
   const [buyerName, setBuyerName] = useState("");
   const [buyerWhatsapp, setBuyerWhatsapp] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -35,13 +35,13 @@ export function ManualSaleModal({
 
   const event = useMemo(() => EVENTS.find((e) => e.id === eventId)!, [eventId]);
   const lot = useMemo(
-    () => event.lots.find((l) => l.id === lotId) ?? event.lots[0],
+    () => event.lots.find((l) => l.id === lotId) ?? event.lots[0]!,
     [event, lotId],
   );
 
   // Lote depende do evento selecionado
   useEffect(() => {
-    setLotId(event.lots[0].id);
+    setLotId(event.lots[0]!.id);
   }, [event]);
 
   // Campos de participante seguem a quantidade digitada
@@ -77,16 +77,16 @@ export function ManualSaleModal({
 
   const submit = () => {
     const next: Errors = {};
-    if (!buyerName.trim()) next.buyerName = "Nome do comprador obrigatório";
-    else if (!isFullName(buyerName)) next.buyerName = "Informe nome e sobrenome (mínimo 2 palavras)";
-    if (onlyDigits(buyerWhatsapp).length < 11) next.buyerWhatsapp = "WhatsApp deve ter 11 dígitos";
-    if (quantity < 1) next.quantity = "Quantidade mínima: 1";
+    if (!buyerName.trim()) next["buyerName"] = "Nome do comprador obrigatório";
+    else if (!isFullName(buyerName)) next["buyerName"] = "Informe nome e sobrenome (mínimo 2 palavras)";
+    if (onlyDigits(buyerWhatsapp).length < 11) next["buyerWhatsapp"] = "WhatsApp deve ter 11 dígitos";
+    if (quantity < 1) next["quantity"] = "Quantidade mínima: 1";
     participants.slice(0, quantity).forEach((name, i) => {
       if (!name?.trim()) next[`p${i}`] = "Nome do participante obrigatório";
       else if (!isFullName(name)) next[`p${i}`] = "Informe nome e sobrenome (mínimo 2 palavras)";
     });
     const parsedAmount = Number(amount.replace(/\./g, "").replace(",", "."));
-    if (!Number.isFinite(parsedAmount) || parsedAmount < 0) next.amount = "Valor inválido";
+    if (!Number.isFinite(parsedAmount) || parsedAmount < 0) next["amount"] = "Valor inválido";
 
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -104,7 +104,7 @@ export function ManualSaleModal({
       status: "Pago",
       createdAt: new Date().toLocaleString("pt-BR"),
       paymentMethod,
-      note: note || undefined,
+      ...(note ? { note } : {}),
       tickets: participants.slice(0, quantity).map((name, i) => ({
         code: `TF-M${seq}-${String(i + 1).padStart(4, "0")}`,
         participantName: formatName(name),
@@ -187,7 +187,7 @@ export function ManualSaleModal({
                 value={buyerName}
                 onChange={(e) => setBuyerName(formatName(e.target.value))}
               />
-              {errors.buyerName && <p className={errorClass}>{errors.buyerName}</p>}
+              {errors["buyerName"] && <p className={errorClass}>{errors["buyerName"]}</p>}
             </div>
             <div>
               <label className={labelClass} htmlFor="ms-whats">
@@ -200,7 +200,7 @@ export function ManualSaleModal({
                 value={buyerWhatsapp}
                 onChange={(e) => setBuyerWhatsapp(maskWhatsApp(e.target.value))}
               />
-              {errors.buyerWhatsapp && <p className={errorClass}>{errors.buyerWhatsapp}</p>}
+              {errors["buyerWhatsapp"] && <p className={errorClass}>{errors["buyerWhatsapp"]}</p>}
             </div>
           </section>
 
@@ -219,7 +219,7 @@ export function ManualSaleModal({
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
               />
-              {errors.quantity && <p className={errorClass}>{errors.quantity}</p>}
+              {errors["quantity"] && <p className={errorClass}>{errors["quantity"]}</p>}
             </div>
 
             {quantity === 1 && (
@@ -272,7 +272,7 @@ export function ManualSaleModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
-              {errors.amount && <p className={errorClass}>{errors.amount}</p>}
+              {errors["amount"] && <p className={errorClass}>{errors["amount"]}</p>}
             </div>
             <div>
               <label className={labelClass} htmlFor="ms-pay">
