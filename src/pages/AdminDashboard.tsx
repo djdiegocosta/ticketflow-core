@@ -64,7 +64,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
         <Icon className={cn("w-5 h-5", iconColor)} />
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-1">
         <div className="flex-1">
           <div className="text-heading-1 text-text-primary mb-1">{value}</div>
           {trend && <div className="text-small text-success">{trend}</div>}
@@ -155,7 +155,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <MetricCard
           title="Receita Total"
           value="R$ 4.230,00"
