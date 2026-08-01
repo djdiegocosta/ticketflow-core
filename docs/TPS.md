@@ -240,7 +240,21 @@ Configurações
 - Grid de cards visuais (mesmo padrão dos cards de Eventos): ícone/imagem representando a ferramenta, nome, breve descrição de uma linha.
 - Cada card leva para a rota já existente da ferramenta (/admin/simulador, /admin/remarketing, /admin/sorteios).
 - Preparado para receber novas ferramentas futuras sem exigir novo item de menu.
-- Cards iniciais: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Sorteios ("Realize sorteios entre participantes do evento").
+- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
+
+---
+
+### 8.2.1 Fases de desenvolvimento
+
+O projeto está sendo validado num evento real do próprio produtor antes de evoluir para SaaS multi-produtor. Por isso, o desenvolvimento é dividido em dois momentos — o critério de corte é "o que é essencial para operar um evento real com confiança" vs. "o que pode esperar sem travar o uso":
+
+**1º momento (atual — construir agora):**
+Dashboard, Eventos, Vendas, Cortesias, Clientes, Configurações (+ assistente Mercado Pago), Ferramentas → Remarketing e Simulador de Evento (não exigem mudança estrutural, só consulta de dados já existentes), Usuários, Check-in (último item deste momento).
+
+**2º momento (mais adiante):**
+Histórico Financeiro, Importação de vendas, Sorteios.
+
+Ao final do 1º momento: revisão e avaliação geral do que foi construído, antes de iniciar o 2º momento.
 
 ---
 
