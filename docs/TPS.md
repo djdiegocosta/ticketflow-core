@@ -228,13 +228,19 @@ Cortesias
 Clientes
 Check-in
 Histórico Financeiro
-Simulador de Evento
 Importação
 Relatórios
-Sorteios
+Ferramentas
 Usuários
 Configurações
 ```
+
+**Ferramentas (`/admin/ferramentas`)** — hub agrupando utilitários do sistema, para não crescer o menu lateral a cada novo módulo adicionado. Substitui entradas individuais de Simulador de Evento, Remarketing e Sorteios no menu.
+
+- Grid de cards visuais (mesmo padrão dos cards de Eventos): ícone/imagem representando a ferramenta, nome, breve descrição de uma linha.
+- Cada card leva para a rota já existente da ferramenta (/admin/simulador, /admin/remarketing, /admin/sorteios).
+- Preparado para receber novas ferramentas futuras sem exigir novo item de menu.
+- Cards iniciais: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Sorteios ("Realize sorteios entre participantes do evento").
 
 ---
 
