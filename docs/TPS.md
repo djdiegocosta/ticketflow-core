@@ -356,6 +356,13 @@ Separada das vendas para não contaminar dados financeiros.
 
 **Mini dashboard da área (topo da tela, acima da listagem):**
 - Card "Novos clientes" com seletor de período (últimos 7 / 15 / 30 dias) — mostra quantos clientes se cadastraram (pelo WhatsApp, cadastro simplificado ou completo) na janela selecionada. Permite acompanhar a evolução de captação de clientes ao longo de um evento.
+- Nenhum outro card de destaque/ranking nesta área (ex: "Top 3 clientes") — a ordenação por coluna já cumpre essa função (ver Listagem).
+
+**Cadastrar novo cliente:**
+- Botão "+ Novo Cliente", mesmo padrão visual do "+ Nova Venda".
+- Interface: painel lateral (Sheet), mesmo padrão do Nova Venda — mas em etapa única (sem steps/barra de progresso), já que é uma entidade só, sem ramificação.
+- Campos: nome completo (regras de qualidade aplicadas), WhatsApp (máscara + normalização), e-mail (opcional), cidade (opcional), data de nascimento (opcional), Instagram (opcional).
+- Botão primário "Salvar cliente" no rodapé do painel.
 
 **Listagem:**
 - Tabela: nome, WhatsApp (com botão de copiar ao lado), total de eventos, total de ingressos, último evento, data de cadastro.
