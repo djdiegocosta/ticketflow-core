@@ -36,7 +36,6 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/importacao", label: "Importação", icon: Upload },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
-  { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
