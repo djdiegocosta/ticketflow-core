@@ -58,7 +58,7 @@ const MOCK_LAST_SALES = [
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaugeValue, iconColor, subtext }: any) => {
   return (
-    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm">
+    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm h-full flex flex-col justify-between">
       <div className="flex items-start justify-between mb-2">
         <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("w-5 h-5", iconColor)} />
