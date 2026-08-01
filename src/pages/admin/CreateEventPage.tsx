@@ -4,11 +4,56 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+type Lote = {
+  id: string;
+  nome: string;
+  preco: string;
+  quantidade: string;
+  inicio: string;
+  fim: string;
+};
+
+const emptyLote = (): Lote => ({
+  id: crypto.randomUUID(),
+  nome: "",
+  preco: "",
+  quantidade: "",
+  inicio: "",
+  fim: "",
+});
+
 export function CreateEventPage() {
   const [step, setStep] = useState(1);
   const [model, setModel] = useState<"lotes" | "unico" | null>(null);
   const [name, setName] = useState("");
+  const [lotes, setLotes] = useState<Lote[]>([]);
+  const [draft, setDraft] = useState<Lote | null>(null);
   const navigate = useNavigate();
+
+  const openNewLote = () => setDraft(emptyLote());
+  const updateDraft = (patch: Partial<Lote>) =>
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+
+  const saveLote = () => {
+    if (!draft) return;
+    if (!draft.nome.trim()) {
+      toast.error("Informe o nome do lote");
+      return;
+    }
+    setLotes((prev) => {
+      const exists = prev.some((l) => l.id === draft.id);
+      const next = exists ? prev.map((l) => (l.id === draft.id ? draft : l)) : [...prev, draft];
+      return [...next].sort((a, b) => (a.inicio || "").localeCompare(b.inicio || ""));
+    });
+    setDraft(null);
+    toast.success("Lote salvo");
+  };
+
+  const removeLote = (id: string) => {
+    if (!window.confirm("Remover este lote?")) return;
+    setLotes((prev) => prev.filter((l) => l.id !== id));
+    if (draft?.id === id) setDraft(null);
+  };
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 4));
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
