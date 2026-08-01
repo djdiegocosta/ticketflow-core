@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/sales-data";
 import { MOCK_CLIENTS, whatsappLink, type Client } from "@/lib/clients-data";
 import { TopClientsDock } from "@/components/admin/clients/TopClientsDock";
 
@@ -255,5 +254,3 @@ export function ClientsListPage() {
     </div>
   );
 }
-
-export { formatCurrency };
