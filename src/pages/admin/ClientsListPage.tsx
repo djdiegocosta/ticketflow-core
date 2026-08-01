@@ -425,6 +425,14 @@ export function ClientsListPage() {
           </div>
         </div>
       )}
+
+      <CreateClientPanel
+        open={isPanelOpen}
+        onClose={() => setIsPanelOpen(false)}
+        onSave={(newClient) => {
+          setClients((prev) => [newClient, ...prev]);
+        }}
+      />
     </div>
   );
 }
