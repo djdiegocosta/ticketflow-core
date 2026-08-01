@@ -280,7 +280,7 @@ export function CreateCourtesyPanel({
                     <div key={p.id} className="group flex items-center justify-between p-3 hover:bg-[var(--bg-tertiary)]">
                       <div className="flex flex-1 items-center gap-2">
                         {!p.isValid && (
-                          <AlertCircle className="h-4 w-4 text-error" title="Nome inválido" />
+                          <AlertCircle className="h-4 w-4 text-error" />
                         )}
                         <input
                           className={[
