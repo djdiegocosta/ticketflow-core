@@ -1,5 +1,5 @@
 export type AbandonType = "Não gerou Pix" | "Pix não pago";
-export type AbandonStatus = "Não contactado" | "Contactado" | "Convertido" | "Descartado";
+export type AbandonStatus = "Não contactado" | "Contactado" | "Convertido" | "Não finalizou";
 export type RemarketingPeriod = "24h" | "72h" | "7d";
 
 export type Abandon = {
@@ -40,7 +40,7 @@ export const DEFAULT_TEMPLATES: Record<AbandonType, string> = {
 export const MOCK_ABANDONS: Abandon[] = [
   {
     id: "a01",
-    name: "Marina de Souza",
+    name: "João Silva", // Correspondência com Venda 1001 (Comprador)
     whatsapp: "(34) 99123-4567",
     event: "Festa de Verão",
     lot: "1º Lote",
@@ -50,6 +50,8 @@ export const MOCK_ABANDONS: Abandon[] = [
   },
   {
     id: "a02",
+    name: "Marina de Souza", // Correspondência com Venda 1001 (Participante)
+    whatsapp: "(34) 99999-0000",
     event: "Festa de Verão",
     lot: "1º Lote",
     type: "Não gerou Pix",
@@ -91,7 +93,7 @@ export const MOCK_ABANDONS: Abandon[] = [
     lot: "Pista",
     type: "Não gerou Pix",
     createdAt: "31/07/2026 18:03",
-    status: "Descartado",
+    status: "Não finalizou",
   },
   {
     id: "a07",
@@ -119,7 +121,7 @@ export const MOCK_ABANDONS: Abandon[] = [
     lot: "Ingresso único",
     type: "Não gerou Pix",
     createdAt: "30/07/2026 11:08",
-    status: "Descartado",
+    status: "Não finalizou",
   },
   {
     id: "a10",

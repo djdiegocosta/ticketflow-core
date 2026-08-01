@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ChevronDown,
   DollarSign,
+  ExternalLink,
   MessageCircle,
   RotateCcw,
   Ticket,
@@ -63,7 +64,7 @@ import {
   RemarketingPeriod,
   buildMessage,
 } from "@/lib/remarketing-data";
-import { formatCurrency } from "@/lib/sales-data";
+import { formatCurrency, MOCK_SALES } from "@/lib/sales-data";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -76,7 +77,7 @@ const statusTone: Record<AbandonStatus, PillTone> = {
   "Não contactado": "neutral",
   Contactado: "info",
   Convertido: "success",
-  Descartado: "error",
+  "Não finalizou": "error",
 };
 
 const typeTone: Record<AbandonType, PillTone> = {
@@ -84,7 +85,7 @@ const typeTone: Record<AbandonType, PillTone> = {
   "Pix não pago": "accent",
 };
 
-const NEXT_STATUS: AbandonStatus[] = ["Contactado", "Convertido", "Descartado"];
+const NEXT_STATUS: AbandonStatus[] = ["Contactado", "Convertido", "Não finalizou"];
 
 function MetricCard({
   icon: Icon,
@@ -147,8 +148,43 @@ export function RemarketingPage() {
   const [templates, setTemplates] = React.useState<Record<AbandonType, string>>({
     ...DEFAULT_TEMPLATES,
   });
-  const [rows, setRows] = React.useState<Abandon[]>(MOCK_ABANDONS);
+  const [rows, setRows] = React.useState<Abandon[]>([]);
   const [preview, setPreview] = React.useState<Abandon | null>(null);
+
+  React.useEffect(() => {
+    // Normalização básica de WhatsApp para comparação
+    const normalize = (val?: string) => val?.replace(/\D/g, "") || "";
+
+    const enrichedRows = MOCK_ABANDONS.map((abandon) => {
+      if (abandon.status === "Convertido") return abandon;
+
+      const abandonWa = normalize(abandon.whatsapp);
+      if (!abandonWa) return abandon;
+
+      // Verifica se existe uma venda paga para este WhatsApp + Evento
+      const hasPaidSale = MOCK_SALES.some((sale) => {
+        const saleWa = normalize(sale.buyerWhatsapp);
+        const matchesWa = saleWa === abandonWa;
+        const matchesEvent = sale.eventName === abandon.event;
+        const matchesStatus = sale.status === "Pago";
+
+        // Também verificar participantes, pois "Comprador != Participante"
+        const matchesParticipant = sale.tickets.some(
+          (t) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
+        );
+
+        return (matchesWa || matchesParticipant) && matchesEvent && matchesStatus;
+      });
+
+      if (hasPaidSale) {
+        return { ...abandon, status: "Convertido" as const };
+      }
+
+      return abandon;
+    });
+
+    setRows(enrichedRows);
+  }, []);
 
   const metrics = PERIOD_METRICS[period];
 
@@ -167,6 +203,13 @@ export function RemarketingPage() {
   const updateStatus = (id: string, status: AbandonStatus) => {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
     toast.success(`Status atualizado para "${status}".`);
+  };
+
+  const openWhatsApp = (row: Abandon) => {
+    setPreview(row);
+    if (row.status === "Não contactado") {
+      updateStatus(row.id, "Contactado");
+    }
   };
 
   return (
@@ -305,7 +348,7 @@ export function RemarketingPage() {
             </div>
             <div className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
-              <span>Descartado</span>
+              <span>Não finalizou</span>
             </div>
           </div>
         </div>
@@ -319,7 +362,6 @@ export function RemarketingPage() {
                     "Nome",
                     "WhatsApp",
                     "Evento",
-                    "Lote de interesse",
                     "Tipo de abandono",
                     "Data/hora",
                     "Status",
@@ -329,7 +371,7 @@ export function RemarketingPage() {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <DataTableCell colSpan={8} className="py-10 text-center text-body">
+                    <DataTableCell colSpan={7} className="py-10 text-center text-body">
                       Nenhum abandono encontrado.
                     </DataTableCell>
                   </tr>
@@ -352,9 +394,6 @@ export function RemarketingPage() {
                       <DataTableCell className="whitespace-nowrap">
                         {row.event}
                       </DataTableCell>
-                      <DataTableCell className="whitespace-nowrap">
-                        {row.lot}
-                      </DataTableCell>
                       <DataTableCell>
                         <StatusPill
                           tone={typeTone[row.type]}
@@ -374,7 +413,7 @@ export function RemarketingPage() {
                               row.status === "Não contactado" && "bg-[var(--text-disabled)]",
                               row.status === "Contactado" && "bg-[var(--warning)]",
                               row.status === "Convertido" && "bg-[var(--accent)]",
-                              row.status === "Descartado" && "bg-[var(--error)]",
+                              row.status === "Não finalizou" && "bg-[var(--error)]",
                             ].join(" ")}
                           />
                           <span className="text-small">{row.status}</span>
@@ -388,7 +427,7 @@ export function RemarketingPage() {
                                 variant="outline"
                                 size="sm"
                                 disabled={!row.whatsapp}
-                                onClick={() => setPreview(row)}
+                                onClick={() => openWhatsApp(row)}
                                 className="h-8 w-8 p-0"
                               >
                                 <MessageCircle className="h-4 w-4" />
