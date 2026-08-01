@@ -4,11 +4,56 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+type Lote = {
+  id: string;
+  nome: string;
+  preco: string;
+  quantidade: string;
+  inicio: string;
+  fim: string;
+};
+
+const emptyLote = (): Lote => ({
+  id: crypto.randomUUID(),
+  nome: "",
+  preco: "",
+  quantidade: "",
+  inicio: "",
+  fim: "",
+});
+
 export function CreateEventPage() {
   const [step, setStep] = useState(1);
   const [model, setModel] = useState<"lotes" | "unico" | null>(null);
   const [name, setName] = useState("");
+  const [lotes, setLotes] = useState<Lote[]>([]);
+  const [draft, setDraft] = useState<Lote | null>(null);
   const navigate = useNavigate();
+
+  const openNewLote = () => setDraft(emptyLote());
+  const updateDraft = (patch: Partial<Lote>) =>
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+
+  const saveLote = () => {
+    if (!draft) return;
+    if (!draft.nome.trim()) {
+      toast.error("Informe o nome do lote");
+      return;
+    }
+    setLotes((prev) => {
+      const exists = prev.some((l) => l.id === draft.id);
+      const next = exists ? prev.map((l) => (l.id === draft.id ? draft : l)) : [...prev, draft];
+      return [...next].sort((a, b) => (a.inicio || "").localeCompare(b.inicio || ""));
+    });
+    setDraft(null);
+    toast.success("Lote salvo");
+  };
+
+  const removeLote = (id: string) => {
+    if (!window.confirm("Remover este lote?")) return;
+    setLotes((prev) => prev.filter((l) => l.id !== id));
+    if (draft?.id === id) setDraft(null);
+  };
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 4));
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
@@ -145,13 +190,130 @@ export function CreateEventPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-small font-medium text-text-secondary">Lotes adicionados</span>
-                  <button className="text-small text-accent font-bold flex items-center gap-1 hover:underline">
+                  <button
+                    type="button"
+                    onClick={openNewLote}
+                    className="text-small text-accent font-bold flex items-center gap-1 hover:underline"
+                  >
                     <Plus className="w-4 h-4" /> Adicionar lote
                   </button>
                 </div>
-                <div className="text-center py-8 border border-dashed border-border-subtle rounded-radius-md text-text-disabled text-small">
-                  Nenhum lote adicionado ainda. Adicione o primeiro lote para continuar.
-                </div>
+
+                {lotes.length === 0 && !draft && (
+                  <div className="text-center py-8 border border-dashed border-border-subtle rounded-radius-md text-text-disabled text-small">
+                    Nenhum lote adicionado ainda. Adicione o primeiro lote para continuar.
+                  </div>
+                )}
+
+                {lotes.length > 0 && (
+                  <div className="space-y-2">
+                    {lotes.map((l) => (
+                      <div
+                        key={l.id}
+                        className="flex items-center justify-between gap-4 p-3 bg-bg-primary border border-border-subtle rounded-radius-md"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-body font-semibold text-text-primary truncate">{l.nome}</div>
+                          <div className="text-small text-text-secondary">
+                            R$ {l.preco || "0,00"} · {l.quantidade || 0} ingressos
+                            {l.inicio || l.fim ? ` · ${l.inicio || "—"} → ${l.fim || "—"}` : ""}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setDraft(l)}
+                            className="text-small text-accent font-semibold hover:underline"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeLote(l.id)}
+                            aria-label="Remover lote"
+                            className="text-text-disabled hover:text-error transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {draft && (
+                  <div className="p-4 bg-bg-primary border border-border-default rounded-radius-md space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="text-small font-medium text-text-secondary">Nome do lote</label>
+                        <input
+                          type="text"
+                          value={draft.nome}
+                          onChange={(e) => updateDraft({ nome: e.target.value })}
+                          placeholder="Ex: 1º Lote"
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-small font-medium text-text-secondary">Preço (R$)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={draft.preco}
+                          onChange={(e) => updateDraft({ preco: e.target.value })}
+                          placeholder="0,00"
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-small font-medium text-text-secondary">Quantidade</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={draft.quantidade}
+                          onChange={(e) => updateDraft({ quantidade: e.target.value })}
+                          placeholder="0"
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-small font-medium text-text-secondary">Início das vendas</label>
+                        <input
+                          type="datetime-local"
+                          value={draft.inicio}
+                          onChange={(e) => updateDraft({ inicio: e.target.value })}
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-small font-medium text-text-secondary">Fim das vendas</label>
+                        <input
+                          type="datetime-local"
+                          value={draft.fim}
+                          onChange={(e) => updateDraft({ fim: e.target.value })}
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setDraft(null)}
+                        className="px-4 py-2 border border-border-default rounded-radius-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={saveLote}
+                        className="px-4 py-2 bg-accent text-[#111111] rounded-radius-md font-semibold hover:bg-accent-hover transition-colors"
+                      >
+                        Salvar lote
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="max-w-md mx-auto space-y-4 pt-8">
