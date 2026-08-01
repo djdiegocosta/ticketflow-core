@@ -31,7 +31,7 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 const card =
-  "rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
+  "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
   const found = MOCK_SALES.find((s) => s.id === id);
@@ -81,7 +81,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                 sale.tickets.map((t) => t.participantName),
               )
             }
-            className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
+            className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
           >
             <FileText className="h-4 w-4" />
             Gerar lista PDF
@@ -90,7 +90,7 @@ export function SaleDetailPage({ id }: { id: string }) {
             type="button"
             disabled={status === "Cancelado"}
             onClick={() => setConfirmOpen(true)}
-            className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancelar venda
           </button>
@@ -130,7 +130,7 @@ export function SaleDetailPage({ id }: { id: string }) {
           {sale.tickets.map((ticket) => (
             <div
               key={ticket.code}
-              className="flex flex-col gap-3 rounded-[var(--radius-sm)] border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-body text-text-primary">{ticket.participantName}</p>
@@ -150,7 +150,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                 <button
                   type="button"
                   onClick={() => setQrTicket(ticket)}
-                  className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-3 py-1.5 text-small text-text-primary transition-colors hover:border-accent"
+                  className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-3 py-1.5 text-small text-text-primary transition-colors hover:border-accent"
                 >
                   <QrCode className="h-4 w-4" />
                   Ver QR Code
@@ -163,7 +163,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
-          <div className="w-full max-w-[420px] rounded-[var(--radius-lg)] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Cancelar venda?</h3>
             <p className="mt-2 text-body text-text-secondary">
               Esta ação invalida os {sale.tickets.length} ingresso(s) desta venda.
@@ -172,7 +172,7 @@ export function SaleDetailPage({ id }: { id: string }) {
               <button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                className="rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary hover:border-accent"
+                className="border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary hover:border-accent"
               >
                 Voltar
               </button>
@@ -183,7 +183,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                   setConfirmOpen(false);
                   toast.success("Venda cancelada");
                 }}
-                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-[#ffffff] hover:opacity-90"
+                className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] hover:opacity-90"
               >
                 Confirmar cancelamento
               </button>
@@ -194,14 +194,14 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {qrTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
-          <div className="w-full max-w-[360px] rounded-[var(--radius-lg)] border border-border-subtle bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[360px] border border-border-subtle bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between">
               <h3 className="text-heading-2 text-text-primary">QR Code</h3>
               <button
                 type="button"
                 aria-label="Fechar"
                 onClick={() => setQrTicket(null)}
-                className="rounded-[var(--radius-sm)] p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
+                className="p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -209,7 +209,7 @@ export function SaleDetailPage({ id }: { id: string }) {
             <img
               alt={`QR Code do ingresso ${qrTicket.code}`}
               src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code)}`}
-              className="mx-auto mt-4 h-[220px] w-[220px] rounded-[var(--radius-md)] bg-bg-primary"
+              className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
               loading="lazy"
             />
             <p className="mt-4 text-body text-text-primary">{qrTicket.participantName}</p>
