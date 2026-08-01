@@ -337,24 +337,27 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
 
 **Área exclusiva para ingressos sem cobrança.**
 Separada das vendas para não contaminar dados financeiros.
+Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distinção comprador/participante — é apenas nome do convidado, um ingresso por nome.
 
-**Emitir cortesia individual:**
-- Selecionar evento.
-- Nome completo + WhatsApp do convidado (comprador/responsável).
-- Quantidade.
-- Nome do participante de cada ingresso (mesma regra de comprador ≠ participante, quando quantidade > 1).
-- Observação (opcional).
-- Ingressos gerados imediatamente.
+**Mini dashboard da área (topo da tela):**
+- Card "Total de cortesias" (do evento selecionado ou acumulado).
+- Card "Check-ins de cortesias" (quantos já fizeram check-in).
+- Apenas esses dois — sem métricas financeiras, já que cortesia não gera receita.
 
-**Lançamento em lote:**
-- Colar lista de nomes (um por linha) ou upload de arquivo.
-- Sistema processa, aplica regras de qualidade de nome, e exibe prévia.
-- Confirmar para gerar todos os ingressos de uma vez.
+**Emitir cortesias — painel único, três formas de adicionar nome:**
+- Selecionar evento (obrigatório, único campo antes de começar a adicionar nomes).
+- Três formas de adicionar, todas alimentando a mesma lista acumulada na sessão:
+  1. **Digitar um por vez:** campo de texto único — digita o nome, aperta Enter, nome é adicionado à lista e o campo limpa e permanece focado para o próximo.
+  2. **Colar lista:** área de texto, um nome por linha, sistema separa e adiciona todos de uma vez.
+  3. **Importar arquivo:** upload de arquivo .txt, um nome por linha, mesma regra de processamento da lista colada.
+- Todo nome adicionado passa pelas regras de qualidade (capitalização automática, mínimo 2 palavras) — nomes inválidos ficam sinalizados na lista para correção antes de emitir.
+- Lista acumulada exibida abaixo, em ordem alfabética, com opção de remover qualquer nome antes de confirmar.
+- Botão primário "Emitir cortesias" — gera um ingresso por nome válido da lista, de uma vez.
 
 **Listagem de cortesias:**
-- Tabela: nome, WhatsApp, evento, quantidade, data, status de check-in.
+- Tabela: nome, evento, data de emissão, status de check-in.
 - Filtros: evento, período.
-- **Exportar lista em PDF** — mesmo formato de check-in manual: ordem alfabética, checkbox, espaçamento reduzido.
+- **Exportar lista em PDF** — nomes em ordem alfabética, checkbox à frente de cada nome, espaçamento reduzido entre linhas (mesmo padrão usado em Vendas).
 
 ---
 
