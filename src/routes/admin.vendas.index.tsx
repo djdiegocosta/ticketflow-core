@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { SalesListPage } from "@/pages/admin/SalesListPage";
+
 
 export const Route = createFileRoute("/admin/vendas/")({
   head: () => ({
