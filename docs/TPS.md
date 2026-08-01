@@ -587,23 +587,82 @@ Exportar dados (CSV) em todos os relatórios.
 
 ### 8.16 Configurações (`/admin/configuracoes`)
 
+Layout: menu lateral secundário interno (estilo macOS System Preferences) com as seções abaixo; cada uma é uma tela própria, não abas.
+
 Seções:
 - **Organização:** nome, logo, dados de contato.
-- **Mercado Pago:** wizard de configuração (ver 8.17), status da integração.
+- **Mercado Pago:** card de status da integração (Conectado / Não configurado / Requer atenção) + botão para abrir o assistente guiado (ver 8.17). O status fica visível aqui sem precisar entrar no assistente.
 - **Preferências:** tema padrão da interface; unificar ou separar listas de PDF de Vendas e Cortesias (impressão de check-in).
 - **Backup de dados:** exportar todos os dados da organização em JSON ou CSV.
 
 ---
 
-### 8.17 Wizard de configuração do Mercado Pago
+### 8.17 Assistente guiado — Configurar Mercado Pago (`/admin/configuracoes/mercado-pago`)
 
-Etapas:
-1. Introdução (o que é e para que serve).
-2. Credenciais (Access Token produção + sandbox).
-3. Validação automática das credenciais.
-4. Configuração do webhook (instrução + URL para copiar).
-5. Teste de pagamento (R$ 0,01 para validar fluxo completo).
-6. Confirmação — integração ativa.
+Página própria (não painel lateral — conteúdo denso demais). Estrutura de duas colunas: lista de etapas fixa à esquerda, conteúdo da etapa atual à direita.
+
+**Cabeçalho da página:**
+- Botão "Voltar" (retorna para Configurações)
+- Título "Configurar Mercado Pago" + subtítulo "Assistente guiado — configure em 5 etapas"
+- Badge no canto superior direito indicando o ambiente ativo: "Ambiente: Produção" ou "Ambiente: Sandbox"
+
+**Barra de progresso** (abaixo do cabeçalho, largura total):
+- Label "Progresso da configuração" + contador "X de 5" alinhado à direita
+- Barra preenchida (var(--accent))
+
+**Coluna esquerda — lista de etapas (não linear, clicável):**
+1. Ambiente
+2. Aplicação MP
+3. Credenciais
+4. Webhook
+5. Pagamento teste
+
+Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual = destaque (fundo var(--accent-muted), texto var(--accent-text)). Etapas futuras = tom neutro. Todas as etapas já validadas são clicáveis a qualquer momento, para permitir revisar/corrigir sem refazer o fluxo inteiro.
+
+**Coluna direita — conteúdo de cada etapa:**
+
+**Etapa 1 — Ambiente**
+- Explicação curta: "Comece em Sandbox para testar sem usar dinheiro real."
+- Dois cards de opção (seleção única, estilo rádio-card, não radio button pequeno):
+  - "Sandbox (teste)" — "Ambiente simulado. Credenciais começam com TEST-. Nenhum dinheiro é movimentado. Ideal para configurar e validar."
+  - "Produção" — "Ambiente real. Credenciais começam com APP_USR-. Pagamentos reais são processados."
+- Badge "Validado" quando a etapa está completa
+- Botão "Próximo"
+
+**Etapa 2 — Aplicação MP**
+- Explicação: "É a 'conta técnica' que dá acesso às credenciais e ao webhook."
+- Passo a passo numerado: acessar painel de desenvolvedores do MP (link externo) → criar aplicação → escolher "Pagamentos online" → marcar "Pagamentos com QR Code" ou "Checkout API / PIX" → aceitar termos e finalizar
+- Aviso: "Já tem uma aplicação? Pode usar a existente — apenas selecione ela no painel para ver as credenciais."
+- Botões "Voltar" e "Já criei, próximo"
+
+**Etapa 3 — Credenciais**
+- Explicação: "Copie as credenciais do painel para o TicketFlow."
+- Título dinâmico conforme ambiente escolhido na Etapa 1: "Credenciais (Produção)" ou "Credenciais (Sandbox)".
+- Bloco de ajuda: "Onde encontrar? No painel MP → sua aplicação → menu lateral Credenciais → aba Credenciais de [ambiente]"
+- Campo Public Key (input + botão "Salvar" individual)
+- Campo Access Token (sensível — armazenado cifrado; se já salvo, mostrar indicador "Salvo — termina em ...XXXX. Preencha novamente só se quiser substituir." + botão "Salvar" individual)
+- **Credenciais são armazenadas separadamente por ambiente** — trocar entre Sandbox e Produção na Etapa 1 não sobrescreve nem apaga as credenciais do outro ambiente já salvas.
+- Botão "Testar credenciais" (largura total, destaque)
+- Botões "Voltar" e "Próximo"
+
+**Etapa 4 — Webhook**
+- Explicação: "Notificação automática quando um Pix é pago."
+- Texto explicativo: "O Mercado Pago avisa o TicketFlow por essa URL sempre que um pagamento muda de status. Sem isso, você teria que aprovar vendas manualmente."
+- Campo somente-leitura com a URL do webhook + botão de copiar. **Enquanto o Supabase não estiver conectado ao projeto, este campo exibe uma mensagem clara em vez de URL falsa:** "Conecte o Supabase ao projeto para gerar a URL do webhook automaticamente." — nunca simular uma URL que não existe de verdade.
+- Passo a passo numerado: painel MP → aplicação → menu Webhooks → Configurar notificações → aba Modo Produção/Teste → colar URL em "URL de notificações" → marcar evento "Pagamentos (payment)" → salvar e copiar a Chave secreta gerada
+- Campo Webhook Secret (sensível, cifrado, mesmo padrão de "salvo — termina em..." do Access Token)
+- Botão "Testar Webhook"
+- Botões "Voltar" e "Próximo"
+
+**Etapa 5 — Pagamento de teste**
+- Explicação: "Um Pix de R$ 0,01 valida o fluxo ponta a ponta."
+- Nota: "Em Produção, pague o QR code pelo app do seu banco (será um centavo real)."
+- Badge de status: "Pendente" / "Aguardando pagamento" / "Confirmado"
+- Botão "Criar PIX de teste" (destaque, largura total)
+- Botão "Atualizar status" (verifica se o Pix de teste foi confirmado)
+- Botão "Voltar" — ao confirmar o pagamento de teste, a integração é marcada como ativa e o assistente pode ser fechado
+
+**Regra de segurança:** Access Token e Webhook Secret nunca são exibidos em texto completo após salvos — apenas indicador de que existem, com os últimos dígitos visíveis para conferência.
 
 ---
 
