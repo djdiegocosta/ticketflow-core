@@ -13,6 +13,7 @@ import {
   Circle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
