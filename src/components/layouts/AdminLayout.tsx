@@ -16,6 +16,8 @@ import {
   Wallet,
   Calculator,
   LogOut,
+  Wrench,
+  Target,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
@@ -30,11 +32,10 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/clientes", label: "Clientes", icon: Users },
   { to: "/admin/checkin", label: "Check-in", icon: ShieldCheck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/admin/simulador", label: "Simulador", icon: Calculator },
+  { to: "/admin/ferramentas", label: "Ferramentas", icon: Wrench },
   { to: "/admin/importacao", label: "Importação", icon: Upload },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
-  { to: "/admin/remarketing", label: "Remarketing", icon: Megaphone },
-  { to: "/admin/sorteios", label: "Sorteios", icon: Trophy },
+  { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
   { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
