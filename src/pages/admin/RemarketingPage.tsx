@@ -19,12 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -77,7 +71,6 @@ const statusTone: Record<AbandonStatus, PillTone> = {
   "Não contactado": "neutral",
   Contactado: "info",
   Convertido: "success",
-  "Não finalizou": "error",
 };
 
 const typeTone: Record<AbandonType, PillTone> = {
@@ -85,7 +78,7 @@ const typeTone: Record<AbandonType, PillTone> = {
   "Pix não pago": "accent",
 };
 
-const NEXT_STATUS: AbandonStatus[] = ["Contactado", "Convertido", "Não finalizou"];
+
 
 function MetricCard({
   icon: Icon,
@@ -346,10 +339,6 @@ export function RemarketingPage() {
               <div className="h-2 w-2 rounded-full bg-[var(--accent)]" />
               <span>Convertido</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-[var(--error)]" />
-              <span>Não finalizou</span>
-            </div>
           </div>
         </div>
 
@@ -406,17 +395,15 @@ export function RemarketingPage() {
                         {row.createdAt}
                       </DataTableCell>
                       <DataTableCell>
-                        <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex items-center justify-center whitespace-nowrap">
                           <div
                             className={[
                               "h-2 w-2 rounded-full shrink-0",
                               row.status === "Não contactado" && "bg-[var(--text-disabled)]",
                               row.status === "Contactado" && "bg-[var(--warning)]",
                               row.status === "Convertido" && "bg-[var(--accent)]",
-                              row.status === "Não finalizou" && "bg-[var(--error)]",
                             ].join(" ")}
                           />
-                          <span className="text-small">{row.status}</span>
                         </div>
                       </DataTableCell>
                       <DataTableCell>
@@ -436,25 +423,6 @@ export function RemarketingPage() {
                             </TooltipTrigger>
                             <TooltipContent>Abrir WhatsApp</TooltipContent>
                           </Tooltip>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="flex items-center gap-1 h-8"
-                              >
-                                Status
-                                <ChevronDown className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {NEXT_STATUS.map((s) => (
-                                <DropdownMenuItem key={s} onClick={() => updateStatus(row.id, s)}>
-                                  {s}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
                       </DataTableCell>
                     </DataTableRow>

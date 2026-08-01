@@ -1,5 +1,5 @@
 export type AbandonType = "Não gerou Pix" | "Pix não pago";
-export type AbandonStatus = "Não contactado" | "Contactado" | "Convertido" | "Não finalizou";
+export type AbandonStatus = "Não contactado" | "Contactado" | "Convertido";
 export type RemarketingPeriod = "24h" | "72h" | "7d";
 
 export type Abandon = {
@@ -93,7 +93,7 @@ export const MOCK_ABANDONS: Abandon[] = [
     lot: "Pista",
     type: "Não gerou Pix",
     createdAt: "31/07/2026 18:03",
-    status: "Não finalizou",
+    status: "Não contactado",
   },
   {
     id: "a07",
@@ -121,7 +121,7 @@ export const MOCK_ABANDONS: Abandon[] = [
     lot: "Ingresso único",
     type: "Não gerou Pix",
     createdAt: "30/07/2026 11:08",
-    status: "Não finalizou",
+    status: "Não contactado",
   },
   {
     id: "a10",
