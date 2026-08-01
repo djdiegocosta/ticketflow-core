@@ -12,7 +12,6 @@ import {
   MessageCircle,
   Search,
   Trash2,
-  Trophy,
   Users,
   Clock,
   ChevronDown,
