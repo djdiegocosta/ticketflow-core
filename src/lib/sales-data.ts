@@ -1,4 +1,4 @@
-export type SaleOrigin = "TicketFlow" | "Manual" | "Bilheteria" | "Importada";
+export type SaleOrigin = "TicketFlow" | "Manual" | "Importada";
 export type SaleStatus = "Pago" | "Pendente" | "Cancelado";
 
 export type SaleTicket = {
@@ -112,7 +112,7 @@ export const MOCK_SALES: Sale[] = [
     buyerEmail: "ana.lima@email.com",
     eventName: "Festa de Verão",
     lotName: "2º Lote",
-    origin: "Bilheteria",
+    origin: "TicketFlow",
     quantity: 2,
     amount: 220,
     status: "Pago",
@@ -188,7 +188,7 @@ export const MOCK_SALES: Sale[] = [
     buyerWhatsapp: "(34) 98888-6060",
     eventName: "Festival Outono",
     lotName: "Ingresso único",
-    origin: "Bilheteria",
+    origin: "Manual",
     quantity: 5,
     amount: 350,
     status: "Pago",
