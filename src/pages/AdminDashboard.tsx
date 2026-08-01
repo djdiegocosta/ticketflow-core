@@ -66,7 +66,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
       
       <div className="flex items-center gap-3 flex-1">
         <div className="flex-1">
-          <div className="text-heading-1 text-text-primary mb-1">{value}</div>
+          {value && <div className="text-heading-1 text-text-primary mb-1">{value}</div>}
           {trend && <div className="text-small text-success">{trend}</div>}
           {secondary && <div className="text-small text-text-secondary">{secondary}</div>}
           {subtext && <div className="text-small text-text-secondary mt-1">{subtext}</div>}
