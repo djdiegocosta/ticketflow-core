@@ -110,8 +110,11 @@ export function MercadoPagoWizardPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-heading-1 text-[var(--text-primary)]">Configurar Mercado Pago</h1>
-            <p className="text-body text-[var(--text-secondary)]">
+            <div className="flex flex-wrap items-center gap-4">
+              <MercadoPagoLogo height={32} />
+              <h1 className="text-heading-1 text-[var(--text-primary)]">Configurar Mercado Pago</h1>
+            </div>
+            <p className="mt-2 text-body text-[var(--text-secondary)]">
               Assistente guiado — configure em 5 etapas
             </p>
           </div>
