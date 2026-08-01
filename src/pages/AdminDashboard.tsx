@@ -75,28 +75,24 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
         
         {gaugeValue !== undefined && (
           <div className="w-[90px] h-[50px] relative shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                <Pie
-                  data={[
-                    { value: gaugeValue },
-                    { value: 100 - gaugeValue },
-                  ]}
-                  cx="50%"
-                  cy="100%"
-                  innerRadius={32}
-                  outerRadius={45}
-                  startAngle={180}
-                  endAngle={0}
-                  dataKey="value"
-                  stroke="none"
-                  isAnimationActive={false}
-                >
-                  <Cell fill="var(--warning)" />
-                  <Cell fill="var(--bg-tertiary)" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <svg viewBox="0 0 90 50" width="90" height="50" className="block">
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--bg-tertiary)"
+                strokeWidth={10}
+                strokeLinecap="round"
+              />
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--warning)"
+                strokeWidth={10}
+                strokeLinecap="round"
+                strokeDasharray={Math.PI * 37}
+                strokeDashoffset={Math.PI * 37 * (1 - gaugeValue / 100)}
+              />
+            </svg>
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-center">
               <span className="text-heading-2 font-semibold text-text-primary leading-none">{gaugeValue}%</span>
             </div>
