@@ -412,7 +412,7 @@ export function ClientsListPage() {
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-medium text-white transition-opacity hover:opacity-90"
+                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90"
               >
                 Excluir
               </button>
