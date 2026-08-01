@@ -58,7 +58,7 @@ const MOCK_LAST_SALES = [
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaugeValue, iconColor, subtext }: any) => {
   return (
-    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm h-full flex flex-col">
+    <div className="bg-bg-secondary border border-border-subtle p-5 shadow-sm h-full flex flex-col">
       <div className="flex items-start justify-between mb-2">
         <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("w-5 h-5", iconColor)} />
@@ -191,7 +191,7 @@ export function AdminDashboard() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
         {/* Sales Evolution */}
-        <div className="lg:col-span-6 bg-bg-secondary border border-border-subtle rounded-radius-md p-6">
+        <div className="lg:col-span-6 bg-bg-secondary border border-border-subtle p-6">
           <h2 className="text-heading-2 text-text-primary mb-6">Vendas diárias</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -238,7 +238,7 @@ export function AdminDashboard() {
         </div>
 
         {/* Hourly Peaks */}
-        <div className="lg:col-span-4 bg-bg-secondary border border-border-subtle rounded-radius-md p-6">
+        <div className="lg:col-span-4 bg-bg-secondary border border-border-subtle p-6">
           <h2 className="text-heading-2 text-text-primary mb-6">Pico de vendas por horário</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -285,7 +285,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Last Sales Table-like List */}
-      <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-6">
+      <div className="bg-bg-secondary border border-border-subtle p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <h2 className="text-heading-2 text-text-primary">Últimas vendas</h2>

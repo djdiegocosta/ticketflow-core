@@ -43,10 +43,10 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 
   /* Raios */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
   --radius-full: 9999px;
   --radius: var(--radius-md);
 
@@ -201,10 +201,10 @@
   --text-mono--font-weight: 400;
 
   /* Raios */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
   --radius-full: 9999px;
 
   /* Sombras */

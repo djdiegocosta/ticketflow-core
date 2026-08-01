@@ -122,7 +122,7 @@ export function EventsListPage() {
         <h1 className="text-heading-1 text-text-primary">Eventos</h1>
         <Link 
           to="/admin/eventos/novo"
-          className="inline-flex items-center justify-center gap-2 bg-accent text-[#111111] px-4 py-2 rounded-radius-md font-semibold hover:bg-accent-hover transition-colors"
+          className="inline-flex items-center justify-center gap-2 bg-accent text-[#111111] px-4 py-2 font-semibold hover:bg-accent-hover transition-colors"
         >
           <Plus className="w-5 h-5" />
           Novo evento
@@ -154,7 +154,7 @@ export function EventsListPage() {
             key={event.id}
             to="/admin/eventos/$id"
             params={{ id: event.id }}
-            className="group bg-bg-secondary border border-border-subtle rounded-radius-md overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+            className="group bg-bg-secondary border border-border-subtle overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
           >
             <div className="h-[140px] w-full relative">
               <img 
@@ -163,7 +163,7 @@ export function EventsListPage() {
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className={cn(
-                "absolute top-3 left-3 text-micro px-2 py-0.5 rounded-radius-full font-bold uppercase",
+                "absolute top-3 left-3 text-micro px-2 py-0.5 font-bold uppercase",
                 event.status === "Publicado" && "bg-success text-[#111111]",
                 event.status === "Rascunho" && "bg-bg-tertiary text-text-primary",
                 event.status === "Encerrado" && "bg-error/20 text-error border border-error/20 backdrop-blur-sm",
@@ -191,7 +191,7 @@ export function EventsListPage() {
                   <span>{event.sold}/{event.capacity} vendidos</span>
                   <span>{Math.round((event.sold / event.capacity) * 100)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-bg-tertiary rounded-radius-full overflow-hidden">
+                <div className="h-1.5 w-full bg-bg-tertiary overflow-hidden">
                   <div 
                     className="h-full bg-accent transition-all duration-500" 
                     style={{ width: `${(event.sold / event.capacity) * 100}%` }} 
@@ -211,7 +211,7 @@ export function EventsListPage() {
             <select 
               value={pageSize} 
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-bg-secondary border border-border-default rounded-radius-sm px-2 py-1 outline-none focus:border-accent"
+              className="bg-bg-secondary border border-border-default px-2 py-1 outline-none focus:border-accent"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -223,13 +223,13 @@ export function EventsListPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button disabled className="p-2 border border-border-default rounded-radius-sm text-text-disabled cursor-not-allowed">
+          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button className="p-2 border border-border-default rounded-radius-sm text-text-primary hover:border-accent transition-colors">
+          <button className="p-2 border border-border-default text-text-primary hover:border-accent transition-colors">
             1
           </button>
-          <button disabled className="p-2 border border-border-default rounded-radius-sm text-text-disabled cursor-not-allowed">
+          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
