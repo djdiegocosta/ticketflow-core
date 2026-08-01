@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  DataTable,
+  DataTableHeadRow,
+  DataTableRow,
+  DataTableCell,
+  StatusPill,
+} from "@/components/admin/DataTable";
+
 import {
   Pagination,
   PaginationContent,
