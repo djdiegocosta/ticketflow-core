@@ -77,7 +77,7 @@ const statusTone: Record<AbandonStatus, PillTone> = {
   "Não contactado": "neutral",
   Contactado: "info",
   Convertido: "success",
-  Descartado: "error",
+  "Não finalizou": "error",
 };
 
 const typeTone: Record<AbandonType, PillTone> = {
