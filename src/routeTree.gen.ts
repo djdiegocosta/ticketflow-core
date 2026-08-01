@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminCortesiasRouteImport } from './routes/admin.cortesias'
+import { Route as AdminFerramentasRouteImport } from './routes/admin.ferramentas'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 import { Route as AdminImportacaoRouteImport } from './routes/admin.importacao'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin.relatorios'
@@ -111,6 +112,11 @@ const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
 const AdminCortesiasRoute = AdminCortesiasRouteImport.update({
   id: '/cortesias',
   path: '/cortesias',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminFerramentasRoute = AdminFerramentasRouteImport.update({
+  id: '/ferramentas',
+  path: '/ferramentas',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminFinanceiroRoute = AdminFinanceiroRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
+  '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/admin/checkin'
     | '/admin/configuracoes'
     | '/admin/cortesias'
+    | '/admin/ferramentas'
     | '/admin/financeiro'
     | '/admin/importacao'
     | '/admin/relatorios'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/admin/checkin'
     | '/admin/configuracoes'
     | '/admin/cortesias'
+    | '/admin/ferramentas'
     | '/admin/financeiro'
     | '/admin/importacao'
     | '/admin/relatorios'
@@ -450,6 +461,7 @@ export interface FileRouteTypes {
     | '/admin/checkin'
     | '/admin/configuracoes'
     | '/admin/cortesias'
+    | '/admin/ferramentas'
     | '/admin/financeiro'
     | '/admin/importacao'
     | '/admin/relatorios'
@@ -585,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/cortesias'
       fullPath: '/admin/cortesias'
       preLoaderRoute: typeof AdminCortesiasRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/ferramentas': {
+      id: '/admin/ferramentas'
+      path: '/ferramentas'
+      fullPath: '/admin/ferramentas'
+      preLoaderRoute: typeof AdminFerramentasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/financeiro': {
@@ -769,6 +788,7 @@ interface AdminRouteRouteChildren {
   AdminCheckinRoute: typeof AdminCheckinRoute
   AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCortesiasRoute: typeof AdminCortesiasRoute
+  AdminFerramentasRoute: typeof AdminFerramentasRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
   AdminImportacaoRoute: typeof AdminImportacaoRoute
   AdminRelatoriosRoute: typeof AdminRelatoriosRoute
@@ -790,6 +810,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCheckinRoute: AdminCheckinRoute,
   AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCortesiasRoute: AdminCortesiasRoute,
+  AdminFerramentasRoute: AdminFerramentasRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
   AdminImportacaoRoute: AdminImportacaoRoute,
   AdminRelatoriosRoute: AdminRelatoriosRoute,
