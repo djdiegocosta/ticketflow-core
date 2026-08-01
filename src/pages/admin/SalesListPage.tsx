@@ -18,6 +18,7 @@ import { EVENTS, MOCK_SALES, formatCurrency, type Sale } from "@/lib/sales-data"
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import { StatusPill } from "@/components/admin/DataTable";
+import { useAuth } from "@/lib/auth-context";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Cancelado"] as const;
@@ -101,6 +102,8 @@ function OriginBadge({ origin }: { origin: Sale["origin"] }) {
 
 export function SalesListPage() {
   const [sales, setSales] = useState<Sale[]>(MOCK_SALES);
+  const { userRole } = useAuth();
+  const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
   const [eventFilter, setEventFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
@@ -192,14 +195,16 @@ export function SalesListPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-heading-1 text-text-primary">Vendas</h1>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Nova Venda
-        </button>
+        {!isColab && (
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+          >
+            <Plus className="h-4 w-4" />
+            Nova Venda
+          </button>
+        )}
       </div>
 
       {/* Mini dashboard */}
@@ -308,24 +313,26 @@ export function SalesListPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
-          >
-            <Download className="h-4 w-4" />
-            Exportar CSV
-          </button>
-          <button
-            type="button"
-            onClick={generatePdf}
-            className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
-          >
-            <FileText className="h-4 w-4" />
-            Gerar lista PDF
-          </button>
-        </div>
+        {!isColab && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
+            >
+              <Download className="h-4 w-4" />
+              Exportar CSV
+            </button>
+            <button
+              type="button"
+              onClick={generatePdf}
+              className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
+            >
+              <FileText className="h-4 w-4" />
+              Gerar lista PDF
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tabela */}
