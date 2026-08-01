@@ -73,7 +73,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
         </div>
         
         {gaugeValue !== undefined && (
-          <div className="w-[120px] h-[120px] relative">
+          <div className="w-[120px] h-[120px] relative flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -81,10 +81,10 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                     { value: gaugeValue },
                     { value: 100 - gaugeValue },
                   ]}
-                  innerRadius={40}
-                  outerRadius={55}
-                  startAngle={180}
-                  endAngle={0}
+                  innerRadius={45}
+                  outerRadius={60}
+                  startAngle={90}
+                  endAngle={-270}
                   dataKey="value"
                   stroke="none"
                 >
@@ -93,7 +93,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center pt-8">
+            <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-heading-2 font-semibold text-text-primary">{gaugeValue}%</span>
             </div>
           </div>
