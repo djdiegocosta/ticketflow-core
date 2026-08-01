@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EventsListPage } from "@/pages/admin/EventsListPage";
 
-export const Route = createFileRoute("/admin/eventos/index")({
+export const Route = createFileRoute("/admin/eventos/")({
   head: () => ({
     meta: [
       { title: "Eventos | TicketFlow" },
