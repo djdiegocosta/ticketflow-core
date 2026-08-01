@@ -1,4 +1,4 @@
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import { DollarSign, Ticket, Clock, Eye, TrendingUp } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -58,13 +58,14 @@ const MOCK_LAST_SALES = [
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaugeValue, iconColor, subtext }: any) => {
   return (
-    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm h-full flex flex-col justify-between">
+    <div className="bg-bg-secondary border border-border-subtle rounded-radius-md p-5 shadow-sm h-full flex flex-col">
       <div className="flex items-start justify-between mb-2">
         <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("w-5 h-5", iconColor)} />
       </div>
       
-      <div className="flex items-center gap-3 flex-1">
+      <div className="flex items-end justify-between gap-3">
+
         <div className="flex-1">
           {value && <div className="text-heading-1 text-text-primary mb-1">{value}</div>}
           {trend && <div className="text-small text-success">{trend}</div>}
@@ -73,28 +74,27 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
         </div>
         
         {gaugeValue !== undefined && (
-          <div className="w-[120px] h-[120px] relative flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { value: gaugeValue },
-                    { value: 100 - gaugeValue },
-                  ]}
-                  innerRadius={45}
-                  outerRadius={60}
-                  startAngle={90}
-                  endAngle={-270}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  <Cell fill="var(--warning)" />
-                  <Cell fill="var(--bg-tertiary)" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-heading-2 font-semibold text-text-primary">{gaugeValue}%</span>
+          <div className="w-[90px] h-[50px] relative shrink-0">
+            <svg viewBox="0 0 90 50" width="90" height="50" className="block">
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--bg-tertiary)"
+                strokeWidth={10}
+                strokeLinecap="round"
+              />
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--warning)"
+                strokeWidth={10}
+                strokeLinecap="round"
+                strokeDasharray={Math.PI * 37}
+                strokeDashoffset={Math.PI * 37 * (1 - gaugeValue / 100)}
+              />
+            </svg>
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-center">
+              <span className="text-heading-2 font-semibold text-text-primary leading-none">{gaugeValue}%</span>
             </div>
           </div>
         )}
