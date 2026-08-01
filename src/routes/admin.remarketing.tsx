@@ -1,18 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { RemarketingPage } from "@/pages/admin/RemarketingPage";
 
 export const Route = createFileRoute("/admin/remarketing")({
   head: () => ({
     meta: [
       { title: "Remarketing | TicketFlow" },
-      { name: "description", content: "Remarketing — plataforma TicketFlow de gestão de eventos e ingressos." },
+      {
+        name: "description",
+        content:
+          "Recupere compradores que abandonaram a compra: métricas por período, modelos de mensagem e lista de abandonos.",
+      },
       { property: "og:title", content: "Remarketing | TicketFlow" },
-      { property: "og:description", content: "Remarketing — plataforma TicketFlow de gestão de eventos e ingressos." },
+      {
+        property: "og:description",
+        content:
+          "Recupere compradores que abandonaram a compra: métricas por período, modelos de mensagem e lista de abandonos.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Page_admin_remarketing,
+  component: RemarketingPage,
 });
-
-function Page_admin_remarketing() {
-  return <Placeholder title="Remarketing" description="Remarketing — plataforma TicketFlow de gestão de eventos e ingressos." />;
-}
