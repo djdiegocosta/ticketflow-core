@@ -126,16 +126,13 @@ export function ClientsListPage() {
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
   const [toDelete, setToDelete] = useState<Client | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const totalClients = clients.length;
   const averageAge =
     totalClients === 0
       ? 0
       : Math.round(clients.reduce((sum, c) => sum + c.age, 0) / totalClients);
-  const topThree = useMemo(
-    () => [...clients].sort((a, b) => b.totalTickets - a.totalTickets).slice(0, 3),
-    [clients],
-  );
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -191,10 +188,19 @@ export function ClientsListPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-heading-1 text-text-primary">Clientes</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-heading-1 text-text-primary">Clientes</h1>
+        <button
+          onClick={() => setIsPanelOpen(true)}
+          className="flex items-center gap-2 bg-accent px-4 py-2 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+        >
+          <Plus className="h-4 w-4" />
+          Novo Cliente
+        </button>
+      </div>
 
       {/* Dashboard */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <MiniMetricCard title="Clientes" icon={Users} iconColor="text-accent-text">
           <div className="text-heading-1 text-text-primary">{totalClients}</div>
           <div className="mt-0.5 text-small text-text-secondary">cadastrados na base</div>
@@ -208,44 +214,6 @@ export function ClientsListPage() {
         </MiniMetricCard>
 
         <NewClientsCard />
-
-        <div className="bg-bg-secondary border border-border-subtle p-3.5 shadow-[var(--shadow-sm)] lg:col-span-2 flex flex-col">
-          <div className="mb-2 flex items-start justify-between">
-            <span className="text-small text-text-secondary">Top 3 clientes</span>
-            <Trophy className="h-4 w-4 text-accent-text" />
-          </div>
-          <ul className="space-y-1.5 flex-1 flex flex-col justify-end">
-            {topThree.map((client, index) => (
-              <li key={client.id}>
-                <Link
-                  to="/admin/clientes/$id"
-                  params={{ id: client.id }}
-                  className="flex items-center justify-between gap-3 transition-colors hover:text-accent-text"
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span
-                      className={cn(
-                        "w-5 shrink-0 text-center text-small tabular-nums",
-                        index === 0
-                          ? "font-semibold text-accent-text"
-                          : "text-text-secondary",
-                      )}
-                    >
-                      {index + 1}
-                    </span>
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius-full)] bg-bg-tertiary text-micro text-text-primary">
-                      {getInitials(client.name)}
-                    </span>
-                    <span className="truncate text-small text-text-primary">{client.name}</span>
-                  </span>
-                  <span className="shrink-0 text-micro text-text-secondary">
-                    {client.totalTickets} ingressos
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
       {/* Filtros */}
