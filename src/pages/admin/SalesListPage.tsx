@@ -47,7 +47,7 @@ function MiniMetricCard({
       </div>
       <div className="flex flex-1 items-end justify-between gap-2">
         <div className="flex-1">
-          {value && <div className="text-heading-3 text-text-primary">{value}</div>}
+          {value && <div className="text-heading-2 text-text-primary">{value}</div>}
           {subtext && <div className="mt-0.5 text-micro text-text-secondary">{subtext}</div>}
         </div>
         {gaugeValue !== undefined && (
