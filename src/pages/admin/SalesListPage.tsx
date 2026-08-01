@@ -40,15 +40,15 @@ function MiniMetricCard({
   gaugeValue?: number;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
+    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
       <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-micro text-text-secondary">{title}</span>
+        <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("h-4 w-4", iconColor ?? "text-text-secondary")} />
       </div>
       <div className="flex flex-1 items-end justify-between gap-2">
         <div className="flex-1">
-          {value && <div className="text-heading-2 text-text-primary">{value}</div>}
-          {subtext && <div className="mt-0.5 text-micro text-text-secondary">{subtext}</div>}
+          <div className="text-heading-1 text-text-primary">{value}</div>
+          {subtext && <div className="mt-0.5 text-small text-text-secondary">{subtext}</div>}
         </div>
         {gaugeValue !== undefined && (
           <div className="relative h-[38px] w-[68px] shrink-0">
