@@ -1,17 +1,87 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Download, FileText, Plus, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  Download,
+  FileText,
+  Plus,
+  Receipt,
+  Search,
+  Ticket,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { EVENTS, MOCK_SALES, formatCurrency, type Sale } from "@/lib/sales-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 
-const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Bilheteria", "Importadas"] as const;
+const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Cancelado"] as const;
 
 const selectClass =
   "rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-3 py-2 text-body text-text-primary outline-none focus:border-accent";
+
+function MiniMetricCard({
+  title,
+  value,
+  subtext,
+  icon: Icon,
+  iconColor,
+  gaugeValue,
+}: {
+  title: string;
+  value?: string;
+  subtext?: string;
+  icon: React.ElementType;
+  iconColor?: string;
+  gaugeValue?: number;
+}) {
+  return (
+    <div className="flex h-full flex-col rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
+      <div className="mb-1.5 flex items-start justify-between">
+        <span className="text-micro text-text-secondary">{title}</span>
+        <Icon className={cn("h-4 w-4", iconColor ?? "text-text-secondary")} />
+      </div>
+      <div className="flex flex-1 items-end justify-between gap-2">
+        <div className="flex-1">
+          {value && <div className="text-heading-3 text-text-primary">{value}</div>}
+          {subtext && <div className="mt-0.5 text-micro text-text-secondary">{subtext}</div>}
+        </div>
+        {gaugeValue !== undefined && (
+          <div className="relative h-[38px] w-[68px] shrink-0">
+            <svg viewBox="0 0 90 50" width="68" height="38" className="block">
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--bg-tertiary)"
+                strokeWidth={10}
+                strokeLinecap="round"
+              />
+              <path
+                d="M 8 46 A 37 37 0 0 1 82 46"
+                fill="none"
+                stroke="var(--warning)"
+                strokeWidth={10}
+                strokeLinecap="round"
+                strokeDasharray={Math.PI * 37}
+                strokeDashoffset={Math.PI * 37 * (1 - gaugeValue / 100)}
+              />
+            </svg>
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-center">
+              <span className="text-body font-semibold leading-none text-text-primary">
+                {gaugeValue}%
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 function StatusBadge({ status }: { status: Sale["status"] }) {
   return (
