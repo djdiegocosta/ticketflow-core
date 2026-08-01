@@ -478,6 +478,7 @@ export function RemarketingPage() {
             </PaginationContent>
           </Pagination>
         </div>
+        </div>
       </div>
 
       {/* Preview modal */}
