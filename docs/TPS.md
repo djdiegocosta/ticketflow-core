@@ -87,6 +87,12 @@ Aplicadas em todo campo de entrada do sistema.
 - Exibição: sempre formatado como `(00) 00000-0000`.
 - Números antigos sem o dígito 9: tratados manualmente, sem inferência.
 
+### Comprador × Participante
+- **Comprador** é quem realiza a compra/lançamento (nome + WhatsApp). **Participante** é quem usa o ingresso — podem ser pessoas diferentes.
+- Toda venda (automática, manual, cortesia) que gerar mais de 1 ingresso deve exibir automaticamente um campo de nome por ingresso, para o participante correspondente.
+- Regras de nome completo (capitalização, mínimo 2 palavras) aplicam-se a cada participante individualmente, não só ao comprador.
+- `sales.buyer_name/buyer_whatsapp` ≠ `tickets.participant_name` — são sempre campos distintos, mesmo quando a mesma pessoa compra para si.
+
 ---
 
 ## 6. Área pública
@@ -278,28 +284,40 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
 
 ### 8.5 Vendas (`/admin/vendas`)
 
-**Objetivo:** visão exclusiva de ingressos vendidos (não inclui cortesias nos totais financeiros).
+**Objetivo:** visão exclusiva de ingressos vendidos individualmente, com comprador/participante identificado (não inclui cortesias nem bilheteria nos totais financeiros).
 
-**Origens de venda registradas pelo sistema:**
+**Origens de venda registradas nesta área:**
 - `ticketflow` — venda online automática (Pix/MP).
-- `manual` — lançada pelo admin (WhatsApp, presencial).
-- `bilheteria` — venda física (maquininha).
+- `manual` — lançada pelo admin (WhatsApp, presencial, com participante identificado).
 - `importado` — vinda de outra plataforma (UTicket, Sympla, etc.).
 
+**Nota sobre bilheteria:** vendas físicas (maquininha) não têm comprador/participante nomeado nem QR individual — são registradas como valores agregados por faixa de preço (ex: "60 vendas de R$25"), diretamente no **Histórico Financeiro do evento** (seção 8.9), no mesmo padrão dos dados do bar. Não aparecem na listagem de Vendas.
+
+**Mini dashboard da área (topo da tela, acima da listagem):**
+- Total vendido no período/evento selecionado (R$)
+- Quantidade de ingressos vendidos
+- Ticket médio
+- Aguardando pagamento (quantidade de pedidos pendentes)
+- Cards compactos, menores que os do Dashboard principal — não duplicar o mesmo destaque visual
+
 **Lançamento manual de venda:**
+- Botão de acesso: "+ Nova Venda" (nomenclatura curta, botão compacto).
+- Interface: **painel lateral (Sheet)** com steps e barra de progresso — não modal centralizado. Etapas: 1. Cliente → 2. Ingressos → 3. Confirmar. Ver padrão em DESIGN-SYSTEM.md.
 - Selecionar evento e lote.
 - Nome completo + WhatsApp do comprador.
 - Quantidade.
 - Valor pago (pode diferir do preço do lote).
 - Forma de pagamento (Pix manual, dinheiro, cartão, outro).
+- **Nome do participante de cada ingresso** — um campo por unidade, gerado automaticamente conforme a quantidade (comprador ≠ participante; ver regra global). Mesmas regras de qualidade de nome aplicadas a cada campo.
 - Observação (opcional).
-- Gerar ingressos imediatamente ao salvar.
+- Gerar ingressos imediatamente ao salvar, cada um vinculado ao respectivo nome de participante.
 
 **Listagem:**
 - Tabela: nome, WhatsApp, evento, lote, origem, quantidade, valor, status, data.
 - Filtros: evento, origem, status, período.
 - Busca por nome ou WhatsApp.
 - Exportar CSV.
+- **Exportar lista em PDF** para check-in manual — nomes dos participantes em ordem alfabética, checkbox à frente de cada nome, espaçamento reduzido entre linhas (otimizado para caber o máximo de nomes por folha).
 
 **Detalhe da venda (`/admin/vendas/:id`):**
 - Dados do comprador.
@@ -316,8 +334,9 @@ Separada das vendas para não contaminar dados financeiros.
 
 **Emitir cortesia individual:**
 - Selecionar evento.
-- Nome completo + WhatsApp do convidado.
+- Nome completo + WhatsApp do convidado (comprador/responsável).
 - Quantidade.
+- Nome do participante de cada ingresso (mesma regra de comprador ≠ participante, quando quantidade > 1).
 - Observação (opcional).
 - Ingressos gerados imediatamente.
 
@@ -329,15 +348,17 @@ Separada das vendas para não contaminar dados financeiros.
 **Listagem de cortesias:**
 - Tabela: nome, WhatsApp, evento, quantidade, data, status de check-in.
 - Filtros: evento, período.
+- **Exportar lista em PDF** — mesmo formato de check-in manual: ordem alfabética, checkbox, espaçamento reduzido.
 
 ---
 
 ### 8.7 Clientes (`/admin/clientes`)
 
 **Listagem:**
-- Tabela: nome, WhatsApp, total de eventos, total de ingressos, último evento.
+- Tabela: nome, WhatsApp (com botão de copiar ao lado), total de eventos, total de ingressos, último evento, data de cadastro.
+- Colunas ordenáveis (indexáveis) por clique no cabeçalho — inclui ordenação por quantidade de ingressos, que já cumpre a função de ranking sem precisar de um componente dedicado.
 - Busca por nome ou WhatsApp.
-- Ordenar por: mais frequente, mais recente, maior valor gasto.
+- Exclusão de cliente com modal de confirmação.
 - Destaque visual para "melhores clientes" (maior frequência).
 
 **Ficha do cliente (`/admin/clientes/:id`)** — Plano Business:
@@ -378,11 +399,15 @@ Acessível pelo menu principal do admin.
 
 **Dados automáticos (preenchidos pelo sistema):**
 - Receita de ingressos TicketFlow.
-- Receita de ingressos por origem (manual, bilheteria, importado).
+- Receita de ingressos por origem (manual, importado).
 - Total de ingressos vendidos.
 - Total de cortesias.
 - Ticket médio.
 - Total de check-ins.
+
+**Vendas em bilheteria (inseridas manualmente, agregadas por faixa):**
+- Faixa de preço (R$) + quantidade vendida (múltiplas faixas por evento, ex: "60 vendas de R$25", "80 de R$30").
+- Total calculado automaticamente (soma de todas as faixas).
 
 **Dados do bar (inseridos manualmente):**
 - Custo do bar (R$).
@@ -398,8 +423,12 @@ Acessível pelo menu principal do admin.
 **Despesas (campos livres, múltiplos):**
 - Descrição + valor.
 
+**Regra de encerramento do evento:**
+- Encerramento é **manual**, por comando explícito do produtor (botão "Encerrar evento") — nunca automático pela data do evento.
+- Encerrar apenas altera o status/badge do evento e interrompe a venda pública. **Não trava** o Histórico Financeiro — dados (bilheteria, bar, outras receitas, despesas) continuam podendo ser adicionados ou corrigidos após o encerramento, já que a reconciliação financeira normalmente acontece dias depois do evento.
+
 **Resumo calculado automaticamente:**
-- Receita total (ingressos + bar + outras).
+- Receita total (ingressos + bilheteria + bar + outras).
 - Total de despesas.
 - Lucro / prejuízo.
 - ROI geral do evento (%).
@@ -542,7 +571,7 @@ Exportar dados (CSV) em todos os relatórios.
 Seções:
 - **Organização:** nome, logo, dados de contato.
 - **Mercado Pago:** wizard de configuração (ver 8.17), status da integração.
-- **Preferências:** tema padrão da interface.
+- **Preferências:** tema padrão da interface; unificar ou separar listas de PDF de Vendas e Cortesias (impressão de check-in).
 - **Backup de dados:** exportar todos os dados da organização em JSON ou CSV.
 
 ---

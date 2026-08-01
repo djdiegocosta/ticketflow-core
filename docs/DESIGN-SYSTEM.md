@@ -127,11 +127,13 @@ Todas as cores devem ser implementadas como variáveis CSS (custom properties), 
 Bordas arredondadas suaves — estilo macOS. Não usar bordas muito agressivas nem muito quadradas.
 
 ```css
---radius-sm: 6px;    /* inputs, badges, tags */
---radius-md: 10px;   /* cards, dropdowns, modais pequenos */
---radius-lg: 14px;   /* cards maiores, painéis, modais */
---radius-xl: 20px;   /* elementos de destaque, banners */
---radius-full: 9999px; /* botões pill, avatares, indicadores */
+> **Atualização (padrão vigente):** cantos retos em todo o sistema — cards, botões, inputs, modais. Só `--radius-full` permanece (uso funcional: avatares, indicadores, não decorativo). Caso essa decisão mude no futuro, este documento será atualizado.
+
+--radius-sm: 0px;    /* inputs, badges, tags */
+--radius-md: 0px;   /* cards, dropdowns, modais pequenos */
+--radius-lg: 0px;   /* cards maiores, painéis, modais */
+--radius-xl: 0px;   /* elementos de destaque, banners */
+--radius-full: 9999px; /* botões pill (se houver), avatares, indicadores — uso funcional, não decorativo */
 ```
 
 ---
@@ -220,7 +222,25 @@ Cor dos ícones: sempre herdar do contexto (`currentColor`), nunca fixar cor no 
 
 ---
 
-## 9. Temas de cor futuros
+### Painel lateral (Sheet) — modal expandido
+
+Usado para formulários com múltiplas etapas que não cabem confortavelmente em um modal centralizado pequeno (ex: lançamento de venda manual). Substitui o modal centralizado nesses casos.
+
+- Abre a partir da borda direita da tela, expandindo para a esquerda.
+- Fecha colapsando de volta para a direita.
+- Transição suave (~300ms).
+- Largura: proporcional ao conteúdo, tipicamente 420–480px; pode chegar a 560px se o conteúdo exigir.
+- Fundo: `--bg-primary`, sombra `--shadow-lg` na borda esquerda.
+- Cabeçalho fixo: título + botão fechar (X).
+- **Barra de progresso** logo abaixo do cabeçalho, quando o conteúdo tiver etapas (steps): linha fina, preenchimento var(--accent), com labels das etapas abaixo (ex: "1. Cliente", "2. Ingressos", "3. Confirmar") — etapa atual em var(--text-primary), demais em var(--text-secondary).
+- Rodapé fixo com ações (Cancelar / Voltar / Continuar / Confirmar).
+- Overlay escurecido atrás do painel (clique fora fecha, com confirmação se houver dados preenchidos).
+
+**Quando usar modal centralizado simples vs. painel lateral com steps:** modal centralizado pequeno para ação única, sem etapas (confirmação, ver QR Code, formulário de 1 tela). Painel lateral com steps para fluxos de 2+ etapas ou formulários mais densos que um modal pequeno comportaria bem.
+
+---
+
+
 
 Quando implementados, seguem exatamente a mesma estrutura de variáveis — só os valores de `--accent`, `--accent-hover`, `--accent-muted` e `--accent-text` mudam.
 
