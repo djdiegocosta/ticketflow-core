@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { SaleDetailPage } from "@/pages/admin/SaleDetailPage";
+
 
 export const Route = createFileRoute("/admin/vendas/$id")({
   head: () => ({
@@ -15,5 +16,6 @@ export const Route = createFileRoute("/admin/vendas/$id")({
 
 function Page_admin_vendas_id() {
   const params = Route.useParams();
-  return <Placeholder title="Detalhe da venda" description="Detalhe da venda — plataforma TicketFlow de gestão de eventos e ingressos." params={{ id: params.id }} />;
+  return <SaleDetailPage id={params.id} />;
 }
+

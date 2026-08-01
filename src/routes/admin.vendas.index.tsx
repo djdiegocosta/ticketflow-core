@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { SalesListPage } from "@/pages/admin/SalesListPage";
+
 
 export const Route = createFileRoute("/admin/vendas/")({
   head: () => ({
@@ -14,5 +15,6 @@ export const Route = createFileRoute("/admin/vendas/")({
 });
 
 function Page_admin_vendas_index() {
-  return <Placeholder title="Vendas" description="Vendas — plataforma TicketFlow de gestão de eventos e ingressos." />;
+  return <SalesListPage />;
 }
+
