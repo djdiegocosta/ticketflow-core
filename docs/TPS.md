@@ -255,23 +255,24 @@ Próximos eventos.
 - Botão "Novo evento".
 - Filtros: todos / publicados / rascunhos / encerrados.
 
-**Criar / Editar evento (`/admin/eventos/novo` e `/admin/eventos/:id`):**
+**Criar evento — formato Steps (wizard), não formulário único:**
 
-Campos:
-- Nome (obrigatório).
-- Descrição (texto rico, opcional).
-- Imagem de capa (upload).
-- Data e horário (obrigatório).
-- Local / endereço (obrigatório).
-- Slug (auto-gerado, editável).
-- Status: rascunho / publicado.
-- Encerrado manualmente (toggle).
+Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também à futura integração com Mercado Pago.
 
-**Lotes de ingresso** (seção dentro do evento):
-- Cada lote: nome, preço, quantidade, data início, data fim.
-- Múltiplos lotes por evento.
-- Adicionar / remover lotes.
-- Ordem por período de validade.
+1. **Informações básicas** — nome, descrição, imagem de capa, data/horário, local, slug (auto-gerado, editável).
+2. **Modelo de venda** — pergunta direta: "Trabalhar com lotes ou preço único?"
+3. **Configuração de venda:**
+   - Se **lotes**: nome, preço, quantidade, data início/fim de cada lote. Múltiplos lotes.
+   - Se **preço único**: apenas preço e quantidade total.
+   - **Decisão de arquitetura:** "preço único" não é um caminho separado no banco — o sistema cria automaticamente um único `ticket_batch` chamado "Ingresso único" por trás. Checkout, estoque e relatórios continuam com um único fluxo de código.
+4. **Revisão e publicação** — resumo, confirma, publica ou salva como rascunho.
+
+**Editar evento:** mesmo formato de Steps, reaproveitando os dados já preenchidos.
+
+**Virada de lote:**
+- **Automática por data/horário** — consequência natural de cada lote ter início/fim; ao expirar, o próximo lote (ordem cronológica) assume.
+- **Automática por esgotamento** — se o lote atual esgotar o estoque antes da data programada, o sistema avança automaticamente para o próximo lote (evita perda de venda).
+- **Virada Expressa (manual)** — botão na tela de detalhe do evento (não no wizard de criação — é ação operacional, sempre visível enquanto o evento está ativo/publicado). Produtor clica, sistema pede confirmação ("Tem certeza que deseja virar para o próximo lote agora?"), e antecipa a virada manualmente.
 
 ---
 
