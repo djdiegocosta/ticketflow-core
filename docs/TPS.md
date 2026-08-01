@@ -60,9 +60,10 @@ O TicketFlow é uma plataforma SaaS de gestão de eventos e venda de ingressos. 
 - Gerencia todos os módulos da organização.
 - Pertence a uma única organização (tenant).
 
-### 4.4 Operador
-- Acesso restrito: check-in e visualização de vendas.
-- Sem acesso a configurações, financeiro ou clientes.
+### 4.4 Colaborador
+- Acesso restrito à organização: visualização (somente leitura) da área de Vendas + acesso funcional completo ao Check-in.
+- Sem acesso a: Eventos, Cortesias, Clientes, Histórico Financeiro, Ferramentas, Relatórios, Usuários, Configurações.
+- Itens sem acesso não aparecem no menu lateral para este papel (não apenas bloqueados por rota — ocultos).
 
 ### 4.5 Super Admin
 - Acessa `/superadmin`.
@@ -589,7 +590,19 @@ Exportar dados (CSV) em todos os relatórios.
 **Ações disponíveis:**
 - Visualizar lista de abandonos por evento.
 - Acesso rápido ao WhatsApp do potencial comprador, com mensagem pré-preenchida (modelo editável).
-- Marcar como "contactado" / "convertido" / "descartado".
+- Status: "Não contactado" / "Contactado" / "Convertido" — apenas 3, ambos com transição automática, sem ação manual de status. Um registro que permanece em "Contactado" sem nunca virar "Convertido" já é, por si só, a informação de "contactado e não converteu" — não precisa de um quarto status para isso.
+
+**Lógica de mudança de status:**
+- **Contactado:** automático — muda assim que o admin clica em "Abrir WhatsApp" para aquele registro.
+- **Convertido:** automático — sistema cruza WhatsApp + evento do abandono com vendas pagas existentes; havendo correspondência, o status muda sozinho. Nesta fase (sem Supabase), a comparação é feita contra os dados mockados de Vendas já implementados, como demonstração da lógica; ao conectar o banco real, a mesma regra passa a rodar como consulta/trigger no backend.
+- Sem status manual, sem dropdown, sem botão de ajuste — o ciclo é inteiramente automático.
+
+**Layout da listagem (registro em linha única):**
+- Colunas: nome, WhatsApp, evento, tipo de abandono, data/hora, status, ações. Coluna "Lote de interesse" removida para melhor aproveitamento de espaço na linha.
+- Cada linha ocupa uma única linha de altura — sem quebra de texto/badge em múltiplas linhas. Nomes longos truncam com reticências (tooltip com o nome completo ao passar o mouse).
+- Botão "Abrir WhatsApp" reduzido a ícone (sem texto), com tooltip.
+- Status representado apenas pela bolinha colorida na coluna (sem label de texto ao lado — a legenda acima do card já explica o significado de cada cor): cinza = Não contactado, amarelo = Contactado, verde = Convertido.
+- Legenda discreta das cores (3 itens agora, não 4): por fora do card da tabela, acima dele, alinhada ao canto direito.
 
 **Dashboard principal:** card de resumo de abandonos nas últimas 24h visível no Dashboard geral do sistema (já implementado).
 
@@ -606,9 +619,38 @@ Exportar dados (CSV) em todos os relatórios.
 
 ### 8.15 Usuários (`/admin/usuarios`)
 
-- Listar usuários com acesso ao painel da organização.
-- Convidar por e-mail + definir papel (admin / operador).
-- Remover usuário.
+**Acesso restrito a Admin** — Colaborador não vê esta área.
+
+**Listagem:**
+- Tabela: nome, e-mail, papel (badge: Admin / Colaborador), data de convite/entrada, status (Ativo / Convite pendente).
+- Botão "+ Convidar Usuário" (mesmo padrão de botão curto já usado no sistema).
+
+**Painel lateral: Convidar usuário** (mesmo padrão visual dos demais painéis — etapa única, sem steps):
+- Nome completo
+- E-mail
+- Papel (seleção: Admin ou Colaborador, com breve descrição de cada um visível na escolha — ver tabela de permissões abaixo)
+- Botão "Enviar convite"
+
+**Remover usuário:** ação por linha, com modal de confirmação.
+
+**Tabela de permissões por papel:**
+
+| Área | Admin | Colaborador |
+|---|---|---|
+| Dashboard | Total | Sem acesso |
+| Eventos | Total | Sem acesso |
+| Vendas | Total | Somente leitura |
+| Cortesias | Total | Sem acesso |
+| Clientes | Total | Sem acesso |
+| Check-in | Total | Total |
+| Histórico Financeiro | Total | Sem acesso |
+| Ferramentas | Total | Sem acesso |
+| Relatórios | Total | Sem acesso |
+| Usuários | Total | Sem acesso |
+| Configurações | Total | Sem acesso |
+
+- Itens sem acesso não aparecem no menu lateral do Colaborador — não é bloqueio de rota apenas, é ocultação do item.
+- Vendas em modo Colaborador: lista e detalhe visíveis, sem botão "+ Nova Venda", sem ação de cancelar venda, sem exportar.
 
 ---
 
