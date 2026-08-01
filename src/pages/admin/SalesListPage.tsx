@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { EVENTS, MOCK_SALES, formatCurrency, type Sale } from "@/lib/sales-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
+import { StatusPill } from "@/components/admin/DataTable";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Cancelado"] as const;
@@ -85,26 +86,18 @@ function MiniMetricCard({
 
 function StatusBadge({ status }: { status: Sale["status"] }) {
   return (
-    <span
-      className={cn(
-        "inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-        status === "Pago" && "bg-accent-muted text-accent-text",
-        status === "Pendente" && "bg-warning/15 text-warning",
-        status === "Cancelado" && "bg-error/15 text-error",
-      )}
+    <StatusPill
+      tone={status === "Pago" ? "accent" : status === "Pendente" ? "warning" : "error"}
     >
       {status}
-    </span>
+    </StatusPill>
   );
 }
 
 function OriginBadge({ origin }: { origin: Sale["origin"] }) {
-  return (
-    <span className="inline-block rounded-[var(--radius-full)] bg-bg-tertiary px-2.5 py-0.5 text-micro font-medium text-text-secondary">
-      {origin}
-    </span>
-  );
+  return <StatusPill tone="neutral">{origin}</StatusPill>;
 }
+
 
 export function SalesListPage() {
   const [sales, setSales] = useState<Sale[]>(MOCK_SALES);

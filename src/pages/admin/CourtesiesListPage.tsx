@@ -9,15 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  DataTable,
+  DataTableHeadRow,
+  DataTableRow,
+  DataTableCell,
+  StatusPill,
+} from "@/components/admin/DataTable";
+
 import {
   Pagination,
   PaginationContent,
@@ -129,48 +129,38 @@ export function CourtesiesListPage() {
 
       {/* Table */}
       <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Convidado</TableHead>
-              <TableHead>Evento</TableHead>
-              <TableHead>Data de emissão</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <DataTable className="min-w-[720px]">
+          <DataTableHeadRow columns={["Convidado", "Evento", "Data de emissão", "Status"]} />
+          <tbody>
             {paginatedData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center text-body text-[var(--text-tertiary)]">
+              <tr>
+                <DataTableCell
+                  colSpan={4}
+                  variant="secondary"
+                  className="py-10 text-center text-body"
+                >
                   Nenhuma cortesia encontrada.
-                </TableCell>
-              </TableRow>
+                </DataTableCell>
+              </tr>
             ) : (
               paginatedData.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.event}</TableCell>
-                  <TableCell>
+                <DataTableRow key={item.id}>
+                  <DataTableCell variant="primary">{item.name}</DataTableCell>
+                  <DataTableCell>{item.event}</DataTableCell>
+                  <DataTableCell variant="muted">
                     {new Date(item.issuedAt).toLocaleDateString("pt-BR")}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant={item.checkinStatus === "Realizado" ? "default" : "secondary"}
-                      className={[
-                        "rounded-none",
-                        item.checkinStatus === "Realizado"
-                          ? "bg-success hover:bg-success text-white"
-                          : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)]",
-                      ].join(" ")}
-                    >
+                  </DataTableCell>
+                  <DataTableCell>
+                    <StatusPill tone={item.checkinStatus === "Realizado" ? "accent" : "warning"}>
                       {item.checkinStatus}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
+                    </StatusPill>
+                  </DataTableCell>
+                </DataTableRow>
               ))
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </DataTable>
+
 
         {/* Pagination Footer */}
         <div className="flex items-center justify-between border-t border-[var(--border-subtle)] px-6 py-4">
