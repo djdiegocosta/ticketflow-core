@@ -284,13 +284,21 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
 
 ### 8.5 Vendas (`/admin/vendas`)
 
-**Objetivo:** visão exclusiva de ingressos vendidos (não inclui cortesias nos totais financeiros).
+**Objetivo:** visão exclusiva de ingressos vendidos individualmente, com comprador/participante identificado (não inclui cortesias nem bilheteria nos totais financeiros).
 
-**Origens de venda registradas pelo sistema:**
+**Origens de venda registradas nesta área:**
 - `ticketflow` — venda online automática (Pix/MP).
-- `manual` — lançada pelo admin (WhatsApp, presencial).
-- `bilheteria` — venda física (maquininha).
+- `manual` — lançada pelo admin (WhatsApp, presencial, com participante identificado).
 - `importado` — vinda de outra plataforma (UTicket, Sympla, etc.).
+
+**Nota sobre bilheteria:** vendas físicas (maquininha) não têm comprador/participante nomeado nem QR individual — são registradas como valores agregados por faixa de preço (ex: "60 vendas de R$25"), diretamente no **Histórico Financeiro do evento** (seção 8.9), no mesmo padrão dos dados do bar. Não aparecem na listagem de Vendas.
+
+**Mini dashboard da área (topo da tela, acima da listagem):**
+- Total vendido no período/evento selecionado (R$)
+- Quantidade de ingressos vendidos
+- Ticket médio
+- Lote mais vendido (nome + quantidade)
+- Cards compactos, menores que os do Dashboard principal — não duplicar o mesmo destaque visual
 
 **Lançamento manual de venda:**
 - Selecionar evento e lote.
@@ -388,11 +396,15 @@ Acessível pelo menu principal do admin.
 
 **Dados automáticos (preenchidos pelo sistema):**
 - Receita de ingressos TicketFlow.
-- Receita de ingressos por origem (manual, bilheteria, importado).
+- Receita de ingressos por origem (manual, importado).
 - Total de ingressos vendidos.
 - Total de cortesias.
 - Ticket médio.
 - Total de check-ins.
+
+**Vendas em bilheteria (inseridas manualmente, agregadas por faixa):**
+- Faixa de preço (R$) + quantidade vendida (múltiplas faixas por evento, ex: "60 vendas de R$25", "80 de R$30").
+- Total calculado automaticamente (soma de todas as faixas).
 
 **Dados do bar (inseridos manualmente):**
 - Custo do bar (R$).
@@ -408,8 +420,12 @@ Acessível pelo menu principal do admin.
 **Despesas (campos livres, múltiplos):**
 - Descrição + valor.
 
+**Regra de encerramento do evento:**
+- Encerramento é **manual**, por comando explícito do produtor (botão "Encerrar evento") — nunca automático pela data do evento.
+- Encerrar apenas altera o status/badge do evento e interrompe a venda pública. **Não trava** o Histórico Financeiro — dados (bilheteria, bar, outras receitas, despesas) continuam podendo ser adicionados ou corrigidos após o encerramento, já que a reconciliação financeira normalmente acontece dias depois do evento.
+
 **Resumo calculado automaticamente:**
-- Receita total (ingressos + bar + outras).
+- Receita total (ingressos + bilheteria + bar + outras).
 - Total de despesas.
 - Lucro / prejuízo.
 - ROI geral do evento (%).
