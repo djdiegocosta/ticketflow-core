@@ -40,6 +40,7 @@ import { Route as SuperadminOrganizacoesRouteImport } from './routes/superadmin.
 import { Route as SuperadminPlanosRouteImport } from './routes/superadmin.planos'
 import { Route as AdminClientesIndexRouteImport } from './routes/admin.clientes.index'
 import { Route as AdminClientesIdRouteImport } from './routes/admin.clientes.$id'
+import { Route as AdminConfiguracoesIndexRouteImport } from './routes/admin.configuracoes.index'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosIdRouteImport } from './routes/admin.eventos.$id'
 import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.novo'
@@ -204,6 +205,11 @@ const AdminClientesIdRoute = AdminClientesIdRouteImport.update({
   path: '/clientes/$id',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminConfiguracoesIndexRoute = AdminConfiguracoesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminConfiguracoesRoute,
+} as any)
 const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
   id: '/eventos/',
   path: '/eventos/',
@@ -257,7 +263,7 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRouteWithChildren
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -282,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/configuracoes/': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
@@ -295,7 +302,6 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -320,6 +326,7 @@ export interface FileRoutesByTo {
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes': typeof AdminClientesIndexRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
   '/admin/vendas': typeof AdminVendasIndexRoute
   '/e/$slug': typeof ESlugIndexRoute
@@ -337,7 +344,7 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRouteWithChildren
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -362,6 +369,7 @@ export interface FileRoutesById {
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/configuracoes/': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
@@ -405,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
+    | '/admin/configuracoes/'
     | '/admin/eventos/'
     | '/admin/vendas/'
     | '/e/$slug/'
@@ -418,7 +427,6 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/admin/checkin'
-    | '/admin/configuracoes'
     | '/admin/cortesias'
     | '/admin/ferramentas'
     | '/admin/financeiro'
@@ -443,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/eventos'
     | '/admin/vendas'
     | '/e/$slug'
@@ -484,6 +493,7 @@ export interface FileRouteTypes {
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
+    | '/admin/configuracoes/'
     | '/admin/eventos/'
     | '/admin/vendas/'
     | '/e/$slug/'
@@ -725,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClientesIdRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/configuracoes/': {
+      id: '/admin/configuracoes/'
+      path: '/'
+      fullPath: '/admin/configuracoes/'
+      preLoaderRoute: typeof AdminConfiguracoesIndexRouteImport
+      parentRoute: typeof AdminConfiguracoesRoute
+    }
     '/admin/eventos/': {
       id: '/admin/eventos/'
       path: '/eventos'
@@ -784,9 +801,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminConfiguracoesRouteChildren {
+  AdminConfiguracoesIndexRoute: typeof AdminConfiguracoesIndexRoute
+}
+
+const AdminConfiguracoesRouteChildren: AdminConfiguracoesRouteChildren = {
+  AdminConfiguracoesIndexRoute: AdminConfiguracoesIndexRoute,
+}
+
+const AdminConfiguracoesRouteWithChildren =
+  AdminConfiguracoesRoute._addFileChildren(AdminConfiguracoesRouteChildren)
+
 interface AdminRouteRouteChildren {
   AdminCheckinRoute: typeof AdminCheckinRoute
-  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRouteWithChildren
   AdminCortesiasRoute: typeof AdminCortesiasRoute
   AdminFerramentasRoute: typeof AdminFerramentasRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
@@ -808,7 +836,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCheckinRoute: AdminCheckinRoute,
-  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRouteWithChildren,
   AdminCortesiasRoute: AdminCortesiasRoute,
   AdminFerramentasRoute: AdminFerramentasRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
