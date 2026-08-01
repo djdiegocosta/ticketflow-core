@@ -573,12 +573,22 @@ Exportar dados (CSV) em todos os relatórios.
 - Evento e lote de interesse.
 - Data e hora do abandono.
 
+**Mini dashboard da área:**
+- Card "Abandonos" com filtro de período: Últimas 24h / Últimas 72h / Última semana.
+- Card "Recuperados" — quantidade de abandonos que depois converteram em venda paga (status "Convertido"), no mesmo período selecionado.
+
+**Modelos de mensagem para WhatsApp:**
+- Seção com 2–3 modelos de mensagem sugeridos (ex: para quem não gerou Pix, para quem gerou Pix e não pagou), com variáveis substituíveis: {nome}, {evento}, {lote}.
+- Cada modelo é editável diretamente na tela (texto livre).
+- Botão "Restaurar padrão" por modelo — volta ao texto original sugerido pelo sistema, descartando a edição.
+- Ao clicar em "Abrir WhatsApp" numa linha da listagem, a mensagem é pré-preenchida usando o modelo correspondente (com as variáveis já substituídas pelos dados daquele contato).
+
 **Ações disponíveis:**
 - Visualizar lista de abandonos por evento.
-- Acesso rápido ao WhatsApp do potencial comprador.
+- Acesso rápido ao WhatsApp do potencial comprador, com mensagem pré-preenchida (modelo editável).
 - Marcar como "contactado" / "convertido" / "descartado".
 
-**Dashboard:** card de resumo de abandonos nas últimas 24h visível no Dashboard principal.
+**Dashboard principal:** card de resumo de abandonos nas últimas 24h visível no Dashboard geral do sistema (já implementado).
 
 ---
 
