@@ -175,7 +175,7 @@ export function AdminDashboard() {
           title="Aguardando Pagamento"
           icon={Clock}
           gaugeValue={18}
-          value={null}
+          value={undefined}
           subtext="7 pedidos pendentes"
           iconColor="text-warning"
         />
