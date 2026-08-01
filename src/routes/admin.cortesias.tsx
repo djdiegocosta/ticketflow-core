@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { CourtesiesListPage } from "@/pages/admin/CourtesiesListPage";
 
 export const Route = createFileRoute("/admin/cortesias")({
   head: () => ({
@@ -14,5 +14,5 @@ export const Route = createFileRoute("/admin/cortesias")({
 });
 
 function Page_admin_cortesias() {
-  return <Placeholder title="Cortesias" description="Cortesias — plataforma TicketFlow de gestão de eventos e ingressos." />;
+  return <CourtesiesListPage />;
 }
