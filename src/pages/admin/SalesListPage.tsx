@@ -209,6 +209,39 @@ export function SalesListPage() {
         </button>
       </div>
 
+      {/* Mini dashboard */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MiniMetricCard
+          title="Total vendido no período"
+          value={formatCurrency(metrics.revenue)}
+          subtext={`${filtered.filter((s) => s.status === "Pago").length} vendas pagas`}
+          icon={DollarSign}
+          iconColor="text-accent-text"
+        />
+        <MiniMetricCard
+          title="Ingressos vendidos"
+          value={String(metrics.ticketsSold)}
+          subtext="ingressos confirmados"
+          icon={Ticket}
+          iconColor="text-info"
+        />
+        <MiniMetricCard
+          title="Ticket médio"
+          value={formatCurrency(metrics.avgTicket)}
+          subtext="por venda paga"
+          icon={Receipt}
+          iconColor="text-success"
+        />
+        <MiniMetricCard
+          title="Aguardando Pagamento"
+          gaugeValue={metrics.pendingRate}
+          subtext={`${metrics.pendingCount} pedidos pendentes`}
+          icon={Clock}
+          iconColor="text-warning"
+        />
+      </div>
+
+
       {/* Abas de origem */}
       <div className="flex flex-wrap gap-1 border-b border-border-subtle">
         {ORIGIN_TABS.map((tab) => (
