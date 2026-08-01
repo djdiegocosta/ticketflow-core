@@ -20,7 +20,6 @@ import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
-import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminCortesiasRouteImport } from './routes/admin.cortesias'
 import { Route as AdminFerramentasRouteImport } from './routes/admin.ferramentas'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
@@ -40,6 +39,8 @@ import { Route as SuperadminOrganizacoesRouteImport } from './routes/superadmin.
 import { Route as SuperadminPlanosRouteImport } from './routes/superadmin.planos'
 import { Route as AdminClientesIndexRouteImport } from './routes/admin.clientes.index'
 import { Route as AdminClientesIdRouteImport } from './routes/admin.clientes.$id'
+import { Route as AdminConfiguracoesIndexRouteImport } from './routes/admin.configuracoes.index'
+import { Route as AdminConfiguracoesMercadoPagoRouteImport } from './routes/admin.configuracoes.mercado-pago'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosIdRouteImport } from './routes/admin.eventos.$id'
 import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.novo'
@@ -102,11 +103,6 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminCheckinRoute = AdminCheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminCortesiasRoute = AdminCortesiasRouteImport.update({
@@ -204,6 +200,17 @@ const AdminClientesIdRoute = AdminClientesIdRouteImport.update({
   path: '/clientes/$id',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminConfiguracoesIndexRoute = AdminConfiguracoesIndexRouteImport.update({
+  id: '/configuracoes/',
+  path: '/configuracoes/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminConfiguracoesMercadoPagoRoute =
+  AdminConfiguracoesMercadoPagoRouteImport.update({
+    id: '/configuracoes/mercado-pago',
+    path: '/configuracoes/mercado-pago',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
   id: '/eventos/',
   path: '/eventos/',
@@ -257,7 +264,6 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -277,11 +283,13 @@ export interface FileRoutesByFullPath {
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/configuracoes/': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
@@ -295,7 +303,6 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -315,11 +322,13 @@ export interface FileRoutesByTo {
   '/cliente': typeof ClienteIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes': typeof AdminClientesIndexRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
   '/admin/vendas': typeof AdminVendasIndexRoute
   '/e/$slug': typeof ESlugIndexRoute
@@ -337,7 +346,6 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
-  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/ferramentas': typeof AdminFerramentasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
@@ -357,11 +365,13 @@ export interface FileRoutesById {
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
+  '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
+  '/admin/configuracoes/': typeof AdminConfiguracoesIndexRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
@@ -380,7 +390,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/superadmin'
     | '/admin/checkin'
-    | '/admin/configuracoes'
     | '/admin/cortesias'
     | '/admin/ferramentas'
     | '/admin/financeiro'
@@ -400,11 +409,13 @@ export interface FileRouteTypes {
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
+    | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
+    | '/admin/configuracoes/'
     | '/admin/eventos/'
     | '/admin/vendas/'
     | '/e/$slug/'
@@ -418,7 +429,6 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/admin/checkin'
-    | '/admin/configuracoes'
     | '/admin/cortesias'
     | '/admin/ferramentas'
     | '/admin/financeiro'
@@ -438,11 +448,13 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/superadmin'
     | '/admin/clientes/$id'
+    | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/eventos'
     | '/admin/vendas'
     | '/e/$slug'
@@ -459,7 +471,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/superadmin'
     | '/admin/checkin'
-    | '/admin/configuracoes'
     | '/admin/cortesias'
     | '/admin/ferramentas'
     | '/admin/financeiro'
@@ -479,11 +490,13 @@ export interface FileRouteTypes {
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
+    | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
+    | '/admin/configuracoes/'
     | '/admin/eventos/'
     | '/admin/vendas/'
     | '/e/$slug/'
@@ -583,13 +596,6 @@ declare module '@tanstack/react-router' {
       path: '/checkin'
       fullPath: '/admin/checkin'
       preLoaderRoute: typeof AdminCheckinRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/configuracoes': {
-      id: '/admin/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/admin/configuracoes'
-      preLoaderRoute: typeof AdminConfiguracoesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/cortesias': {
@@ -725,6 +731,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClientesIdRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/configuracoes/': {
+      id: '/admin/configuracoes/'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes/'
+      preLoaderRoute: typeof AdminConfiguracoesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/configuracoes/mercado-pago': {
+      id: '/admin/configuracoes/mercado-pago'
+      path: '/configuracoes/mercado-pago'
+      fullPath: '/admin/configuracoes/mercado-pago'
+      preLoaderRoute: typeof AdminConfiguracoesMercadoPagoRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/eventos/': {
       id: '/admin/eventos/'
       path: '/eventos'
@@ -786,7 +806,6 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminCheckinRoute: typeof AdminCheckinRoute
-  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCortesiasRoute: typeof AdminCortesiasRoute
   AdminFerramentasRoute: typeof AdminFerramentasRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
@@ -798,17 +817,18 @@ interface AdminRouteRouteChildren {
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminClientesIdRoute: typeof AdminClientesIdRoute
+  AdminConfiguracoesMercadoPagoRoute: typeof AdminConfiguracoesMercadoPagoRoute
   AdminEventosIdRoute: typeof AdminEventosIdRoute
   AdminEventosNovoRoute: typeof AdminEventosNovoRoute
   AdminVendasIdRoute: typeof AdminVendasIdRoute
   AdminClientesIndexRoute: typeof AdminClientesIndexRoute
+  AdminConfiguracoesIndexRoute: typeof AdminConfiguracoesIndexRoute
   AdminEventosIndexRoute: typeof AdminEventosIndexRoute
   AdminVendasIndexRoute: typeof AdminVendasIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCheckinRoute: AdminCheckinRoute,
-  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCortesiasRoute: AdminCortesiasRoute,
   AdminFerramentasRoute: AdminFerramentasRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
@@ -820,10 +840,12 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminClientesIdRoute: AdminClientesIdRoute,
+  AdminConfiguracoesMercadoPagoRoute: AdminConfiguracoesMercadoPagoRoute,
   AdminEventosIdRoute: AdminEventosIdRoute,
   AdminEventosNovoRoute: AdminEventosNovoRoute,
   AdminVendasIdRoute: AdminVendasIdRoute,
   AdminClientesIndexRoute: AdminClientesIndexRoute,
+  AdminConfiguracoesIndexRoute: AdminConfiguracoesIndexRoute,
   AdminEventosIndexRoute: AdminEventosIndexRoute,
   AdminVendasIndexRoute: AdminVendasIndexRoute,
 }
@@ -883,3 +905,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
