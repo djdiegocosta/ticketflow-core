@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
-type UserRole = 'admin' | 'cliente' | null;
+type UserRole = 'admin' | 'colaborador' | 'cliente' | null;
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -36,15 +36,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (email: string, pass: string) => {
+    let authData = null;
+
     if (email === 'admin@ticketflow.com' && pass === 'admin123') {
-      const authData = {
+      authData = {
         isAuthenticated: true,
         userRole: 'admin' as UserRole,
         userName: 'Administrador',
       };
+    } else if (email === 'colaborador@ticketflow.com' && pass === 'colab123') {
+      authData = {
+        isAuthenticated: true,
+        userRole: 'colaborador' as UserRole,
+        userName: 'Colaborador',
+      };
+    }
+
+    if (authData) {
       setIsAuthenticated(true);
-      setUserRole('admin');
-      setUserName('Administrador');
+      setUserRole(authData.userRole);
+      setUserName(authData.userName);
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
       }
