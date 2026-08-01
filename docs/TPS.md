@@ -354,6 +354,9 @@ Separada das vendas para não contaminar dados financeiros.
 
 ### 8.7 Clientes (`/admin/clientes`)
 
+**Mini dashboard da área (topo da tela, acima da listagem):**
+- Card "Novos clientes" com seletor de período (últimos 7 / 15 / 30 dias) — mostra quantos clientes se cadastraram (pelo WhatsApp, cadastro simplificado ou completo) na janela selecionada. Permite acompanhar a evolução de captação de clientes ao longo de um evento.
+
 **Listagem:**
 - Tabela: nome, WhatsApp (com botão de copiar ao lado), total de eventos, total de ingressos, último evento, data de cadastro.
 - Colunas ordenáveis (indexáveis) por clique no cabeçalho — inclui ordenação por quantidade de ingressos, que já cumpre a função de ranking sem precisar de um componente dedicado.
