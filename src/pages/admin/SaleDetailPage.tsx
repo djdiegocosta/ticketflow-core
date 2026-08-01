@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MOCK_SALES, formatCurrency, type Sale, type SaleTicket } from "@/lib/sales-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { useAuth } from "@/lib/auth-context";
 
 function StatusBadge({ status }: { status: Sale["status"] }) {
   return (
@@ -35,6 +36,8 @@ const card =
 
 export function SaleDetailPage({ id }: { id: string }) {
   const found = MOCK_SALES.find((s) => s.id === id);
+  const { userRole } = useAuth();
+  const isColab = userRole === "colaborador";
   const [status, setStatus] = useState<Sale["status"]>(found?.status ?? "Pago");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [qrTicket, setQrTicket] = useState<SaleTicket | null>(null);
@@ -73,27 +76,31 @@ export function SaleDetailPage({ id }: { id: string }) {
           <StatusBadge status={status} />
         </div>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() =>
-              generateCheckinListPdf(
-                sale.eventName,
-                sale.tickets.map((t) => t.participantName),
-              )
-            }
-            className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
-          >
-            <FileText className="h-4 w-4" />
-            Gerar lista PDF
-          </button>
-          <button
-            type="button"
-            disabled={status === "Cancelado"}
-            onClick={() => setConfirmOpen(true)}
-            className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Cancelar venda
-          </button>
+          {!isColab && (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  generateCheckinListPdf(
+                    sale.eventName,
+                    sale.tickets.map((t) => t.participantName),
+                  )
+                }
+                className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
+              >
+                <FileText className="h-4 w-4" />
+                Gerar lista PDF
+              </button>
+              <button
+                type="button"
+                disabled={status === "Cancelado"}
+                onClick={() => setConfirmOpen(true)}
+                className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancelar venda
+              </button>
+            </>
+          )}
         </div>
       </div>
 

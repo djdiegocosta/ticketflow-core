@@ -1,4 +1,5 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
   CalendarDays,
@@ -41,7 +42,28 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { logout, userName } = useAuth();
+  const { logout, userName, userRole } = useAuth();
+  const navigate = useNavigate();
+
+  const filteredMenu = menu.filter((item) => {
+    if (userRole === "colaborador") {
+      return ["/admin/vendas", "/admin/checkin"].includes(item.to);
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (userRole === "colaborador") {
+      // Se estiver no dashboard ou em qualquer rota não permitida, manda para vendas
+      const isPermitted = filteredMenu.some((item) => 
+        item.exact ? pathname === item.to : pathname.startsWith(item.to)
+      );
+      
+      if (!isPermitted && pathname.startsWith("/admin")) {
+        navigate({ to: "/admin/vendas", replace: true });
+      }
+    }
+  }, [userRole, pathname, filteredMenu, navigate]);
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
@@ -57,7 +79,7 @@ export function AdminLayout() {
         </div>
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 pb-6 scrollbar-thin">
           <div className="flex flex-col gap-1">
-            {menu.map((item) => {
+            {filteredMenu.map((item) => {
               const active = isActive(item.to, item.exact);
               return (
                 <Link

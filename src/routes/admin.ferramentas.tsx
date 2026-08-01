@@ -1,7 +1,17 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Calculator, Target, Trophy, Gift, Wrench } from 'lucide-react'
 
 export const Route = createFileRoute('/admin/ferramentas')({
+  beforeLoad: () => {
+    if (typeof window === 'undefined') return;
+    const auth = window.localStorage.getItem('ticketflow_auth');
+    if (!auth) throw redirect({ to: '/login' });
+    
+    const data = JSON.parse(auth);
+    if (data.userRole === 'colaborador') {
+      throw redirect({ to: '/admin/vendas' });
+    }
+  },
   component: ToolsHubPage,
 })
 

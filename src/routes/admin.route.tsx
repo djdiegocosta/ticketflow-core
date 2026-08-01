@@ -9,7 +9,7 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: '/login' });
     }
     const data = JSON.parse(auth);
-    if (!data.isAuthenticated || data.userRole !== 'admin') {
+    if (!data.isAuthenticated || (data.userRole !== 'admin' && data.userRole !== 'colaborador')) {
       throw redirect({ to: '/login' });
     }
   },
