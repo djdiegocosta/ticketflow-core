@@ -1,8 +1,16 @@
-import { useState, useEffect } from "react";
-import { X, Shield, Users } from "lucide-react";
+import { useState } from "react";
+import { Shield, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { UserRoleType } from "@/lib/users-data";
+import {
+  PanelCancelButton,
+  PanelDiscardDialog,
+  PanelPrimaryButton,
+  SidePanel,
+  panelInputClass,
+  panelLabelClass,
+} from "@/components/admin/SidePanel";
 
 interface CreateUserPanelProps {
   open: boolean;
@@ -33,8 +41,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
     setIsClosing(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!name || !email) {
       toast.error("Preencha todos os campos");
       return;
@@ -44,159 +51,97 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
     onClose();
   };
 
-  if (!open) return null;
+  const roleOptions: { value: UserRoleType; icon: typeof Shield; description: string }[] = [
+    { value: "Admin", icon: Shield, description: "Acesso completo a todas as áreas do sistema." },
+    {
+      value: "Colaborador",
+      icon: Users,
+      description: "Acesso a Vendas (somente leitura) e Check-in.",
+    },
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end overflow-hidden bg-[rgba(0,0,0,0.45)]">
-      <div 
-        className="h-full w-full max-w-[480px] border-l border-border-subtle bg-bg-primary shadow-[var(--shadow-lg)] animate-in slide-in-from-right duration-300"
+    <>
+      <SidePanel
+        open={open}
+        onClose={handleClose}
+        title="Convidar Usuário"
+        footer={
+          <>
+            <PanelCancelButton onClick={handleClose} />
+            <PanelPrimaryButton onClick={handleSubmit}>Enviar convite</PanelPrimaryButton>
+          </>
+        }
       >
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border-subtle p-6">
-            <h2 className="text-heading-2 text-text-primary">Convidar Usuário</h2>
-            <button
-              onClick={handleClose}
-              className="p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+        <div className="space-y-5">
+          <div>
+            <label className={panelLabelClass}>Nome completo</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Carlos Eduardo Oliveira"
+              className={panelInputClass}
+            />
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin">
-            <div className="space-y-4">
-              <div>
-                <label className="text-small font-medium text-text-secondary block mb-1.5">
-                  Nome completo
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Carlos Eduardo Oliveira"
-                  className="w-full rounded-none border border-border-default bg-bg-secondary px-3 py-2.5 text-body text-text-primary outline-none focus:border-accent"
-                />
-              </div>
+          <div>
+            <label className={panelLabelClass}>E-mail</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="exemplo@ticketflow.com"
+              className={panelInputClass}
+            />
+          </div>
 
-              <div>
-                <label className="text-small font-medium text-text-secondary block mb-1.5">
-                  E-mail
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="exemplo@ticketflow.com"
-                  className="w-full rounded-none border border-border-default bg-bg-secondary px-3 py-2.5 text-body text-text-primary outline-none focus:border-accent"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-small font-medium text-text-secondary block">
-                  Papel no sistema
-                </label>
-                
-                <div className="grid grid-cols-1 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setRole("Admin")}
+          <div>
+            <label className={panelLabelClass}>Papel no sistema</label>
+            <div className="grid grid-cols-1 gap-3">
+              {roleOptions.map(({ value, icon: Icon, description }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRole(value)}
+                  className={cn(
+                    "flex items-start gap-4 border p-4 text-left transition-all",
+                    role === value
+                      ? "border-accent bg-accent-muted ring-1 ring-accent"
+                      : "border-border-default bg-bg-secondary hover:border-accent",
+                  )}
+                >
+                  <div
                     className={cn(
-                      "flex items-start gap-4 border p-4 text-left transition-all",
-                      role === "Admin"
-                        ? "border-accent bg-accent-muted ring-1 ring-accent"
-                        : "border-border-default bg-bg-secondary hover:border-border-strong"
+                      "mt-0.5 rounded-full p-2",
+                      role === value
+                        ? "bg-accent text-[#111111]"
+                        : "bg-bg-tertiary text-text-secondary",
                     )}
                   >
-                    <div className={cn(
-                      "mt-0.5 rounded-full p-2",
-                      role === "Admin" ? "bg-accent text-[#111]" : "bg-bg-tertiary text-text-secondary"
-                    )}>
-                      <Shield className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className={cn(
-                        "text-body font-semibold",
-                        role === "Admin" ? "text-text-primary" : "text-text-primary"
-                      )}>Admin</p>
-                      <p className="text-small text-text-secondary mt-0.5">
-                        Acesso completo a todas as áreas do sistema.
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setRole("Colaborador")}
-                    className={cn(
-                      "flex items-start gap-4 border p-4 text-left transition-all",
-                      role === "Colaborador"
-                        ? "border-accent bg-accent-muted ring-1 ring-accent"
-                        : "border-border-default bg-bg-secondary hover:border-border-strong"
-                    )}
-                  >
-                    <div className={cn(
-                      "mt-0.5 rounded-full p-2",
-                      role === "Colaborador" ? "bg-accent text-[#111]" : "bg-bg-tertiary text-text-secondary"
-                    )}>
-                      <Users className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className={cn(
-                        "text-body font-semibold",
-                        role === "Colaborador" ? "text-text-primary" : "text-text-primary"
-                      )}>Colaborador</p>
-                      <p className="text-small text-text-secondary mt-0.5">
-                        Acesso a Vendas (somente leitura) e Check-in.
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-body font-semibold text-text-primary">{value}</p>
+                    <p className="mt-0.5 text-small text-text-secondary">{description}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-          </form>
-
-          {/* Footer */}
-          <div className="border-t border-border-subtle p-6">
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="w-full bg-accent py-3 text-body font-bold text-[#111] hover:bg-accent-hover transition-colors"
-            >
-              Enviar convite
-            </button>
           </div>
         </div>
+      </SidePanel>
 
-        {/* Confirmation Modal */}
-        {isClosing && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-6">
-            <div className="w-full max-w-[400px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)] animate-in zoom-in-95 duration-200">
-              <h3 className="text-heading-2 text-text-primary">Descartar convite?</h3>
-              <p className="mt-2 text-body text-text-secondary">
-                Você preencheu alguns dados. Se sair agora, o convite não será enviado.
-              </p>
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setIsClosing(false)}
-                  className="px-4 py-2 text-body text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  Continuar editando
-                </button>
-                <button
-                  onClick={() => {
-                    resetForm();
-                    onClose();
-                  }}
-                  className="bg-error px-4 py-2 text-body font-semibold text-white hover:opacity-90 transition-opacity"
-                >
-                  Descartar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      <PanelDiscardDialog
+        open={isClosing}
+        title="Descartar convite?"
+        description="Você preencheu alguns dados. Se sair agora, o convite não será enviado."
+        onKeepEditing={() => setIsClosing(false)}
+        onDiscard={() => {
+          resetForm();
+          onClose();
+        }}
+      />
+    </>
   );
 }
