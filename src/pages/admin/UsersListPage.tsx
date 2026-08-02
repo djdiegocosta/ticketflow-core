@@ -1,9 +1,19 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2, Search, ChevronLeft, ChevronRight, UserX } from "lucide-react";
+import { Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MOCK_USERS, User, UserRoleType } from "@/lib/users-data";
-import { StatusPill } from "@/components/admin/DataTable";
+import {
+  DataTable,
+  DataTableCell,
+  DataTableHeadRow,
+  DataTablePagination,
+  DataTableRow,
+  DataTableShell,
+  StatusPill,
+} from "@/components/admin/DataTable";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 import { CreateUserPanel } from "@/components/admin/CreateUserPanel";
 
 export default function UsersListPage() {
@@ -59,138 +69,89 @@ export default function UsersListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-heading-1 text-text-primary">Usuários</h1>
-        <button
-          type="button"
-          onClick={() => setPanelOpen(true)}
-          className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Convidar Usuário
-        </button>
-      </div>
+      <ListPageHeader
+        title="Usuários"
+        action={
+          <PrimaryActionButton onClick={() => setPanelOpen(true)}>
+            Convidar Usuário
+          </PrimaryActionButton>
+        }
+      />
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
-          <input
-            aria-label="Buscar por nome ou e-mail"
-            placeholder="Buscar por nome ou e-mail"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full sm:w-[320px] rounded-none border border-border-default bg-bg-secondary py-2 pl-9 pr-3 text-body text-text-primary outline-none placeholder:text-text-disabled focus:border-accent"
+      <FilterBar>
+        <FilterSearch
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Buscar por nome ou e-mail"
+        />
+      </FilterBar>
+
+      <DataTableShell>
+        <DataTable className="min-w-[800px]">
+          <DataTableHeadRow
+            columns={["Nome", "E-mail", "Papel", "Convite/Entrada", "Status", "Ações"]}
           />
-        </div>
-      </div>
-
-      <div className="overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
-        <table className="w-full min-w-[800px] border-collapse">
-          <thead>
-            <tr className="border-b border-border-subtle text-left bg-bg-tertiary/50">
-              <th className="px-4 py-3 text-small font-medium text-text-secondary">Nome</th>
-              <th className="px-4 py-3 text-small font-medium text-text-secondary">E-mail</th>
-              <th className="px-4 py-3 text-small font-medium text-text-secondary">Papel</th>
-              <th className="px-4 py-3 text-small font-medium text-text-secondary">Convite/Entrada</th>
-              <th className="px-4 py-3 text-small font-medium text-text-secondary">Status</th>
-              <th className="px-4 py-3 text-small font-medium text-text-secondary text-right">Ações</th>
-            </tr>
-          </thead>
           <tbody>
             {pageRows.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-border-subtle last:border-0 transition-colors hover:bg-bg-tertiary/30"
-              >
-                <td className="px-4 py-4 text-body text-text-primary">{user.name}</td>
-                <td className="px-4 py-4 text-small text-text-secondary">{user.email}</td>
-                <td className="px-4 py-4">
+              <DataTableRow key={user.id}>
+                <DataTableCell variant="primary">{user.name}</DataTableCell>
+                <DataTableCell>{user.email}</DataTableCell>
+                <DataTableCell>
                   <StatusPill tone={user.role === "Admin" ? "accent" : "neutral"}>
                     {user.role}
                   </StatusPill>
-                </td>
-                <td className="px-4 py-4 text-small text-text-secondary">{user.invitedAt}</td>
-                <td className="px-4 py-4">
+                </DataTableCell>
+                <DataTableCell>{user.invitedAt}</DataTableCell>
+                <DataTableCell>
                   <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "h-2 w-2 rounded-full",
-                      user.status === "Ativo" ? "bg-accent" : "bg-text-disabled"
-                    )} />
-                    <span className="text-small text-text-secondary">{user.status}</span>
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        user.status === "Ativo" ? "bg-accent" : "bg-text-disabled",
+                      )}
+                    />
+                    <span>{user.status}</span>
                   </div>
-                </td>
-                <td className="px-4 py-4 text-right">
+                </DataTableCell>
+                <DataTableCell>
                   <button
+                    type="button"
                     onClick={() => setUserToDelete(user)}
-                    className="p-1.5 text-text-secondary hover:bg-error/10 hover:text-error transition-colors rounded-none"
+                    className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     title="Remover usuário"
+                    aria-label={`Remover ${user.name}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                </td>
-              </tr>
+                </DataTableCell>
+              </DataTableRow>
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-body text-text-secondary">
+                <DataTableCell colSpan={6} className="py-10 text-center text-body">
                   Nenhum usuário encontrado.
-                </td>
+                </DataTableCell>
               </tr>
             )}
           </tbody>
-        </table>
-      </div>
+        </DataTable>
+      </DataTableShell>
 
-      <div className="flex flex-col items-center justify-between gap-4 pt-2 sm:flex-row">
-        <div className="flex items-center gap-4 text-small text-text-secondary">
-          <div className="flex items-center gap-2">
-            Mostrar
-            <select
-              aria-label="Itens por página"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-none border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent"
-            >
-              {[10, 25, 50, 100].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-          <span>
-            {filtered.length === 0 ? 0 : start + 1}–{Math.min(start + pageSize, filtered.length)} de {filtered.length}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-none border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="text-small text-text-secondary">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="rounded-none border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <DataTablePagination
+        pageSize={pageSize}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          setPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        startIndex={start}
+        onPageChange={setPage}
+      />
 
       <CreateUserPanel
         open={panelOpen}
