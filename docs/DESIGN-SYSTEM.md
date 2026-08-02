@@ -240,7 +240,7 @@ Usado para formulários com múltiplas etapas que não cabem confortavelmente em
 
 ---
 
-
+## 9. Temas de cor futuros
 
 Quando implementados, seguem exatamente a mesma estrutura de variáveis — só os valores de `--accent`, `--accent-hover`, `--accent-muted` e `--accent-text` mudam.
 
@@ -261,3 +261,43 @@ Quando implementados, seguem exatamente a mesma estrutura de variáveis — só 
 - Toda tela deve funcionar em **mobile primeiro** — especialmente a área pública (compra de ingressos).
 - O verde neon (`--accent`) é a única cor expressiva do sistema. Usar com parcimônia — apenas em ações primárias, estados ativos e indicadores de sucesso.
 - Textos sobre fundo `--accent` devem ser sempre escuros (`#111111`), nunca brancos.
+
+---
+
+## 11. Padrões de tela repetidos (fonte única de verdade)
+
+Estes padrões devem ser reaproveitados como componentes compartilhados — nunca recriados do zero em cada tela nova. Divergência aqui já causou retrabalho (tabela de Cortesias, cards de Vendas) e deve parar de acontecer.
+
+### Cabeçalho de listagem
+- Título da área (heading-1) à esquerda.
+- Botão de ação principal à direita, mesma linha.
+- Botão de ação principal: sempre texto curto no padrão "+ [Nome no singular]" (ex: "+ Nova Venda", "+ Nova Cortesia", "+ Novo Cliente", "+ Novo Evento", "+ Convidar Usuário") — nunca frases longas tipo "Lançar venda manual".
+- Mesmo tamanho de botão em todas as telas: padding 10px 20px, texto 14px/peso 600 (spec do Botão primário da seção 7) — largura variando só pelo texto, nunca a altura ou o padding.
+
+### Mini dashboard de área (Vendas, Cortesias, Clientes, Remarketing)
+- Cards compactos, menores que os do Dashboard principal — mesmo componente reaproveitado entre áreas, variando só o conteúdo.
+- Mesma altura entre os cards de uma mesma linha.
+- Ícone + valor principal (heading-1) + label (small) — sem elementos extras que aumentem a altura sem necessidade.
+
+### Barra de filtros
+- Abas de origem/tipo (quando existirem) à esquerda, dropdowns/busca à direita, mesma linha.
+- Mesmo espaçamento entre os filtros em todas as áreas.
+
+### Tabela de listagem
+- Componente único e compartilhado — nunca reimplementado por tela.
+- Mesmo tamanho e peso de fonte em cabeçalho e linhas.
+- Mesmo estilo de badge (status, origem, etc.): padding, cantos retos, tamanho de texto.
+- Mesma altura de linha, mesmo espaçamento interno de célula.
+- Linha em altura única — nunca quebrar texto/badge (truncate + tooltip quando necessário).
+- Mesmo componente e posição de paginação no rodapé (seletor 10/25/50/100, indicador "Mostrando X–Y de Z").
+
+### Painel lateral (Sheet)
+- Ver especificação completa na seção 8. Sempre que uma tela precisar de formulário maior que um modal simples, reaproveitar este componente — não criar variação nova de modal.
+
+### Legenda de status por cor (bolinha)
+- Usada quando o status é representado só por cor (sem texto na célula, como em Remarketing).
+- Sempre posicionada por fora do card/tabela, acima dele, alinhada à direita — nunca dentro de um cabeçalho de coluna.
+
+### Botões de ação por linha (tabela)
+- Ações de ícone único (ex: abrir WhatsApp, copiar, ver QR Code): sem texto, com tooltip.
+- Ações destrutivas (remover, cancelar): sempre com modal de confirmação antes de executar.
