@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { X } from "lucide-react";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Client } from "@/lib/clients-data";
-
-const inputClass =
-  "w-full border border-border-default bg-bg-secondary px-3.5 py-2.5 text-body text-text-primary outline-none transition-colors placeholder:text-text-disabled focus:border-accent";
-const labelClass = "mb-2 block text-small text-text-secondary";
-const errorClass = "mt-1 text-small text-error";
+import {
+  PanelCancelButton,
+  PanelPrimaryButton,
+  SidePanel,
+  panelErrorClass as errorClass,
+  panelInputClass as inputClass,
+  panelLabelClass as labelClass,
+} from "@/components/admin/SidePanel";
 
 type Errors = Record<string, string>;
 
@@ -108,37 +109,18 @@ export function CreateClientPanel({
   };
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-50 bg-black/45 transition-opacity duration-300",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={handleClose}
-      />
-
-      {/* Panel */}
-      <div
-        className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-bg-primary shadow-lg transition-transform duration-300 ease-in-out",
-          open ? "translate-x-0" : "translate-x-full"
-        )}
-      >
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-border-subtle px-6 py-4">
-          <h2 className="text-heading-2 text-text-primary">Novo Cliente</h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+    <SidePanel
+      open={open}
+      onClose={handleClose}
+      title="Novo Cliente"
+      footer={
+        <>
+          <PanelCancelButton onClick={handleClose} />
+          <PanelPrimaryButton onClick={handleSubmit}>Salvar cliente</PanelPrimaryButton>
+        </>
+      }
+    >
+      <div className="space-y-5">
           <div>
             <label className={labelClass}>Nome completo</label>
             <input
@@ -201,27 +183,7 @@ export function CreateClientPanel({
               onChange={(e) => setInstagram(e.target.value)}
             />
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="shrink-0 flex items-center justify-between border-t border-border-subtle px-6 py-4 bg-bg-primary">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-body text-text-secondary hover:text-text-primary transition-colors"
-          >
-            Cancelar
-          </button>
-          
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="bg-accent px-6 py-2 text-body font-semibold text-[#111111] hover:bg-accent-hover"
-          >
-            Salvar cliente
-          </button>
-        </div>
       </div>
-    </>
+    </SidePanel>
   );
 }
