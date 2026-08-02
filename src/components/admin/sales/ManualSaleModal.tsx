@@ -353,8 +353,6 @@ export function ManualSaleModal({
               </section>
             </div>
           )}
-        </div>
-
     </SidePanel>
   );
 }
