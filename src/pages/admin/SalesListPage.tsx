@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { EVENTS, MOCK_SALES, formatCurrency, type Sale } from "@/lib/sales-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";

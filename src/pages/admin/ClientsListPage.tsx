@@ -5,17 +5,11 @@ import {
   ArrowUp,
   CalendarDays,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Eye,
   MessageCircle,
-  Search,
   Trash2,
   Users,
-  Clock,
-  ChevronDown,
-  Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,6 +20,16 @@ import {
   type Client,
 } from "@/lib/clients-data";
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
+import {
+  DataTable,
+  DataTableCell,
+  DataTablePagination,
+  DataTableRow,
+  DataTableShell,
+} from "@/components/admin/DataTable";
+import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 
 type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
 
@@ -34,56 +38,29 @@ const parseDate = (value: string) => {
   return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
 };
 
-function MiniMetricCard({
-  title,
-  children,
-  icon: Icon,
-  iconColor,
-}: {
-  title: string;
-  children: React.ReactNode;
-  icon: React.ElementType;
-  iconColor?: string;
-}) {
-  return (
-    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
-      <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-small text-text-secondary">{title}</span>
-        <Icon className={cn("h-4 w-4", iconColor ?? "text-text-secondary")} />
-      </div>
-      <div className="flex flex-1 flex-col justify-end">{children}</div>
-    </div>
-  );
-}
-
 function NewClientsCard() {
   const [period, setPeriod] = useState("30");
-  
-  const data = {
-    "7": 12,
-    "15": 23,
-    "30": 41
-  };
+
+  const data = { "7": 12, "15": 23, "30": 41 };
 
   return (
-    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
-      <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-small text-text-secondary">Novos Clientes</span>
-        <select 
+    <MiniMetricCard
+      title="Novos Clientes"
+      value={data[period as keyof typeof data]}
+      subtext="novos cadastros"
+      headerRight={
+        <select
+          aria-label="Período"
           value={period}
           onChange={(e) => setPeriod(e.target.value)}
-          className="text-micro bg-transparent border-none outline-none text-accent-text font-medium cursor-pointer"
+          className="cursor-pointer border-none bg-transparent text-micro font-medium text-accent-text outline-none"
         >
           <option value="7">Últimos 7 dias</option>
           <option value="15">Últimos 15 dias</option>
           <option value="30">Últimos 30 dias</option>
         </select>
-      </div>
-      <div className="flex flex-1 flex-col justify-end">
-        <div className="text-heading-1 text-text-primary">{data[period as keyof typeof data]}</div>
-        <div className="mt-0.5 text-small text-text-secondary">novos cadastros</div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -187,19 +164,17 @@ export function ClientsListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-heading-1 text-text-primary">Clientes</h1>
-        <button
-          onClick={() => setIsPanelOpen(true)}
-          className="flex items-center gap-2 bg-accent px-4 py-2 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Cliente
-        </button>
-      </div>
+      <ListPageHeader
+        title="Clientes"
+        action={
+          <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
+            Novo Cliente
+          </PrimaryActionButton>
+        }
+      />
 
       {/* Dashboard */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <MiniMetricGrid className="xl:grid-cols-3">
         <MiniMetricCard title="Clientes" icon={Users} iconColor="text-accent-text">
           <div className="text-heading-1 text-text-primary">{totalClients}</div>
           <div className="mt-0.5 text-small text-text-secondary">cadastrados na base</div>
@@ -213,27 +188,22 @@ export function ClientsListPage() {
         </MiniMetricCard>
 
         <NewClientsCard />
-      </div>
+      </MiniMetricGrid>
 
       {/* Filtros */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
-          <input
-            aria-label="Buscar por nome ou WhatsApp"
-            placeholder="Buscar por nome ou WhatsApp"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary py-2 pl-9 pr-3 text-body text-text-primary outline-none placeholder:text-text-disabled focus:border-accent sm:w-[300px]"
-          />
-        </div>
+      <FilterBar>
+        <FilterSearch
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Buscar por nome ou WhatsApp"
+        />
         <span className="text-small text-text-secondary">
           Clique no título da coluna para ordenar
         </span>
-      </div>
+      </FilterBar>
 
       <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
         <table className="w-full min-w-[980px] border-collapse">
