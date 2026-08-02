@@ -205,8 +205,8 @@ export function ClientsListPage() {
         </span>
       </FilterBar>
 
-      <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
-        <table className="w-full min-w-[980px] border-collapse">
+      <DataTableShell>
+        <DataTable className="min-w-[980px]">
           <thead>
             <tr className="border-b border-border-subtle text-left">
               {columns.map((col) => (
@@ -240,36 +240,40 @@ export function ClientsListPage() {
           </thead>
           <tbody>
             {pageRows.map((client) => (
-              <tr
+              <DataTableRow
                 key={client.id}
-                onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}
                 className={cn(
-                  "cursor-pointer border-b border-border-subtle transition-colors last:border-0 hover:bg-bg-tertiary",
+                  "cursor-pointer",
                   client.totalTickets >= 10 && "border-l-2 border-l-accent",
                 )}
               >
-                <td className="px-4 py-3 text-body text-text-primary">{client.name}</td>
-                <td className="px-4 py-3 text-small text-text-secondary">
+                <DataTableCell
+                  variant="primary"
+                  onClick={() =>
+                    navigate({ to: "/admin/clientes/$id", params: { id: client.id } })
+                  }
+                >
+                  {client.name}
+                </DataTableCell>
+                <DataTableCell>
                   <span className="flex items-center gap-1">
                     {client.whatsapp}
                     <CopyWhatsapp value={client.whatsapp} />
                   </span>
-                </td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.age} anos</td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.totalEvents}</td>
-                <td className="px-4 py-3 text-body font-semibold text-text-primary">
-                  {client.totalTickets}
-                </td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.registeredAt}</td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.lastEvent}</td>
-                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                </DataTableCell>
+                <DataTableCell>{client.age} anos</DataTableCell>
+                <DataTableCell>{client.totalEvents}</DataTableCell>
+                <DataTableCell variant="strong">{client.totalTickets}</DataTableCell>
+                <DataTableCell>{client.registeredAt}</DataTableCell>
+                <DataTableCell>{client.lastEvent}</DataTableCell>
+                <DataTableCell>
                   <div className="flex items-center gap-1">
                     <Link
                       to="/admin/clientes/$id"
                       params={{ id: client.id }}
                       aria-label={`Visualizar ${client.name}`}
                       title="Visualizar / editar"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
@@ -279,7 +283,7 @@ export function ClientsListPage() {
                       rel="noreferrer"
                       aria-label={`WhatsApp de ${client.name}`}
                       title="WhatsApp"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
                     >
                       <MessageCircle className="h-4 w-4" />
                     </a>
@@ -288,75 +292,38 @@ export function ClientsListPage() {
                       onClick={() => setToDelete(client)}
                       aria-label={`Excluir ${client.name}`}
                       title="Excluir"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                </td>
-              </tr>
+                </DataTableCell>
+              </DataTableRow>
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-small text-text-secondary">
+                <DataTableCell colSpan={8} className="py-10 text-center text-body">
                   Nenhum cliente encontrado.
-                </td>
+                </DataTableCell>
               </tr>
             )}
           </tbody>
-        </table>
-      </div>
+        </DataTable>
+      </DataTableShell>
 
       {/* Paginação */}
-      <div className="flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-4 sm:flex-row">
-        <div className="flex items-center gap-4 text-small text-text-secondary">
-          <div className="flex items-center gap-2">
-            Mostrar
-            <select
-              aria-label="Itens por página"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent"
-            >
-              {[10, 25, 50, 100].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-          <span>
-            Mostrando {filtered.length === 0 ? 0 : start + 1}–
-            {Math.min(start + pageSize, filtered.length)} de {filtered.length}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Página anterior"
-            disabled={currentPage === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-[var(--radius-sm)] border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="text-small text-text-secondary">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            type="button"
-            aria-label="Próxima página"
-            disabled={currentPage === totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="rounded-[var(--radius-sm)] border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <DataTablePagination
+        pageSize={pageSize}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          setPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        startIndex={start}
+        onPageChange={setPage}
+      />
 
       {/* Confirmação de exclusão */}
       {toDelete && (

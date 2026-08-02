@@ -83,14 +83,20 @@ export function DataTableCell({
   variant = "secondary",
   className,
   colSpan,
+  onClick,
 }: {
   children?: React.ReactNode;
   variant?: CellVariant;
   className?: string;
   colSpan?: number;
+  onClick?: () => void;
 }) {
   return (
-    <td colSpan={colSpan} className={cn("px-4 py-3", cellVariantClass[variant], className)}>
+    <td
+      colSpan={colSpan}
+      onClick={onClick}
+      className={cn("px-4 py-3", cellVariantClass[variant], className)}
+    >
       {children}
     </td>
   );
