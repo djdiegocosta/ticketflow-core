@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Plus, Calendar, MapPin, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { ListPageHeader, PrimaryActionLink } from "@/components/admin/PrimaryActionButton";
+import { FilterTabs } from "@/components/admin/FilterBar";
 
 // --- Mock Data ---
 
@@ -118,34 +120,17 @@ export function EventsListPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-heading-1 text-text-primary">Eventos</h1>
-        <Link 
-          to="/admin/eventos/novo"
-          className="inline-flex items-center justify-center gap-2 bg-accent text-[#111111] px-4 py-2 font-semibold hover:bg-accent-hover transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Novo evento
-        </Link>
-      </div>
+      <ListPageHeader
+        title="Eventos"
+        action={<PrimaryActionLink to="/admin/eventos/novo">Novo Evento</PrimaryActionLink>}
+      />
 
       {/* Tabs Filter */}
-      <div className="flex border-b border-border-subtle gap-1">
-        {["Todos", "Publicados", "Rascunhos", "Encerrados"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={cn(
-              "px-4 py-2 text-body transition-all relative border-b-2",
-              (filter === tab || (filter === "Publicados" && tab === "Publicados") || (filter === "Rascunhos" && tab === "Rascunhos") || (filter === "Encerrados" && tab === "Encerrados"))
-                ? "bg-accent-muted text-accent-text border-accent" 
-                : "text-text-secondary hover:bg-bg-tertiary border-transparent"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={["Todos", "Publicados", "Rascunhos", "Encerrados"]}
+        value={filter}
+        onChange={setFilter}
+      />
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

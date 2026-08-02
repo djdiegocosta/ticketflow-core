@@ -5,17 +5,11 @@ import {
   ArrowUp,
   CalendarDays,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Eye,
   MessageCircle,
-  Search,
   Trash2,
   Users,
-  Clock,
-  ChevronDown,
-  Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,6 +20,16 @@ import {
   type Client,
 } from "@/lib/clients-data";
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
+import {
+  DataTable,
+  DataTableCell,
+  DataTablePagination,
+  DataTableRow,
+  DataTableShell,
+} from "@/components/admin/DataTable";
+import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 
 type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
 
@@ -34,56 +38,29 @@ const parseDate = (value: string) => {
   return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
 };
 
-function MiniMetricCard({
-  title,
-  children,
-  icon: Icon,
-  iconColor,
-}: {
-  title: string;
-  children: React.ReactNode;
-  icon: React.ElementType;
-  iconColor?: string;
-}) {
-  return (
-    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
-      <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-small text-text-secondary">{title}</span>
-        <Icon className={cn("h-4 w-4", iconColor ?? "text-text-secondary")} />
-      </div>
-      <div className="flex flex-1 flex-col justify-end">{children}</div>
-    </div>
-  );
-}
-
 function NewClientsCard() {
   const [period, setPeriod] = useState("30");
-  
-  const data = {
-    "7": 12,
-    "15": 23,
-    "30": 41
-  };
+
+  const data = { "7": 12, "15": 23, "30": 41 };
 
   return (
-    <div className="flex h-full flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]">
-      <div className="mb-1.5 flex items-start justify-between">
-        <span className="text-small text-text-secondary">Novos Clientes</span>
-        <select 
+    <MiniMetricCard
+      title="Novos Clientes"
+      value={data[period as keyof typeof data]}
+      subtext="novos cadastros"
+      headerRight={
+        <select
+          aria-label="Período"
           value={period}
           onChange={(e) => setPeriod(e.target.value)}
-          className="text-micro bg-transparent border-none outline-none text-accent-text font-medium cursor-pointer"
+          className="cursor-pointer border-none bg-transparent text-micro font-medium text-accent-text outline-none"
         >
           <option value="7">Últimos 7 dias</option>
           <option value="15">Últimos 15 dias</option>
           <option value="30">Últimos 30 dias</option>
         </select>
-      </div>
-      <div className="flex flex-1 flex-col justify-end">
-        <div className="text-heading-1 text-text-primary">{data[period as keyof typeof data]}</div>
-        <div className="mt-0.5 text-small text-text-secondary">novos cadastros</div>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -187,19 +164,17 @@ export function ClientsListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-heading-1 text-text-primary">Clientes</h1>
-        <button
-          onClick={() => setIsPanelOpen(true)}
-          className="flex items-center gap-2 bg-accent px-4 py-2 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Cliente
-        </button>
-      </div>
+      <ListPageHeader
+        title="Clientes"
+        action={
+          <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
+            Novo Cliente
+          </PrimaryActionButton>
+        }
+      />
 
       {/* Dashboard */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <MiniMetricGrid className="xl:grid-cols-3">
         <MiniMetricCard title="Clientes" icon={Users} iconColor="text-accent-text">
           <div className="text-heading-1 text-text-primary">{totalClients}</div>
           <div className="mt-0.5 text-small text-text-secondary">cadastrados na base</div>
@@ -213,30 +188,25 @@ export function ClientsListPage() {
         </MiniMetricCard>
 
         <NewClientsCard />
-      </div>
+      </MiniMetricGrid>
 
       {/* Filtros */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
-          <input
-            aria-label="Buscar por nome ou WhatsApp"
-            placeholder="Buscar por nome ou WhatsApp"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary py-2 pl-9 pr-3 text-body text-text-primary outline-none placeholder:text-text-disabled focus:border-accent sm:w-[300px]"
-          />
-        </div>
+      <FilterBar>
+        <FilterSearch
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Buscar por nome ou WhatsApp"
+        />
         <span className="text-small text-text-secondary">
           Clique no título da coluna para ordenar
         </span>
-      </div>
+      </FilterBar>
 
-      <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
-        <table className="w-full min-w-[980px] border-collapse">
+      <DataTableShell>
+        <DataTable className="min-w-[980px]">
           <thead>
             <tr className="border-b border-border-subtle text-left">
               {columns.map((col) => (
@@ -270,36 +240,40 @@ export function ClientsListPage() {
           </thead>
           <tbody>
             {pageRows.map((client) => (
-              <tr
+              <DataTableRow
                 key={client.id}
-                onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}
                 className={cn(
-                  "cursor-pointer border-b border-border-subtle transition-colors last:border-0 hover:bg-bg-tertiary",
+                  "cursor-pointer",
                   client.totalTickets >= 10 && "border-l-2 border-l-accent",
                 )}
               >
-                <td className="px-4 py-3 text-body text-text-primary">{client.name}</td>
-                <td className="px-4 py-3 text-small text-text-secondary">
+                <DataTableCell
+                  variant="primary"
+                  onClick={() =>
+                    navigate({ to: "/admin/clientes/$id", params: { id: client.id } })
+                  }
+                >
+                  {client.name}
+                </DataTableCell>
+                <DataTableCell>
                   <span className="flex items-center gap-1">
                     {client.whatsapp}
                     <CopyWhatsapp value={client.whatsapp} />
                   </span>
-                </td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.age} anos</td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.totalEvents}</td>
-                <td className="px-4 py-3 text-body font-semibold text-text-primary">
-                  {client.totalTickets}
-                </td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.registeredAt}</td>
-                <td className="px-4 py-3 text-small text-text-secondary">{client.lastEvent}</td>
-                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                </DataTableCell>
+                <DataTableCell>{client.age} anos</DataTableCell>
+                <DataTableCell>{client.totalEvents}</DataTableCell>
+                <DataTableCell variant="strong">{client.totalTickets}</DataTableCell>
+                <DataTableCell>{client.registeredAt}</DataTableCell>
+                <DataTableCell>{client.lastEvent}</DataTableCell>
+                <DataTableCell>
                   <div className="flex items-center gap-1">
                     <Link
                       to="/admin/clientes/$id"
                       params={{ id: client.id }}
                       aria-label={`Visualizar ${client.name}`}
                       title="Visualizar / editar"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
@@ -309,7 +283,7 @@ export function ClientsListPage() {
                       rel="noreferrer"
                       aria-label={`WhatsApp de ${client.name}`}
                       title="WhatsApp"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
                     >
                       <MessageCircle className="h-4 w-4" />
                     </a>
@@ -318,75 +292,38 @@ export function ClientsListPage() {
                       onClick={() => setToDelete(client)}
                       aria-label={`Excluir ${client.name}`}
                       title="Excluir"
-                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
+                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                </td>
-              </tr>
+                </DataTableCell>
+              </DataTableRow>
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-small text-text-secondary">
+                <DataTableCell colSpan={8} className="py-10 text-center text-body">
                   Nenhum cliente encontrado.
-                </td>
+                </DataTableCell>
               </tr>
             )}
           </tbody>
-        </table>
-      </div>
+        </DataTable>
+      </DataTableShell>
 
       {/* Paginação */}
-      <div className="flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-4 sm:flex-row">
-        <div className="flex items-center gap-4 text-small text-text-secondary">
-          <div className="flex items-center gap-2">
-            Mostrar
-            <select
-              aria-label="Itens por página"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent"
-            >
-              {[10, 25, 50, 100].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-          <span>
-            Mostrando {filtered.length === 0 ? 0 : start + 1}–
-            {Math.min(start + pageSize, filtered.length)} de {filtered.length}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Página anterior"
-            disabled={currentPage === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-[var(--radius-sm)] border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="text-small text-text-secondary">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            type="button"
-            aria-label="Próxima página"
-            disabled={currentPage === totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="rounded-[var(--radius-sm)] border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <DataTablePagination
+        pageSize={pageSize}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          setPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        startIndex={start}
+        onPageChange={setPage}
+      />
 
       {/* Confirmação de exclusão */}
       {toDelete && (

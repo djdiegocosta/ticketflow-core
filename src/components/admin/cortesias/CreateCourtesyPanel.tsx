@@ -1,15 +1,13 @@
 import * as React from "react";
-import { X, Upload, FileText, Keyboard, AlertCircle, Trash2 } from "lucide-react";
+import { Upload, FileText, Keyboard, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from "@/components/ui/sheet";
+  PanelCancelButton,
+  PanelPrimaryButton,
+  SidePanel,
+} from "@/components/admin/SidePanel";
 import {
   Select,
   SelectContent,
@@ -152,13 +150,22 @@ export function CreateCourtesyPanel({
   };
 
   return (
-    <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="flex w-full flex-col p-0 sm:max-w-[540px]">
-        <SheetHeader className="shrink-0 border-b border-[var(--border-subtle)] p-6">
-          <SheetTitle className="text-heading-2">Nova Cortesia</SheetTitle>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+    <SidePanel
+      open={open}
+      onClose={() => handleClose(false)}
+      title="Nova Cortesia"
+      footer={
+        <>
+          <PanelCancelButton onClick={() => handleClose(false)} />
+          <PanelPrimaryButton
+            disabled={!selectedEvent || validCount === 0}
+            onClick={handleSubmit}
+          >
+            Emitir {validCount} cortesias
+          </PanelPrimaryButton>
+        </>
+      }
+    >
           <div className="space-y-6">
             {/* Event Selection */}
             <div className="space-y-2">
@@ -305,20 +312,6 @@ export function CreateCourtesyPanel({
               </div>
             </div>
           </div>
-        </div>
-
-        <SheetFooter className="shrink-0 border-t border-[var(--border-subtle)] p-6 sm:justify-between">
-          <Button variant="ghost" onClick={() => handleClose(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            disabled={!selectedEvent || validCount === 0}
-            onClick={handleSubmit}
-          >
-            Emitir {validCount} cortesias
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+    </SidePanel>
   );
 }

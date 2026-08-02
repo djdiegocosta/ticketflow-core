@@ -1,14 +1,20 @@
 import { useMemo, useState, useEffect } from "react";
-import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { EVENTS, formatCurrency, type Sale } from "@/lib/sales-data";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const inputClass =
-  "w-full border border-border-default bg-bg-secondary px-3.5 py-2.5 text-body text-text-primary outline-none transition-colors placeholder:text-text-disabled focus:border-accent";
-const labelClass = "mb-2 block text-small text-text-secondary";
-const errorClass = "mt-1 text-small text-error";
+import {
+  PanelCancelButton,
+  PanelPrimaryButton,
+  PanelSecondaryButton,
+  SidePanel,
+  panelErrorClass as errorClass,
+  panelInputClass as inputClass,
+  panelLabelClass as labelClass,
+} from "@/components/admin/SidePanel";
+
 const blockTitle = "text-micro uppercase tracking-wide text-text-secondary";
 
 type Errors = Record<string, string>;
@@ -150,52 +156,34 @@ export function ManualSaleModal({
   };
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-50 bg-black/45 transition-opacity duration-300",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={handleClose}
-      />
-
-      {/* Panel */}
-      <div
-        className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-bg-primary shadow-lg transition-transform duration-300 ease-in-out",
-          open ? "translate-x-0" : "translate-x-full"
-        )}
-      >
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-border-subtle px-6 py-4">
-          <h2 className="text-heading-2 text-text-primary">Nova Venda</h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="p-1 text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="shrink-0 px-6 py-4 border-b border-border-subtle">
-          <div className="mb-2 h-1 w-full bg-bg-tertiary">
-            <div
-              className="h-full bg-accent transition-all duration-300"
-              style={{ width: `${(step / 3) * 100}%` }}
-            />
+    <SidePanel
+      open={open}
+      onClose={handleClose}
+      title="Nova Venda"
+      steps={["Cliente", "Ingressos", "Confirmar"]}
+      currentStep={step}
+      footer={
+        <>
+          <PanelCancelButton onClick={handleClose} />
+          <div className="flex gap-3">
+            {step > 1 && (
+              <PanelSecondaryButton onClick={prevStep}>
+                <ChevronLeft className="h-4 w-4" />
+                Voltar
+              </PanelSecondaryButton>
+            )}
+            {step < 3 ? (
+              <PanelPrimaryButton onClick={nextStep}>
+                Continuar
+                <ChevronRight className="h-4 w-4" />
+              </PanelPrimaryButton>
+            ) : (
+              <PanelPrimaryButton onClick={submit}>Registrar venda</PanelPrimaryButton>
+            )}
           </div>
-          <div className="flex justify-between text-micro font-medium">
-            <span className={step >= 1 ? "text-text-primary" : "text-text-secondary"}>1. Cliente</span>
-            <span className={step >= 2 ? "text-text-primary" : "text-text-secondary"}>2. Ingressos</span>
-            <span className={step >= 3 ? "text-text-primary" : "text-text-secondary"}>3. Confirmar</span>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        </>
+      }
+    >
           {step === 1 && (
             <div className="space-y-6">
               <section className="space-y-4">
@@ -365,51 +353,6 @@ export function ManualSaleModal({
               </section>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="shrink-0 flex items-center justify-between border-t border-border-subtle px-6 py-4 bg-bg-primary">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-body text-text-secondary hover:text-text-primary transition-colors"
-          >
-            Cancelar
-          </button>
-          
-          <div className="flex gap-3">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="flex items-center gap-1 border border-border-default px-4 py-2 text-body text-text-primary hover:bg-bg-tertiary"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Voltar
-              </button>
-            )}
-            
-            {step < 3 ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                className="flex items-center gap-1 bg-accent px-5 py-2 text-body font-semibold text-[#111111] hover:bg-accent-hover"
-              >
-                Continuar
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={submit}
-                className="bg-accent px-5 py-2 text-body font-semibold text-[#111111] hover:bg-accent-hover"
-              >
-                Registrar venda
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
+    </SidePanel>
   );
 }

@@ -12,13 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -31,21 +24,18 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
   DataTable,
   DataTableCell,
+  DataTablePagination,
+  DataTableShell,
   DataTableHeadRow,
   DataTableRow,
   StatusPill,
   type PillTone,
 } from "@/components/admin/DataTable";
+import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
+import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
+import { FilterBar, filterFieldClass } from "@/components/admin/FilterBar";
 import {
   Abandon,
   AbandonStatus,
@@ -79,26 +69,6 @@ const typeTone: Record<AbandonType, PillTone> = {
 };
 
 
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Ticket;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex h-[142px] flex-col justify-center border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6">
-      <div className="flex items-center gap-2 text-small text-[var(--text-secondary)]">
-        <Icon className="h-4 w-4 text-[var(--accent)]" />
-        <span>{label}</span>
-      </div>
-      <div className="mt-2 text-heading-1 font-semibold text-[var(--text-primary)]">{value}</div>
-    </div>
-  );
-}
 
 function TemplateEditor({
   title,
@@ -208,28 +178,7 @@ export function RemarketingPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-heading-1 text-[var(--text-primary)]">Remarketing</h1>
-        <Select
-          value={eventFilter}
-          onValueChange={(v) => {
-            setEventFilter(v);
-            setCurrentPage(1);
-          }}
-        >
-          <SelectTrigger className="w-full sm:w-56">
-            <SelectValue placeholder="Filtrar por evento" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os eventos</SelectItem>
-            {REMARKETING_EVENTS.map((e) => (
-              <SelectItem key={e} value={e}>
-                {e}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <ListPageHeader title="Remarketing" />
 
       {/* Mini dashboard */}
       <div className="space-y-4">
@@ -254,28 +203,36 @@ export function RemarketingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
+        <MiniMetricGrid>
+          <MiniMetricCard
             icon={DollarSign}
-            label="Vendas recuperadas"
+            iconColor="text-accent-text"
+            title="Vendas recuperadas"
             value={formatCurrency(metrics.recoveredRevenue)}
+            subtext="no período selecionado"
           />
-          <MetricCard
+          <MiniMetricCard
             icon={Ticket}
-            label="Ingressos recuperados"
+            iconColor="text-info"
+            title="Ingressos recuperados"
             value={String(metrics.recoveredTickets)}
+            subtext="ingressos confirmados"
           />
-          <MetricCard
+          <MiniMetricCard
             icon={AlertTriangle}
-            label="Total de abandonos"
+            iconColor="text-warning"
+            title="Total de abandonos"
             value={String(metrics.abandons)}
+            subtext="checkouts não concluídos"
           />
-          <MetricCard
+          <MiniMetricCard
             icon={TrendingUp}
-            label="Taxa de recuperação"
+            iconColor="text-success"
+            title="Taxa de recuperação"
             value={`${metrics.recoveryRate}%`}
+            subtext="abandonos convertidos"
           />
-        </div>
+        </MiniMetricGrid>
       </div>
 
       {/* Templates */}
@@ -325,8 +282,27 @@ export function RemarketingPage() {
 
       {/* Table Section */}
       <div className="space-y-4">
+        <FilterBar>
+          <select
+            aria-label="Filtrar por evento"
+            className={filterFieldClass}
+            value={eventFilter}
+            onChange={(e) => {
+              setEventFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="todos">Todos os eventos</option>
+            {REMARKETING_EVENTS.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </select>
+        </FilterBar>
+
         <div className="flex items-center justify-end px-1">
-          <div className="flex items-center gap-3 font-normal text-micro text-[var(--text-secondary)]">
+          <div className="flex items-center gap-3 text-micro font-normal text-[var(--text-secondary)]">
             <div className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full bg-[var(--text-disabled)]" />
               <span>Não contactado</span>
@@ -342,8 +318,7 @@ export function RemarketingPage() {
           </div>
         </div>
 
-        <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
-          <div className="overflow-x-auto">
+        <DataTableShell>
             <TooltipProvider>
               <DataTable className="min-w-[980px]">
                 <DataTableHeadRow
@@ -431,61 +406,20 @@ export function RemarketingPage() {
               </tbody>
             </DataTable>
           </TooltipProvider>
-        </div>
+        </DataTableShell>
 
-        {/* Pagination */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border-subtle)] px-6 py-4">
-          <div className="flex items-center gap-2 text-small text-[var(--text-secondary)]">
-            <span>Exibir</span>
-            <Select
-              value={pageSize}
-              onValueChange={(v) => {
-                setPageSize(v);
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
-            <span>por página</span>
-          </div>
-
-          <Pagination className="w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  className="cursor-pointer"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                />
-              </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    className="cursor-pointer"
-                    isActive={currentPage === page}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  className="cursor-pointer"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-        </div>
+        <DataTablePagination
+          pageSize={size}
+          onPageSizeChange={(n) => {
+            setPageSize(String(n));
+            setCurrentPage(1);
+          }}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          startIndex={(currentPage - 1) * size}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Preview modal */}

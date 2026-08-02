@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,7 +17,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "overflow-x-auto rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]",
+        "overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]",
         className,
       )}
     >
@@ -82,14 +83,20 @@ export function DataTableCell({
   variant = "secondary",
   className,
   colSpan,
+  onClick,
 }: {
   children?: React.ReactNode;
   variant?: CellVariant;
   className?: string;
   colSpan?: number;
+  onClick?: () => void;
 }) {
   return (
-    <td colSpan={colSpan} className={cn("px-4 py-3", cellVariantClass[variant], className)}>
+    <td
+      colSpan={colSpan}
+      onClick={onClick}
+      className={cn("px-4 py-3", cellVariantClass[variant], className)}
+    >
       {children}
     </td>
   );
@@ -125,5 +132,77 @@ export function StatusPill({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * Paginação compartilhada de listagem: seletor 10/25/50/100 + indicador
+ * "Mostrando X–Y de Z" + navegação. Único componente para todas as áreas.
+ */
+export function DataTablePagination({
+  pageSize,
+  onPageSizeChange,
+  currentPage,
+  totalPages,
+  totalItems,
+  startIndex,
+  onPageChange,
+}: {
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  startIndex: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-4 sm:flex-row">
+      <div className="flex items-center gap-4 text-small text-text-secondary">
+        <div className="flex items-center gap-2">
+          Mostrar
+          <select
+            aria-label="Itens por página"
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent"
+          >
+            {[10, 25, 50, 100].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </div>
+        <span>
+          Mostrando {totalItems === 0 ? 0 : startIndex + 1}–
+          {Math.min(startIndex + pageSize, totalItems)} de {totalItems}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="Página anterior"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <span className="text-small text-text-secondary">
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          type="button"
+          aria-label="Próxima página"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
   );
 }
