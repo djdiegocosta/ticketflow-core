@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { SimuladorPage } from "@/pages/admin/SimuladorPage";
 
 export const Route = createFileRoute("/admin/simulador")({
   beforeLoad: () => {
@@ -14,15 +14,11 @@ export const Route = createFileRoute("/admin/simulador")({
   },
   head: () => ({
     meta: [
-      { title: "Simulador | TicketFlow" },
-      { name: "description", content: "Simulador — plataforma TicketFlow de gestão de eventos e ingressos." },
-      { property: "og:title", content: "Simulador | TicketFlow" },
-      { property: "og:description", content: "Simulador — plataforma TicketFlow de gestão de eventos e ingressos." },
+      { title: "Simulador de Evento | TicketFlow" },
+      { name: "description", content: "Projete receitas, custos, ponto de equilíbrio e cenários de ocupação antes do seu evento acontecer." },
+      { property: "og:title", content: "Simulador de Evento | TicketFlow" },
+      { property: "og:description", content: "Projete receitas, custos, ponto de equilíbrio e cenários de ocupação antes do seu evento acontecer." },
     ],
   }),
-  component: Page_admin_simulador,
+  component: SimuladorPage,
 });
-
-function Page_admin_simulador() {
-  return <Placeholder title="Simulador" description="Simulador — plataforma TicketFlow de gestão de eventos e ingressos." />;
-}
