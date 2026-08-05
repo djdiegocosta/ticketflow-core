@@ -473,32 +473,63 @@ Acessível pelo menu principal do admin.
 ### 8.10 Simulador de Evento (`/admin/simulador`)
 
 **Ferramenta de planejamento pré-evento. Baseada em projeções — nunca usa dados reais de vendas.**
+Formato: etapas numeradas em sequência (não wizard bloqueante — todas visíveis em scroll único, numeradas 1 a 5), com o resultado calculado ao vivo conforme os campos mudam.
 
-Campos de entrada:
-- Nome do evento (referência).
-- Capacidade do local.
-- Preço médio do ingresso (pode importar de um lote existente).
-- Percentual de ocupação esperado (slider).
-- Custo fixo (R$).
-- Custo variável por pessoa (R$, opcional).
-- Receita prevista do bar (R$, opcional).
-- Outras receitas previstas (campos livres).
+**Etapa 1 — Dados gerais:**
+- Nome do evento (referência, texto livre).
+- Capacidade total (pessoas) — limite máximo de ingressos do evento simulado.
 
-Resultados automáticos:
-- Público esperado.
-- Receita projetada de ingressos.
-- Receita total projetada.
-- Custo total estimado.
-- Lucro / prejuízo projetado.
-- Ponto de equilíbrio (qtd mínima de ingressos).
-- Margem de segurança (% acima do break-even).
+**Etapa 2 — Lotes de ingressos:**
+- Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, quantidade disponível, preço (R$), quantidade vendida estimada (a projeção "realista" do produtor para aquele lote).
+- Receita por lote calculada automaticamente (preço × quantidade vendida estimada).
+- Linha de total: soma de quantidade disponível, quantidade vendida e receita.
+- Opção de importar lotes de um evento já cadastrado (preenche automaticamente a tabela).
+- Nota fixa: "A receita mostrada é o valor de face dos ingressos, sem descontos."
 
-Cenários simultâneos:
-- 🔴 Pessimista (70% do esperado).
-- 🟡 Realista (100%).
-- 🟢 Otimista (120%).
+**Etapa 3 — Outras receitas:**
+- Patrocínios (R$).
+- Bar / consumação mínima (R$).
+- Camarotes / VIP (R$).
+- Outras receitas (R$, campo livre).
 
-Regra: nenhum dado desta ferramenta afeta o sistema real.
+**Etapa 4 — Custos fixos:**
+- Aluguel do espaço (R$).
+- Cachê artístico / DJ / banda (R$).
+- Segurança (R$).
+- Estrutura — som, luz, palco (R$).
+- Equipe operacional (R$).
+- Marketing e divulgação (R$).
+- Decoração (R$).
+- Outros custos fixos (R$, campo livre).
+
+**Etapa 5 — Custos variáveis (por pessoa presente):**
+- Copos / kit de entrada (R$/pessoa).
+- Seguro por pessoa (R$/pessoa).
+- Outros variáveis por pessoa (R$, campo livre).
+- Custo variável total = soma dos campos × quantidade total vendida (soma da Etapa 2).
+
+---
+
+**Resultado Financeiro (calculado ao vivo, sempre visível conforme rola a tela):**
+
+- **Card de destaque (hero):** "Resultado estimado (Lucro/Prejuízo)" — valor grande, com badge "Projeção de lucro" (verde, var(--accent)) ou "Projeção de prejuízo" (vermelho, var(--error)) conforme o sinal do resultado. Tratamento visual de alto contraste (fundo escuro/destacado), mesmo no tema light.
+- 3 cards de apoio: "Receita total" (ingressos + outras receitas), "Custos totais" (fixos + variáveis), "Margem" (% sobre receita total).
+- Detalhamento tipo DRE (lista, não tabela): Receita de ingressos → (+) Outras receitas → (−) Custos fixos → (−) Custos variáveis → **Lucro/Prejuízo** (linha final destacada).
+
+**Ponto de Equilíbrio:**
+- "Ingressos mínimos para cobrir custos fixos" (número) + "% da capacidade" correspondente.
+- "Ticket médio líquido atual" (R$) = receita de ingressos ÷ quantidade vendida total (Etapa 2) — "por ingresso vendido".
+- Barra de ocupação: 0% — marcador do ponto de equilíbrio (ex: "PE: 22.2%") — 100%, com preenchimento até a ocupação atual estimada (soma de quantidade vendida ÷ capacidade total).
+
+**Cenários de ocupação (4 cards, não 3):**
+- 🔻 Pessimista — 50% da capacidade total.
+- 🔹 Realista — 70% da capacidade total.
+- 🔺 Otimista — 85% da capacidade total.
+- ⬆️ Lotação total — 100% da capacidade total.
+- Cada card: percentual + receita de ingressos projetada nesse cenário = ticket médio (calculado acima) × (capacidade total × percentual do cenário).
+- Sem emojis de rosto ou paleta laranja/amarela — usar iconografia Lucide neutra (ex: TrendingDown, Minus, TrendingUp, Rocket) e indicador de cor sutil (borda superior ou lateral fina), consistente com o Design System.
+
+Regra visível na tela (texto pequeno, var(--text-secondary)): "Esta ferramenta trabalha apenas com projeções — não usa nem altera dados reais de vendas."
 
 ---
 
