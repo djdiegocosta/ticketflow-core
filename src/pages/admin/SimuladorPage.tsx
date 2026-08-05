@@ -580,7 +580,7 @@ export function SimuladorPage() {
               <span className="absolute left-0">0%</span>
               <span
                 className="absolute -translate-x-1/2 whitespace-nowrap text-warning"
-                style={{ left: `${breakEvenPct}%` }}
+                style={{ left: `${Math.min(92, Math.max(10, breakEvenPct))}%` }}
               >
                 PE: {breakEvenPct.toFixed(0)}%
               </span>
