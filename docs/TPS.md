@@ -241,7 +241,14 @@ Configurações
 - Grid de cards visuais (mesmo padrão dos cards de Eventos): ícone/imagem representando a ferramenta, nome, breve descrição de uma linha.
 - Cada card leva para a rota já existente da ferramenta (/admin/simulador, /admin/remarketing, /admin/sorteios).
 - Preparado para receber novas ferramentas futuras sem exigir novo item de menu.
-- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
+- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Checklist do Evento ("Organize as tarefas do dia do evento para não esquecer nada"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
+
+**Checklist do Evento (`/admin/ferramentas/checklist`):**
+- Ferramenta simples de lista de tarefas, vinculada a um evento (dropdown de seleção no topo).
+- Adicionar tarefa: campo de texto + botão/Enter para adicionar.
+- Lista de tarefas com checkbox (marcar como concluída — texto fica riscado/esmaecido quando concluída).
+- Remover tarefa (ícone, sem necessidade de confirmação — ação de baixo risco).
+- Sem categorias, sem prazo, sem prioridade — deliberadamente simples, é uma lista de verificação para o dia do evento, não um gerenciador de projeto.
 
 ---
 
@@ -473,36 +480,50 @@ Acessível pelo menu principal do admin.
 ### 8.10 Simulador de Evento (`/admin/simulador`)
 
 **Ferramenta de planejamento pré-evento. Baseada em projeções — nunca usa dados reais de vendas.**
-Formato: etapas numeradas em sequência (não wizard bloqueante — todas visíveis em scroll único, numeradas 1 a 5), com o resultado calculado ao vivo conforme os campos mudam.
+Formato: etapas numeradas em sequência (não wizard bloqueante — todas visíveis em scroll único), com o resultado calculado ao vivo conforme os campos mudam.
 
 **Etapa 1 — Dados gerais:**
 - Nome do evento (referência, texto livre).
 - Capacidade total (pessoas) — limite máximo de ingressos do evento simulado.
 
 **Etapa 2 — Lotes de ingressos:**
-- Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, quantidade disponível, preço (R$), quantidade vendida estimada (a projeção "realista" do produtor para aquele lote).
+- Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, quantidade disponível, preço (R$), quantidade vendida estimada.
 - Receita por lote calculada automaticamente (preço × quantidade vendida estimada).
 - Linha de total: soma de quantidade disponível, quantidade vendida e receita.
-- Opção de importar lotes de um evento já cadastrado (preenche automaticamente a tabela).
+- Opção de importar lotes de um evento já cadastrado.
 - Nota fixa: "A receita mostrada é o valor de face dos ingressos, sem descontos."
 
-**Etapa 3 — Outras receitas:**
+**Etapa 3 — Bar do evento:**
+- Toggle: "Este evento terá bar próprio?" (Sim / Não). Se "Não", etapa encerra aqui, sem influenciar nenhum cálculo.
+- Se "Sim":
+  - Quantidade de cortesias (número) — cortesias não entram na receita de ingressos, mas contam como público presente para o cálculo do bar.
+  - Consumo médio por pessoa (R$).
+  - Custo total dos produtos do bar (R$) — valor informado pelo produtor, entra diretamente como despesa.
+  - Margem bruta esperada do bar (%) — usada apenas como comparação/validação, não entra no cálculo do lucro (evita contar a mesma coisa duas vezes).
+- Cálculos desta etapa:
+  - Público presente (bar) = quantidade vendida total (soma da Etapa 2) + quantidade de cortesias.
+  - Receita bruta do bar = Consumo médio por pessoa × Público presente (bar).
+  - Lucro do bar = Receita bruta do bar − Custo total dos produtos do bar (valor real, usado no Resultado Financeiro).
+  - Margem real calculada = Lucro do bar ÷ Receita bruta do bar (%) — exibida ao lado da margem esperada informada, para o produtor comparar.
+
+**Etapa 4 — Outras receitas:**
 - Patrocínios (R$).
-- Bar / consumação mínima (R$).
 - Camarotes / VIP (R$).
 - Outras receitas (R$, campo livre).
+- (Bar removido desta etapa — tratado integralmente na Etapa 3.)
 
-**Etapa 4 — Custos fixos:**
+**Etapa 5 — Custos fixos:**
 - Aluguel do espaço (R$).
-- Cachê artístico / DJ / banda (R$).
-- Segurança (R$).
+- Artistas / DJs / bandas — lista dinâmica ("+ Adicionar artista"): nome (referência) + cachê (R$) por linha; soma automática do total de cachês.
+- Segurança — quantidade de seguranças (número) × custo por unidade (R$); total calculado automaticamente.
 - Estrutura — som, luz, palco (R$).
-- Equipe operacional (R$).
+- Equipe operacional — quantidade de pessoas (número) × custo por unidade (R$); total calculado automaticamente.
 - Marketing e divulgação (R$).
 - Decoração (R$).
 - Outros custos fixos (R$, campo livre).
+- Custos fixos totais = soma de todos os itens acima (usando os totais calculados de artistas, segurança e equipe).
 
-**Etapa 5 — Custos variáveis (por pessoa presente):**
+**Etapa 6 — Custos variáveis (por pessoa presente):**
 - Copos / kit de entrada (R$/pessoa).
 - Seguro por pessoa (R$/pessoa).
 - Outros variáveis por pessoa (R$, campo livre).
@@ -513,20 +534,28 @@ Formato: etapas numeradas em sequência (não wizard bloqueante — todas visív
 **Resultado Financeiro (calculado ao vivo, sempre visível conforme rola a tela):**
 
 - **Card de destaque (hero):** "Resultado estimado (Lucro/Prejuízo)" — valor grande, com badge "Projeção de lucro" (verde, var(--accent)) ou "Projeção de prejuízo" (vermelho, var(--error)) conforme o sinal do resultado. Tratamento visual de alto contraste (fundo escuro/destacado), mesmo no tema light.
-- 3 cards de apoio: "Receita total" (ingressos + outras receitas), "Custos totais" (fixos + variáveis), "Margem" (% sobre receita total).
-- Detalhamento tipo DRE (lista, não tabela): Receita de ingressos → (+) Outras receitas → (−) Custos fixos → (−) Custos variáveis → **Lucro/Prejuízo** (linha final destacada).
+- 3 cards de apoio: "Receita total" (ingressos + bar + outras receitas), "Custos totais" (fixos + bar + variáveis), "Margem" (% sobre receita total).
+- Detalhamento tipo DRE (lista, não tabela):
+  Receita de ingressos → (+) Receita bruta do bar (se houver) → (+) Outras receitas → (−) Custos fixos → (−) Custo do bar (se houver) → (−) Custos variáveis → **Lucro/Prejuízo** (linha final destacada).
 
-**Ponto de Equilíbrio:**
-- "Ingressos mínimos para cobrir custos fixos" (número) + "% da capacidade" correspondente.
+**Painel do Bar (exibido apenas se "Este evento terá bar próprio?" = Sim):**
+- Card "Receita bruta do bar"
+- Card "Custo do bar" (valor informado)
+- Card "Lucro do bar" (receita − custo)
+- Comparação lado a lado: "Margem esperada" (informada) vs. "Margem real calculada" (a partir do custo informado)
+
+**Ponto de Equilíbrio (dois números lado a lado — com e sem o bar):**
 - "Ticket médio líquido atual" (R$) = receita de ingressos ÷ quantidade vendida total (Etapa 2) — "por ingresso vendido".
-- Barra de ocupação: 0% — marcador do ponto de equilíbrio (ex: "PE: 22.2%") — 100%, com preenchimento até a ocupação atual estimada (soma de quantidade vendida ÷ capacidade total).
+- **Sem considerar o bar:** ingressos mínimos = Custos fixos totais ÷ ticket médio. Exibir também "% da capacidade".
+- **Considerando o bar** (só aparece se houver bar): ingressos mínimos = máximo entre 0 e (Custos fixos totais − Lucro do bar) ÷ ticket médio. Exibir também "% da capacidade". Deixar claro visualmente que este número já desconta a contribuição do bar.
+- Barra de ocupação: 0% — marcador do ponto de equilíbrio (usar o "sem bar" como referência principal da barra, com o "com bar" indicado por um segundo marcador, se houver bar) — 100%, preenchimento até a ocupação atual estimada.
 
-**Cenários de ocupação (4 cards, não 3):**
+**Cenários de ocupação (4 cards, não 3) — apenas receita de ingressos, não inclui o bar:**
 - 🔻 Pessimista — 50% da capacidade total.
 - 🔹 Realista — 70% da capacidade total.
 - 🔺 Otimista — 85% da capacidade total.
 - ⬆️ Lotação total — 100% da capacidade total.
-- Cada card: percentual + receita de ingressos projetada nesse cenário = ticket médio (calculado acima) × (capacidade total × percentual do cenário).
+- Cada card: percentual + receita de ingressos projetada nesse cenário = ticket médio × (capacidade total × percentual do cenário). Nota pequena: "Os cenários consideram apenas a receita de ingressos — a receita do bar depende do público presente estimado na Etapa 3."
 - Sem emojis de rosto ou paleta laranja/amarela — usar iconografia Lucide neutra (ex: TrendingDown, Minus, TrendingUp, Rocket) e indicador de cor sutil (borda superior ou lateral fina), consistente com o Design System.
 
 Regra visível na tela (texto pequeno, var(--text-secondary)): "Esta ferramenta trabalha apenas com projeções — não usa nem altera dados reais de vendas."
@@ -692,7 +721,11 @@ Layout: menu lateral secundário interno (estilo macOS System Preferences) com a
 Seções:
 - **Organização:** nome, logo, dados de contato.
 - **Mercado Pago:** card de status da integração (Conectado / Não configurado / Requer atenção) + botão para abrir o assistente guiado (ver 8.17). O status fica visível aqui sem precisar entrar no assistente.
-- **Preferências:** tema padrão da interface; unificar ou separar listas de PDF de Vendas e Cortesias (impressão de check-in).
+- **Design:**
+  - Seleção do tema de cor de destaque — Verde neon (padrão), Azul neon, Roxo neon, Vermelho neon. Independente do tema Light/Dark (que continua em Preferências).
+  - Seleção do estilo de cantos — Retos (padrão) ou Arredondados. Ver DESIGN-SYSTEM.md para os dois conjuntos de valores.
+  - Ambas as trocas aplicam em tempo real, usando variáveis já definidas — nenhuma cor ou raio fixo depende de reescrever componentes.
+- **Preferências:** tema padrão da interface (Light/Dark); unificar ou separar listas de PDF de Vendas e Cortesias (impressão de check-in).
 - **Backup de dados:** exportar todos os dados da organização em JSON ou CSV.
 
 ---
@@ -876,6 +909,14 @@ Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual
 - **Importação:** arquitetura de adaptadores — novas plataformas = novos adaptadores.
 
 ---
+
+## 13.1 Segurança e integridade de vendas (aplicar no desenho do backend)
+
+Decisão registrada para quando o schema real for construído — não depende de tela, é regra de banco/backend:
+
+- Nenhuma escrita direta nas tabelas `sales`/`tickets` — toda criação e mudança de status passa por funções `SECURITY DEFINER` controladas (RLS ativo em todas as tabelas de negócio).
+- Toda venda carrega o registro de como foi confirmada: origem `ticketflow` exige validação de assinatura HMAC do webhook do Mercado Pago; origem `manual` registra o usuário admin responsável pelo lançamento (rastreabilidade); origem `importado` registra a plataforma de origem.
+- Limite de tentativas no checkout público (rate limiting) para evitar geração em massa de vendas pendentes por script/bot.
 
 ## 14. Backlog (documentado, não implementado)
 

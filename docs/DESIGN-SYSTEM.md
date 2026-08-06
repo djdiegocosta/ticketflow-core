@@ -127,13 +127,24 @@ Todas as cores devem ser implementadas como variáveis CSS (custom properties), 
 Bordas arredondadas suaves — estilo macOS. Não usar bordas muito agressivas nem muito quadradas.
 
 ```css
-> **Atualização (padrão vigente):** cantos retos em todo o sistema — cards, botões, inputs, modais. Só `--radius-full` permanece (uso funcional: avatares, indicadores, não decorativo). Caso essa decisão mude no futuro, este documento será atualizado.
+> **Atualização:** cantos retos são o padrão inicial do sistema, mas a partir de agora isso é **configurável pelo usuário** (Configurações → Design), não fixo. Os dois conjuntos de valores abaixo devem existir no código, trocáveis via variável — nunca hardcoded num componente específico.
 
---radius-sm: 0px;    /* inputs, badges, tags */
---radius-md: 0px;   /* cards, dropdowns, modais pequenos */
---radius-lg: 0px;   /* cards maiores, painéis, modais */
---radius-xl: 0px;   /* elementos de destaque, banners */
---radius-full: 9999px; /* botões pill (se houver), avatares, indicadores — uso funcional, não decorativo */
+**Conjunto "Retos" (padrão):**
+```
+--radius-sm: 0px;
+--radius-md: 0px;
+--radius-lg: 0px;
+--radius-xl: 0px;
+--radius-full: 9999px; /* uso funcional: avatares, indicadores — nunca muda, não é decorativo */
+```
+
+**Conjunto "Arredondados":**
+```
+--radius-sm: 6px;
+--radius-md: 10px;
+--radius-lg: 14px;
+--radius-xl: 20px;
+--radius-full: 9999px;
 ```
 
 ---
