@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Calculator, Target, Trophy, Gift, Wrench } from 'lucide-react'
 
-export const Route = createFileRoute('/admin/ferramentas')({
+export const Route = createFileRoute('/admin/ferramentas/')({
   beforeLoad: () => {
     if (typeof window === 'undefined') return;
     const auth = window.localStorage.getItem('ticketflow_auth');
