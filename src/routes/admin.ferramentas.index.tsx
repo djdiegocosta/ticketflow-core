@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { Calculator, Target, Trophy, Gift, Wrench } from 'lucide-react'
+import { Calculator, Target, Trophy, Gift, Wrench, CheckSquare } from 'lucide-react'
 
 export const Route = createFileRoute('/admin/ferramentas/')({
   beforeLoad: () => {
@@ -33,6 +33,12 @@ const tools = [
     description: "Realize sorteios entre participantes do evento",
     icon: Trophy,
     href: "/admin/sorteios",
+  },
+  {
+    name: "Checklist do Evento",
+    description: "Organize as tarefas do dia do evento para não esquecer nada",
+    icon: CheckSquare,
+    href: "/admin/checklist",
   }
 ]
 
