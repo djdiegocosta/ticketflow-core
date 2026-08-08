@@ -132,7 +132,7 @@ export function ChecklistPage() {
       </div>
 
       <SidePanel
-        isOpen={isPanelOpen}
+        open={isPanelOpen}
         onClose={() => {
           setIsPanelOpen(false);
           setNewTaskText("");
