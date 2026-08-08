@@ -20,6 +20,7 @@ import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
+import { Route as AdminChecklistRouteImport } from './routes/admin.checklist'
 import { Route as AdminCortesiasRouteImport } from './routes/admin.cortesias'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 import { Route as AdminImportacaoRouteImport } from './routes/admin.importacao'
@@ -103,6 +104,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminCheckinRoute = AdminCheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminChecklistRoute = AdminChecklistRouteImport.update({
+  id: '/checklist',
+  path: '/checklist',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminCortesiasRoute = AdminCortesiasRouteImport.update({
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
@@ -346,6 +354,7 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
+  '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/importacao': typeof AdminImportacaoRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/superadmin'
     | '/admin/checkin'
+    | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/financeiro'
     | '/admin/importacao'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/admin/checkin'
+    | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/financeiro'
     | '/admin/importacao'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/superadmin'
     | '/admin/checkin'
+    | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/financeiro'
     | '/admin/importacao'
@@ -596,6 +608,13 @@ declare module '@tanstack/react-router' {
       path: '/checkin'
       fullPath: '/admin/checkin'
       preLoaderRoute: typeof AdminCheckinRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/checklist': {
+      id: '/admin/checklist'
+      path: '/checklist'
+      fullPath: '/admin/checklist'
+      preLoaderRoute: typeof AdminChecklistRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/cortesias': {
@@ -806,6 +825,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminCheckinRoute: typeof AdminCheckinRoute
+  AdminChecklistRoute: typeof AdminChecklistRoute
   AdminCortesiasRoute: typeof AdminCortesiasRoute
   AdminFinanceiroRoute: typeof AdminFinanceiroRoute
   AdminImportacaoRoute: typeof AdminImportacaoRoute
@@ -829,6 +849,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCheckinRoute: AdminCheckinRoute,
+  AdminChecklistRoute: AdminChecklistRoute,
   AdminCortesiasRoute: AdminCortesiasRoute,
   AdminFinanceiroRoute: AdminFinanceiroRoute,
   AdminImportacaoRoute: AdminImportacaoRoute,
@@ -905,13 +926,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
