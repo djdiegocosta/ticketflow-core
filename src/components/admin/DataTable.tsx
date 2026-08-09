@@ -17,7 +17,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]",
+        "overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
         className,
       )}
     >
@@ -165,7 +165,7 @@ export function DataTablePagination({
             aria-label="Itens por página"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent"
+            className="border border-border-default bg-bg-secondary px-2 py-1 outline-none focus:border-accent rounded-[var(--radius-sm)]"
           >
             {[10, 25, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -186,7 +186,7 @@ export function DataTablePagination({
           aria-label="Página anterior"
           disabled={currentPage === 1}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
+          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled rounded-[var(--radius-sm)]"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -198,7 +198,7 @@ export function DataTablePagination({
           aria-label="Próxima página"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled"
+          className="border border-border-default p-2 text-text-primary transition-colors hover:border-accent disabled:cursor-not-allowed disabled:text-text-disabled rounded-[var(--radius-sm)]"
         >
           <ChevronRight className="h-4 w-4" />
         </button>

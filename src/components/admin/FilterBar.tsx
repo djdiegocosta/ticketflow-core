@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * abas/dropdowns/busca à esquerda, ações à direita, mesma linha e mesmo gap.
  */
 export const filterFieldClass =
-  "h-10 border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent";
+  "h-10 border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent rounded-[var(--radius-sm)]";
 
 export function FilterBar({
   children,
@@ -80,8 +80,8 @@ export function FilterTabs({
           className={cn(
             "border-b-2 px-4 py-2 text-body transition-colors",
             value === tab
-              ? "border-accent bg-accent-muted text-accent-text"
-              : "border-transparent text-text-secondary hover:bg-bg-tertiary",
+              ? "border-accent bg-accent-muted text-accent-text rounded-t-[var(--radius-sm)]"
+              : "border-transparent text-text-secondary hover:bg-bg-tertiary rounded-t-[var(--radius-sm)]",
           )}
         >
           {tab}

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * A única variação permitida é a largura (conforme o texto).
  */
 export const primaryActionClass =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover";
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover rounded-[var(--radius-sm)]";
 
 export function PrimaryActionButton({
   children,
