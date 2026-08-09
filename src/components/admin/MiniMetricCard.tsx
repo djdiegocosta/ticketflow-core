@@ -30,7 +30,7 @@ export function MiniMetricCard({
   return (
     <div
       className={cn(
-        "flex h-full min-h-[104px] flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)]",
+        "flex h-full min-h-[104px] flex-col border border-border-subtle bg-bg-secondary p-3.5 shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
         className,
       )}
     >
