@@ -80,7 +80,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6">
+    <div className="border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6 rounded-[var(--radius-md)]">
       <div className="flex flex-wrap items-center gap-4">
         <h2 className="text-heading-2 text-[var(--text-primary)]">{title}</h2>
         {titleAdornment}
@@ -108,7 +108,7 @@ export function SettingsPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Menu lateral secundário */}
-        <nav className="w-full shrink-0 border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-2 lg:w-56">
+        <nav className="w-full shrink-0 border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-2 lg:w-56 rounded-[var(--radius-md)]">
           <div className="flex flex-col gap-1">
             {sections.map((section) => {
               const isActive = active === section.id;

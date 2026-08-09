@@ -190,7 +190,7 @@ export function SalesListPage() {
               <button
                 type="button"
                 onClick={exportCsv}
-                className="inline-flex h-10 items-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent"
+                className="inline-flex h-10 items-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent rounded-[var(--radius-sm)]"
               >
                 <Download className="h-4 w-4" />
                 Exportar CSV
@@ -198,7 +198,7 @@ export function SalesListPage() {
               <button
                 type="button"
                 onClick={generatePdf}
-                className="inline-flex h-10 items-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent"
+                className="inline-flex h-10 items-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent rounded-[var(--radius-sm)]"
               >
                 <FileText className="h-4 w-4" />
                 Gerar lista PDF
