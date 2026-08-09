@@ -95,6 +95,7 @@ export function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [unified, setUnified] = useState(preferencesMock.unifiedCheckinPdf);
   const { theme, setTheme } = useTheme();
+  const design = useDesign();
 
   const mp = mpIntegrationMock;
   const status = statusMap[mp.status];
@@ -211,6 +212,93 @@ export function SettingsPage() {
                   {mp.status === "nao_configurado" ? "Configurar Mercado Pago" : "Revisar configuração"}
                 </Link>
               </Button>
+            </Panel>
+          )}
+
+          {active === "design" && (
+            <Panel title="Design">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-heading-3 text-[var(--text-primary)]">Cor de Destaque</h3>
+                    <p className="text-small text-[var(--text-secondary)]">Escolha a cor de destaque do sistema.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {[
+                      { id: "green", label: "Verde neon", color: "#00e676" },
+                      { id: "blue", label: "Azul neon", color: "#00B0FF" },
+                      { id: "purple", label: "Roxo neon", color: "#D500F9" },
+                      { id: "red", label: "Vermelho neon", color: "#FF1744" },
+                    ].map((opt) => {
+                      const isSelected = design.accent === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => design.setAccent(opt.id as any)}
+                          className={cn(
+                            "flex flex-col items-center gap-3 border p-4 transition-all",
+                            isSelected 
+                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
+                              : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
+                          )}
+                          style={isSelected ? { borderColor: opt.color } : {}}
+                        >
+                          <div 
+                            className="h-8 w-8 rounded-full shadow-sm" 
+                            style={{ backgroundColor: opt.color }}
+                          />
+                          <span className={cn(
+                            "text-micro font-medium uppercase tracking-wider",
+                            isSelected ? "text-[var(--accent-text)]" : "text-[var(--text-secondary)]"
+                          )}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4 border-t border-[var(--border-subtle)] pt-6">
+                  <div>
+                    <h3 className="text-heading-3 text-[var(--text-primary)]">Estilo de Cantos</h3>
+                    <p className="text-small text-[var(--text-secondary)]">Escolha o estilo visual dos cantos do sistema.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 max-w-sm">
+                    {[
+                      { id: "straight", label: "Retos", radius: "0px" },
+                      { id: "rounded", label: "Arredondados", radius: "10px" },
+                    ].map((opt) => {
+                      const isSelected = design.radius === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => design.setRadius(opt.id as any)}
+                          className={cn(
+                            "flex flex-col items-center gap-3 border p-4 transition-all",
+                            isSelected 
+                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
+                              : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
+                          )}
+                        >
+                          <div 
+                            className="h-12 w-12 border-2 border-[var(--text-primary)]" 
+                            style={{ borderRadius: opt.radius }}
+                          />
+                          <span className={cn(
+                            "text-micro font-medium uppercase tracking-wider",
+                            isSelected ? "text-[var(--accent-text)]" : "text-[var(--text-secondary)]"
+                          )}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </Panel>
           )}
 
