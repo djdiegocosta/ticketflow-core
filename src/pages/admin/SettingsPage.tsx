@@ -120,8 +120,8 @@ export function SettingsPage() {
                   className={[
                     "flex items-center gap-3 px-3 py-2 text-left text-body transition-colors",
                     isActive
-                      ? "bg-[var(--accent-muted)] text-[var(--accent-text)]"
-                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]",
+                      ? "bg-[var(--accent-muted)] text-[var(--accent-text)] rounded-[var(--radius-sm)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)]",
                   ].join(" ")}
                 >
                   <section.icon className="h-4 w-4" />
