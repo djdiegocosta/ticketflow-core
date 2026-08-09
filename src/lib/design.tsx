@@ -57,6 +57,10 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     root.style.setProperty("--radius-lg", style.lg);
     root.style.setProperty("--radius-xl", style.xl);
     root.style.setProperty("--radius", style.md);
+
+    // Force update shadcn-like rounded tokens if they are hardcoded in Tailwind theme
+    // but usually Tailwind v4 maps --radius to rounded utilities automatically.
+    // We ensure the base --radius variable is also updated.
   }, [radius]);
 
   const setAccent = useCallback((color: AccentColor) => {
