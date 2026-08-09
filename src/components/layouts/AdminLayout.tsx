@@ -127,7 +127,7 @@ export function AdminLayout() {
                   className={[
                     "flex items-center gap-3 rounded-none border-l-[3px] px-3 py-2 text-body transition-colors",
                     active
-                      ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)]"
+                      ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)] dark:border-l-4"
                       : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]",
                   ].join(" ")}
                 >

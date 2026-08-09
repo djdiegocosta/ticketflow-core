@@ -120,7 +120,7 @@ export function SettingsPage() {
                   className={[
                     "flex items-center gap-3 px-3 py-2 text-left text-body transition-colors",
                     isActive
-                      ? "bg-[var(--accent-muted)] text-[var(--accent-text)] rounded-[var(--radius-sm)]"
+                      ? "bg-[var(--accent-muted)] text-[var(--accent-text)] rounded-[var(--radius-sm)] ring-1 ring-accent/20 dark:ring-accent/40"
                       : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)]",
                   ].join(" ")}
                 >
@@ -240,7 +240,7 @@ export function SettingsPage() {
                           className={cn(
                             "flex flex-col items-center gap-3 border p-4 transition-all",
                             isSelected 
-                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
+                              ? "border-[var(--accent)] bg-[var(--accent-muted)] ring-1 ring-accent/20 dark:ring-accent/40" 
                               : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
                           )}
                           style={isSelected ? { borderColor: opt.color } : {}}

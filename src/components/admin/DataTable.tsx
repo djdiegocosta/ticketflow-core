@@ -105,7 +105,7 @@ export function DataTableCell({
 export type PillTone = "accent" | "warning" | "error" | "success" | "info" | "neutral";
 
 const pillToneClass: Record<PillTone, string> = {
-  accent: "bg-accent-muted text-accent-text",
+  accent: "bg-accent-muted text-accent-text border border-accent/20 dark:border-accent/40",
   warning: "bg-warning/15 text-warning",
   error: "bg-error/15 text-error",
   success: "bg-success/15 text-success",

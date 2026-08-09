@@ -80,7 +80,7 @@ export function FilterTabs({
           className={cn(
             "border-b-2 px-4 py-2 text-body transition-colors",
             value === tab
-              ? "border-accent bg-accent-muted text-accent-text rounded-t-[var(--radius-sm)]"
+              ? "border-accent bg-accent-muted text-accent-text rounded-t-[var(--radius-sm)] dark:border-b-2"
               : "border-transparent text-text-secondary hover:bg-bg-tertiary rounded-t-[var(--radius-sm)]",
           )}
         >
