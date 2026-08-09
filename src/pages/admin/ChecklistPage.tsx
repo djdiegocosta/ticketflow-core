@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { ClipboardList, CheckCircle, Trash2 } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { ClipboardList, CheckCircle, Trash2, Check, RotateCcw, X } from "lucide-react";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { SidePanel } from "@/components/admin/SidePanel";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,10 @@ export function ChecklistPage() {
   const [newTaskText, setNewTaskText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const completedCount = tasks.filter(t => t.completed).length;
+  const activeTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
+  
+  const completedCount = completedTasks.length;
   const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
   const handleAddTask = (e?: React.FormEvent) => {
@@ -48,7 +51,6 @@ export function ChecklistPage() {
     setNewTaskText("");
     toast.success("Tarefa adicionada com sucesso");
     
-    // Mantém o foco no input após adicionar
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
@@ -94,42 +96,109 @@ export function ChecklistPage() {
         </MiniMetricCard>
       </MiniMetricGrid>
 
-      <div className="bg-bg-secondary border border-border-subtle p-6">
-        <div className="space-y-4">
-          {tasks.length === 0 ? (
-            <div className="text-center py-12 text-text-secondary">
-              Nenhuma tarefa cadastrada. Comece adicionando uma nova!
-            </div>
-          ) : (
-            tasks.map((task) => (
-              <div 
-                key={task.id} 
-                className="flex items-center justify-between gap-4 p-4 border border-border-subtle hover:border-accent transition-colors group"
-              >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <Checkbox 
-                    checked={task.completed} 
-                    onCheckedChange={() => toggleTask(task.id)}
-                    className="rounded-none border-border-default data-[state=checked]:bg-success data-[state=checked]:border-success"
-                  />
-                  <span className={cn(
-                    "text-heading-3 text-text-primary truncate transition-all duration-300",
-                    task.completed && "text-text-disabled line-through"
-                  )}>
+      <Tabs defaultValue="tarefas" className="w-full">
+        <TabsList className="w-full justify-start rounded-none border-b border-border-subtle bg-transparent p-0 h-auto mb-6">
+          <TabsTrigger 
+            value="tarefas" 
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-6 py-3 text-heading-3 text-text-secondary data-[state=active]:text-text-primary transition-all"
+          >
+            Tarefas ({activeTasks.length})
+          </TabsTrigger>
+          <TabsTrigger 
+            value="concluidas" 
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-6 py-3 text-heading-3 text-text-secondary data-[state=active]:text-text-primary transition-all"
+          >
+            Concluídas ({completedTasks.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tarefas" className="space-y-6 outline-none">
+          <form onSubmit={handleAddTask} className="flex gap-2">
+            <Input 
+              ref={inputRef}
+              value={newTaskText}
+              onChange={(e) => setNewTaskText(e.target.value)}
+              placeholder="Adicionar nova tarefa..."
+              className="rounded-none border-border-default focus-visible:ring-accent bg-bg-secondary"
+            />
+            <PrimaryActionButton type="submit" className="whitespace-nowrap">
+              Adicionar
+            </PrimaryActionButton>
+          </form>
+
+          <div className="bg-bg-secondary border border-border-subtle p-6 space-y-4">
+            {activeTasks.length === 0 ? (
+              <div className="text-center py-12 text-text-secondary">
+                Nenhuma tarefa pendente.
+              </div>
+            ) : (
+              activeTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="flex items-center justify-between gap-4 p-4 border border-border-subtle hover:border-accent transition-colors group"
+                >
+                  <span className="text-heading-3 text-text-primary truncate flex-1">
                     {task.text}
                   </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => toggleTask(task.id)}
+                      className="p-2 text-text-secondary hover:text-success transition-colors"
+                      title="Concluir"
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
+                    <button 
+                      onClick={() => removeTask(task.id)}
+                      className="p-2 text-text-secondary hover:text-error transition-colors"
+                      title="Remover"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => removeTask(task.id)}
-                  className="p-2 text-text-secondary hover:text-error transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+              ))
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="concluidas" className="outline-none">
+          <div className="bg-bg-secondary border border-border-subtle p-6 space-y-4">
+            {completedTasks.length === 0 ? (
+              <div className="text-center py-12 text-text-secondary">
+                Nenhuma tarefa concluída ainda.
               </div>
-            ))
-          )}
-        </div>
-      </div>
+            ) : (
+              completedTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="flex items-center justify-between gap-4 p-4 border border-border-subtle hover:border-accent transition-colors group"
+                >
+                  <span className="text-heading-3 text-text-disabled truncate flex-1">
+                    {task.text}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => toggleTask(task.id)}
+                      className="p-2 text-text-secondary hover:text-accent transition-colors"
+                      title="Restaurar"
+                    >
+                      <RotateCcw className="w-5 h-5" />
+                    </button>
+                    <button 
+                      onClick={() => removeTask(task.id)}
+                      className="p-2 text-text-secondary hover:text-error transition-colors"
+                      title="Remover"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <SidePanel
         open={isPanelOpen}
@@ -143,7 +212,6 @@ export function ChecklistPage() {
           <div className="space-y-2">
             <label className="text-small font-medium text-text-secondary">Descrição da tarefa</label>
             <Input 
-              ref={inputRef}
               value={newTaskText}
               onChange={(e) => setNewTaskText(e.target.value)}
               placeholder="Ex: Checar iluminação do palco"
