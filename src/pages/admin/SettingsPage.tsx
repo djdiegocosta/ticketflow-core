@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Circle,
+  Palette,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/lib/theme";
+import { useDesign } from "@/lib/design";
 import {
   environmentLabel,
   mpIntegrationMock,
@@ -26,11 +28,12 @@ import {
   type MpStatus,
 } from "@/lib/settings-data";
 
-type SectionId = "organizacao" | "mercadopago" | "preferencias" | "backup";
+type SectionId = "organizacao" | "mercadopago" | "design" | "preferencias" | "backup";
 
 const sections: { id: SectionId; label: string; icon: typeof Settings2 }[] = [
   { id: "organizacao", label: "Organização", icon: Building2 },
   { id: "mercadopago", label: "Mercado Pago", icon: CreditCard },
+  { id: "design", label: "Design", icon: Palette },
   { id: "preferencias", label: "Preferências", icon: Sliders },
   { id: "backup", label: "Backup de Dados", icon: Database },
 ];
