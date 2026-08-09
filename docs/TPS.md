@@ -245,10 +245,13 @@ Configurações
 
 **Checklist do Evento (`/admin/ferramentas/checklist`):**
 - Ferramenta simples de lista de tarefas, vinculada a um evento (dropdown de seleção no topo).
-- Adicionar tarefa: campo de texto + botão/Enter para adicionar.
-- Lista de tarefas com checkbox (marcar como concluída — texto fica riscado/esmaecido quando concluída).
-- Remover tarefa (ícone, sem necessidade de confirmação — ação de baixo risco).
-- Sem categorias, sem prazo, sem prioridade — deliberadamente simples, é uma lista de verificação para o dia do evento, não um gerenciador de projeto.
+- Duas abas: "Tarefas" (pendentes) e "Concluídas", cada uma com contador (ex: "Tarefas (5)", "Concluídas (3)").
+- Adicionar tarefa (só na aba Tarefas): campo de texto + botão/Enter para adicionar.
+- Cada tarefa na aba Tarefas: texto + botão de ícone "check" (concluir) — ao clicar, a tarefa sai da aba Tarefas e entra em Concluídas imediatamente, sem confirmação.
+- Cada tarefa na aba Concluídas: texto (esmaecido) + botão "Restaurar" (ícone de desfazer) — volta para a aba Tarefas.
+- Remover tarefa (ícone X) disponível nas duas abas, sem necessidade de confirmação — ação de baixo risco.
+- Sem gesto de arrastar/swipe — o admin é desktop-first, o botão de ícone já cobre a ação em qualquer dispositivo.
+- Sem categorias, sem prazo, sem prioridade — deliberadamente simples.
 
 ---
 
