@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -19,10 +19,14 @@ import {
   LogOut,
   Wrench,
   Target,
+  Menu,
+  X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
 
 
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
