@@ -208,7 +208,7 @@ export function ClientsListPage() {
       <DataTableShell>
         <DataTable className="min-w-[980px]">
           <thead>
-            <tr className="border-b border-border-subtle text-left">
+            <tr className="border-b border-border-subtle text-left bg-bg-tertiary transition-colors">
               {columns.map((col) => (
                 <th
                   key={col.label}

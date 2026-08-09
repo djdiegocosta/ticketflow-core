@@ -39,7 +39,7 @@ export function DataTable({
 export function DataTableHeadRow({ columns }: { columns: React.ReactNode[] }) {
   return (
     <thead>
-      <tr className="border-b border-border-subtle text-left">
+      <tr className="border-b border-border-subtle text-left bg-bg-tertiary transition-colors">
         {columns.map((h, i) => (
           <th key={i} className="px-4 py-3 text-small font-medium text-text-secondary">
             {h}
@@ -105,12 +105,12 @@ export function DataTableCell({
 export type PillTone = "accent" | "warning" | "error" | "success" | "info" | "neutral";
 
 const pillToneClass: Record<PillTone, string> = {
-  accent: "bg-accent-muted text-accent-text",
+  accent: "bg-accent-muted text-accent-text border border-accent/20 dark:border-accent/40",
   warning: "bg-warning/15 text-warning",
   error: "bg-error/15 text-error",
   success: "bg-success/15 text-success",
   info: "bg-info/15 text-info",
-  neutral: "bg-bg-tertiary text-text-secondary",
+  neutral: "bg-bg-tertiary text-text-secondary border border-border-subtle",
 };
 
 export function StatusPill({
