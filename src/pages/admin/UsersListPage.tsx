@@ -100,7 +100,7 @@ export default function UsersListPage() {
                 <DataTableCell variant="primary">{user.name}</DataTableCell>
                 <DataTableCell>{user.email}</DataTableCell>
                 <DataTableCell>
-                  <StatusPill tone={user.role === "Admin" || user.role === "admin" ? "accent" : "neutral"}>
+                  <StatusPill tone={user.role === "Admin" ? "accent" : "neutral"}>
                     {user.role}
                   </StatusPill>
                 </DataTableCell>
