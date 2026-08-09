@@ -113,18 +113,7 @@ export function ChecklistPage() {
         </TabsList>
 
         <TabsContent value="tarefas" className="space-y-6 outline-none">
-          <form onSubmit={handleAddTask} className="flex gap-2">
-            <Input 
-              ref={inputRef}
-              value={newTaskText}
-              onChange={(e) => setNewTaskText(e.target.value)}
-              placeholder="Adicionar nova tarefa..."
-              className="rounded-none border-border-default focus-visible:ring-accent bg-bg-secondary"
-            />
-            <PrimaryActionButton type="submit" className="whitespace-nowrap">
-              Adicionar
-            </PrimaryActionButton>
-          </form>
+          {/* Remote add task field removed as per requirements - using only the + Nova Tarefa button */}
 
           <div className="bg-bg-secondary border border-border-subtle p-6 space-y-4">
             {activeTasks.length === 0 ? (
@@ -208,7 +197,7 @@ export function ChecklistPage() {
         }}
         title="Nova Tarefa"
       >
-        <form onSubmit={handleAddTask} className="space-y-6">
+        <form onSubmit={(e) => { handleAddTask(e); setIsPanelOpen(false); }} className="space-y-6">
           <div className="space-y-2">
             <label className="text-small font-medium text-text-secondary">Descrição da tarefa</label>
             <Input 

@@ -39,7 +39,7 @@ export function DataTable({
 export function DataTableHeadRow({ columns }: { columns: React.ReactNode[] }) {
   return (
     <thead>
-      <tr className="border-b border-border-subtle text-left">
+      <tr className="border-b border-border-subtle text-left bg-bg-tertiary transition-colors">
         {columns.map((h, i) => (
           <th key={i} className="px-4 py-3 text-small font-medium text-text-secondary">
             {h}
