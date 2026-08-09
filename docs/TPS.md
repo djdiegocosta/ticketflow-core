@@ -423,14 +423,42 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 
 ### 8.8 Check-in (`/admin/checkin`)
 
+**Tratamento técnico especial — ver seção 13.2 (Arquitetura mobile/PWA).** Esta tela usa `MobileLayout`, não o layout padrão do admin, mesmo estando dentro da área administrativa — é uso de campo, em pé, durante o evento.
+
 - Seletor de evento ativo.
-- Iniciar leitura via câmera (QR Code).
+- Botão "Iniciar Check-in" — aciona tela cheia (onde suportado) e mantém a tela acesa (Wake Lock).
+- Leitura via câmera (QR Code).
 - Resultado em destaque:
   - ✅ Válido — nome, evento, horário.
   - ⚠️ Já utilizado — horário do uso anterior.
   - ❌ Inválido — motivo.
 - Contador em tempo real: check-ins realizados vs. total de ingressos.
 - Histórico da sessão atual.
+- Botão "Encerrar Check-in" — sai da tela cheia, libera o Wake Lock, confirma antes de sair (evita interromper o uso por toque acidental).
+
+---
+
+## 13.2 Arquitetura mobile / PWA
+
+Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes de construir Check-in, Área do Cliente e Área Pública — nenhuma dessas telas foi construída ainda, então não há retrabalho.
+
+**PWA único** — cobre o app inteiro (Admin + Cliente + Público), mesmo domínio, mesmo manifest e service worker. Não há PWAs separados por área.
+- `manifest.json`: `display: standalone`, ícones, nome, cor de tema (usa a cor de destaque ativa do sistema).
+- Service Worker básico (habilita instalação; cache offline complexo fica fora de escopo por ora).
+- Meta tags mobile no `index.html`: viewport correto, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`.
+
+**Dois layouts distintos, não um layout responsivo genérico:**
+- `AdminLayout` — desktop-first, sidebar, tabelas densas. Já em uso em todas as telas administrativas construídas até aqui.
+- `MobileLayout` — mobile-first, navegação inferior, componentes touch-friendly. Usado pela Área do Cliente, Área Pública, e por telas específicas do admin que são de uso em campo (Check-in).
+- Troca de layout decidida por rota/contexto (qual tela é), não por tamanho de tela — uma tela de Check-in continua em `MobileLayout` mesmo aberta numa janela larga de desktop.
+
+**Check-in — comportamento de app nativo (uso em campo, risco de fechamento acidental):**
+- Fullscreen API (`requestFullscreen`), acionada pelo botão "Iniciar Check-in" — funciona bem em Android/Chrome. **Não funciona no Safari/iOS** (limitação conhecida da plataforma, não é bug do projeto). Nesses casos, o app deve orientar o uso do PWA instalado (modo standalone), que remove a barra do navegador sem depender da Fullscreen API.
+- Interceptar navegação/botão voltar (`history.pushState` + listener `popstate`): exibir confirmação antes de sair do modo Check-in.
+- Wake Lock API para impedir que a tela apague durante o uso — suporte varia por navegador; aplicar com verificação de disponibilidade, sem quebrar caso não suportado.
+- Em modo instalado (standalone), gestos acidentais do navegador (pull-to-refresh, swipe de navegação) já ficam naturalmente desativados.
+
+**Responsividade:** breakpoints Tailwind usados de forma consistente com a estratégia de cada área. Para diferenças estruturais grandes (não só estilo), preferir troca de componente via hook de detecção de dispositivo (`useMediaQuery`) a esconder/mostrar elementos via CSS.
 
 ---
 
