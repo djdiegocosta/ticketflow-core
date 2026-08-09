@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Circle,
+  Palette,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
@@ -18,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/lib/theme";
+import { useDesign } from "@/lib/design";
+import { cn } from "@/lib/utils";
 import {
   environmentLabel,
   mpIntegrationMock,
@@ -26,11 +29,12 @@ import {
   type MpStatus,
 } from "@/lib/settings-data";
 
-type SectionId = "organizacao" | "mercadopago" | "preferencias" | "backup";
+type SectionId = "organizacao" | "mercadopago" | "design" | "preferencias" | "backup";
 
 const sections: { id: SectionId; label: string; icon: typeof Settings2 }[] = [
   { id: "organizacao", label: "Organização", icon: Building2 },
   { id: "mercadopago", label: "Mercado Pago", icon: CreditCard },
+  { id: "design", label: "Design", icon: Palette },
   { id: "preferencias", label: "Preferências", icon: Sliders },
   { id: "backup", label: "Backup de Dados", icon: Database },
 ];
@@ -92,6 +96,7 @@ export function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [unified, setUnified] = useState(preferencesMock.unifiedCheckinPdf);
   const { theme, setTheme } = useTheme();
+  const design = useDesign();
 
   const mp = mpIntegrationMock;
   const status = statusMap[mp.status];
@@ -208,6 +213,93 @@ export function SettingsPage() {
                   {mp.status === "nao_configurado" ? "Configurar Mercado Pago" : "Revisar configuração"}
                 </Link>
               </Button>
+            </Panel>
+          )}
+
+          {active === "design" && (
+            <Panel title="Design">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-heading-3 text-[var(--text-primary)]">Cor de Destaque</h3>
+                    <p className="text-small text-[var(--text-secondary)]">Escolha a cor de destaque do sistema.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {[
+                      { id: "green", label: "Verde neon", color: "#00e676" },
+                      { id: "blue", label: "Azul neon", color: "#00B0FF" },
+                      { id: "purple", label: "Roxo neon", color: "#D500F9" },
+                      { id: "red", label: "Vermelho neon", color: "#FF1744" },
+                    ].map((opt) => {
+                      const isSelected = design.accent === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => design.setAccent(opt.id as any)}
+                          className={cn(
+                            "flex flex-col items-center gap-3 border p-4 transition-all",
+                            isSelected 
+                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
+                              : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
+                          )}
+                          style={isSelected ? { borderColor: opt.color } : {}}
+                        >
+                          <div 
+                            className="h-8 w-8 rounded-full shadow-sm" 
+                            style={{ backgroundColor: opt.color }}
+                          />
+                          <span className={cn(
+                            "text-micro font-medium uppercase tracking-wider",
+                            isSelected ? "text-[var(--accent-text)]" : "text-[var(--text-secondary)]"
+                          )}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4 border-t border-[var(--border-subtle)] pt-6">
+                  <div>
+                    <h3 className="text-heading-3 text-[var(--text-primary)]">Estilo de Cantos</h3>
+                    <p className="text-small text-[var(--text-secondary)]">Escolha o estilo visual dos cantos do sistema.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 max-w-sm">
+                    {[
+                      { id: "straight", label: "Retos", radius: "0px" },
+                      { id: "rounded", label: "Arredondados", radius: "10px" },
+                    ].map((opt) => {
+                      const isSelected = design.radius === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => design.setRadius(opt.id as any)}
+                          className={cn(
+                            "flex flex-col items-center gap-3 border p-4 transition-all",
+                            isSelected 
+                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
+                              : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
+                          )}
+                        >
+                          <div 
+                            className="h-12 w-12 border-2 border-[var(--text-primary)]" 
+                            style={{ borderRadius: opt.radius }}
+                          />
+                          <span className={cn(
+                            "text-micro font-medium uppercase tracking-wider",
+                            isSelected ? "text-[var(--accent-text)]" : "text-[var(--text-secondary)]"
+                          )}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </Panel>
           )}
 
