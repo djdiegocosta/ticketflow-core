@@ -55,7 +55,7 @@ export function SidePanel({
             type="button"
             aria-label="Fechar painel"
             onClick={onClose}
-            className="p-1 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+            className="p-1 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary rounded-[var(--radius-sm)]"
           >
             <X className="h-5 w-5" />
           </button>
@@ -64,7 +64,7 @@ export function SidePanel({
         {/* Barra de progresso (steps) */}
         {steps && steps.length > 1 && currentStep !== undefined && (
           <div className="shrink-0 border-b border-border-subtle px-6 py-4">
-            <div className="mb-2 h-1 w-full bg-bg-tertiary">
+            <div className="mb-2 h-1 w-full bg-bg-tertiary rounded-[var(--radius-full)]">
               <div
                 className="h-full bg-accent transition-all duration-300"
                 style={{ width: `${(currentStep / steps.length) * 100}%` }}
@@ -98,7 +98,7 @@ export function SidePanel({
 }
 
 export const panelInputClass =
-  "w-full border border-border-default bg-bg-secondary px-3.5 py-2.5 text-body text-text-primary outline-none transition-colors placeholder:text-text-disabled focus:border-accent";
+  "w-full border border-border-default bg-bg-secondary px-3.5 py-2.5 text-body text-text-primary outline-none transition-colors placeholder:text-text-disabled focus:border-accent rounded-[var(--radius-sm)]";
 export const panelLabelClass = "mb-2 block text-small text-text-secondary";
 export const panelErrorClass = "mt-1 text-small text-error";
 
@@ -137,7 +137,7 @@ export function PanelPrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center justify-center gap-1 bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center justify-center gap-1 bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 rounded-[var(--radius-sm)]",
         className,
       )}
     >
@@ -160,7 +160,7 @@ export function PanelSecondaryButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center justify-center gap-1 border border-border-default bg-bg-tertiary px-5 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent",
+        "inline-flex items-center justify-center gap-1 border border-border-default bg-bg-tertiary px-5 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent rounded-[var(--radius-sm)]",
         className,
       )}
     >
@@ -186,7 +186,7 @@ export function PanelDiscardDialog({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-6">
-      <div className="w-full max-w-[400px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+      <div className="w-full max-w-[400px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)] rounded-[var(--radius-md)]">
         <h3 className="text-heading-2 text-text-primary">{title}</h3>
         <p className="mt-2 text-body text-text-secondary">{description}</p>
         <div className="mt-6 flex justify-end gap-3">
@@ -200,7 +200,7 @@ export function PanelDiscardDialog({
           <button
             type="button"
             onClick={onDiscard}
-            className="bg-error px-4 py-2 text-body font-semibold text-white transition-opacity hover:opacity-90"
+            className="bg-error px-4 py-2 text-body font-semibold text-white transition-opacity hover:opacity-90 rounded-[var(--radius-sm)]"
           >
             Descartar
           </button>

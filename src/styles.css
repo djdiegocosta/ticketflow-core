@@ -200,11 +200,12 @@
   --text-mono--line-height: 1.5;
   --text-mono--font-weight: 400;
 
-  /* Raios */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  /* Raios baseados nas variáveis mutáveis */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius: var(--radius-md);
   --radius-full: 9999px;
 
   /* Sombras */

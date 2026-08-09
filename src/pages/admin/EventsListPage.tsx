@@ -139,7 +139,7 @@ export function EventsListPage() {
             key={event.id}
             to="/admin/eventos/$id"
             params={{ id: event.id }}
-            className="group bg-bg-secondary border border-border-subtle overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+            className="group bg-bg-secondary border border-border-subtle overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col rounded-[var(--radius-md)]"
           >
             <div className="h-[140px] w-full relative">
               <img 
@@ -176,7 +176,7 @@ export function EventsListPage() {
                   <span>{event.sold}/{event.capacity} vendidos</span>
                   <span>{Math.round((event.sold / event.capacity) * 100)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-bg-tertiary overflow-hidden">
+                <div className="h-1.5 w-full bg-bg-tertiary overflow-hidden rounded-[var(--radius-full)]">
                   <div 
                     className="h-full bg-accent transition-all duration-500" 
                     style={{ width: `${(event.sold / event.capacity) * 100}%` }} 
@@ -196,7 +196,7 @@ export function EventsListPage() {
             <select 
               value={pageSize} 
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="bg-bg-secondary border border-border-default px-2 py-1 outline-none focus:border-accent"
+              className="bg-bg-secondary border border-border-default px-2 py-1 outline-none focus:border-accent rounded-[var(--radius-sm)]"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -208,13 +208,13 @@ export function EventsListPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed">
+          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed rounded-[var(--radius-sm)]">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button className="p-2 border border-border-default text-text-primary hover:border-accent transition-colors">
+          <button className="p-2 border border-border-default text-text-primary hover:border-accent transition-colors rounded-[var(--radius-sm)]">
             1
           </button>
-          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed">
+          <button disabled className="p-2 border border-border-default text-text-disabled cursor-not-allowed rounded-[var(--radius-sm)]">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

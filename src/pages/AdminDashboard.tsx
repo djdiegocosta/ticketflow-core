@@ -58,7 +58,7 @@ const MOCK_LAST_SALES = [
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaugeValue, iconColor, subtext }: any) => {
   return (
-    <div className="bg-bg-secondary border border-border-subtle p-5 shadow-sm h-full flex flex-col">
+    <div className="bg-bg-secondary border border-border-subtle p-5 shadow-sm h-full flex flex-col rounded-[var(--radius-md)]">
       <div className="flex items-start justify-between mb-2">
         <span className="text-small text-text-secondary">{title}</span>
         <Icon className={cn("w-5 h-5", iconColor)} />
@@ -102,7 +102,7 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
 
       {progress !== undefined && (
         <div className="mt-4">
-          <div className="h-1 w-full bg-bg-tertiary rounded-radius-full overflow-hidden">
+          <div className="h-1 w-full bg-bg-tertiary rounded-[var(--radius-full)] overflow-hidden">
             <div 
               className="h-full bg-accent transition-all duration-500" 
               style={{ width: `${progress}%` }} 
@@ -131,8 +131,8 @@ export function AdminDashboard() {
             className={cn(
               "px-4 py-2 text-body transition-all relative border-b-2",
               isOverview 
-                ? "bg-accent-muted text-accent-text border-accent" 
-                : "text-text-secondary hover:bg-bg-tertiary border-transparent"
+                ? "bg-accent-muted text-accent-text border-accent rounded-t-[var(--radius-sm)]" 
+                : "text-text-secondary hover:bg-bg-tertiary border-transparent rounded-t-[var(--radius-sm)]"
             )}
           >
             Visão Geral
@@ -144,8 +144,8 @@ export function AdminDashboard() {
               className={cn(
                 "px-4 py-2 text-body transition-all relative border-b-2",
                 currentEvent === event.id 
-                  ? "bg-accent-muted text-accent-text border-accent" 
-                  : "text-text-secondary hover:bg-bg-tertiary border-transparent"
+                  ? "bg-accent-muted text-accent-text border-accent rounded-t-[var(--radius-sm)]" 
+                  : "text-text-secondary hover:bg-bg-tertiary border-transparent rounded-t-[var(--radius-sm)]"
               )}
             >
               {event.name}
@@ -191,7 +191,7 @@ export function AdminDashboard() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
         {/* Sales Evolution */}
-        <div className="lg:col-span-6 bg-bg-secondary border border-border-subtle p-6">
+        <div className="lg:col-span-6 bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
           <h2 className="text-heading-2 text-text-primary mb-6">Vendas diárias</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -238,7 +238,7 @@ export function AdminDashboard() {
         </div>
 
         {/* Hourly Peaks */}
-        <div className="lg:col-span-4 bg-bg-secondary border border-border-subtle p-6">
+        <div className="lg:col-span-4 bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
           <h2 className="text-heading-2 text-text-primary mb-6">Pico de vendas por horário</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -285,7 +285,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Last Sales Table-like List */}
-      <div className="bg-bg-secondary border border-border-subtle p-6">
+      <div className="bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <h2 className="text-heading-2 text-text-primary">Últimas vendas</h2>
@@ -325,7 +325,7 @@ export function AdminDashboard() {
                 
                 <div className="flex items-center justify-between gap-4">
                   <div className={cn(
-                    "text-micro px-2 py-0.5 rounded-radius-full font-bold uppercase",
+                    "text-micro px-2 py-0.5 rounded-[var(--radius-full)] font-bold uppercase",
                     sale.status === "Pago" && "bg-accent-muted text-accent-text",
                     sale.status === "Aguardando" && "bg-warning/10 text-warning",
                     sale.status === "Cancelado" && "bg-error/10 text-error",
