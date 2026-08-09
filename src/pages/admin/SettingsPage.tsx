@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/lib/theme";
 import { useDesign } from "@/lib/design";
+import { cn } from "@/lib/utils";
 import {
   environmentLabel,
   mpIntegrationMock,
