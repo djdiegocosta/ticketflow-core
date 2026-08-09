@@ -110,7 +110,7 @@ const pillToneClass: Record<PillTone, string> = {
   error: "bg-error/15 text-error",
   success: "bg-success/15 text-success",
   info: "bg-info/15 text-info",
-  neutral: "bg-bg-tertiary text-text-secondary",
+  neutral: "bg-bg-tertiary text-text-secondary border border-border-subtle",
 };
 
 export function StatusPill({
