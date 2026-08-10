@@ -304,6 +304,64 @@ export function SettingsPage() {
             </Panel>
           )}
 
+          {active === "favicon" && (
+            <Panel title="Favicon">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <FieldLabel>Ícone do Site (Favicon)</FieldLabel>
+                  <p className="text-small text-[var(--text-secondary)]">
+                    O favicon é o ícone exibido na aba do navegador. Recomenda-se uma imagem quadrada.
+                  </p>
+                  <div className="flex items-center gap-6 mt-4">
+                    <div className="flex h-24 w-24 items-center justify-center border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-2">
+                      <img 
+                        id="favicon-preview"
+                        src="/favicon.ico" 
+                        alt="Favicon atual" 
+                        className="h-full w-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="inline-block cursor-pointer border border-[var(--border-default)] bg-[var(--bg-tertiary)] px-4 py-2 text-body text-[var(--text-primary)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent-muted)]">
+                        Fazer upload de novo ícone
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const result = event.target?.result as string;
+                                const preview = document.getElementById('favicon-preview') as HTMLImageElement;
+                                if (preview) preview.src = result;
+                                
+                                // In a real app, this would upload to storage. 
+                                // For this prototype, we'll simulate the "set" by updating the head link dynamically if possible
+                                // but primarily showing the UI success.
+                                const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+                                if (faviconLink) faviconLink.href = result;
+                                toast.success("Novo favicon aplicado visualmente!");
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                      <p className="text-micro text-[var(--text-secondary)] max-w-xs">
+                        JPG, PNG ou SVG. A imagem será adaptada para um formato quadrado.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          )}
+
           {active === "preferencias" && (
             <Panel title="Preferências">
               <div className="space-y-2">
