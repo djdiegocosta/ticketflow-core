@@ -35,6 +35,7 @@ const sections: { id: SectionId; label: string; icon: typeof Settings2 }[] = [
   { id: "organizacao", label: "Organização", icon: Building2 },
   { id: "mercadopago", label: "Mercado Pago", icon: CreditCard },
   { id: "design", label: "Design", icon: Palette },
+  { id: "favicon", label: "Favicon", icon: ImageIcon },
   { id: "preferencias", label: "Preferências", icon: Sliders },
   { id: "backup", label: "Backup de Dados", icon: Database },
 ];
