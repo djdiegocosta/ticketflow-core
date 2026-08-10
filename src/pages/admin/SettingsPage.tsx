@@ -29,7 +29,7 @@ import {
   type MpStatus,
 } from "@/lib/settings-data";
 
-type SectionId = "organizacao" | "mercadopago" | "design" | "preferencias" | "backup";
+type SectionId = "organizacao" | "mercadopago" | "design" | "favicon" | "preferencias" | "backup";
 
 const sections: { id: SectionId; label: string; icon: typeof Settings2 }[] = [
   { id: "organizacao", label: "Organização", icon: Building2 },
