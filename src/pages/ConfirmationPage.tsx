@@ -12,7 +12,7 @@ export default function ConfirmationPage() {
 
   if (!sale) {
     return (
-      <MobileLayout>
+      <MobileLayout showFooter={false}>
         <div className="flex flex-col items-center justify-center gap-4 px-5 py-20 text-center">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Venda não encontrada</h2>
           <p className="text-small text-[var(--text-secondary)]">O código da venda é inválido ou ainda está sendo processado.</p>
@@ -25,7 +25,7 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <MobileLayout headerContent={<div className="text-center font-semibold text-small">Sucesso!</div>}>
+    <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Sucesso!</div>}>
       <div className="flex flex-col gap-6 px-5 py-8 animate-in fade-in zoom-in duration-500">
         
         {/* Success Header */}
