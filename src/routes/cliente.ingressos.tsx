@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/cliente/ingressos")({
+  head: () => ({
+    meta: [
+      { title: "Meus Ingressos | TicketFlow" },
+      { name: "description", content: "Gerencie seus ingressos e participe de eventos." },
+      { property: "og:title", content: "Meus Ingressos | TicketFlow" },
+      { property: "og:description", content: "Gerencie seus ingressos e participe de eventos." },
+    ],
+  }),
   component: Page_cliente_ingressos,
 });
 

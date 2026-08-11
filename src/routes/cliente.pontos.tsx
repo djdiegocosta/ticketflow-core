@@ -3,6 +3,14 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/cliente/pontos")({
+  head: () => ({
+    meta: [
+      { title: "Meus Pontos | TicketFlow" },
+      { name: "description", content: "Confira seu saldo de pontos e histórico." },
+      { property: "og:title", content: "Meus Pontos | TicketFlow" },
+      { property: "og:description", content: "Confira seu saldo de pontos e histórico." },
+    ],
+  }),
   component: Page_cliente_pontos,
 });
 

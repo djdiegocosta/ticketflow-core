@@ -3,6 +3,14 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 
 export const Route = createFileRoute("/cliente/perfil")({
+  head: () => ({
+    meta: [
+      { title: "Meu Perfil | TicketFlow" },
+      { name: "description", content: "Gerencie suas informações pessoais." },
+      { property: "og:title", content: "Meu Perfil | TicketFlow" },
+      { property: "og:description", content: "Gerencie suas informações pessoais." },
+    ],
+  }),
   component: Page_cliente_perfil,
 });
 

@@ -2,6 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/cliente/")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard | TicketFlow" },
+      { name: "description", content: "Sua central de eventos e ingressos." },
+      { property: "og:title", content: "Dashboard | TicketFlow" },
+      { property: "og:description", content: "Sua central de eventos e ingressos." },
+    ],
+  }),
   component: Page_cliente_index,
 });
 
