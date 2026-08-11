@@ -36,7 +36,7 @@ export default function EventPage() {
   };
 
   return (
-    <MobileLayout>
+    <MobileLayout showFooter={false}>
       <div className="flex flex-col animate-in fade-in duration-500">
         {/* Cover Image */}
         <div className="relative h-64 w-full">
@@ -126,7 +126,7 @@ export default function EventPage() {
       </div>
 
       {/* Fixed Footer Buy Button */}
-      <div className="fixed bottom-16 left-0 right-0 z-50 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 py-4 safe-area-bottom shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 py-4 safe-area-bottom shadow-lg">
         <Button
           onClick={handleBuy}
           className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] transition-all active:scale-[0.98]"
