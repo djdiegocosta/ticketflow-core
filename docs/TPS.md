@@ -106,8 +106,10 @@ Aplicadas em todo campo de entrada do sistema.
 
 ## 6. Área pública
 
+**Mobile first em toda esta seção — usa `MobileLayout` (ver 13.2), nunca o `AdminLayout`.**
+
 ### 6.1 Página do evento (`/e/:slug`)
-**Mobile first. Objetivo: converter visitante em comprador.**
+**Objetivo: converter visitante em comprador.**
 
 Conteúdo:
 - Imagem de capa (full-width).
@@ -128,20 +130,24 @@ Regras:
 **Mínimo de campos. Máximo de conversão.**
 
 Campos obrigatórios:
-- Nome completo.
-- WhatsApp.
+- Nome completo do comprador.
+- WhatsApp do comprador.
 
 Campo opcional:
 - E-mail (usado para confirmação e vínculo futuro com conta completa).
 
+**Comprador ≠ Participante (mesma regra global da seção 5):** se a quantidade selecionada for maior que 1, exibir um campo de "Nome do participante" para cada ingresso, além dos dados do comprador. Se quantidade = 1, oferecer atalho "Mesmo nome do comprador" (checkbox), para não obrigar redigitação.
+
+Todos os campos de nome (comprador e participantes) seguem as regras globais de qualidade: capitalização automática (exceto conectivos), mínimo 2 palavras. Campo de WhatsApp usa máscara automática de digitação, normalizado antes de salvar.
+
 Fluxo:
-1. Preenche nome e WhatsApp.
+1. Preenche nome e WhatsApp do comprador (+ nomes dos participantes, se quantidade > 1).
 2. Sistema cria/reutiliza cadastro simplificado pelo WhatsApp.
 3. Gera venda com status `pendente`.
 4. Gera Pix (QR Code + copia-e-cola).
 5. Usuário paga (expira em 30 min).
 6. Webhook confirma pagamento automaticamente.
-7. Ingressos liberados imediatamente.
+7. Ingressos liberados imediatamente, cada um vinculado ao respectivo nome de participante.
 8. Redireciona para confirmação.
 
 Regras:
@@ -184,7 +190,7 @@ Regras:
 
 ## 7. Área do cliente (`/cliente`)
 
-Mobile first. Apenas para usuários com conta completa.
+Mobile first — usa `MobileLayout` (ver 13.2). Apenas para usuários com conta completa.
 
 ### 7.1 Dashboard do cliente
 - Saudação com nome.
@@ -442,11 +448,15 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 Deliberadamente simples — apenas o essencial:
 - Seletor de evento (discreto, não é um bloco de configuração — só precisa existir para saber contra qual evento validar).
 - Leitura via câmera (QR Code) — ativa por padrão ao entrar na tela, é a ação principal.
-- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado.
+- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado. **Também deve aparecer automaticamente, com mensagem clara, se a câmera falhar ou a permissão for negada** — nunca deixar o operador travado numa tela preta sem explicação nem alternativa.
 - Resultado da leitura/digitação em destaque: ✅ Válido (nome, evento, horário) / ⚠️ Já utilizado (horário do uso anterior) / ❌ Inválido (motivo).
 - Lista de check-ins realizados, em ordem cronológica (mais recente primeiro), sempre visível abaixo.
 
 Sem contador dedicado, sem bloco de estatística — a lista já comunica o progresso.
+
+**Feedback em tela cheia a cada leitura:** além do card de resultado, a tela inteira pisca na cor correspondente por um instante, com ícone grande centralizado, antes de voltar automaticamente pronta para a próxima leitura:
+- ✅ Válido: tela cheia verde (var(--accent)), ícone de check grande, ~1 segundo, dispensa sozinho.
+- ⚠️ Já utilizado / ❌ Inválido: tela cheia na cor correspondente (amarelo/vermelho), ícone grande, permanece um pouco mais (~2,5s) ou até toque na tela — há mais para o operador ler/decidir do que num sucesso simples.
 
 ## 13.2 Arquitetura mobile / PWA
 
