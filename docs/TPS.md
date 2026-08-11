@@ -309,6 +309,7 @@ Próximos eventos.
 
 **Listagem:**
 - Cards: imagem, nome, data, status, ingressos vendidos vs. capacidade.
+- Botão de ícone "Abrir página pública" (ExternalLink) em cada card — leva direto para `/e/:slug` em nova aba. Visível apenas para eventos com status Publicado (rascunho ainda não tem página pública acessível).
 - Botão "Novo evento".
 - Filtros: todos / publicados / rascunhos / encerrados.
 
@@ -324,7 +325,7 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
    - **Decisão de arquitetura:** "preço único" não é um caminho separado no banco — o sistema cria automaticamente um único `ticket_batch` chamado "Ingresso único" por trás. Checkout, estoque e relatórios continuam com um único fluxo de código.
 4. **Revisão e publicação** — resumo, confirma, publica ou salva como rascunho.
 
-**Editar evento:** mesmo formato de Steps, reaproveitando os dados já preenchidos.
+**Editar evento:** mesmo formato de Steps, reaproveitando os dados já preenchidos. Header da tela (fora dos steps): link "Abrir página pública" (ExternalLink, `/e/:slug` em nova aba) — visível quando o evento está Publicado. Agora funcional, já que a página pública existe.
 
 **Virada de lote:**
 - **Automática por data/horário** — consequência natural de cada lote ter início/fim; ao expirar, o próximo lote (ordem cronológica) assume.
