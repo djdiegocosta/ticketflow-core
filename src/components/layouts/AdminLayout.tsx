@@ -35,7 +35,7 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/vendas", label: "Vendas", icon: Receipt },
   { to: "/admin/cortesias", label: "Cortesias", icon: Gift },
   { to: "/admin/clientes", label: "Clientes", icon: Users },
-  { to: "/admin/checkin", label: "Check-in", icon: ShieldCheck },
+  { to: "/checkin", label: "Check-in", icon: ShieldCheck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/admin/ferramentas", label: "Ferramentas", icon: Wrench },
   { to: "/admin/importacao", label: "Importação", icon: Upload },
