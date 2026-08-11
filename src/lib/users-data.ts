@@ -1,4 +1,4 @@
-export type UserRoleType = "Admin" | "Colaborador";
+export type UserRoleType = "Admin" | "Colaborador" | "Operador de Check-in";
 export type UserStatus = "Ativo" | "Convite pendente";
 
 export interface User {
@@ -42,5 +42,13 @@ export const MOCK_USERS: User[] = [
     role: "Colaborador",
     invitedAt: "01/08/2026 10:00",
     status: "Convite pendente",
+  },
+  {
+    id: "5",
+    name: "Joao Operador",
+    email: "checkin@ticketflow.com",
+    role: "Operador de Check-in",
+    invitedAt: "05/08/2026 11:00",
+    status: "Ativo",
   },
 ];

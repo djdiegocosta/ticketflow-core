@@ -35,7 +35,7 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/vendas", label: "Vendas", icon: Receipt },
   { to: "/admin/cortesias", label: "Cortesias", icon: Gift },
   { to: "/admin/clientes", label: "Clientes", icon: Users },
-  { to: "/admin/checkin", label: "Check-in", icon: ShieldCheck },
+  { to: "/checkin", label: "Check-in", icon: ShieldCheck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/admin/ferramentas", label: "Ferramentas", icon: Wrench },
   { to: "/admin/importacao", label: "Importação", icon: Upload },
@@ -53,12 +53,17 @@ export function AdminLayout() {
 
   const filteredMenu = menu.filter((item) => {
     if (userRole === "colaborador") {
-      return ["/admin/vendas", "/admin/checkin"].includes(item.to);
+      return ["/admin/vendas", "/checkin"].includes(item.to);
     }
     return true;
   });
 
   useEffect(() => {
+    if (userRole === "operador_checkin") {
+      navigate({ to: "/checkin", replace: true });
+      return;
+    }
+
     if (userRole === "colaborador") {
       const isPermitted = filteredMenu.some((item) => 
         item.exact ? pathname === item.to : pathname.startsWith(item.to)
