@@ -3,15 +3,17 @@ import { Outlet } from "@tanstack/react-router";
 
 interface MobileLayoutProps {
   children?: ReactNode;
+  headerContent?: ReactNode;
 }
 
-export function MobileLayout({ children }: MobileLayoutProps) {
+export function MobileLayout({ children, headerContent }: MobileLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       {/* Header simples mobile */}
       <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--accent)]">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--accent)]">
              {/* Ticket Icon Placeholder */}
              <svg 
               xmlns="http://www.w3.org/2000/svg" 

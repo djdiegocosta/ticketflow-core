@@ -62,12 +62,14 @@ export function CheckinPage() {
 
   // Auth Guard
   useEffect(() => {
-    if (isAuthenticated && userRole === 'operador_checkin') {
-      // Stay here
-    } else if (isAuthenticated && (userRole === 'admin' || userRole === 'colaborador')) {
-      // Also allowed
-    } else if (isAuthenticated) {
-      navigate({ to: '/admin', replace: true });
+    if (isAuthenticated) {
+      if (userRole === 'operador_checkin') {
+        // Correct place
+      } else if (userRole === 'admin' || userRole === 'colaborador') {
+        // Also allowed
+      } else {
+        navigate({ to: '/admin', replace: true });
+      }
     } else {
       navigate({ to: '/login', replace: true });
     }
@@ -77,7 +79,7 @@ export function CheckinPage() {
   useEffect(() => {
     let wakeLock: any = null;
     const requestWakeLock = async () => {
-      if ('wakeLock' in navigator) {
+      if (typeof window !== 'undefined' && 'wakeLock' in navigator) {
         try {
           wakeLock = await (navigator as any).wakeLock.request('screen');
         } catch (err) {
@@ -97,8 +99,20 @@ export function CheckinPage() {
       e.preventDefault();
       e.returnValue = '';
     };
+    const handlePopState = (e: PopStateEvent) => {
+      if (!window.confirm("Tem certeza que deseja sair do Check-in?")) {
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+    window.history.pushState(null, "", window.location.href);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   const triggerOverlay = useCallback((type: CheckinStatus) => {
@@ -115,7 +129,7 @@ export function CheckinPage() {
   }, []);
 
   const processCheckin = (code: string) => {
-    // 33% chance for each mock result for testing
+    if (!selectedEvent) return;
     const rand = Math.random();
     let result: CheckinResult;
 
@@ -184,12 +198,12 @@ export function CheckinPage() {
 
   return (
     <MobileLayout
-      header={
-        <div className="flex w-full items-center justify-between gap-4">
+      headerContent={
+        <div className="flex w-full items-center justify-end gap-2">
           <div className="relative">
             <select 
               className="appearance-none bg-transparent pr-8 text-small font-semibold outline-none text-text-primary"
-              value={selectedEvent.id}
+              value={selectedEvent?.id}
               onChange={(e) => setSelectedEvent(MOCK_EVENTS.find(ev => ev.id === e.target.value) || MOCK_EVENTS[0])}
             >
               {MOCK_EVENTS.map(ev => (
