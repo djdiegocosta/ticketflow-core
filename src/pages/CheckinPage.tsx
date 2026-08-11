@@ -59,6 +59,8 @@ export function CheckinPage() {
   const [history, setHistory] = useState<CheckinHistory[]>(INITIAL_HISTORY);
   const [overlay, setOverlay] = useState<{ type: CheckinStatus; visible: boolean } | null>(null);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Auth Guard
   useEffect(() => {
