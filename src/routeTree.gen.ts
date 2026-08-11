@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './routes/admin.route'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
@@ -64,6 +65,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckinRoute = CheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteRoute = ClienteRouteImport.update({
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/checkin': typeof CheckinRoute
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/checkin': typeof CheckinRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/checkin': typeof CheckinRoute
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
@@ -392,6 +401,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/checkin'
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
@@ -434,6 +444,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/checkin'
     | '/login'
     | '/meus-ingressos'
     | '/recuperar-senha'
@@ -475,6 +486,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/checkin'
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
@@ -519,6 +531,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  CheckinRoute: typeof CheckinRoute
   ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
@@ -552,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkin': {
+      id: '/checkin'
+      path: '/checkin'
+      fullPath: '/checkin'
+      preLoaderRoute: typeof CheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente': {
@@ -912,6 +932,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  CheckinRoute: CheckinRoute,
   ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
@@ -926,13 +947,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

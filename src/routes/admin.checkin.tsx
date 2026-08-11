@@ -1,18 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/checkin")({
-  head: () => ({
-    meta: [
-      { title: "Check-in | TicketFlow" },
-      { name: "description", content: "Check-in — plataforma TicketFlow de gestão de eventos e ingressos." },
-      { property: "og:title", content: "Check-in | TicketFlow" },
-      { property: "og:description", content: "Check-in — plataforma TicketFlow de gestão de eventos e ingressos." },
-    ],
-  }),
-  component: Page_admin_checkin,
+  beforeLoad: () => {
+    throw redirect({ to: "/checkin", replace: true });
+  },
+  component: () => null,
 });
-
-function Page_admin_checkin() {
-  return <Placeholder title="Check-in" description="Check-in — plataforma TicketFlow de gestão de eventos e ingressos." />;
-}
