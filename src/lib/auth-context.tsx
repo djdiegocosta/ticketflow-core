@@ -75,6 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         navigate({ to: '/checkin', replace: true });
       } else if (authData.userRole === 'admin') {
         navigate({ to: '/admin', replace: true });
+      } else if (authData.userRole === 'cliente') {
+        navigate({ to: '/cliente', replace: true });
       }
       return true;
     }

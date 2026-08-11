@@ -7,8 +7,9 @@ export const Route = createFileRoute("/login")({
     const auth = window.localStorage.getItem('ticketflow_auth');
     if (auth) {
       const data = JSON.parse(auth);
-      if (data.isAuthenticated && data.userRole === 'admin') {
-        throw redirect({ to: '/admin' });
+      if (data.isAuthenticated) {
+        if (data.userRole === 'admin') throw redirect({ to: '/admin' });
+        if (data.userRole === 'cliente') throw redirect({ to: '/cliente' });
       }
     }
   },

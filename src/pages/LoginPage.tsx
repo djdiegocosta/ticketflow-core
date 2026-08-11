@@ -32,8 +32,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && userRole === 'admin') {
-      navigate({ to: '/admin' });
+    if (isAuthenticated) {
+      if (userRole === 'admin') navigate({ to: '/admin' });
+      else if (userRole === 'cliente') navigate({ to: '/cliente' });
     }
   }, [isAuthenticated, userRole, navigate]);
 
@@ -50,7 +51,9 @@ export default function LoginPage() {
     const success = login(data.email, data.password);
     if (success) {
       toast.success("Login realizado com sucesso!");
-      navigate({ to: '/admin' });
+      const auth = JSON.parse(window.localStorage.getItem('ticketflow_auth') || '{}');
+      if (auth.userRole === 'cliente') navigate({ to: '/cliente' });
+      else navigate({ to: '/admin' });
     } else {
       form.setError("password", { message: "E-mail ou senha incorretos" });
     }
