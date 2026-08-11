@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Layers, Tag, Upload, Calendar, Clock, MapPin, FastForward, CheckCircle2, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layers, Tag, Upload, Calendar, Clock, MapPin, FastForward, CheckCircle2, Trash2, Plus, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -35,6 +35,17 @@ export function EditEventPage() {
         <div>
           <h1 className="text-heading-1 text-text-primary">Editar Evento</h1>
           <p className="text-small text-text-secondary">ID: {id} • Status: <span className="text-success font-bold">Publicado</span></p>
+          <div className="mt-2">
+            <a 
+              href={`/e/${id}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-small text-accent font-bold hover:underline"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Abrir página pública
+            </a>
+          </div>
         </div>
         
         <button 
