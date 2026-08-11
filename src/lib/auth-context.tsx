@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
-type UserRole = 'admin' | 'colaborador' | 'cliente' | null;
+type UserRole = 'admin' | 'colaborador' | 'operador_checkin' | 'cliente' | null;
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -50,6 +50,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userRole: 'colaborador' as UserRole,
         userName: 'Colaborador',
       };
+    } else if (email === 'checkin@ticketflow.com' && pass === 'checkin123') {
+      authData = {
+        isAuthenticated: true,
+        userRole: 'operador_checkin' as UserRole,
+        userName: 'Operador de Check-in',
+      };
     }
 
     if (authData) {
@@ -58,6 +64,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserName(authData.userName);
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
+      }
+      if (authData.userRole === 'operador_checkin') {
+        navigate({ to: '/checkin', replace: true });
+      } else if (authData.userRole === 'admin') {
+        navigate({ to: '/admin', replace: true });
       }
       return true;
     }
