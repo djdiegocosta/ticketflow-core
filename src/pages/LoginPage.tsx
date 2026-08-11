@@ -152,7 +152,8 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </MobileLayout>
   );
 }

@@ -258,7 +258,8 @@ export default function SignupPage() {
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </MobileLayout>
   );
 }

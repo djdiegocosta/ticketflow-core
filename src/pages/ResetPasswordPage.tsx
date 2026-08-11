@@ -137,7 +137,8 @@ export default function ResetPasswordPage() {
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </MobileLayout>
   );
 }

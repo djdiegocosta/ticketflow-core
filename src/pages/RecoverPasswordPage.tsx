@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import { MobileLayout } from "@/components/layouts/MobileLayout";
 import {
   Form,
   FormControl,
@@ -36,60 +37,62 @@ export default function RecoverPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
-      <div className="mb-8">
-        <h1 className="text-display text-accent font-bold">TicketFlow</h1>
-      </div>
+    <MobileLayout>
+      <div className="flex flex-col items-center justify-center p-4 py-12">
+        <div className="mb-8">
+          <h1 className="text-display text-accent font-bold">TicketFlow</h1>
+        </div>
 
-      <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
-        <CardHeader className="pb-2 text-center">
-          <h2 className="text-heading-1">Recuperar senha</h2>
-          <p className="text-small text-text-secondary mt-2">
-            Informe seu e-mail para receber o link de recuperação.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="seu@email.com"
-                        type="email"
-                        {...field}
-                        className="bg-bg-secondary border-border-default focus-visible:ring-accent"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
-                  </FormItem>
-                )}
-              />
+        <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
+          <CardHeader className="pb-2 text-center">
+            <h2 className="text-heading-1">Recuperar senha</h2>
+            <p className="text-small text-text-secondary mt-2">
+              Informe seu e-mail para receber o link de recuperação.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-mail</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="seu@email.com"
+                          type="email"
+                          {...field}
+                          className="bg-bg-secondary border-border-default focus-visible:ring-accent"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-small text-error" />
+                    </FormItem>
+                  )}
+                />
 
-              <Button
-                type="submit"
-                className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md"
-                disabled={!form.formState.isValid}
-              >
-                Enviar link de recuperação
-              </Button>
-
-              <div className="text-center mt-4">
-                <Link
-                  to="/login"
-                  className="text-small text-accent-text font-semibold hover:underline"
+                <Button
+                  type="submit"
+                  className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md"
+                  disabled={!form.formState.isValid}
                 >
-                  Voltar para o login
-                </Link>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                  Enviar link de recuperação
+                </Button>
+
+                <div className="text-center mt-4">
+                  <Link
+                    to="/login"
+                    className="text-small text-accent-text font-semibold hover:underline"
+                  >
+                    Voltar para o login
+                  </Link>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </MobileLayout>
   );
 }
