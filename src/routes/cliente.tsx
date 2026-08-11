@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ClienteLayout } from "@/components/layouts/ClienteLayout";
+import { MobileLayout } from "@/components/layouts/MobileLayout";
 
 export const Route = createFileRoute("/cliente")({
   beforeLoad: () => {
@@ -8,11 +8,14 @@ export const Route = createFileRoute("/cliente")({
     if (!auth) {
       throw redirect({ to: '/login' });
     }
-    const data = JSON.parse(auth);
-    if (!data.isAuthenticated) {
+    try {
+      const data = JSON.parse(auth);
+      if (!data.isAuthenticated || data.userRole !== 'cliente') {
+        throw redirect({ to: '/login' });
+      }
+    } catch (e) {
       throw redirect({ to: '/login' });
     }
   },
-  component: ClienteLayout,
+  component: MobileLayout,
 });
-

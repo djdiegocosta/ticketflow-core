@@ -90,7 +90,7 @@ export default function SignupPage() {
   };
 
   return (
-    <MobileLayout>
+    <MobileLayout showFooter={false}>
       <div className="flex flex-col items-center justify-center p-4 py-8">
         <div className="mb-8">
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>

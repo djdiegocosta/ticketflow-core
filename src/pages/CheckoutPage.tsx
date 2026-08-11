@@ -133,7 +133,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <MobileLayout headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
+    <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6">
         
         {/* Resumo do Pedido */}
