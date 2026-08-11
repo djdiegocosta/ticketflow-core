@@ -36,6 +36,7 @@ O TicketFlow é uma plataforma SaaS de gestão de eventos e venda de ingressos. 
 | Ingresso individual | `/ingresso/:ticket_code` | Qualquer pessoa |
 | Área do cliente | `/cliente` | Comprador com conta completa |
 | Painel do produtor | `/admin` | Usuário com papel `admin` |
+| Check-in (módulo isolado) | `/checkin` | Admin, Colaborador, Operador de Check-in |
 | Super Admin | `/superadmin` | Dono da plataforma |
 | Login | `/login` | Público |
 | Cadastro | `/cadastro` | Público |
@@ -64,6 +65,13 @@ O TicketFlow é uma plataforma SaaS de gestão de eventos e venda de ingressos. 
 - Acesso restrito à organização: visualização (somente leitura) da área de Vendas + acesso funcional completo ao Check-in.
 - Sem acesso a: Eventos, Cortesias, Clientes, Histórico Financeiro, Ferramentas, Relatórios, Usuários, Configurações.
 - Itens sem acesso não aparecem no menu lateral para este papel (não apenas bloqueados por rota — ocultos).
+- Acessa o Check-in em `/checkin` (mesma tela isolada usada pelo Operador de Check-in, ver 4.4.1) — não é uma versão diferente, é a mesma.
+
+### 4.4.1 Operador de Check-in
+- Papel dedicado, mais restrito que Colaborador: acesso **exclusivo** ao módulo de Check-in — nada mais.
+- **Módulo isolado, não uma tela dentro do admin:** ao fazer login, o sistema reconhece o papel automaticamente e redireciona direto para `/checkin` — nunca renderiza o `AdminLayout` (sidebar, menu) para este papel, nem por um instante.
+- Qualquer tentativa de acessar outra rota (incluindo `/admin/*`) redireciona de volta para `/checkin` — bloqueio real, não apenas item de menu oculto.
+- Existe justamente para dar acesso a alguém de confiança mínima (ex: freelancer contratado só para a entrada do evento), sem expor nada além da leitura de QR Code.
 
 ### 4.5 Super Admin
 - Acessa `/superadmin`.
@@ -219,6 +227,12 @@ Desktop first. Menu lateral fixo (240px, recolhível).
 - Header: nome do usuário, troca de tema, notificações (futuro).
 - Conteúdo principal à direita.
 
+**Comportamento responsivo (correção — desktop-first não significa desktop-only):**
+- Acima de um breakpoint definido (ex: 1024px): sidebar fixa, como já implementada, sem alteração.
+- Abaixo do breakpoint (tablet/mobile): sidebar oculta por padrão, substituída por um botão de menu (ícone hambúrguer) no header. Ao tocar, a sidebar abre como painel sobreposto (overlay/drawer), deslizando da esquerda, com fundo escurecido atrás — mesmo padrão visual/comportamento já usado no painel lateral (Sheet) do sistema, só que vindo da esquerda em vez da direita.
+- Conteúdo principal ocupa a largura total da tela quando a sidebar está oculta — sem exigir scroll horizontal para navegar.
+- Tabelas densas podem manter scroll horizontal interno em telas pequenas (compromisso aceitável) — o objetivo aqui é tornar o sistema navegável e utilizável no celular, não redesenhar cada tela densa para mobile.
+
 ### 8.2 Menu do admin (ordem definitiva)
 
 ```
@@ -246,7 +260,7 @@ Configurações
 **Checklist do Evento (`/admin/ferramentas/checklist`):**
 - Ferramenta simples de lista de tarefas, vinculada a um evento (dropdown de seleção no topo).
 - Duas abas: "Tarefas" (pendentes) e "Concluídas", cada uma com contador (ex: "Tarefas (5)", "Concluídas (3)").
-- Adicionar tarefa (só na aba Tarefas): campo de texto + botão/Enter para adicionar.
+- Adicionar tarefa: **único ponto de entrada**, botão "+ Nova Tarefa" no canto superior direito (mesmo padrão dos demais botões de ação principal do sistema — "+ Nova Venda", "+ Novo Cliente", etc.). Ao clicar, revela um campo de texto inline (abaixo do cabeçalho ou substituindo o próprio botão temporariamente) com Enter para confirmar. Não deve haver nenhum outro campo de adicionar tarefa em outro ponto da tela.
 - Cada tarefa na aba Tarefas: texto + botão de ícone "check" (concluir) — ao clicar, a tarefa sai da aba Tarefas e entra em Concluídas imediatamente, sem confirmação.
 - Cada tarefa na aba Concluídas: texto (esmaecido) + botão "Restaurar" (ícone de desfazer) — volta para a aba Tarefas.
 - Remover tarefa (ícone X) disponível nas duas abas, sem necessidade de confirmação — ação de baixo risco.
@@ -421,22 +435,18 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 
 ---
 
-### 8.8 Check-in (`/admin/checkin`)
+### 8.8 Check-in (`/checkin`)
 
-**Tratamento técnico especial — ver seção 13.2 (Arquitetura mobile/PWA).** Esta tela usa `MobileLayout`, não o layout padrão do admin, mesmo estando dentro da área administrativa — é uso de campo, em pé, durante o evento.
+**Módulo isolado — rota de nível superior, fora de `/admin`.** Usa `MobileLayout`, nunca o `AdminLayout`, independente de quem acessa. Acessível por Admin, Colaborador e Operador de Check-in (ver seção 4). Para Operador de Check-in, é a única rota alcançável — login redireciona direto para cá, e qualquer outra tentativa de navegação retorna para esta rota. Tratamento técnico especial (Fullscreen, Wake Lock, bloqueio de saída acidental) — ver seção 13.2 (Arquitetura mobile/PWA), mantido como camada técnica invisível, sem adicionar elementos visuais extras à tela.
 
-- Seletor de evento ativo.
-- Botão "Iniciar Check-in" — aciona tela cheia (onde suportado) e mantém a tela acesa (Wake Lock).
-- Leitura via câmera (QR Code).
-- Resultado em destaque:
-  - ✅ Válido — nome, evento, horário.
-  - ⚠️ Já utilizado — horário do uso anterior.
-  - ❌ Inválido — motivo.
-- Contador em tempo real: check-ins realizados vs. total de ingressos.
-- Histórico da sessão atual.
-- Botão "Encerrar Check-in" — sai da tela cheia, libera o Wake Lock, confirma antes de sair (evita interromper o uso por toque acidental).
+Deliberadamente simples — apenas o essencial:
+- Seletor de evento (discreto, não é um bloco de configuração — só precisa existir para saber contra qual evento validar).
+- Leitura via câmera (QR Code) — ativa por padrão ao entrar na tela, é a ação principal.
+- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado.
+- Resultado da leitura/digitação em destaque: ✅ Válido (nome, evento, horário) / ⚠️ Já utilizado (horário do uso anterior) / ❌ Inválido (motivo).
+- Lista de check-ins realizados, em ordem cronológica (mais recente primeiro), sempre visível abaixo.
 
----
+Sem contador dedicado, sem bloco de estatística — a lista já comunica o progresso.
 
 ## 13.2 Arquitetura mobile / PWA
 
@@ -459,6 +469,12 @@ Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes d
 - Em modo instalado (standalone), gestos acidentais do navegador (pull-to-refresh, swipe de navegação) já ficam naturalmente desativados.
 
 **Responsividade:** breakpoints Tailwind usados de forma consistente com a estratégia de cada área. Para diferenças estruturais grandes (não só estilo), preferir troca de componente via hook de detecção de dispositivo (`useMediaQuery`) a esconder/mostrar elementos via CSS.
+
+**Botão/banner de instalação (Adicionar à Tela de Início):**
+- Componente reutilizável, exibido principalmente em contextos `MobileLayout` (Área do Cliente, Check-in) — dispensável no Admin desktop.
+- **Android/Chrome:** botão real "Instalar app", usando o evento `beforeinstallprompt` (capturado e guardado; ao clicar, chama `.prompt()`). Some automaticamente depois de instalado.
+- **iOS/Safari:** não existe API para instalar via JavaScript — a Apple não permite. Nesses casos, exibir um banner/modal com instrução visual em 2 passos: "toque em Compartilhar → Adicionar à Tela de Início" (com os ícones correspondentes). Detectar iOS + navegador fora do modo standalone (`navigator.standalone === false`) para decidir quando mostrar.
+- Dispensável/discreto: se o usuário fechar o banner, não mostrar novamente (guardar preferência no localStorage). Nunca bloquear o uso do app por trás do banner.
 
 ---
 
@@ -719,28 +735,29 @@ Exportar dados (CSV) em todos os relatórios.
 **Painel lateral: Convidar usuário** (mesmo padrão visual dos demais painéis — etapa única, sem steps):
 - Nome completo
 - E-mail
-- Papel (seleção: Admin ou Colaborador, com breve descrição de cada um visível na escolha — ver tabela de permissões abaixo)
+- Papel (seleção entre 3 cards: Admin, Colaborador, Operador de Check-in — com breve descrição de cada um visível na escolha — ver tabela de permissões abaixo)
 - Botão "Enviar convite"
 
 **Remover usuário:** ação por linha, com modal de confirmação.
 
 **Tabela de permissões por papel:**
 
-| Área | Admin | Colaborador |
-|---|---|---|
-| Dashboard | Total | Sem acesso |
-| Eventos | Total | Sem acesso |
-| Vendas | Total | Somente leitura |
-| Cortesias | Total | Sem acesso |
-| Clientes | Total | Sem acesso |
-| Check-in | Total | Total |
-| Histórico Financeiro | Total | Sem acesso |
-| Ferramentas | Total | Sem acesso |
-| Relatórios | Total | Sem acesso |
-| Usuários | Total | Sem acesso |
-| Configurações | Total | Sem acesso |
+| Área | Admin | Colaborador | Operador de Check-in |
+|---|---|---|---|
+| Dashboard | Total | Sem acesso | Sem acesso |
+| Eventos | Total | Sem acesso | Sem acesso |
+| Vendas | Total | Somente leitura | Sem acesso |
+| Cortesias | Total | Sem acesso | Sem acesso |
+| Clientes | Total | Sem acesso | Sem acesso |
+| Check-in | Total | Total | Total (único acesso) |
+| Histórico Financeiro | Total | Sem acesso | Sem acesso |
+| Ferramentas | Total | Sem acesso | Sem acesso |
+| Relatórios | Total | Sem acesso | Sem acesso |
+| Usuários | Total | Sem acesso | Sem acesso |
+| Configurações | Total | Sem acesso | Sem acesso |
 
 - Itens sem acesso não aparecem no menu lateral do Colaborador — não é bloqueio de rota apenas, é ocultação do item.
+- Operador de Check-in não tem menu lateral nenhum — nunca renderiza o `AdminLayout`. Login redireciona direto para `/checkin`; qualquer outra rota redireciona de volta.
 - Vendas em modo Colaborador: lista e detalhe visíveis, sem botão "+ Nova Venda", sem ação de cancelar venda, sem exportar.
 
 ---
@@ -924,8 +941,8 @@ Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual
 
 ## 13. Decisões técnicas
 
-- **Frontend:** React + Vite + TypeScript.
-- **UI:** Tailwind CSS + shadcn/ui + Design System próprio (DESIGN-SYSTEM.md).
+- **Frontend:** React + TanStack Start + TanStack Router + TypeScript. (Divergência do template padrão do Lovable em relação ao React Router originalmente documentado — confirmado e aceito em 12/08/2026. TanStack Start é full-stack, com suporte a SSR.)
+- **UI:** Tailwind CSS v4 + shadcn/ui + Design System próprio (DESIGN-SYSTEM.md).
 - **Backend:** Supabase (Postgres + Auth + Storage + Edge Functions).
 - **Pagamentos:** Mercado Pago (Pix), credenciais por organização.
 - **Ícones:** Lucide Icons.
