@@ -1,18 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/Placeholder";
+import MyTicketsPage from "@/pages/MyTicketsPage";
 
 export const Route = createFileRoute("/meus-ingressos")({
-  head: () => ({
-    meta: [
-      { title: "Meus ingressos | TicketFlow" },
-      { name: "description", content: "Busca de ingressos por código." },
-      { property: "og:title", content: "Meus ingressos | TicketFlow" },
-      { property: "og:description", content: "Busca de ingressos por código." },
-    ],
-  }),
-  component: Page_meus_ingressos,
+  component: MyTicketsPage,
 });
-
-function Page_meus_ingressos() {
-  return <Placeholder title="Meus ingressos" description="Busca de ingressos por código." />;
-}
