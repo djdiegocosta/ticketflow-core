@@ -56,6 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userRole: 'operador_checkin' as UserRole,
         userName: 'Operador de Check-in',
       };
+    } else if (email === 'cliente@ticketflow.com' && pass === 'cliente123') {
+      authData = {
+        isAuthenticated: true,
+        userRole: 'cliente' as UserRole,
+        userName: 'Marina Duarte',
+      };
     }
 
     if (authData) {
