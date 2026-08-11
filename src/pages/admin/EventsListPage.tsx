@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ListPageHeader, PrimaryActionLink } from "@/components/admin/PrimaryActionButton";
@@ -154,6 +154,27 @@ export function EventsListPage() {
                 event.status === "Encerrado" && "bg-error/20 text-error border border-error/20 backdrop-blur-sm",
               )}>
                 {event.status}
+              </div>
+              <div className="absolute top-3 right-3 flex gap-2">
+                {event.status === "Publicado" ? (
+                  <a 
+                    href={`/e/${event.id}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-bg-secondary p-1.5 border border-border-default shadow-sm text-text-secondary hover:text-accent transition-colors rounded-[var(--radius-sm)]"
+                    title="Abrir página pública"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <div 
+                    className="bg-bg-secondary p-1.5 border border-border-default shadow-sm text-text-disabled cursor-not-allowed opacity-60 rounded-[var(--radius-sm)]"
+                    title="Publique o evento para gerar o link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
+                )}
               </div>
             </div>
             
