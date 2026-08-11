@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "../lib/auth-context";
 import { DesignProvider } from "../lib/design";
+import { PublicDataProvider } from "../lib/public-data";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -148,8 +149,10 @@ function RootComponent() {
       <ThemeProvider>
         <DesignProvider>
           <AuthProvider>
-            <Outlet />
-            <Toaster position="top-right" richColors />
+            <PublicDataProvider>
+              <Outlet />
+              <Toaster position="top-right" richColors />
+            </PublicDataProvider>
           </AuthProvider>
         </DesignProvider>
       </ThemeProvider>
