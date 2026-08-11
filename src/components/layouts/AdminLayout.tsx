@@ -53,12 +53,17 @@ export function AdminLayout() {
 
   const filteredMenu = menu.filter((item) => {
     if (userRole === "colaborador") {
-      return ["/admin/vendas", "/admin/checkin"].includes(item.to);
+      return ["/admin/vendas", "/checkin"].includes(item.to);
     }
     return true;
   });
 
   useEffect(() => {
+    if (userRole === "operador_checkin") {
+      navigate({ to: "/checkin", replace: true });
+      return;
+    }
+
     if (userRole === "colaborador") {
       const isPermitted = filteredMenu.some((item) => 
         item.exact ? pathname === item.to : pathname.startsWith(item.to)

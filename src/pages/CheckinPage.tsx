@@ -112,6 +112,8 @@ export function CheckinPage() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
+      // Clean up the history state if we didn't confirm leaving yet? 
+      // Actually popstate handles it.
     };
   }, []);
 
