@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Users } from "lucide-react";
+import { Shield, Users, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { UserRoleType } from "@/lib/users-data";
@@ -57,6 +57,11 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
       value: "Colaborador",
       icon: Users,
       description: "Acesso a Vendas (somente leitura) e Check-in.",
+    },
+    {
+      value: "Operador de Check-in",
+      icon: ShieldCheck,
+      description: "Acesso exclusivo ao Check-in — nenhuma outra área do sistema.",
     },
   ];
 

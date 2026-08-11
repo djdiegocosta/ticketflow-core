@@ -14,23 +14,25 @@ export function MobileLayout({ children, headerContent }: MobileLayoutProps) {
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--accent)]">
-             {/* Ticket Icon Placeholder */}
-             <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="18" 
-              height="18" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="#111111" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
-              <path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>
-            </svg>
+              {/* Ticket Icon Placeholder */}
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="18" 
+                height="18" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="#111111" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                <path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>
+              </svg>
+            </div>
+            <span className="text-heading-2 font-bold text-[var(--text-primary)]">TicketFlow</span>
           </div>
-          <span className="text-heading-2 font-bold text-[var(--text-primary)]">TicketFlow</span>
+          {headerContent && <div className="flex-1">{headerContent}</div>}
         </div>
       </header>
 
