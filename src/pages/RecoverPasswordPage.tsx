@@ -90,6 +90,6 @@ export default function RecoverPasswordPage() {
           </Form>
         </CardContent>
       </Card>
-    </div>
+    </MobileLayout>
   );
 }

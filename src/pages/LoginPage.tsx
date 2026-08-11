@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -57,12 +58,13 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
-      <div className="mb-8">
-        <h1 className="text-display text-accent font-bold">TicketFlow</h1>
-      </div>
+    <MobileLayout>
+      <div className="flex flex-col items-center justify-center p-4 py-12">
+        <div className="mb-8">
+          <h1 className="text-display text-accent font-bold">TicketFlow</h1>
+        </div>
 
-      <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
+        <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
         <CardHeader className="pb-2">
           <h2 className="text-heading-1 text-center">Entrar</h2>
         </CardHeader>
@@ -151,6 +153,6 @@ export default function LoginPage() {
           </Form>
         </CardContent>
       </Card>
-    </div>
+    </MobileLayout>
   );
 }

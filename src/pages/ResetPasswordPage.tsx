@@ -47,12 +47,13 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
-      <div className="mb-8">
-        <h1 className="text-display text-accent font-bold">TicketFlow</h1>
-      </div>
+    <MobileLayout>
+      <div className="flex flex-col items-center justify-center p-4 py-12">
+        <div className="mb-8">
+          <h1 className="text-display text-accent font-bold">TicketFlow</h1>
+        </div>
 
-      <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
+        <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
         <CardHeader className="pb-2 text-center">
           <h2 className="text-heading-1">Redefinir senha</h2>
           <p className="text-small text-text-secondary mt-2">
@@ -137,6 +138,6 @@ export default function ResetPasswordPage() {
           </Form>
         </CardContent>
       </Card>
-    </div>
+    </MobileLayout>
   );
 }
