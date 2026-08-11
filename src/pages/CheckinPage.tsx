@@ -293,9 +293,32 @@ export function CheckinPage() {
         {/* Scanner Area */}
         <div className="relative overflow-hidden border border-border-subtle bg-black aspect-square">
           {!isManualInput ? (
-            <div id="reader" className="w-full h-full" />
+            <>
+              <div id="reader" className="w-full h-full" />
+              
+              {isInitializing && !cameraError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-secondary text-center p-4">
+                  <div className="mb-4 h-8 w-8 animate-spin border-4 border-accent border-t-transparent rounded-full" />
+                  <p className="text-body text-text-secondary">Iniciando câmera...</p>
+                </div>
+              )}
+
+              {cameraError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg-secondary p-8 text-center">
+                  <AlertTriangle className="mb-4 h-12 w-12 text-error" />
+                  <h3 className="mb-2 text-heading-3">Erro na Câmera</h3>
+                  <p className="mb-6 text-small text-text-secondary">{cameraError}</p>
+                  <Button 
+                    className="w-full bg-accent text-accent-text"
+                    onClick={() => setIsManualInput(true)}
+                  >
+                    Digitar Manualmente
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center bg-bg-secondary p-8 text-center">
+            <div className="flex h-full flex-col items-center justify-center bg-bg-secondary p-8 text-center animate-in fade-in duration-300">
               <Keyboard className="mb-4 h-12 w-12 text-text-disabled" />
               <h3 className="mb-2 text-heading-3">Digitar código</h3>
               <div className="flex w-full flex-col gap-3">
@@ -316,10 +339,13 @@ export function CheckinPage() {
                 </Button>
                 <Button 
                   variant="ghost" 
-                  onClick={() => setIsManualInput(false)}
+                  onClick={() => {
+                    setCameraError(null);
+                    setIsManualInput(false);
+                  }}
                   className="text-text-secondary"
                 >
-                  Voltar para câmera
+                  Tentar câmera novamente
                 </Button>
               </div>
             </div>
