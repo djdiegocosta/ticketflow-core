@@ -27,7 +27,7 @@ export default function MyTicketsPage() {
   // Se logado, exibe todos os ingressos automaticamente
   if (isAuthenticated) {
     return (
-      <MobileLayout headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
+      <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
         <div className="flex flex-col gap-6 px-5 py-8">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Suas Compras</h2>
           {sales.length === 0 ? (
@@ -48,7 +48,7 @@ export default function MyTicketsPage() {
   }
 
   return (
-    <MobileLayout headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
+    <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
       <div className="flex flex-col gap-6 px-5 py-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Buscar Ingressos</h2>
