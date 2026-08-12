@@ -449,7 +449,7 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 Deliberadamente simples — apenas o essencial:
 - Seletor de evento (discreto, não é um bloco de configuração — só precisa existir para saber contra qual evento validar).
 - Leitura via câmera (QR Code) — ativa por padrão ao entrar na tela, é a ação principal.
-- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado. **Também deve aparecer automaticamente, com mensagem clara, se a câmera falhar ou a permissão for negada** — nunca deixar o operador travado numa tela preta sem explicação nem alternativa.
+- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado. **Também deve aparecer automaticamente, com mensagem clara, se a câmera falhar ou a permissão for negada** — nunca deixar o operador travado numa tela preta sem explicação nem alternativa. **Tempo limite de inicialização (obrigatório):** se a câmera não responder (nem sucesso, nem erro) dentro de ~8 segundos, o sistema desiste automaticamente do estado "Iniciando câmera..." e mostra a mensagem de erro + fallback manual — nunca ficar preso no carregamento indefinidamente.
 - Resultado da leitura/digitação em destaque: ✅ Válido (nome, evento, horário) / ⚠️ Já utilizado (horário do uso anterior) / ❌ Inválido (motivo).
 - Lista de check-ins realizados, em ordem cronológica (mais recente primeiro), sempre visível abaixo.
 
@@ -470,7 +470,7 @@ Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes d
 
 **Dois layouts distintos, não um layout responsivo genérico:**
 - `AdminLayout` — desktop-first, sidebar, tabelas densas. Já em uso em todas as telas administrativas construídas até aqui.
-- `MobileLayout` — mobile-first, navegação inferior, componentes touch-friendly. Usado pela Área do Cliente, Área Pública, e por telas específicas do admin que são de uso em campo (Check-in).
+- `MobileLayout` — mobile-first, navegação inferior, componentes touch-friendly. Usado pela Área do Cliente, Área Pública, e por telas específicas do admin que são de uso em campo (Check-in). **A navegação inferior não é fixa/genérica — muda conforme o módulo:** Área do Cliente mostra "Início / Ingressos / Pontos / Perfil"; Check-in não mostra navegação inferior nenhuma (é tela única, sem outras telas para navegar dentro do módulo) ou, no máximo, um cabeçalho simples com o nome do evento — nunca os itens da Área do Cliente. Área Pública (evento/checkout) também não usa a navegação da Área do Cliente. Corrigido: bug identificado onde Check-in exibia a barra "Início/Ingressos/Pontos/Perfil" da Área do Cliente.
 - Troca de layout decidida por rota/contexto (qual tela é), não por tamanho de tela — uma tela de Check-in continua em `MobileLayout` mesmo aberta numa janela larga de desktop.
 
 **Check-in — comportamento de app nativo (uso em campo, risco de fechamento acidental):**
