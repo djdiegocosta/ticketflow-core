@@ -282,6 +282,7 @@ export function CheckinPage() {
 
   return (
     <MobileLayout
+      showFooter={false}
       headerContent={
         <div className="flex w-full items-center justify-end gap-2">
           <div className="relative">
