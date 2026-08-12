@@ -171,17 +171,27 @@ export function CheckinPage() {
   const initScanner = useCallback(() => {
     if (isManualInput) return;
     
+    console.log("[Checkin] Starting camera initialization...");
     setIsInitializing(true);
     setCameraError(null);
 
-    // Create a temporary scanner to render
+    // 8 second safety timeout
+    const globalTimeout = setTimeout(() => {
+      if (isInitializing) {
+        console.error("[Checkin] Camera initialization timed out (8s)");
+        setCameraError("Tempo esgotado ao iniciar a câmera. Verifique as permissões ou digite o código.");
+        setIsInitializing(false);
+        setIsManualInput(true);
+        toast.error("Tempo de inicialização esgotado");
+      }
+    }, 8000);
+
     const scanner = new Html5QrcodeScanner(
       "reader",
       { 
         fps: 10, 
         qrbox: { width: 250, height: 250 },
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-        // Set explicitly to prevent full screen in some browsers or to force inline video
         videoConstraints: {
           facingMode: "environment"
         }
@@ -191,67 +201,64 @@ export function CheckinPage() {
     
     scannerRef.current = scanner;
 
-    // The library uses a success and error callback
+    console.log("[Checkin] Rendering scanner...");
     scanner.render(
       (decodedText) => {
         handleScanSuccess(decodedText);
       }, 
       (error) => {
-        // Generic scan error (not necessarily camera access error)
-        // console.warn(error);
+        // Normal scanning noise, ignored
       }
     );
 
-    // We need to wait a bit for the video element to be injected by the library
-    // to apply the specific attributes required by Safari iOS
+    // Watch for the video element to ensure Safari compatibility
     const checkInterval = setInterval(() => {
       const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
       if (videoElement) {
+        console.log("[Checkin] Video element detected, applying iOS attributes");
         videoElement.setAttribute("playsinline", "true");
         videoElement.muted = true;
         videoElement.setAttribute("autoplay", "true");
+        // Ensure it actually plays
+        videoElement.play().catch(e => console.warn("[Checkin] Auto-play failed:", e));
+        
         setIsInitializing(false);
+        clearTimeout(globalTimeout);
         clearInterval(checkInterval);
       }
     }, 100);
 
-    // Timeout for initialization
-    const timeout = setTimeout(() => {
-      clearInterval(checkInterval);
-      if (isInitializing) {
-        // If it's still initializing, something might be wrong with permissions
-        // Let's try to detect if getUserMedia failed by checking the library state if possible
-        // or just rely on the user seeing the black screen/spinner
+    // Global error listener for permission issues
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason?.name || event.reason?.message;
+      console.error("[Checkin] Async error:", reason);
+      if (reason === 'NotAllowedError' || reason === 'PermissionDeniedError') {
+        setCameraError("Permissão de câmera negada. Habilite o acesso nas configurações do Safari.");
+      } else {
+        setCameraError("Erro ao acessar câmera: " + reason);
       }
-    }, 5000);
-
-    // Override the library's internal error handling if possible or listen to common camera errors
-    const handleError = (e: any) => {
-      console.error("Camera error detected:", e);
-      setCameraError("Não foi possível acessar a câmera. Verifique a permissão do navegador ou use a opção de digitar o código manualmente.");
       setIsInitializing(false);
       setIsManualInput(true);
-      toast.error("Erro ao acessar câmera");
+      clearTimeout(globalTimeout);
+      toast.error("Erro no acesso à câmera");
     };
 
-    window.addEventListener('unhandledrejection', (event) => {
-      if (event.reason?.name === 'NotAllowedError' || event.reason?.name === 'NotFoundError') {
-        handleError(event.reason);
-      }
-    });
+    window.addEventListener('unhandledrejection', handleRejection);
 
     return () => {
       clearInterval(checkInterval);
-      clearTimeout(timeout);
+      clearTimeout(globalTimeout);
+      window.removeEventListener('unhandledrejection', handleRejection);
     };
-  }, [isManualInput, handleScanSuccess]);
+  }, [isManualInput, handleScanSuccess, isInitializing]);
 
   useEffect(() => {
     const cleanup = initScanner();
     return () => {
       if (cleanup) cleanup();
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(e => console.error("Error clearing scanner", e));
+        console.log("[Checkin] Cleaning up scanner");
+        scannerRef.current.clear().catch(e => console.error("[Checkin] Error clearing scanner", e));
       }
     };
   }, [initScanner]);
