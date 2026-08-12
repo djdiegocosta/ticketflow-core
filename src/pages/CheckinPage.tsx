@@ -219,6 +219,12 @@ export function CheckinPage() {
         videoElement.setAttribute("playsinline", "true");
         videoElement.muted = true;
         videoElement.setAttribute("autoplay", "true");
+        // Explicitly set styles to ensure visibility
+        videoElement.style.display = "block";
+        videoElement.style.width = "100%";
+        videoElement.style.height = "100%";
+        videoElement.style.objectFit = "cover";
+        
         // Ensure it actually plays
         videoElement.play().catch(e => console.warn("[Checkin] Auto-play failed:", e));
         
