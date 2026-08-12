@@ -296,11 +296,17 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 
 ### Tabela de listagem
 - Componente único e compartilhado — nunca reimplementado por tela.
+- **Cabeçalho da tabela (linha com os nomes das colunas):** fundo visualmente diferenciado do corpo da tabela — usar `var(--bg-tertiary)` em vez de `var(--bg-secondary)`. No tema light isso resulta num tom mais escuro (correto); no tema dark, `--bg-tertiary` é mais claro que `--bg-secondary` (correto também — em fundo escuro, "elevar"/clarear é o que gera a mesma sensação de distinção que escurecer geraria no light. Nunca escurecer ainda mais um fundo já escuro).
 - Mesmo tamanho e peso de fonte em cabeçalho e linhas.
 - Mesmo estilo de badge (status, origem, etc.): padding, cantos retos, tamanho de texto.
 - Mesma altura de linha, mesmo espaçamento interno de célula.
 - Linha em altura única — nunca quebrar texto/badge (truncate + tooltip quando necessário).
 - Mesmo componente e posição de paginação no rodapé (seletor 10/25/50/100, indicador "Mostrando X–Y de Z").
+
+### Estado "selecionado/ativo" (regra global — aplica a qualquer componente)
+- Nunca usar fundo branco/claro sólido fixo para indicar seleção (bug identificado no menu lateral em tema dark, mas a regra vale para todo componente com estado ativo/selecionado: abas, filtros, toggles, itens de menu).
+- Sempre usar `var(--accent-muted)` como fundo do estado selecionado — essa variável já é definida por tema de cor (verde/azul/roxo/vermelho) e por modo (light/dark), então o estado selecionado herda automaticamente a cor de destaque ativa, sem precisar de lógica extra.
+- Texto/ícone do item selecionado: `var(--accent-text)`.
 
 ### Painel lateral (Sheet)
 - Ver especificação completa na seção 8. Sempre que uma tela precisar de formulário maior que um modal simples, reaproveitar este componente — não criar variação nova de modal.
@@ -312,3 +318,8 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 ### Botões de ação por linha (tabela)
 - Ações de ícone único (ex: abrir WhatsApp, copiar, ver QR Code): sem texto, com tooltip.
 - Ações destrutivas (remover, cancelar): sempre com modal de confirmação antes de executar.
+
+### Botão fixo no rodapé (mobile)
+- Usado em telas do MobileLayout com ação principal única (ex: "Comprar agora" na página do evento, "Gerar Pix" no checkout).
+- O container de conteúdo rolável ACIMA do botão precisa reservar espaço equivalente à altura do botão fixo (padding-bottom no conteúdo, não só no container geral) — senão o último elemento da tela fica escondido atrás do botão (bug já identificado na página pública do evento).
+- Regra prática: `padding-bottom` do conteúdo = altura do botão fixo + espaçamento de respiro (ex: 16–24px) + área segura do dispositivo (safe-area-inset-bottom, para iPhones com barra inferior).
