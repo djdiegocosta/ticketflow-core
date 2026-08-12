@@ -26,7 +26,7 @@ export default function ConfirmationPage() {
 
   return (
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Sucesso!</div>}>
-      <div className="flex flex-col gap-6 px-5 py-8 animate-in fade-in zoom-in duration-500">
+      <div className="flex flex-col gap-6 px-5 py-8 pb-32 safe-area-bottom animate-in fade-in zoom-in duration-500">
         
         {/* Success Header */}
         <div className="flex flex-col items-center gap-4 text-center">

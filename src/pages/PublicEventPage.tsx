@@ -49,7 +49,7 @@ export default function EventPage() {
         </div>
 
         {/* Content */}
-        <div className="relative -mt-8 flex flex-col gap-6 rounded-t-3xl bg-[var(--bg-primary)] px-5 pt-8 pb-10">
+        <div className="relative -mt-8 flex flex-col gap-6 rounded-t-3xl bg-[var(--bg-primary)] px-5 pt-8 pb-32 safe-area-bottom">
           <div className="flex flex-col gap-2">
             <h1 className="text-display font-bold leading-tight text-[var(--text-primary)]">
               {EVENT.name}
