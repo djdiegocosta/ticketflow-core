@@ -58,6 +58,7 @@ export function CheckinPage() {
   const [lastResult, setLastResult] = useState<CheckinResult | null>(null);
   const [history, setHistory] = useState<CheckinHistory[]>(INITIAL_HISTORY);
   const [overlay, setOverlay] = useState<{ type: CheckinStatus; visible: boolean } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -120,20 +121,24 @@ export function CheckinPage() {
   }, []);
 
   const triggerOverlay = useCallback((type: CheckinStatus) => {
+    setIsProcessing(true);
     setOverlay({ type, visible: true });
+    
     const duration = type === 'valid' ? 1000 : 2500;
+    
     setTimeout(() => {
       setOverlay(prev => prev && prev.type === type ? { ...prev, visible: false } : prev);
+      setIsProcessing(false);
     }, duration);
   }, []);
 
   const handleScanSuccess = useCallback((decodedText: string) => {
-    // Mock processing
+    if (isProcessing) return;
     processCheckin(decodedText);
-  }, []);
+  }, [isProcessing]);
 
   const processCheckin = (code: string) => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || isProcessing) return;
     const rand = Math.random();
     let result: CheckinResult;
 
@@ -448,7 +453,10 @@ export function CheckinPage() {
             overlay.type === 'already_used' ? "bg-warning" :
             "bg-error"
           )}
-          onClick={() => setOverlay(prev => prev ? { ...prev, visible: false } : null)}
+          onClick={() => {
+            setOverlay(prev => prev ? { ...prev, visible: false } : null);
+            setIsProcessing(false);
+          }}
         >
           <div className="animate-in zoom-in duration-300">
             {overlay.type === 'valid' ? <CheckCircle2 className="h-48 w-48 text-white" /> :
