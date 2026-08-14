@@ -58,6 +58,7 @@ export function CheckinPage() {
   const [lastResult, setLastResult] = useState<CheckinResult | null>(null);
   const [history, setHistory] = useState<CheckinHistory[]>(INITIAL_HISTORY);
   const [overlay, setOverlay] = useState<{ type: CheckinStatus; visible: boolean } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -120,20 +121,24 @@ export function CheckinPage() {
   }, []);
 
   const triggerOverlay = useCallback((type: CheckinStatus) => {
+    setIsProcessing(true);
     setOverlay({ type, visible: true });
+    
     const duration = type === 'valid' ? 1000 : 2500;
+    
     setTimeout(() => {
       setOverlay(prev => prev && prev.type === type ? { ...prev, visible: false } : prev);
+      setIsProcessing(false);
     }, duration);
   }, []);
 
   const handleScanSuccess = useCallback((decodedText: string) => {
-    // Mock processing
+    if (isProcessing) return;
     processCheckin(decodedText);
-  }, []);
+  }, [isProcessing]);
 
   const processCheckin = (code: string) => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || isProcessing) return;
     const rand = Math.random();
     let result: CheckinResult;
 
@@ -169,7 +174,7 @@ export function CheckinPage() {
   };
 
   const initScanner = useCallback(() => {
-    if (isManualInput) return;
+    if (isManualInput || scannerRef.current) return;
     
     console.log("[Checkin] Starting camera initialization...");
     setIsInitializing(true);
@@ -177,13 +182,17 @@ export function CheckinPage() {
 
     // 8 second safety timeout
     const globalTimeout = setTimeout(() => {
-      if (isInitializing) {
-        console.error("[Checkin] Camera initialization timed out (8s)");
-        setCameraError("Tempo esgotado ao iniciar a câmera. Verifique as permissões ou digite o código.");
-        setIsInitializing(false);
-        setIsManualInput(true);
-        toast.error("Tempo de inicialização esgotado");
-      }
+      // Re-check initializing state inside timeout
+      setIsInitializing(current => {
+        if (current) {
+          console.error("[Checkin] Camera initialization timed out (8s)");
+          setCameraError("Tempo esgotado ao iniciar a câmera. Verifique as permissões ou digite o código.");
+          setIsManualInput(true);
+          toast.error("Tempo de inicialização esgotado");
+          return false;
+        }
+        return current;
+      });
     }, 8000);
 
     const scanner = new Html5QrcodeScanner(
@@ -204,8 +213,11 @@ export function CheckinPage() {
     console.log("[Checkin] Rendering scanner...");
     scanner.render(
       (decodedText) => {
-        handleScanSuccess(decodedText);
+        if (!isProcessing) {
+          handleScanSuccess(decodedText);
+        }
       }, 
+
       (error) => {
         // Normal scanning noise, ignored
       }
@@ -244,7 +256,14 @@ export function CheckinPage() {
         setCameraError("Erro ao acessar câmera: " + reason);
       }
       setIsInitializing(false);
-      setIsManualInput(true);
+      if (scannerRef.current) {
+        scannerRef.current.clear().then(() => {
+          scannerRef.current = null;
+          setIsManualInput(true);
+        });
+      } else {
+        setIsManualInput(true);
+      }
       clearTimeout(globalTimeout);
       toast.error("Erro no acesso à câmera");
     };
@@ -252,6 +271,10 @@ export function CheckinPage() {
     window.addEventListener('unhandledrejection', handleRejection);
 
     return () => {
+      console.log("[Checkin] Scanner hook cleanup");
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(e => console.error("[Checkin] Error clearing scanner in hook", e));
+      }
       clearInterval(checkInterval);
       clearTimeout(globalTimeout);
       window.removeEventListener('unhandledrejection', handleRejection);
@@ -262,10 +285,6 @@ export function CheckinPage() {
     const cleanup = initScanner();
     return () => {
       if (cleanup) cleanup();
-      if (scannerRef.current) {
-        console.log("[Checkin] Cleaning up scanner");
-        scannerRef.current.clear().catch(e => console.error("[Checkin] Error clearing scanner", e));
-      }
     };
   }, [initScanner]);
 
@@ -324,7 +343,16 @@ export function CheckinPage() {
                   <p className="mb-6 text-small text-text-secondary">{cameraError}</p>
                   <Button 
                     className="w-full bg-accent text-accent-text"
-                    onClick={() => setIsManualInput(true)}
+                    onClick={() => {
+                      if (scannerRef.current) {
+                        scannerRef.current.clear().then(() => {
+                          scannerRef.current = null;
+                          setIsManualInput(true);
+                        });
+                      } else {
+                        setIsManualInput(true);
+                      }
+                    }}
                   >
                     Digitar Manualmente
                   </Button>
@@ -355,7 +383,14 @@ export function CheckinPage() {
                   variant="ghost" 
                   onClick={() => {
                     setCameraError(null);
-                    setIsManualInput(false);
+                    if (scannerRef.current) {
+                      scannerRef.current.clear().then(() => {
+                        scannerRef.current = null;
+                        setIsManualInput(false);
+                      });
+                    } else {
+                      setIsManualInput(false);
+                    }
                   }}
                   className="text-text-secondary"
                 >
@@ -368,7 +403,16 @@ export function CheckinPage() {
 
         {!isManualInput && (
           <button 
-            onClick={() => setIsManualInput(true)}
+            onClick={() => {
+              if (scannerRef.current) {
+                scannerRef.current.clear().then(() => {
+                  scannerRef.current = null;
+                  setIsManualInput(true);
+                });
+              } else {
+                setIsManualInput(true);
+              }
+            }}
             className="flex items-center justify-center gap-2 text-small text-text-secondary hover:text-text-primary transition-colors"
           >
             <Keyboard className="h-4 w-4" />
@@ -448,7 +492,10 @@ export function CheckinPage() {
             overlay.type === 'already_used' ? "bg-warning" :
             "bg-error"
           )}
-          onClick={() => setOverlay(prev => prev ? { ...prev, visible: false } : null)}
+          onClick={() => {
+            setOverlay(prev => prev ? { ...prev, visible: false } : null);
+            setIsProcessing(false);
+          }}
         >
           <div className="animate-in zoom-in duration-300">
             {overlay.type === 'valid' ? <CheckCircle2 className="h-48 w-48 text-white" /> :

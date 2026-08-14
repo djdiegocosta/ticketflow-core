@@ -31,7 +31,7 @@ export default function EventPage() {
     if (!selectedBatchId) return;
     navigate({ 
       to: `/e/${EVENT.slug}/checkout`,
-      search: { batchId: selectedBatchId, qty: quantity }
+      search: { batchId: selectedBatchId, qty: String(quantity) }
     });
   };
 

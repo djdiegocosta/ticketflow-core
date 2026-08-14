@@ -37,7 +37,7 @@ const EVENT = {
 };
 
 export default function CheckoutPage() {
-  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId: string, qty: string };
+  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string };
   const qtyInput = parseInt(search.qty || '1');
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   const batch = EVENT.batches.find(b => b.id === search.batchId) || EVENT.batches[0];
