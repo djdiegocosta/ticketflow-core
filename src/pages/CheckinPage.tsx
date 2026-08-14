@@ -256,7 +256,14 @@ export function CheckinPage() {
         setCameraError("Erro ao acessar câmera: " + reason);
       }
       setIsInitializing(false);
-      setIsManualInput(true);
+      if (scannerRef.current) {
+        scannerRef.current.clear().then(() => {
+          scannerRef.current = null;
+          setIsManualInput(true);
+        });
+      } else {
+        setIsManualInput(true);
+      }
       clearTimeout(globalTimeout);
       toast.error("Erro no acesso à câmera");
     };
