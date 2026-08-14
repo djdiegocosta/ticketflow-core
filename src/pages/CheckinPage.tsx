@@ -183,14 +183,17 @@ export function CheckinPage() {
       const active = scannerRef.current;
       scannerRef.current = null;
       if (active) {
-        // Verifica se o scanner está realmente rodando antes de tentar parar
-        // Isso evita o erro "Cannot stop, scanner is not running or paused"
+        // Garantir que tentamos parar apenas se o scanner estiver rodando ou pausado.
+        // O Html5Qrcode.stop() lança erro se o estado for NOT_STARTED (1).
         try {
-          if (active.getState() !== 1) { // 1 = NOT_STARTED
+          // A API do html5-qrcode às vezes é inconsistente entre versões; 
+          // a forma mais segura de evitar o crash no unmount é capturar o erro silenciosamente
+          // ou verificar se o elemento de vídeo ainda existe.
+          if (document.getElementById("reader")?.hasChildNodes()) {
             active.stop().catch(() => {});
           }
         } catch (e) {
-          // Fallback seguro se getState falhar ou se já estiver parado
+          // Ignora erros de "scanner not running" no cleanup
         }
       }
     };
