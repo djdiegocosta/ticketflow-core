@@ -363,7 +363,14 @@ export function CheckinPage() {
                   variant="ghost" 
                   onClick={() => {
                     setCameraError(null);
-                    setIsManualInput(false);
+                    if (scannerRef.current) {
+                      scannerRef.current.clear().then(() => {
+                        scannerRef.current = null;
+                        setIsManualInput(false);
+                      });
+                    } else {
+                      setIsManualInput(false);
+                    }
                   }}
                   className="text-text-secondary"
                 >
