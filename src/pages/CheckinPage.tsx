@@ -274,10 +274,6 @@ export function CheckinPage() {
     const cleanup = initScanner();
     return () => {
       if (cleanup) cleanup();
-      if (scannerRef.current) {
-        console.log("[Checkin] Cleaning up scanner");
-        scannerRef.current.clear().catch(e => console.error("[Checkin] Error clearing scanner", e));
-      }
     };
   }, [initScanner]);
 
