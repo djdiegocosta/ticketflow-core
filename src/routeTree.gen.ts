@@ -30,6 +30,7 @@ import { Route as AdminSimuladorRouteImport } from './routes/admin.simulador'
 import { Route as AdminSorteiosRouteImport } from './routes/admin.sorteios'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as CheckinIndexRouteImport } from './routes/checkin.index'
+import { Route as CheckinHistoricoRouteImport } from './routes/checkin.historico'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
 import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
@@ -155,6 +156,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
 const CheckinIndexRoute = CheckinIndexRouteImport.update({
   id: '/checkin/',
   path: '/checkin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckinHistoricoRoute = CheckinHistoricoRouteImport.update({
+  id: '/checkin/historico',
+  path: '/checkin/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
@@ -285,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -371,6 +379,7 @@ export interface FileRoutesById {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -417,6 +426,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -502,6 +513,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -537,6 +549,7 @@ export interface RootRouteChildren {
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SuperadminRoute: typeof SuperadminRouteWithChildren
+  CheckinHistoricoRoute: typeof CheckinHistoricoRoute
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
   CheckinIndexRoute: typeof CheckinIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
@@ -691,6 +704,13 @@ declare module '@tanstack/react-router' {
       path: '/checkin'
       fullPath: '/checkin/'
       preLoaderRoute: typeof CheckinIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkin/historico': {
+      id: '/checkin/historico'
+      path: '/checkin/historico'
+      fullPath: '/checkin/historico'
+      preLoaderRoute: typeof CheckinHistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente/': {
@@ -938,6 +958,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   SuperadminRoute: SuperadminRouteWithChildren,
+  CheckinHistoricoRoute: CheckinHistoricoRoute,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
   CheckinIndexRoute: CheckinIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
