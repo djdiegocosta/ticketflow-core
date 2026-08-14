@@ -446,18 +446,32 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 
 **Módulo isolado — rota de nível superior, fora de `/admin`.** Usa `MobileLayout`, nunca o `AdminLayout`, independente de quem acessa. Acessível por Admin, Colaborador e Operador de Check-in (ver seção 4). Para Operador de Check-in, é a única rota alcançável — login redireciona direto para cá, e qualquer outra tentativa de navegação retorna para esta rota. Tratamento técnico especial (Fullscreen, Wake Lock, bloqueio de saída acidental) — ver seção 13.2 (Arquitetura mobile/PWA), mantido como camada técnica invisível, sem adicionar elementos visuais extras à tela.
 
-Deliberadamente simples — apenas o essencial:
-- Seletor de evento (discreto, não é um bloco de configuração — só precisa existir para saber contra qual evento validar).
-- Leitura via câmera (QR Code) — ativa por padrão ao entrar na tela, é a ação principal.
-- Link discreto "Digitar código manualmente" abaixo da área de leitura — revela um campo de texto só quando clicado, para os casos de QR Code ilegível/danificado. **Também deve aparecer automaticamente, com mensagem clara, se a câmera falhar ou a permissão for negada** — nunca deixar o operador travado numa tela preta sem explicação nem alternativa. **Tempo limite de inicialização (obrigatório):** se a câmera não responder (nem sucesso, nem erro) dentro de ~8 segundos, o sistema desiste automaticamente do estado "Iniciando câmera..." e mostra a mensagem de erro + fallback manual — nunca ficar preso no carregamento indefinidamente.
-- Resultado da leitura/digitação em destaque: ✅ Válido (nome, evento, horário) / ⚠️ Já utilizado (horário do uso anterior) / ❌ Inválido (motivo).
-- Lista de check-ins realizados, em ordem cronológica (mais recente primeiro), sempre visível abaixo.
+**Reescrito por completo — modelo de leitor de QR Code padrão.** A versão anterior (com card de resultado separado, lista de check-ins e botões de simulação) foi descartada por excesso de elementos. A tela agora é apenas:
 
-Sem contador dedicado, sem bloco de estatística — a lista já comunica o progresso.
+- **Câmera em tela cheia**, ocupando o máximo de espaço possível — é a tela inteira, não uma área de leitura dentro de outros blocos.
+- **Moldura de mira** centralizada sobre o vídeo (guia visual quadrado com cantos marcados, como qualquer app de leitura de QR) — só orientação visual, não é um elemento de UI separado.
+- **Nome do evento** em texto discreto no topo (header mínimo, semi-transparente sobre o vídeo) — se houver mais de um evento ativo, um seletor pequeno no mesmo lugar. Não é um bloco de configuração.
+- **Dois botões discretos, lado a lado, na parte inferior da tela** (estilo contornado/outline, sobre o vídeo, como no padrão de apps de leitura de QR): **"Digitar Código"** e **"Histórico"**.
+- "Digitar Código": abre um campo de texto simples sobreposto para digitar o código do ingresso manualmente (fallback para QR ilegível/danificado), com botão de confirmar. Fecha e volta ao estado de câmera após o uso ou ao cancelar.
+- "Histórico": navega para uma tela própria (ver abaixo) — a lista NÃO fica na tela principal de leitura.
+- **Nenhum contador na tela principal. Nenhum botão de simulação visível na tela de produção.**
 
-**Feedback em tela cheia a cada leitura:** além do card de resultado, a tela inteira pisca na cor correspondente por um instante, com ícone grande centralizado, antes de voltar automaticamente pronta para a próxima leitura:
-- ✅ Válido: tela cheia verde (var(--accent)), ícone de check grande, ~1 segundo, dispensa sozinho.
-- ⚠️ Já utilizado / ❌ Inválido: tela cheia na cor correspondente (amarelo/vermelho), ícone grande, permanece um pouco mais (~2,5s) ou até toque na tela — há mais para o operador ler/decidir do que num sucesso simples.
+**Tela: Histórico (`/checkin/historico`)** — acessada pelo botão "Histórico", tela separada, não sobreposta à câmera:
+- Botão de voltar no topo, título "Histórico"
+- Lista cronológica (mais recente primeiro) de TODAS as tentativas de check-in — sucesso, duplicidade e inválido, não só as bem-sucedidas
+- Cada linha: nome do participante (ou código, se não identificado) + evento + horário + indicador de status (bolinha colorida, mesmo padrão já usado em Remarketing: verde = sucesso, amarelo = duplicidade, vermelho = inválido)
+- **Sem opção de "Limpar histórico"** — decisão deliberada: histórico de check-in é registro operacional de quem entrou no evento, não deve ser apagável (diferente de um histórico de ligações). Se necessário revisar isso no futuro, discutir antes de implementar.
+
+**Resultado — sobreposição direta em tela cheia sobre a câmera, sem card separado:**
+- ✅ Sucesso: tela cheia verde (var(--accent)), ícone de check grande, texto curto (nome do participante). ~1 segundo, dispensa sozinho.
+- ⚠️ Duplicidade (ingresso já utilizado): tela cheia amarela (var(--warning)), ícone de alerta grande, texto curto "Ingresso já utilizado". ~2,5s ou até toque.
+- ❌ Inválido: tela cheia vermelha (var(--error)), ícone de X grande, texto curto "Ingresso inválido". ~2,5s ou até toque.
+
+Ao final do tempo do resultado, a tela volta sozinha ao estado de câmera ativa, pronta para o próximo código — sem nenhuma ação do operador.
+
+**Pausa de leitura obrigatória (evita duplicidade):** a câmera para de processar novas detecções assim que um código é lido, durante toda a janela do resultado. Só volta a escanear ativamente depois que o resultado terminar — sem essa pausa, o mesmo código parado na frente da câmera é lido várias vezes por segundo.
+
+**Tempo limite de inicialização:** se a câmera não responder (nem imagem, nem erro) em ~8 segundos, mostra automaticamente uma mensagem de erro simples + o ícone de digitação manual — nunca fica presa carregando.
 
 ## 13.2 Arquitetura mobile / PWA
 
