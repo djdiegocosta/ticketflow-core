@@ -183,10 +183,18 @@ export function CheckinPage() {
       const active = scannerRef.current;
       scannerRef.current = null;
       if (active) {
-        active
-          .stop()
-          .then(() => active.clear())
-          .catch(() => {});
+        // Garantir que tentamos parar apenas se o scanner estiver rodando ou pausado.
+        // O Html5Qrcode.stop() lança erro se o estado for NOT_STARTED (1).
+        try {
+          // A API do html5-qrcode às vezes é inconsistente entre versões; 
+          // a forma mais segura de evitar o crash no unmount é capturar o erro silenciosamente
+          // ou verificar se o elemento de vídeo ainda existe.
+          if (document.getElementById("reader")?.hasChildNodes()) {
+            active.stop().catch(() => {});
+          }
+        } catch (e) {
+          // Ignora erros de "scanner not running" no cleanup
+        }
       }
     };
   }, [showManual, processCheckin]);
