@@ -182,13 +182,17 @@ export function CheckinPage() {
 
     // 8 second safety timeout
     const globalTimeout = setTimeout(() => {
-      if (isInitializing) {
-        console.error("[Checkin] Camera initialization timed out (8s)");
-        setCameraError("Tempo esgotado ao iniciar a câmera. Verifique as permissões ou digite o código.");
-        setIsInitializing(false);
-        setIsManualInput(true);
-        toast.error("Tempo de inicialização esgotado");
-      }
+      // Re-check initializing state inside timeout
+      setIsInitializing(current => {
+        if (current) {
+          console.error("[Checkin] Camera initialization timed out (8s)");
+          setCameraError("Tempo esgotado ao iniciar a câmera. Verifique as permissões ou digite o código.");
+          setIsManualInput(true);
+          toast.error("Tempo de inicialização esgotado");
+          return false;
+        }
+        return current;
+      });
     }, 8000);
 
     const scanner = new Html5QrcodeScanner(
