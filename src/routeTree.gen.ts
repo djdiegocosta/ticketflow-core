@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './routes/admin.route'
 import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
@@ -30,6 +29,8 @@ import { Route as AdminRemarketingRouteImport } from './routes/admin.remarketing
 import { Route as AdminSimuladorRouteImport } from './routes/admin.simulador'
 import { Route as AdminSorteiosRouteImport } from './routes/admin.sorteios'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as CheckinIndexRouteImport } from './routes/checkin.index'
+import { Route as CheckinHistoricoRouteImport } from './routes/checkin.historico'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
 import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
@@ -65,11 +66,6 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckinRoute = CheckinRouteImport.update({
-  id: '/checkin',
-  path: '/checkin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteRoute = ClienteRouteImport.update({
@@ -156,6 +152,16 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const CheckinIndexRoute = CheckinIndexRouteImport.update({
+  id: '/checkin/',
+  path: '/checkin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckinHistoricoRoute = CheckinHistoricoRouteImport.update({
+  id: '/checkin/historico',
+  path: '/checkin/historico',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
   id: '/',
@@ -269,7 +275,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/checkin': typeof CheckinRoute
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
@@ -286,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -312,7 +319,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
-  '/checkin': typeof CheckinRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
@@ -327,6 +333,7 @@ export interface FileRoutesByTo {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -334,6 +341,7 @@ export interface FileRoutesByTo {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin': typeof AdminIndexRoute
+  '/checkin': typeof CheckinIndexRoute
   '/cliente': typeof ClienteIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -355,7 +363,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/checkin': typeof CheckinRoute
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
@@ -372,6 +379,7 @@ export interface FileRoutesById {
   '/admin/simulador': typeof AdminSimuladorRoute
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/checkin/historico': typeof CheckinHistoricoRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -379,6 +387,7 @@ export interface FileRoutesById {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -401,7 +410,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
-    | '/checkin'
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
@@ -418,6 +426,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -425,6 +434,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
+    | '/checkin/'
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
@@ -444,7 +454,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
-    | '/checkin'
     | '/login'
     | '/meus-ingressos'
     | '/recuperar-senha'
@@ -459,6 +468,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -466,6 +476,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin'
+    | '/checkin'
     | '/cliente'
     | '/superadmin'
     | '/admin/clientes/$id'
@@ -486,7 +497,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
-    | '/checkin'
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/admin/simulador'
     | '/admin/sorteios'
     | '/admin/usuarios'
+    | '/checkin/historico'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -510,6 +521,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
+    | '/checkin/'
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
@@ -531,14 +543,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CadastroRoute: typeof CadastroRoute
-  CheckinRoute: typeof CheckinRoute
   ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SuperadminRoute: typeof SuperadminRouteWithChildren
+  CheckinHistoricoRoute: typeof CheckinHistoricoRoute
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
+  CheckinIndexRoute: typeof CheckinIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
   ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
@@ -565,13 +578,6 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof CadastroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkin': {
-      id: '/checkin'
-      path: '/checkin'
-      fullPath: '/checkin'
-      preLoaderRoute: typeof CheckinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cliente': {
@@ -692,6 +698,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/usuarios'
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/checkin/': {
+      id: '/checkin/'
+      path: '/checkin'
+      fullPath: '/checkin/'
+      preLoaderRoute: typeof CheckinIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkin/historico': {
+      id: '/checkin/historico'
+      path: '/checkin/historico'
+      fullPath: '/checkin/historico'
+      preLoaderRoute: typeof CheckinHistoricoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/': {
       id: '/cliente/'
@@ -932,14 +952,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CadastroRoute: CadastroRoute,
-  CheckinRoute: CheckinRoute,
   ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   SuperadminRoute: SuperadminRouteWithChildren,
+  CheckinHistoricoRoute: CheckinHistoricoRoute,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
+  CheckinIndexRoute: CheckinIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
   ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
