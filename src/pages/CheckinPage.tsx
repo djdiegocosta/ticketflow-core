@@ -209,8 +209,11 @@ export function CheckinPage() {
     console.log("[Checkin] Rendering scanner...");
     scanner.render(
       (decodedText) => {
-        handleScanSuccess(decodedText);
+        if (!isProcessing) {
+          handleScanSuccess(decodedText);
+        }
       }, 
+
       (error) => {
         // Normal scanning noise, ignored
       }
