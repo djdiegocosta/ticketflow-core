@@ -21,7 +21,7 @@ const EVENT = {
 
 export default function EventPage() {
   const [selectedBatchId, setSelectedBatchId] = useState(EVENT.batches[0]?.id || '');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const navigate = useNavigate();
 
   const selectedBatch = EVENT.batches.find(b => b.id === selectedBatchId) || EVENT.batches[0];
