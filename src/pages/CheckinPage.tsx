@@ -332,7 +332,16 @@ export function CheckinPage() {
                   <p className="mb-6 text-small text-text-secondary">{cameraError}</p>
                   <Button 
                     className="w-full bg-accent text-accent-text"
-                    onClick={() => setIsManualInput(true)}
+                    onClick={() => {
+                      if (scannerRef.current) {
+                        scannerRef.current.clear().then(() => {
+                          scannerRef.current = null;
+                          setIsManualInput(true);
+                        });
+                      } else {
+                        setIsManualInput(true);
+                      }
+                    }}
                   >
                     Digitar Manualmente
                   </Button>
