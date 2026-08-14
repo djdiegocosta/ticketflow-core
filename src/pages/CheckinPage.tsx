@@ -174,7 +174,7 @@ export function CheckinPage() {
   };
 
   const initScanner = useCallback(() => {
-    if (isManualInput) return;
+    if (isManualInput || scannerRef.current) return;
     
     console.log("[Checkin] Starting camera initialization...");
     setIsInitializing(true);
