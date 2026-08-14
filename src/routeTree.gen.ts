@@ -29,6 +29,7 @@ import { Route as AdminRemarketingRouteImport } from './routes/admin.remarketing
 import { Route as AdminSimuladorRouteImport } from './routes/admin.simulador'
 import { Route as AdminSorteiosRouteImport } from './routes/admin.sorteios'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as CheckinIndexRouteImport } from './routes/checkin.index'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
 import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
 import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
@@ -150,6 +151,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const CheckinIndexRoute = CheckinIndexRouteImport.update({
+  id: '/checkin/',
+  path: '/checkin/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ClienteIndexRoute = ClienteIndexRouteImport.update({
   id: '/',
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin': typeof AdminIndexRoute
+  '/checkin': typeof CheckinIndexRoute
   '/cliente': typeof ClienteIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
@@ -415,6 +424,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
+    | '/checkin/'
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin'
+    | '/checkin'
     | '/cliente'
     | '/superadmin'
     | '/admin/clientes/$id'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
+    | '/checkin/'
     | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
@@ -526,6 +538,7 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SuperadminRoute: typeof SuperadminRouteWithChildren
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
+  CheckinIndexRoute: typeof CheckinIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
   ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
@@ -672,6 +685,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/usuarios'
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/checkin/': {
+      id: '/checkin/'
+      path: '/checkin'
+      fullPath: '/checkin/'
+      preLoaderRoute: typeof CheckinIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/cliente/': {
       id: '/cliente/'
@@ -919,6 +939,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   SuperadminRoute: SuperadminRouteWithChildren,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
+  CheckinIndexRoute: CheckinIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
   ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
