@@ -260,6 +260,10 @@ export function CheckinPage() {
     window.addEventListener('unhandledrejection', handleRejection);
 
     return () => {
+      console.log("[Checkin] Scanner hook cleanup");
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(e => console.error("[Checkin] Error clearing scanner in hook", e));
+      }
       clearInterval(checkInterval);
       clearTimeout(globalTimeout);
       window.removeEventListener('unhandledrejection', handleRejection);
