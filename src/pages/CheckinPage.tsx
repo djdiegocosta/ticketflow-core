@@ -183,10 +183,15 @@ export function CheckinPage() {
       const active = scannerRef.current;
       scannerRef.current = null;
       if (active) {
-        active
-          .stop()
-          .then(() => active.clear())
-          .catch(() => {});
+        // Verifica se o scanner está realmente rodando antes de tentar parar
+        // Isso evita o erro "Cannot stop, scanner is not running or paused"
+        try {
+          if (active.getState() !== 1) { // 1 = NOT_STARTED
+            active.stop().catch(() => {});
+          }
+        } catch (e) {
+          // Fallback seguro se getState falhar ou se já estiver parado
+        }
       }
     };
   }, [showManual, processCheckin]);
