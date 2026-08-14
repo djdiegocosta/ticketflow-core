@@ -78,7 +78,7 @@ export function resolveMockCheckin(code: string, eventName: string) {
 
   const status: CheckinStatus = bucket <= 6 ? "valid" : bucket <= 8 ? "already_used" : "invalid";
   const name =
-    status === "invalid" ? clean.toUpperCase() || "Código inválido" : MOCK_NAMES[hash % MOCK_NAMES.length];
+    status === "invalid" ? clean.toUpperCase() || "Código inválido" : MOCK_NAMES[hash % MOCK_NAMES.length]!;
 
   return {
     status,

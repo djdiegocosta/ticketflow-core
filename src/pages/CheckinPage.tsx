@@ -22,7 +22,7 @@ interface OverlayState {
 export function CheckinPage() {
   const { userRole, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedEvent, setSelectedEvent] = useState(CHECKIN_EVENTS[0]);
+  const [selectedEvent, setSelectedEvent] = useState(CHECKIN_EVENTS[0]!);
   const [showManual, setShowManual] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
@@ -210,7 +210,7 @@ export function CheckinPage() {
             className="max-w-[70%] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
             value={selectedEvent.id}
             onChange={(e) =>
-              setSelectedEvent(CHECKIN_EVENTS.find((ev) => ev.id === e.target.value) || CHECKIN_EVENTS[0])
+              setSelectedEvent(CHECKIN_EVENTS.find((ev) => ev.id === e.target.value) || CHECKIN_EVENTS[0]!)
             }
           >
             {CHECKIN_EVENTS.map((ev) => (
