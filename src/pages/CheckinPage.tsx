@@ -392,7 +392,16 @@ export function CheckinPage() {
 
         {!isManualInput && (
           <button 
-            onClick={() => setIsManualInput(true)}
+            onClick={() => {
+              if (scannerRef.current) {
+                scannerRef.current.clear().then(() => {
+                  scannerRef.current = null;
+                  setIsManualInput(true);
+                });
+              } else {
+                setIsManualInput(true);
+              }
+            }}
             className="flex items-center justify-center gap-2 text-small text-text-secondary hover:text-text-primary transition-colors"
           >
             <Keyboard className="h-4 w-4" />
