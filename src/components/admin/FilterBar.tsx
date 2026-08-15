@@ -25,7 +25,7 @@ export function FilterBar({
         className,
       )}
     >
-      <div className="grid w-full grid-cols-2 gap-3 min-[480px]:flex md:w-auto md:flex-wrap md:items-center">
+      <div className="grid w-full grid-cols-2 gap-3 min-[480px]:flex md:w-auto md:flex-wrap md:items-center [&>*:last-child:nth-child(odd)]:col-span-2">
         {children}
       </div>
       {actions && (
