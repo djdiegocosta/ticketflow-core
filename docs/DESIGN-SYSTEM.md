@@ -313,7 +313,7 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 ### Barra de filtros
 - Desktop: abas de origem/tipo (quando existirem) à esquerda, dropdowns/busca à direita, mesma linha.
 - Mesmo espaçamento entre os filtros em todas as áreas.
-- **Mobile — nunca empilhar tudo em uma coluna única quando sobrar espaço lateral.** Regra: agrupar elementos de filtro compatíveis (dropdown de evento, campo de busca, dropdowns de status/origem) em pares lado a lado (grid de 2 colunas), na ordem em que aparecem. Botões de ação que fazem mais sentido sozinhos (ex: "Gerar lista PDF", "Exportar CSV") ocupam a largura total, numa linha própria abaixo dos pares. Aplicar esse padrão em toda área com barra de filtros (Vendas, Cortesias, Clientes, Remarketing, Usuários) — não só onde o problema foi identificado visualmente. (Implementado via `FilterBar` com grid de 2 colunas em mobile).
+- **Mobile — nunca empilhar tudo em uma coluna única quando sobrar espaço lateral.** Regra: agrupar elementos de filtro compatíveis (dropdown de evento, campo de busca, dropdowns de status/origem) em pares lado a lado (grid de 2 colunas), na ordem em que aparecem. Se um elemento de filtro ficar sozinho em sua linha (sem par), ele deve ocupar 100% da largura (col-span-2). Botões de ação que fazem mais sentido sozinhos (ex: "Gerar lista PDF", "Exportar CSV") ocupam a largura total, numa linha própria abaixo dos pares. Aplicar esse padrão em toda área com barra de filtros (Vendas, Cortesias, Clientes, Remarketing, Usuários). (Implementado via `FilterBar` com grid de 2 colunas e expansão automática em mobile).
 
 ### Tabela de listagem
 - Componente único e compartilhado — nunca reimplementado por tela.
