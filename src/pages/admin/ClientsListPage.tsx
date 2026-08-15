@@ -200,9 +200,11 @@ export function ClientsListPage() {
           }}
           placeholder="Buscar por nome ou WhatsApp"
         />
-        <span className="text-small text-text-secondary">
-          Clique no título da coluna para ordenar
-        </span>
+        <div className="flex items-center lg:items-end">
+          <span className="text-small text-text-secondary">
+            Clique no título da coluna para ordenar
+          </span>
+        </div>
       </FilterBar>
 
       <DataTableShell>
