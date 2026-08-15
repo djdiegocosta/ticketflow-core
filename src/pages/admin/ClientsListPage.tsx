@@ -200,7 +200,7 @@ export function ClientsListPage() {
           }}
           placeholder="Buscar por nome ou WhatsApp"
         />
-        <div className="flex items-center sm:items-end">
+        <div className="flex items-center min-[480px]:items-end">
           <span className="text-small text-text-secondary">
             Clique no título da coluna para ordenar
           </span>
