@@ -4,24 +4,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { formatName, isFullName, maskWhatsApp } from '@/lib/form-format';
+import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { usePublicData } from '@/lib/public-data';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { CityAutocomplete } from '@/components/ui/city-autocomplete';
+import { getUFByDDD } from '@/lib/ibge-data';
+
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
   buyerWhatsApp: z.string().min(1, "WhatsApp obrigatório").refine(val => val.replace(/\D/g, "").length >= 11, "WhatsApp inválido"),
   buyerEmail: z.string().email("E-mail inválido").optional().or(z.literal('')),
+  buyerCity: z.string().optional(),
   participants: z.array(z.object({
     name: z.string().min(1, "Nome do participante obrigatório").refine(isFullName, "Nome completo obrigatório")
   }))
 });
+
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
@@ -55,9 +60,11 @@ export default function CheckoutPage() {
       buyerName: '',
       buyerWhatsApp: '',
       buyerEmail: '',
+      buyerCity: '',
       participants: Array(qty).fill({ name: '' })
     }
   });
+
 
   const { fields } = useFieldArray({
     control: form.control,
@@ -183,6 +190,21 @@ export default function CheckoutPage() {
                   <Label>E-mail (opcional)</Label>
                   <Input placeholder="seu@email.com" {...form.register('buyerEmail')} />
                 </div>
+                <div className="space-y-2">
+                  <Label>Cidade (opcional)</Label>
+                  <Controller
+                    name="buyerCity"
+                    control={form.control}
+                    render={({ field }) => (
+                      <CityAutocomplete
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        uf={getUFByDDD(onlyDigits(form.watch("buyerWhatsApp")))}
+                      />
+                    )}
+                  />
+                </div>
+
               </div>
             </div>
 
