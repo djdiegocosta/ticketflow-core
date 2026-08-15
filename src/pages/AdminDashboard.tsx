@@ -3,6 +3,7 @@ import { DollarSign, Ticket, Clock, Eye, TrendingUp } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { StatusPill, type PillTone } from "@/components/admin/DataTable";
 
 // --- Mock Data ---
 
@@ -45,13 +46,13 @@ const MOCK_HOURLY_DATA = [
 
 const MOCK_LAST_SALES = [
   { id: 1, name: "João Silva", event: "Festa de Verão", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 3 min" },
-  { id: 2, name: "Maria Souza", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Aguardando", time: "há 12 min" },
+  { id: 2, name: "Maria Souza", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Pendente", time: "há 12 min" },
   { id: 3, name: "Carlos Mendes", event: "Show do Ano", tickets: "4x", value: "R$ 360,00", status: "Pago", time: "há 28 min" },
   { id: 4, name: "Ana Lima", event: "Festa de Verão", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 45 min" },
   { id: 5, name: "Pedro Costa", event: "Show do Ano", tickets: "1x", value: "R$ 90,00", status: "Cancelado", time: "há 1h" },
   { id: 6, name: "Juliana Ramos", event: "Festa de Verão", tickets: "3x", value: "R$ 270,00", status: "Pago", time: "há 2h" },
   { id: 7, name: "Rafael Oliveira", event: "Show do Ano", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 3h" },
-  { id: 8, name: "Camila Ferreira", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Aguardando", time: "há 4h" },
+  { id: 8, name: "Camila Ferreira", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Pendente", time: "há 4h" },
 ];
 
 // --- Components ---
@@ -324,14 +325,14 @@ export function AdminDashboard() {
                 </div>
                 
                 <div className="flex items-center justify-between gap-4">
-                  <div className={cn(
-                    "text-micro px-2 py-0.5 rounded-[var(--radius-full)] font-bold uppercase",
-                    sale.status === "Pago" && "bg-accent-muted text-accent-text",
-                    sale.status === "Aguardando" && "bg-warning/10 text-warning",
-                    sale.status === "Cancelado" && "bg-error/10 text-error",
-                  )}>
+                  <StatusPill 
+                    tone={
+                      sale.status === "Pago" ? "accent" : 
+                      sale.status === "Cancelado" ? "error" : "warning"
+                    }
+                  >
                     {sale.status}
-                  </div>
+                  </StatusPill>
                   <div className="text-small text-text-disabled whitespace-nowrap">
                     {sale.time}
                   </div>

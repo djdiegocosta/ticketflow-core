@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User } from "lucide-react";
 import { MOCK_CLIENTS, getInitials, whatsappLink } from "@/lib/clients-data";
 import { MOCK_SALES, formatCurrency } from "@/lib/sales-data";
+import { StatusPill } from "@/components/admin/DataTable";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -131,7 +132,16 @@ export function ClientDetailPage({ id }: { id: string }) {
                 <td className="px-5 py-3 text-body font-semibold text-text-primary">
                   {formatCurrency(sale.amount)}
                 </td>
-                <td className="px-5 py-3 text-small text-text-secondary">{sale.status}</td>
+                <td className="px-5 py-3 text-small text-text-secondary">
+                  <StatusPill 
+                    tone={
+                      sale.status === "Pago" ? "accent" : 
+                      sale.status === "Cancelado" ? "error" : "warning"
+                    }
+                  >
+                    {sale.status}
+                  </StatusPill>
+                </td>
                 <td className="px-5 py-3 text-small text-text-secondary">{sale.createdAt}</td>
               </tr>
             ))}

@@ -23,6 +23,16 @@ export function CourtesiesListPage() {
   const [eventFilter, setEventFilter] = React.useState("todos");
   const [pageSize, setPageSize] = React.useState("25");
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const filteredData = React.useMemo(() => {
     return MOCK_COURTESIES.filter((item) => {
@@ -127,7 +137,7 @@ export function CourtesiesListPage() {
 
       {/* Tabela */}
       <DataTableShell>
-        <DataTable className="min-w-[720px]">
+        <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
           <DataTableHeadRow columns={["Convidado", "Evento", "Data de emissão", "Status"]} />
           <tbody>
             {paginatedData.length === 0 ? (
