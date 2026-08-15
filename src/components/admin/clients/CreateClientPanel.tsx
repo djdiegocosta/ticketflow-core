@@ -156,13 +156,24 @@ export function CreateClientPanel({
 
           <div>
             <label className={labelClass}>Cidade (opcional)</label>
-            <input
-              className={inputClass}
-              placeholder="Ex: Uberlândia - MG"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
+            <Controller
+              control={control}
+              name="city"
+              render={({ field }) => {
+                const digits = onlyDigits(whatsapp);
+                const ddd = digits.slice(0, 2);
+                const uf = getUFByDDD(ddd);
+                return (
+                  <CityAutocomplete
+                    value={field.value}
+                    onChange={field.onChange}
+                    uf={uf}
+                  />
+                );
+              }}
             />
           </div>
+
 
           <div>
             <label className={labelClass}>Data de nascimento (opcional)</label>

@@ -19,6 +19,8 @@ import {
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { EVENTS, formatCurrency } from "@/lib/sales-data";
+import { formatName } from "@/lib/form-format";
+
 
 /* -------------------------------------------------------------------------- */
 /* Primitivas locais                                                          */
@@ -82,7 +84,7 @@ function TextField({
       <input
         value={value}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(formatName(e.target.value))}
         className={cn(filterFieldClass, "w-full placeholder:text-text-disabled")}
       />
       {help && <p className="text-micro text-text-disabled">{help}</p>}
@@ -366,7 +368,7 @@ export function SimuladorPage() {
                     <input
                       aria-label="Nome do lote"
                       value={lot.name}
-                      onChange={(e) => updateLot(lot.id, { name: e.target.value })}
+                      onChange={(e) => updateLot(lot.id, { name: formatName(e.target.value) })}
                       className={cn(cellInputClass, "min-w-[140px]")}
                     />
                   </DataTableCell>

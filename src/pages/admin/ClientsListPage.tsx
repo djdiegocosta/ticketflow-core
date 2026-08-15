@@ -167,7 +167,10 @@ export function ClientsListPage() {
       <ListPageHeader
         title="Clientes"
         action={
-          <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
+          <PrimaryActionButton onClick={() => {
+            setIsPanelOpen(true);
+          }}>
+
             Novo Cliente
           </PrimaryActionButton>
         }
