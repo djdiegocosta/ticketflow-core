@@ -311,8 +311,9 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 - Ícone + valor principal (heading-1) + label (small) — sem elementos extras que aumentem a altura sem necessidade.
 
 ### Barra de filtros
-- Abas de origem/tipo (quando existirem) à esquerda, dropdowns/busca à direita, mesma linha.
+- Desktop: abas de origem/tipo (quando existirem) à esquerda, dropdowns/busca à direita, mesma linha.
 - Mesmo espaçamento entre os filtros em todas as áreas.
+- **Mobile — nunca empilhar tudo em uma coluna única quando sobrar espaço lateral.** Regra: agrupar elementos de filtro compatíveis (dropdown de evento, campo de busca, dropdowns de status/origem) em pares lado a lado (grid de 2 colunas), na ordem em que aparecem. Botões de ação que fazem mais sentido sozinhos (ex: "Gerar lista PDF", "Exportar CSV") ocupam a largura total, numa linha própria abaixo dos pares. Aplicar esse padrão em toda área com barra de filtros (Vendas, Cortesias, Clientes, Remarketing, Usuários) — não só onde o problema foi identificado visualmente.
 
 ### Tabela de listagem
 - Componente único e compartilhado — nunca reimplementado por tela.
