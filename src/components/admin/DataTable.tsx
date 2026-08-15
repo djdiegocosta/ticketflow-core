@@ -106,8 +106,8 @@ export type PillTone = "accent" | "warning" | "error" | "success" | "info" | "ne
 
 const pillToneClass: Record<PillTone, string> = {
   accent: "bg-accent-muted text-accent-text border border-accent/20 dark:border-accent/40",
-  warning: "bg-warning/15 text-warning",
-  error: "bg-error/15 text-error",
+  warning: "bg-[var(--warning-muted)] text-[var(--warning-text)] border border-[var(--warning-text)]/10",
+  error: "bg-[var(--error-muted)] text-[var(--error-text)] border border-[var(--error-text)]/10",
   success: "bg-success/15 text-success",
   info: "bg-info/15 text-info",
   neutral: "bg-bg-tertiary text-text-secondary border border-border-subtle",

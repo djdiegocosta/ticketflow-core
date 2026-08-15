@@ -33,7 +33,11 @@
 
   /* Feedback */
   --error: #ff3b30;
+  --error-muted: #FFEBEE;
+  --error-text: #C62828;
   --warning: #ff9500;
+  --warning-muted: #FFF3E0;
+  --warning-text: #E65100;
   --success: #00e676;
   --info: #0a84ff;
 
@@ -103,7 +107,11 @@
   --accent-text: #00e676;
 
   --error: #ff453a;
+  --error-muted: #3D0A0A;
+  --error-text: #FF6B6B;
   --warning: #ff9f0a;
+  --warning-muted: #3D2A0A;
+  --warning-text: #FFB74D;
   --success: #00e676;
   --info: #0a84ff;
 
@@ -127,7 +135,11 @@
   --color-accent-muted: var(--accent-muted);
   --color-accent-text: var(--accent-text);
   --color-error: var(--error);
+  --color-error-muted: var(--error-muted);
+  --color-error-text: var(--error-text);
   --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+  --color-warning-text: var(--warning-text);
   --color-success: var(--success);
   --color-info: var(--info);
 
