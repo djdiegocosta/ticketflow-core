@@ -2,13 +2,14 @@ const CONNECTIVES = ["de", "da", "do", "dos", "das", "e"];
 
 /** Title case respeitando conectivos (Adriano de Araújo). */
 export function formatName(value: string) {
+  if (!value) return "";
   return value
     .split(" ")
     .map((word) => {
       if (word.length === 0) return "";
       const lower = word.toLowerCase();
       if (CONNECTIVES.includes(lower)) return lower;
-      return lower.charAt(0).toUpperCase() + lower.slice(1);
+      return lower.charAt(0).toUpperCase() + lower.slice(1).toLowerCase();
     })
     .join(" ");
 }
