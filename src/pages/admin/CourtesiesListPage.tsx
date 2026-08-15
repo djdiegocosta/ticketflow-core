@@ -16,6 +16,11 @@ import { MOCK_COURTESIES, Courtesy } from "@/lib/courtesies-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { CreateCourtesyPanel } from "@/components/admin/cortesias/CreateCourtesyPanel";
 import { toast } from "sonner";
+import { Suspense, lazy } from "react";
+
+const CreateCourtesyPanelLazy = lazy(() => 
+  import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
+);
 
 export function CourtesiesListPage() {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
@@ -69,7 +74,7 @@ export function CourtesiesListPage() {
   const startIndex = (currentPage - 1) * size;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Header */}
       <ListPageHeader
         title="Cortesias"
@@ -138,7 +143,7 @@ export function CourtesiesListPage() {
       {/* Tabela */}
       <DataTableShell>
         <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
-          <DataTableHeadRow columns={["Convidado", "Evento", "Data de emissão", "Status"]} />
+          <DataTableHeadRow columns={["Convidado", "Evento", isMobile ? "Data" : "Data de emissão", "Status"]} />
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
@@ -150,7 +155,7 @@ export function CourtesiesListPage() {
               paginatedData.map((item) => (
                 <DataTableRow key={item.id}>
                   <DataTableCell variant="primary">{item.name}</DataTableCell>
-                  <DataTableCell>{item.event}</DataTableCell>
+                  {!isMobile && <DataTableCell>{item.event}</DataTableCell>}
                   <DataTableCell variant="muted">
                     {new Date(item.issuedAt).toLocaleDateString("pt-BR")}
                   </DataTableCell>
@@ -179,11 +184,15 @@ export function CourtesiesListPage() {
         onPageChange={setCurrentPage}
       />
 
-      <CreateCourtesyPanel
-        open={isPanelOpen}
-        onOpenChange={setIsPanelOpen}
-        onSuccess={handleCreateSuccess}
-      />
+      <Suspense fallback={null}>
+        {isPanelOpen && (
+          <CreateCourtesyPanelLazy
+            open={isPanelOpen}
+            onOpenChange={setIsPanelOpen}
+            onSuccess={handleCreateSuccess}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
