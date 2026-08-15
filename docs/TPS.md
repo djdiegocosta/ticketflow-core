@@ -503,6 +503,34 @@ Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes d
 
 ---
 
+## 13.3 Splash de boas-vindas pós-login
+
+Aplica-se a TODOS os papéis (Admin, Colaborador, Operador de Check-in, Cliente) — comportamento universal, não específico de um módulo.
+
+- Imediatamente após login bem-sucedido, antes de renderizar a tela de destino (Dashboard, /checkin, /cliente, etc.), exibir uma tela cheia com: logotipo do TicketFlow (centralizado) + mensagem de boas-vindas menor abaixo (ex: "Bem-vindo(a), [nome]").
+- Duração: 2 a 3 segundos, com transição de fade-out suave ao final — nunca um corte abrupto.
+- Aproveitar essa janela para carregar dados iniciais da tela de destino em paralelo (quando houver backend real; por enquanto, com dados mockados, apenas simular o tempo de carregamento).
+- Não bloqueável/pulável nesta etapa — é rápido o suficiente para não incomodar, e a simplicidade de não ter botão de "pular" é intencional.
+
+## 13.4 Armazenamento offline (dados essenciais)
+
+Usa o Service Worker/infraestrutura de PWA já existente (13.2) — não é um app separado, é capacidade offline dentro do mesmo app, para as duas áreas onde a falta de conexão realmente compromete o uso:
+
+**Check-in:**
+- Ao selecionar um evento na tela de Check-in com conexão disponível, carregar e armazenar localmente (IndexedDB, não localStorage — volume de dados maior) a lista completa de ingressos válidos daquele evento (código, nome do participante, status).
+- Leitura/validação de código funciona consultando primeiro o cache local — não depende de resposta do servidor em tempo real.
+- Check-ins realizados offline são gravados localmente (atualizando o cache, para que uma segunda leitura do mesmo código já mostre "duplicidade" mesmo sem internet) e entram numa fila de sincronização.
+- Ao reconectar, a fila é enviada ao servidor automaticamente, em segundo plano.
+- Indicar visualmente (discreto, ex: ícone pequeno) quando o Check-in está operando offline e quando há itens pendentes de sincronização.
+- Limitação conhecida e aceita: se o mesmo ingresso for escaneado em dois dispositivos offline diferentes antes de sincronizar, ambos podem validar como sucesso localmente — resolvido na sincronização (servidor aceita o primeiro, os demais ficam registrados como duplicidade pós-sync), sem tentativa de resolução em tempo real entre dispositivos offline.
+
+**Área do Cliente — Meus Ingressos:**
+- Ao visualizar um ingresso (tela individual ou lista) com conexão disponível, armazenar localmente os dados necessários para exibição (QR Code, nome do participante, dados do evento).
+- Se o cliente abrir o app sem conexão, ingressos já visualizados anteriormente continuam acessíveis a partir do cache local.
+- Indicar discretamente quando os dados exibidos vêm do cache local (ex: "dados salvos localmente").
+
+---
+
 ### 8.9 Histórico Financeiro (`/admin/financeiro`)
 
 **Objetivo:** retrato financeiro completo de cada evento.
