@@ -87,7 +87,7 @@ export default function UsersListPage() {
           }}
           placeholder="Buscar por nome ou e-mail"
         />
-        <div className="hidden min-[480px]:block" />
+        <div className="hidden md:block" />
       </FilterBar>
 
       <DataTableShell>
