@@ -143,7 +143,7 @@ export function CourtesiesListPage() {
       {/* Tabela */}
       <DataTableShell>
         <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
-          <DataTableHeadRow columns={["Convidado", "Evento", isMobile ? "Data" : "Data de emissão", "Status"]} />
+          <DataTableHeadRow columns={isMobile ? ["Convidado", "Data", "Status"] : ["Convidado", "Evento", "Data de emissão", "Status"]} />
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
