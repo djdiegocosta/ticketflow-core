@@ -10,6 +10,9 @@ import {
   panelInputClass as inputClass,
   panelLabelClass as labelClass,
 } from "@/components/admin/SidePanel";
+import { CityAutocomplete } from "@/components/ui/city-autocomplete";
+import { getUFByDDD } from "@/lib/ibge-data";
+
 
 type Errors = Record<string, string>;
 
