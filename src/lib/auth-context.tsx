@@ -7,6 +7,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   userRole: UserRole;
   userName: string;
+  isSplashComplete: boolean;
+  setSplashComplete: (complete: boolean) => void;
   login: (email: string, pass: string) => boolean;
   logout: () => void;
 }
@@ -17,6 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [userName, setUserName] = useState<string>('');
+  const [isSplashComplete, setIsSplashComplete] = useState<boolean>(true); // Default to true so existing sessions don't splash
   const navigate = useNavigate();
 
   // Persist state in localStorage for dev purposes
@@ -68,16 +71,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
       setUserRole(authData.userRole);
       setUserName(authData.userName);
+      setIsSplashComplete(false); // Trigger splash on fresh login
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
       }
-      if (authData.userRole === 'operador_checkin') {
-        navigate({ to: '/checkin', replace: true });
-      } else if (authData.userRole === 'admin') {
-        navigate({ to: '/admin', replace: true });
-      } else if (authData.userRole === 'cliente') {
-        navigate({ to: '/cliente', replace: true });
-      }
+      
+      // Navigation happens after splash in LoginPage
       return true;
     }
     return false;
@@ -94,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, userName, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete: setIsSplashComplete, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
