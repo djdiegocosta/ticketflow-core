@@ -185,11 +185,10 @@ Regras:
 - Login: e-mail + senha, links para cadastro e recuperação.
 - Cadastro: nome completo, WhatsApp, e-mail, cidade, senha (mín. 8 caracteres). Ao cadastrar, vincula automaticamente compras anteriores pelo WhatsApp.
 
-**Campo Cidade — seleção inteligente por DDD (aplica-se aqui e no Perfil, seção 7.3):**
-- Ao preencher o WhatsApp, o sistema identifica o Estado (UF) automaticamente a partir do DDD — mapeamento confiável, cada DDD pertence a um único estado.
-- O campo Cidade vira um autocomplete (digitação + sugestão), mas a lista de sugestões já vem filtrada apenas pelas cidades daquele estado (base oficial IBGE) — nunca lista o Brasil inteiro.
-- Não é possível selecionar uma cidade que não exista na lista oficial, nem de outro estado — elimina erro de digitação por completo, sem exigir um campo de Estado separado e obrigatório.
-- Se o DDD não for reconhecido ou o campo WhatsApp ainda estiver vazio: campo Cidade cai para autocomplete com a lista completa do Brasil, sem pré-filtro.
+**Campo Cidade — autocomplete simples (Opção A — decisão revisada):**
+- Tentativa anterior (filtro automático por DDD/estado) descartada — falhou porque a base de cidades usada estava incompleta (trouxe só as maiores cidades do estado, não a lista oficial completa). Causa raiz foi qualidade da base de dados, não a lógica de filtro em si.
+- Solução simplificada: campo de autocomplete único, sem filtro por DDD/estado — sugere cidades conforme o cliente digita, usando a lista completa e oficial de municípios do Brasil (IBGE, ~5.570 cidades — garantir que a base usada é a completa, não uma amostra/subconjunto).
+- Não permite texto livre fora da lista — só é possível selecionar uma cidade existente na base.
 - Recuperar senha: e-mail → link de redefinição.
 - Redefinir senha: nova senha + confirmação.
 
