@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "@tanstack/react-router";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
-import { AlertTriangle, CheckCircle2, History, Keyboard, Maximize, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, History, Keyboard, Maximize, XCircle, Wifi, WifiOff, CloudSync } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -10,8 +10,10 @@ import {
   CHECKIN_EVENTS,
   CheckinStatus,
   addCheckinAttempt,
-  resolveMockCheckin,
+  resolveCheckin,
+  preloadEventTickets,
 } from "@/lib/checkin-data";
+import { offlineDB } from "@/lib/offline-db";
 
 interface OverlayState {
   status: CheckinStatus;
@@ -28,6 +30,8 @@ export function CheckinPage() {
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const pausedRef = useRef(false);
@@ -45,6 +49,51 @@ export function CheckinPage() {
       navigate({ to: "/admin", replace: true });
     }
   }, [isAuthenticated, userRole, navigate]);
+
+  // Offline Sync & Initial Load
+  useEffect(() => {
+    const handleConnectivityChange = async () => {
+      const online = navigator.onLine;
+      setIsOnline(online);
+      
+      if (online) {
+        const queue = await offlineDB.getSyncQueue();
+        if (queue.length > 0) {
+          toast.promise(
+            (async () => {
+              await new Promise(resolve => setTimeout(resolve, 1500)); // Simula processamento
+              await offlineDB.clearSyncQueue();
+              setPendingSyncCount(0);
+            })(),
+            {
+              loading: 'Sincronizando check-ins pendentes...',
+              success: 'Check-ins sincronizados com sucesso!',
+              error: 'Erro ao sincronizar.',
+            }
+          );
+        }
+      }
+    };
+
+    window.addEventListener("online", handleConnectivityChange);
+    window.addEventListener("offline", handleConnectivityChange);
+
+    // Carga inicial e check de pendentes
+    (async () => {
+      const queue = await offlineDB.getSyncQueue();
+      setPendingSyncCount(queue.length);
+      
+      if (navigator.onLine) {
+        const count = await preloadEventTickets(selectedEvent.name);
+        console.log(`[Checkin] ${count} ingressos pré-carregados para ${selectedEvent.name}`);
+      }
+    })();
+
+    return () => {
+      window.removeEventListener("online", handleConnectivityChange);
+      window.removeEventListener("offline", handleConnectivityChange);
+    };
+  }, [selectedEvent.name]);
 
   // Wake Lock
   useEffect(() => {
@@ -89,18 +138,23 @@ export function CheckinPage() {
     pausedRef.current = false;
   }, []);
 
-  const processCheckin = useCallback((code: string) => {
+  const processCheckin = useCallback(async (code: string) => {
     if (pausedRef.current || !code.trim()) return;
     pausedRef.current = true;
 
-    const result = resolveMockCheckin(code, eventRef.current.name);
+    const result = await resolveCheckin(code, eventRef.current.name);
     addCheckinAttempt({
       name: result.name,
       eventName: result.eventName,
       time: result.time,
       status: result.status,
+      isOffline: result.isOffline,
     });
     setOverlay({ status: result.status, name: result.name, visible: true });
+
+    // Atualiza contagem de pendentes se necessário
+    const queue = await offlineDB.getSyncQueue();
+    setPendingSyncCount(queue.length);
 
     const duration = result.status === "valid" ? 1000 : 2500;
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -216,23 +270,41 @@ export function CheckinPage() {
 
       {/* Header POSICIONADO NO TOPO */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 bg-black/50 px-4 backdrop-blur-sm">
-        {CHECKIN_EVENTS.length > 1 ? (
-          <select
-            className="max-w-[70%] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
-            value={selectedEvent.id}
-            onChange={(e) =>
-              setSelectedEvent(CHECKIN_EVENTS.find((ev) => e.target.value === ev.id) || CHECKIN_EVENTS[0]!)
-            }
-          >
-            {CHECKIN_EVENTS.map((ev) => (
-              <option key={ev.id} value={ev.id} className="text-black">
-                {ev.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <span className="truncate text-small font-medium text-white/80">{selectedEvent.name}</span>
-        )}
+        <div className="flex items-center gap-3 overflow-hidden">
+          {CHECKIN_EVENTS.length > 1 ? (
+            <select
+              className="max-w-[150px] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
+              value={selectedEvent.id}
+              onChange={(e) =>
+                setSelectedEvent(CHECKIN_EVENTS.find((ev) => e.target.value === ev.id) || CHECKIN_EVENTS[0]!)
+              }
+            >
+              {CHECKIN_EVENTS.map((ev) => (
+                <option key={ev.id} value={ev.id} className="text-black">
+                  {ev.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="truncate text-small font-medium text-white/80">{selectedEvent.name}</span>
+          )}
+
+          {/* Status Offline/Sync */}
+          <div className="flex items-center gap-2 border-l border-white/20 pl-3">
+            {!isOnline ? (
+              <WifiOff className="h-4 w-4 text-[var(--warning)]" />
+            ) : (
+              <Wifi className="h-4 w-4 text-[var(--accent)]" />
+            )}
+            {pendingSyncCount > 0 && (
+              <div className="flex items-center gap-1 animate-pulse">
+                <CloudSync className="h-4 w-4 text-white" />
+                <span className="text-micro font-bold text-white">{pendingSyncCount}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
         <button
           onClick={requestFullscreen}
           aria-label="Tela cheia"

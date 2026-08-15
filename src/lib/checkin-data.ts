@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { offlineDB, type OfflineTicket } from "./offline-db";
 
 export type CheckinStatus = "valid" | "already_used" | "invalid";
 
@@ -8,6 +9,7 @@ export interface CheckinAttempt {
   eventName: string;
   time: string;
   status: CheckinStatus;
+  isOffline?: boolean;
 }
 
 export const CHECKIN_EVENTS = [
@@ -28,6 +30,18 @@ const MOCK_NAMES = [
   "Isabela Nunes",
   "João Pedro Alves",
 ];
+
+// Dados mockados que representam "a base do servidor"
+const SERVER_MOCK_TICKETS: OfflineTicket[] = Array.from({ length: 100 }).map((_, i) => {
+  const code = `TKT-${100000 + i}`;
+  const name = MOCK_NAMES[i % MOCK_NAMES.length]!;
+  return {
+    code,
+    name,
+    eventName: CHECKIN_EVENTS[i % CHECKIN_EVENTS.length]!.name,
+    status: "valid"
+  };
+});
 
 let attempts: CheckinAttempt[] = [
   { id: "a1", name: "Alice Oliveira", eventName: "Festival de Inverno 2026", time: "19:52", status: "valid" },
@@ -69,8 +83,59 @@ export function useCheckinAttempts() {
   return list;
 }
 
-/** Lógica mockada determinística: define o resultado a partir do próprio código lido. */
-export function resolveMockCheckin(code: string, eventName: string) {
+/** Pre-carrega os dados do evento no IndexedDB simulando o download inicial */
+export async function preloadEventTickets(eventName: string) {
+  const eventTickets = SERVER_MOCK_TICKETS.filter(t => t.eventName === eventName);
+  await offlineDB.saveTickets(eventTickets);
+  return eventTickets.length;
+}
+
+/** Lógica de Check-in Offline First */
+export async function resolveCheckin(code: string, eventName: string) {
+  const isOnline = navigator.onLine;
+  const cleanCode = code.trim().toUpperCase();
+  
+  // 1. Tentar cache local (IndexedDB)
+  const localTicket = await offlineDB.getTicket(cleanCode);
+  
+  let result: { status: CheckinStatus; name: string; eventName: string; time: string; isOffline: boolean };
+  const time = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  if (localTicket) {
+    if (localTicket.status === 'already_used') {
+      result = { status: 'already_used', name: localTicket.name, eventName, time, isOffline: !isOnline };
+    } else {
+      // Validado localmente
+      await offlineDB.updateTicketStatus(cleanCode, 'already_used');
+      result = { status: 'valid', name: localTicket.name, eventName, time, isOffline: !isOnline };
+    }
+  } else {
+    // Se não está no IndexedDB, simulamos a lógica determinística original para "novos" códigos
+    // Mas se estiver offline, novos códigos que não foram pré-carregados são considerados inválidos
+    if (!isOnline) {
+      result = { status: 'invalid', name: cleanCode, eventName, time, isOffline: true };
+    } else {
+      // Simulação online original (determinística)
+      const mockResult = resolveMockCheckinSync(code, eventName);
+      result = { ...mockResult, isOffline: false };
+    }
+  }
+
+  // Se estiver offline e for uma validação/duplicidade, adicionar à fila de sync
+  if (!isOnline && (result.status === 'valid' || result.status === 'already_used')) {
+    await offlineDB.addToSyncQueue({
+      id: `${Date.now()}-${cleanCode}`,
+      code: cleanCode,
+      eventName,
+      timestamp: Date.now()
+    });
+  }
+
+  return result;
+}
+
+/** Versão síncrona mantida apenas para fallback/legado interno se necessário */
+function resolveMockCheckinSync(code: string, eventName: string) {
   const clean = code.trim();
   let hash = 0;
   for (let i = 0; i < clean.length; i++) hash = (hash * 31 + clean.charCodeAt(i)) % 100000;
@@ -87,3 +152,4 @@ export function resolveMockCheckin(code: string, eventName: string) {
     time: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
   };
 }
+

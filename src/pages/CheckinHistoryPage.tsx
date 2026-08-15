@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCheckinAttempts } from "@/lib/checkin-data";
 
@@ -41,7 +41,10 @@ export function CheckinHistoryPage() {
                 )}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-body font-medium text-[var(--text-primary)]">{item.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="truncate text-body font-medium text-[var(--text-primary)]">{item.name}</p>
+                  {item.isOffline && <WifiOff className="h-3 w-3 text-[var(--warning)] shrink-0" />}
+                </div>
                 <p className="truncate text-small text-[var(--text-secondary)]">{item.eventName}</p>
               </div>
               <span className="shrink-0 text-small text-[var(--text-secondary)]">{item.time}</span>
