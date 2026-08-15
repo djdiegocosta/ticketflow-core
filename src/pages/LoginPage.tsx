@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { WelcomeSplash } from "@/components/WelcomeSplash";
 import {
   Form,
   FormControl,
@@ -28,16 +29,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, userRole } = useAuth();
+  const { login, isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isSplashComplete) {
       if (userRole === 'admin' || userRole === 'colaborador') navigate({ to: '/admin' });
       else if (userRole === 'cliente') navigate({ to: '/cliente' });
       else if (userRole === 'operador_checkin') navigate({ to: '/checkin' });
     }
-  }, [isAuthenticated, userRole, navigate]);
+  }, [isAuthenticated, userRole, isSplashComplete, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -52,10 +53,8 @@ export default function LoginPage() {
     const success = login(data.email, data.password);
     if (success) {
       toast.success("Login realizado com sucesso!");
-      const auth = JSON.parse(window.localStorage.getItem('ticketflow_auth') || '{}');
-      if (auth.userRole === 'cliente') navigate({ to: '/cliente' });
-      else if (auth.userRole === 'operador_checkin') navigate({ to: '/checkin' });
-      else navigate({ to: '/admin' });
+      // The navigate logic is now handled by the splash screen completion
+      // which updates isSplashComplete and triggers the useEffect above
     } else {
       form.setError("password", { message: "E-mail ou senha incorretos" });
     }
@@ -63,7 +62,14 @@ export default function LoginPage() {
 
 
   return (
-    <MobileLayout showFooter={false}>
+    <>
+      {isAuthenticated && !isSplashComplete && (
+        <WelcomeSplash 
+          userName={userName} 
+          onComplete={() => setSplashComplete(true)} 
+        />
+      )}
+      <MobileLayout showFooter={false}>
       <div className="flex flex-col items-center justify-center p-4 py-12">
         <div className="mb-8">
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>
@@ -160,5 +166,6 @@ export default function LoginPage() {
         </Card>
       </div>
     </MobileLayout>
+    </>
   );
 }

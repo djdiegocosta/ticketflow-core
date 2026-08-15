@@ -248,6 +248,16 @@
   }
 }
 
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%) scaleX(0.2); }
+  50% { transform: translateX(0%) scaleX(0.5); }
+  100% { transform: translateX(100%) scaleX(0.2); }
+}
+
+@utility animate-progress-indeterminate {
+  animation: progress-indeterminate 2s infinite linear;
+}
+
 /* NEXUS-PRO:WATERMARK-HIDE:START */
 /* Overlay do badge oficial ocultado por conflito com UI custom.
    Bloco idempotente gerenciado pela extensão Nexus Pro.
