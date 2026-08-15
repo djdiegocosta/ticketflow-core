@@ -224,7 +224,12 @@ export function ManualSaleModal({
                     className={inputClass}
                     placeholder="Nome Sobrenome"
                     value={buyerName}
-                    onChange={(e) => setBuyerName(formatName(e.target.value))}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = formatName(target.value);
+                      setBuyerName(target.value);
+                    }}
+
                   />
                   {errors["buyerName"] && <p className={errorClass}>{errors["buyerName"]}</p>}
                 </div>
@@ -278,14 +283,17 @@ export function ManualSaleModal({
                       placeholder="Nome Sobrenome"
                       disabled={sameAsBuyer && quantity === 1}
                       value={participants[i] ?? ""}
-                      onChange={(e) => {
-                        const value = formatName(e.target.value);
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = formatName(target.value);
+                        const value = target.value;
                         setParticipants((prev) => {
                           const next = [...prev];
                           next[i] = value;
                           return next;
                         });
                       }}
+
                     />
                     {errors[`p${i}`] && <p className={errorClass}>{errors[`p${i}`]}</p>}
                   </div>
