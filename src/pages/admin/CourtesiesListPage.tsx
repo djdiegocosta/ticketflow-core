@@ -109,7 +109,7 @@ export function CourtesiesListPage() {
           <button
             type="button"
             onClick={handleExportPdf}
-            className="inline-flex h-10 items-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent md:w-auto"
           >
             <Download className="h-4 w-4" />
             Gerar lista PDF
