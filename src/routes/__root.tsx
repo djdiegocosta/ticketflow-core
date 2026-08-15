@@ -122,7 +122,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        Enable Cloud for this project.
         <Scripts />
       </body>
     </html>
