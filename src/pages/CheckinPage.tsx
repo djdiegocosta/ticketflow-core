@@ -207,18 +207,21 @@ export function CheckinPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-0 flex flex-col bg-black">
-      {/* Vídeo em tela cheia */}
-      <div id="reader" className="absolute inset-0 h-full w-full [&>video]:h-full [&>video]:w-full [&>video]:object-cover" />
+    <div className="fixed inset-0 z-0 flex h-[100dvh] w-screen flex-col bg-black overflow-hidden">
+      {/* Vídeo em tela cheia ocupando 100dvh */}
+      <div 
+        id="reader" 
+        className="absolute inset-0 z-0 h-[100dvh] w-full [&>video]:h-full [&>video]:w-full [&>video]:object-cover" 
+      />
 
-      {/* Header sobreposto */}
-      <header className="relative z-20 flex h-14 shrink-0 items-center justify-between gap-2 bg-black/50 px-4 backdrop-blur-sm">
+      {/* Header POSICIONADO NO TOPO */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 bg-black/50 px-4 backdrop-blur-sm">
         {CHECKIN_EVENTS.length > 1 ? (
           <select
             className="max-w-[70%] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
             value={selectedEvent.id}
             onChange={(e) =>
-              setSelectedEvent(CHECKIN_EVENTS.find((ev) => ev.id === e.target.value) || CHECKIN_EVENTS[0]!)
+              setSelectedEvent(CHECKIN_EVENTS.find((ev) => e.target.value === ev.id) || CHECKIN_EVENTS[0]!)
             }
           >
             {CHECKIN_EVENTS.map((ev) => (
@@ -239,8 +242,8 @@ export function CheckinPage() {
         </button>
       </header>
 
-      {/* Moldura de mira + instrução */}
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 px-8">
+      {/* Camada de interface: Moldura única e centralizada */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 px-8 pointer-events-none">
         {!cameraError && !isInitializing && (
           <>
             <div className="relative aspect-square w-full max-w-[280px]">
@@ -263,7 +266,7 @@ export function CheckinPage() {
         )}
 
         {cameraError && (
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center pointer-events-auto">
             <AlertTriangle className="mb-4 h-12 w-12 text-[var(--warning)]" />
             <h2 className="mb-2 text-heading-3 text-white">Erro na câmera</h2>
             <p className="mb-6 text-small text-white/70">{cameraError}</p>
@@ -278,9 +281,9 @@ export function CheckinPage() {
         )}
       </div>
 
-      {/* Rodapé com botões discretos */}
+      {/* Rodapé fixo NA PARTE INFERIOR */}
       <div
-        className="relative z-20 grid shrink-0 grid-cols-2 gap-3 px-4 pb-6 pt-4"
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-2 gap-3 px-4 pt-4 bg-gradient-to-t from-black/80 to-transparent"
         style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
       >
         <button
