@@ -21,15 +21,15 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between",
+        "flex flex-col gap-3 md:flex-row md:items-center md:justify-between",
         className,
       )}
     >
-      <div className="grid w-full grid-cols-2 gap-3 lg:flex lg:w-auto lg:flex-wrap lg:items-center">
+      <div className="grid w-full grid-cols-2 gap-3 md:flex md:w-auto md:flex-wrap md:items-center">
         {children}
       </div>
       {actions && (
-        <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center">
+        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
           {actions}
         </div>
       )}
@@ -51,7 +51,7 @@ export function FilterSearch({
   className?: string;
 }) {
   return (
-    <div className={cn("relative w-full lg:w-auto", className)}>
+    <div className={cn("relative w-full md:w-auto", className)}>
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
       <input
         aria-label={label ?? placeholder}
@@ -60,7 +60,7 @@ export function FilterSearch({
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           filterFieldClass,
-          "w-full pl-9 pr-3 placeholder:text-text-disabled lg:w-[280px]",
+          "w-full pl-9 pr-3 placeholder:text-text-disabled md:w-[280px]",
         )}
       />
     </div>
