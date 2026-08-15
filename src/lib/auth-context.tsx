@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse auth data", e);
       }
     }
+    setIsSplashComplete(true); // Ensure persistent sessions don't show splash
   }, []);
 
   const login = (email: string, pass: string) => {
