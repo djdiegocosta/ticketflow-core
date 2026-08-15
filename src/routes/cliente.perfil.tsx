@@ -1,9 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
-import { useState, useMemo } from "react";
-import { formatName, maskWhatsApp, onlyDigits, isFullName } from "@/lib/form-format";
+import { useState } from "react";
+import { formatName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
-import { getUFByDDD } from "@/lib/ibge-data";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const profileSchema = z.object({
+  nome: z.string().min(1, "Nome obrigatório"),
+  zap: z.string().min(1, "WhatsApp obrigatório"),
+  email: z.string().email("E-mail inválido"),
+  cidade: z.string().min(1, "Cidade obrigatória"),
+  nasc: z.string().optional(),
+  insta: z.string().optional(),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 
 export const Route = createFileRoute("/cliente/perfil")({
@@ -19,7 +31,8 @@ export const Route = createFileRoute("/cliente/perfil")({
 });
 
 function Page_cliente_perfil() {
-  const form = useForm({
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
     defaultValues: {
       nome: "Marina Duarte",
       zap: "(11) 99999-9999",
@@ -85,17 +98,18 @@ function Page_cliente_perfil() {
             control={form.control}
             name="cidade"
             render={({ field }) => {
-              const zap = form.watch("zap");
-              const digits = onlyDigits(zap);
-              const ddd = digits.slice(0, 2);
-              const uf = getUFByDDD(ddd);
               return (
-                <CityAutocomplete
-                  value={field.value}
-                  onChange={field.onChange}
-                  uf={uf}
-                  className="rounded-[var(--radius-sm)]"
-                />
+                <div className="flex flex-col gap-1">
+                  <CityAutocomplete
+                    value={field.value}
+                    onChange={field.onChange}
+                    uf={null}
+                    className="rounded-[var(--radius-sm)]"
+                  />
+                  {form.formState.errors.cidade && (
+                    <span className="text-small text-error">{form.formState.errors.cidade.message}</span>
+                  )}
+                </div>
               );
             }}
           />
