@@ -17,7 +17,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
+        "w-full overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
         className,
       )}
     >

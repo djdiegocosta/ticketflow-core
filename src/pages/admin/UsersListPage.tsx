@@ -106,15 +106,9 @@ export default function UsersListPage() {
                 </DataTableCell>
                 <DataTableCell>{user.invitedAt}</DataTableCell>
                 <DataTableCell>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "h-2 w-2 rounded-full",
-                        user.status === "Ativo" ? "bg-accent" : "bg-text-disabled",
-                      )}
-                    />
-                    <span>{user.status}</span>
-                  </div>
+                  <StatusPill tone={user.status === "Ativo" ? "accent" : "neutral"}>
+                    {user.status}
+                  </StatusPill>
                 </DataTableCell>
                 <DataTableCell>
                   <button
