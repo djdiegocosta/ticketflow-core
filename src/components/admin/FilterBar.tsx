@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * abas/dropdowns/busca à esquerda, ações à direita, mesma linha e mesmo gap.
  */
 export const filterFieldClass =
-  "h-10 border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent rounded-[var(--radius-sm)]";
+  "h-10 w-full border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent rounded-[var(--radius-sm)]";
 
 export function FilterBar({
   children,
@@ -25,8 +25,14 @@ export function FilterBar({
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-3">{children}</div>
-      {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+      <div className="grid w-full grid-cols-2 gap-3 lg:flex lg:w-auto lg:flex-wrap lg:items-center">
+        {children}
+      </div>
+      {actions && (
+        <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
@@ -45,7 +51,7 @@ export function FilterSearch({
   className?: string;
 }) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative w-full lg:w-auto", className)}>
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
       <input
         aria-label={label ?? placeholder}
@@ -54,7 +60,7 @@ export function FilterSearch({
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           filterFieldClass,
-          "w-full pl-9 pr-3 placeholder:text-text-disabled sm:w-[280px]",
+          "w-full pl-9 pr-3 placeholder:text-text-disabled lg:w-[280px]",
         )}
       />
     </div>
