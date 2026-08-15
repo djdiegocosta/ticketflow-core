@@ -1,7 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CheckinHistoryPage } from "@/pages/CheckinHistoryPage";
 
 export const Route = createFileRoute("/checkin/historico")({
+  beforeLoad: () => {
+    if (typeof window === 'undefined') return;
+    const auth = window.localStorage.getItem('ticketflow_auth');
+    if (!auth) {
+      throw redirect({ to: '/login' });
+    }
+    try {
+      const data = JSON.parse(auth);
+      if (!data.isAuthenticated || (data.userRole !== 'operador_checkin' && data.userRole !== 'admin')) {
+        throw redirect({ to: '/login' });
+      }
+    } catch (e) {
+      throw redirect({ to: '/login' });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Histórico de Check-in | TicketFlow" },

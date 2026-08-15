@@ -10,6 +10,7 @@ export const Route = createFileRoute("/login")({
       if (data.isAuthenticated) {
         if (data.userRole === 'admin') throw redirect({ to: '/admin' });
         if (data.userRole === 'cliente') throw redirect({ to: '/cliente' });
+        if (data.userRole === 'operador_checkin') throw redirect({ to: '/checkin' });
       }
     }
   },
