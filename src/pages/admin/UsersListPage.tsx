@@ -3,6 +3,8 @@ import { Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MOCK_USERS, User, UserRoleType } from "@/lib/users-data";
+import { formatName } from "@/lib/form-format";
+
 import {
   DataTable,
   DataTableCell,
@@ -43,7 +45,7 @@ export default function UsersListPage() {
   const handleInvite = (userData: { name: string; email: string; role: UserRoleType }) => {
     const newUser: User = {
       id: Math.random().toString(36).substring(7),
-      name: userData.name,
+      name: formatName(userData.name),
       email: userData.email,
       role: userData.role,
       invitedAt: new Date().toLocaleString("pt-BR", {
@@ -98,7 +100,7 @@ export default function UsersListPage() {
           <tbody>
             {pageRows.map((user) => (
               <DataTableRow key={user.id}>
-                <DataTableCell variant="primary">{user.name}</DataTableCell>
+                <DataTableCell variant="primary">{formatName(user.name)}</DataTableCell>
                 <DataTableCell>{user.email}</DataTableCell>
                 <DataTableCell>
                   <StatusPill tone={user.role === "Admin" ? "accent" : "neutral"}>
