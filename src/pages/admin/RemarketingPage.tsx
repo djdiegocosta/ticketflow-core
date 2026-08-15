@@ -299,7 +299,7 @@ export function RemarketingPage() {
               </option>
             ))}
           </select>
-          <div className="hidden md:block" />
+          <div className="hidden sm:block" />
         </FilterBar>
 
         <div className="flex items-center justify-end px-1">
