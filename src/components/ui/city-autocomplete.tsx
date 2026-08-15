@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getCitiesByUF } from "@/lib/ibge-data";
+import { getAllCities } from "@/lib/ibge-data";
 
 interface CityAutocompleteProps {
   value: string;
@@ -38,7 +38,7 @@ export function CityAutocomplete({
 }: CityAutocompleteProps) {
   const [open, setOpen] = React.useState(false);
   
-  const cities = React.useMemo(() => getCitiesByUF(uf), [uf]);
+  const cities = React.useMemo(() => getAllCities(), []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
