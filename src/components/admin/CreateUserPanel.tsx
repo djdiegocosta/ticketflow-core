@@ -3,6 +3,7 @@ import { Shield, Users, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { UserRoleType } from "@/lib/users-data";
+import { formatName, isFullName } from "@/lib/form-format";
 import {
   PanelCancelButton,
   PanelDiscardDialog,
@@ -11,6 +12,7 @@ import {
   panelInputClass,
   panelLabelClass,
 } from "@/components/admin/SidePanel";
+
 
 interface CreateUserPanelProps {
   open: boolean;
@@ -46,6 +48,11 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
       toast.error("Preencha todos os campos");
       return;
     }
+    if (!isFullName(name)) {
+      toast.error("Informe nome e sobrenome (mínimo 2 palavras)");
+      return;
+    }
+
     onInvite({ name, email, role });
     resetForm();
     onClose();
@@ -84,7 +91,8 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(formatName(e.target.value))}
+
               placeholder="Ex: Carlos Eduardo Oliveira"
               className={panelInputClass}
             />

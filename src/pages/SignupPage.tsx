@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -17,50 +17,29 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const formatName = (name: string) => {
-  const words = name.split(" ");
-  const connectives = ["de", "da", "do", "dos", "das", "e"];
-  
-  return words
-    .map((word) => {
-      if (word.length === 0) return "";
-      const lowerWord = word.toLowerCase();
-      if (connectives.includes(lowerWord)) return lowerWord;
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(" ");
-};
-
-const maskWhatsApp = (value: string) => {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length === 0) return "";
-  if (digits.length <= 2) return `(${digits}`;
-  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
-};
-
+import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
+import { CityAutocomplete } from "@/components/ui/city-autocomplete";
+import { getUFByDDD } from "@/lib/ibge-data";
 
 const signupSchema = z
   .object({
     name: z
       .string()
       .min(1, "Nome obrigatório")
-      .refine(
-        (val) => val.trim().split(/\s+/).length >= 2,
-        "Digite seu nome completo (mínimo 2 palavras)"
-      ),
+      .refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
     whatsapp: z
       .string()
       .min(1, "WhatsApp obrigatório")
       .refine(
-        (val) => val.replace(/\D/g, "").length >= 11,
+        (val) => onlyDigits(val).length >= 11,
         "WhatsApp deve ter 11 dígitos"
       ),
     email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
+    city: z.string().min(1, "Cidade obrigatória"),
     password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirmação de senha obrigatória"),
   })
+
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",
     path: ["confirmPassword"],
@@ -78,9 +57,11 @@ export default function SignupPage() {
       name: "",
       whatsapp: "",
       email: "",
+      city: "",
       password: "",
       confirmPassword: "",
     },
+
     mode: "onChange",
   });
 
@@ -171,6 +152,32 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => {
+                  const whatsappValue = form.watch("whatsapp");
+                  const digits = onlyDigits(whatsappValue);
+                  const ddd = digits.slice(0, 2);
+                  const uf = getUFByDDD(ddd);
+
+                  return (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Cidade</FormLabel>
+                      <FormControl>
+                        <CityAutocomplete
+                          value={field.value}
+                          onChange={field.onChange}
+                          uf={uf}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-small text-error" />
+                    </FormItem>
+                  );
+                }}
+              />
+
 
               <FormField
                 control={form.control}

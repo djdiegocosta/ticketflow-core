@@ -13,6 +13,8 @@ import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCar
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
 import { MOCK_COURTESIES, Courtesy } from "@/lib/courtesies-data";
+import { formatName } from "@/lib/form-format";
+
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { CreateCourtesyPanel } from "@/components/admin/cortesias/CreateCourtesyPanel";
 import { toast } from "sonner";
@@ -154,7 +156,7 @@ export function CourtesiesListPage() {
             ) : (
               paginatedData.map((item) => (
                 <DataTableRow key={item.id}>
-                  <DataTableCell variant="primary">{item.name}</DataTableCell>
+                  <DataTableCell variant="primary">{formatName(item.name)}</DataTableCell>
                   {!isMobile && <DataTableCell>{item.event}</DataTableCell>}
                   <DataTableCell variant="muted">
                     {new Date(item.issuedAt).toLocaleDateString("pt-BR")}

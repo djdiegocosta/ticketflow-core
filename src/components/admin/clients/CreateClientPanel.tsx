@@ -10,6 +10,8 @@ import {
   panelInputClass as inputClass,
   panelLabelClass as labelClass,
 } from "@/components/admin/SidePanel";
+import { CityAutocomplete } from "@/components/ui/city-autocomplete";
+import { getUFByDDD } from "@/lib/ibge-data";
 
 type Errors = Record<string, string>;
 
@@ -127,7 +129,11 @@ export function CreateClientPanel({
               className={inputClass}
               placeholder="Nome Sobrenome"
               value={name}
-              onChange={(e) => setName(formatName(e.target.value))}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement;
+                target.value = formatName(target.value);
+                setName(target.value);
+              }}
             />
             {errors["name"] && <p className={errorClass}>{errors["name"]}</p>}
           </div>
@@ -138,7 +144,11 @@ export function CreateClientPanel({
               className={inputClass}
               placeholder="(00) 00000-0000"
               value={whatsapp}
-              onChange={(e) => setWhatsapp(maskWhatsApp(e.target.value))}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement;
+                target.value = maskWhatsApp(target.value);
+                setWhatsapp(target.value);
+              }}
             />
             {errors["whatsapp"] && <p className={errorClass}>{errors["whatsapp"]}</p>}
           </div>
@@ -156,11 +166,10 @@ export function CreateClientPanel({
 
           <div>
             <label className={labelClass}>Cidade (opcional)</label>
-            <input
-              className={inputClass}
-              placeholder="Ex: Uberlândia - MG"
+            <CityAutocomplete
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={setCity}
+              uf={getUFByDDD(onlyDigits(whatsapp).slice(0, 2))}
             />
           </div>
 
