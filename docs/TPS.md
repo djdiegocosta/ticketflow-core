@@ -88,6 +88,7 @@ Aplicadas em todo campo de entrada do sistema.
 - Capitalização automática (title case), exceto conectivos: de, da, do, dos, das, e.
 - Mínimo 2 palavras (obrigatório).
 - Se 2 palavras e a segunda for nome próprio composto comum: aviso não-bloqueante — não trava a compra.
+- **Implementação obrigatoriamente centralizada:** uma única função/utilitário compartilhado de validação e formatação, importado em todo campo de nome do sistema (checkout, cadastro, perfil, convite de usuário, nome de artista no Simulador, cortesias, venda manual, etc.) — nunca reimplementado por tela. Mesma disciplina já aplicada a tabela, badge e botão compartilhados.
 
 ### WhatsApp
 - Máscara automática no frontend: `(00) 00000-0000`.
@@ -182,7 +183,13 @@ Regras:
 
 ### 6.6 Login, Cadastro, Recuperação de senha
 - Login: e-mail + senha, links para cadastro e recuperação.
-- Cadastro: nome completo, WhatsApp, e-mail, senha (mín. 8 caracteres). Ao cadastrar, vincula automaticamente compras anteriores pelo WhatsApp.
+- Cadastro: nome completo, WhatsApp, e-mail, cidade, senha (mín. 8 caracteres). Ao cadastrar, vincula automaticamente compras anteriores pelo WhatsApp.
+
+**Campo Cidade — seleção inteligente por DDD (aplica-se aqui e no Perfil, seção 7.3):**
+- Ao preencher o WhatsApp, o sistema identifica o Estado (UF) automaticamente a partir do DDD — mapeamento confiável, cada DDD pertence a um único estado.
+- O campo Cidade vira um autocomplete (digitação + sugestão), mas a lista de sugestões já vem filtrada apenas pelas cidades daquele estado (base oficial IBGE) — nunca lista o Brasil inteiro.
+- Não é possível selecionar uma cidade que não exista na lista oficial, nem de outro estado — elimina erro de digitação por completo, sem exigir um campo de Estado separado e obrigatório.
+- Se o DDD não for reconhecido ou o campo WhatsApp ainda estiver vazio: campo Cidade cai para autocomplete com a lista completa do Brasil, sem pré-filtro.
 - Recuperar senha: e-mail → link de redefinição.
 - Redefinir senha: nova senha + confirmação.
 
