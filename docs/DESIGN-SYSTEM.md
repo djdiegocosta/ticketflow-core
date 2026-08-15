@@ -208,9 +208,29 @@ Sistema baseado em múltiplos de 4px. Usar sempre valores desta escala — nunca
 - Padding: 3px 10px
 - Tamanho: Micro (11px), peso 500
 - Cores por status:
-  - Pago/Ativo: fundo `--accent-muted`, texto `--accent-text`
-  - Pendente: fundo `#FFF3E0`, texto `#E65100`
-  - Cancelado/Erro: fundo `#FFEBEE`, texto `#C62828`
+  - Pago/Ativo: fundo `var(--accent-muted)`, texto `var(--accent-text)`
+  - Pendente: fundo `var(--warning-muted)`, texto `var(--warning-text)`
+  - Cancelado/Erro: fundo `var(--error-muted)`, texto `var(--error-text)`
+
+**Novas variáveis necessárias (adicionar ao conjunto de cores, light e dark — mesmo padrão já usado em `--accent-muted`/`--accent-text`):**
+
+Light:
+```
+--warning-muted: #FFF3E0;
+--warning-text: #E65100;
+--error-muted: #FFEBEE;
+--error-text: #C62828;
+```
+
+Dark:
+```
+--warning-muted: #3D2A0A;
+--warning-text: #FFB74D;
+--error-muted: #3D0A0A;
+--error-text: #FF6B6B;
+```
+
+Nunca usar `var(--warning)` ou `var(--error)` (as cores sólidas/saturadas) como fundo de badge com texto por cima — são para ícones, bordas e indicadores, não para fundo com texto, sob risco de repetir o bug do texto invisível.
   - Neutro: fundo `--bg-tertiary`, texto `--text-secondary`
 
 ### Sidebar do admin
