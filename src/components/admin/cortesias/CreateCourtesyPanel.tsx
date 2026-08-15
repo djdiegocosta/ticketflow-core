@@ -205,10 +205,15 @@ export function CreateCourtesyPanel({
                     <Input
                       placeholder="Ex: João Silva (Pressione Enter)"
                       value={singleName}
-                      onChange={(e) => setSingleName(e.target.value)}
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = formatName(target.value);
+                        setSingleName(target.value);
+                      }}
                       onKeyDown={handleSingleNameKeyDown}
                       autoFocus
                     />
+
                     {!isFullName(singleName) && singleName.trim() !== "" && (
                       <p className="flex items-center gap-1 text-[10px] text-error">
                         <AlertCircle className="h-3 w-3" />
@@ -295,8 +300,13 @@ export function CreateCourtesyPanel({
                             !p.isValid && "text-error"
                           ].join(" ")}
                           value={p.name}
-                          onChange={(e) => updateParticipantName(p.id, e.target.value)}
+                          onInput={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            target.value = formatName(target.value);
+                            updateParticipantName(p.id, target.value);
+                          }}
                         />
+
                       </div>
                       <Button
                         variant="ghost"

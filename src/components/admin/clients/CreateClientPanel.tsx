@@ -13,7 +13,6 @@ import {
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
 import { getUFByDDD } from "@/lib/ibge-data";
 
-
 type Errors = Record<string, string>;
 
 export function CreateClientPanel({
@@ -130,7 +129,11 @@ export function CreateClientPanel({
               className={inputClass}
               placeholder="Nome Sobrenome"
               value={name}
-              onChange={(e) => setName(formatName(e.target.value))}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement;
+                target.value = formatName(target.value);
+                setName(target.value);
+              }}
             />
             {errors["name"] && <p className={errorClass}>{errors["name"]}</p>}
           </div>
@@ -141,7 +144,11 @@ export function CreateClientPanel({
               className={inputClass}
               placeholder="(00) 00000-0000"
               value={whatsapp}
-              onChange={(e) => setWhatsapp(maskWhatsApp(e.target.value))}
+              onInput={(e) => {
+                const target = e.target as HTMLInputElement;
+                target.value = maskWhatsApp(target.value);
+                setWhatsapp(target.value);
+              }}
             />
             {errors["whatsapp"] && <p className={errorClass}>{errors["whatsapp"]}</p>}
           </div>
@@ -159,24 +166,12 @@ export function CreateClientPanel({
 
           <div>
             <label className={labelClass}>Cidade (opcional)</label>
-            <Controller
-              control={control}
-              name="city"
-              render={({ field }) => {
-                const digits = onlyDigits(whatsapp);
-                const ddd = digits.slice(0, 2);
-                const uf = getUFByDDD(ddd);
-                return (
-                  <CityAutocomplete
-                    value={field.value}
-                    onChange={field.onChange}
-                    uf={uf}
-                  />
-                );
-              }}
+            <CityAutocomplete
+              value={city}
+              onChange={setCity}
+              uf={getUFByDDD(onlyDigits(whatsapp).slice(0, 2))}
             />
           </div>
-
 
           <div>
             <label className={labelClass}>Data de nascimento (opcional)</label>
