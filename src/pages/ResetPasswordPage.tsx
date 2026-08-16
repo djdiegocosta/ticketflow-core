@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { zodResolver } from "@hookform/resolvers/zod";
