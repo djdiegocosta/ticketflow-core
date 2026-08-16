@@ -51,6 +51,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
