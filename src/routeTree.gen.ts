@@ -15,6 +15,7 @@ import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
+import { Route as PrimeiroAcessoRouteImport } from './routes/primeiro-acesso'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as SuperadminRouteImport } from './routes/superadmin'
@@ -81,6 +82,11 @@ const LoginRoute = LoginRouteImport.update({
 const MeusIngressosRoute = MeusIngressosRouteImport.update({
   id: '/meus-ingressos',
   path: '/meus-ingressos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrimeiroAcessoRoute = PrimeiroAcessoRouteImport.update({
+  id: '/primeiro-acesso',
+  path: '/primeiro-acesso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -321,6 +328,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/checkin': typeof AdminCheckinRoute
@@ -366,6 +374,7 @@ export interface FileRoutesById {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/superadmin': typeof SuperadminRouteWithChildren
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
+    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/superadmin'
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/meus-ingressos'
+    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/admin/checkin'
@@ -500,6 +511,7 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
+    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/superadmin'
@@ -546,6 +558,7 @@ export interface RootRouteChildren {
   ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
+  PrimeiroAcessoRoute: typeof PrimeiroAcessoRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SuperadminRoute: typeof SuperadminRouteWithChildren
@@ -599,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/meus-ingressos'
       fullPath: '/meus-ingressos'
       preLoaderRoute: typeof MeusIngressosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/primeiro-acesso': {
+      id: '/primeiro-acesso'
+      path: '/primeiro-acesso'
+      fullPath: '/primeiro-acesso'
+      preLoaderRoute: typeof PrimeiroAcessoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recuperar-senha': {
@@ -955,6 +975,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
+  PrimeiroAcessoRoute: PrimeiroAcessoRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   SuperadminRoute: SuperadminRouteWithChildren,

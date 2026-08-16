@@ -1,26 +1,25 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { requireSession } from "@/lib/auth-guard";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) {
-      throw redirect({ to: '/login' });
-    }
-    const data = JSON.parse(auth);
-    if (!data.isAuthenticated) {
-      throw redirect({ to: '/login' });
-    }
-    
-    if (data.userRole === 'operador_checkin') {
-      throw redirect({ to: '/checkin' });
+  ssr: false,
+  beforeLoad: async () => {
+    const ctx = await requireSession();
+
+    if (ctx.role === "operador_checkin") {
+      throw redirect({ to: "/checkin" });
     }
 
-    if (data.userRole !== 'admin' && data.userRole !== 'colaborador') {
-      throw redirect({ to: '/login' });
+    if (!ctx.organizationId) {
+      throw redirect({ to: "/primeiro-acesso" });
     }
+
+    if (ctx.role !== "admin" && ctx.role !== "colaborador") {
+      throw redirect({ to: "/cliente" });
+    }
+
+    return { auth: ctx };
   },
   component: AdminLayout,
 });
-

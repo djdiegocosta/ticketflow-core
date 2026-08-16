@@ -1,28 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CheckinPage } from "@/pages/CheckinPage";
+import { requireSession } from "@/lib/auth-guard";
 
 export const Route = createFileRoute("/checkin/")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) {
-      throw redirect({ to: '/login' });
+  ssr: false,
+  beforeLoad: async () => {
+    const ctx = await requireSession();
+    if (ctx.role !== "operador_checkin" && ctx.role !== "admin" && ctx.role !== "colaborador") {
+      throw redirect({ to: "/cliente" });
     }
-    try {
-      const data = JSON.parse(auth);
-      if (!data.isAuthenticated || data.userRole !== 'operador_checkin') {
-        // Se for admin, até poderia acessar, mas o requisito diz que operador_checkin é restrito a /checkin
-        // e por simetria vamos restringir /checkin apenas a esse papel ou admin (opcional)
-        // O pedido diz: "login como operador_checkin deve redirecionar direto para /checkin"
-        // E "Qualquer tentativa de navegação para outra rota deve redirecionar de volta para /checkin"
-        // Então /checkin é a "home" dele.
-        if (data.userRole !== 'admin' && data.userRole !== 'operador_checkin') {
-           throw redirect({ to: '/login' });
-        }
-      }
-    } catch (e) {
-      throw redirect({ to: '/login' });
-    }
+    return { auth: ctx };
   },
   head: () => ({
     meta: [

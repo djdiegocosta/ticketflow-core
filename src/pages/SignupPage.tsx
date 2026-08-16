@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,6 +51,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -65,9 +67,36 @@ export default function SignupPage() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: SignupFormValues) => {
-    toast.info("Funcionalidade em desenvolvimento");
-    console.log("Signup data:", data);
+  const onSubmit = async (data: SignupFormValues) => {
+    const { data: result, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: formatName(data.name),
+          whatsapp: data.whatsapp,
+          cidade: data.city,
+        },
+      },
+    });
+
+    if (error) {
+      form.setError("email", {
+        message: error.message.toLowerCase().includes("already")
+          ? "Este e-mail já está cadastrado"
+          : error.message,
+      });
+      return;
+    }
+
+    if (result.session) {
+      toast.success("Conta criada com sucesso!");
+      navigate({ to: "/cliente" });
+      return;
+    }
+
+    toast.success("Conta criada! Confirme seu e-mail para acessar.");
   };
 
   return (

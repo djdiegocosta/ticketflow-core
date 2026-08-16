@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +34,7 @@ type ResetFormValues = z.infer<typeof resetSchema>;
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<ResetFormValues>({
     resolver: zodResolver(resetSchema),
@@ -42,9 +45,16 @@ export default function ResetPasswordPage() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: ResetFormValues) => {
-    toast.success("Senha redefinida (simulado)");
-    console.log("Reset data:", data);
+  const onSubmit = async (data: ResetFormValues) => {
+    const { error } = await supabase.auth.updateUser({ password: data.password });
+
+    if (error) {
+      form.setError("password", { message: error.message });
+      return;
+    }
+
+    toast.success("Senha redefinida com sucesso!");
+    navigate({ to: "/login" });
   };
 
   return (
