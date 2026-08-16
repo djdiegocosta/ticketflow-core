@@ -1,100 +1,141 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import type { Session, User } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-type UserRole = 'admin' | 'colaborador' | 'operador_checkin' | 'cliente' | null;
+export type UserRole = 'admin' | 'colaborador' | 'operador_checkin' | 'cliente' | null;
 
 interface AuthContextType {
+  isLoading: boolean;
   isAuthenticated: boolean;
+  user: User | null;
+  session: Session | null;
   userRole: UserRole;
   userName: string;
+  organizationId: string | null;
   isSplashComplete: boolean;
   setSplashComplete: (complete: boolean) => void;
-  login: (email: string, pass: string) => boolean;
-  logout: () => void;
+  login: (email: string, pass: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [userName, setUserName] = useState<string>('');
-  const [isSplashComplete, setIsSplashComplete] = useState<boolean>(true); // Default to true so existing sessions don't splash
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSplashComplete, setIsSplashComplete] = useState<boolean>(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // Persist state in localStorage for dev purposes
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = window.localStorage.getItem('ticketflow_auth');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        setIsAuthenticated(data.isAuthenticated);
-        setUserRole(data.userRole);
-        setUserName(data.userName);
-      } catch (e) {
-        console.error("Failed to parse auth data", e);
-      }
+  const loadContext = useCallback(async (currentUser: User | null) => {
+    if (!currentUser) {
+      setUserRole(null);
+      setUserName('');
+      setOrganizationId(null);
+      return;
     }
-    setIsSplashComplete(true); // Ensure persistent sessions don't show splash
+
+    const [{ data: roleRow }, { data: profile }] = await Promise.all([
+      supabase
+        .from('user_roles')
+        .select('role, organization_id')
+        .eq('user_id', currentUser.id)
+        .limit(1)
+        .maybeSingle(),
+      supabase.from('profiles').select('full_name').eq('id', currentUser.id).maybeSingle(),
+    ]);
+
+    setUserRole((roleRow?.role as UserRole) ?? 'cliente');
+    setOrganizationId(roleRow?.organization_id ?? null);
+    setUserName(
+      profile?.full_name ||
+        (currentUser.user_metadata?.['full_name'] as string | undefined) ||
+        currentUser.email ||
+        '',
+    );
   }, []);
 
-  const login = (email: string, pass: string) => {
-    let authData = null;
+  useEffect(() => {
+    let active = true;
 
-    if (email === 'admin@ticketflow.com' && pass === 'admin123') {
-      authData = {
-        isAuthenticated: true,
-        userRole: 'admin' as UserRole,
-        userName: 'Administrador',
-      };
-    } else if (email === 'colaborador@ticketflow.com' && pass === 'colab123') {
-      authData = {
-        isAuthenticated: true,
-        userRole: 'colaborador' as UserRole,
-        userName: 'Colaborador',
-      };
-    } else if (email === 'checkin@ticketflow.com' && pass === 'checkin123') {
-      authData = {
-        isAuthenticated: true,
-        userRole: 'operador_checkin' as UserRole,
-        userName: 'Operador de Check-in',
-      };
-    } else if (email === 'cliente@ticketflow.com' && pass === 'cliente123') {
-      authData = {
-        isAuthenticated: true,
-        userRole: 'cliente' as UserRole,
-        userName: 'Marina Duarte',
-      };
-    }
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active) return;
+      setSession(data.session ?? null);
+      await loadContext(data.session?.user ?? null);
+      if (active) setIsLoading(false);
+    });
 
-    if (authData) {
-      setIsAuthenticated(true);
-      setUserRole(authData.userRole);
-      setUserName(authData.userName);
-      setIsSplashComplete(false); // Trigger splash on fresh login
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('ticketflow_auth', JSON.stringify(authData));
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!active) return;
+      if (
+        event !== 'SIGNED_IN' &&
+        event !== 'SIGNED_OUT' &&
+        event !== 'USER_UPDATED' &&
+        event !== 'INITIAL_SESSION'
+      ) {
+        setSession(newSession ?? null);
+        return;
       }
-      
-      // Navigation happens after splash in LoginPage
-      return true;
+      setSession(newSession ?? null);
+      void loadContext(newSession?.user ?? null);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [loadContext]);
+
+  const login = async (email: string, pass: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      return { error: error.message };
     }
-    return false;
+    setSession(data.session);
+    await loadContext(data.user);
+    setIsSplashComplete(false);
+    return { error: null };
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    setSession(null);
     setUserRole(null);
     setUserName('');
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('ticketflow_auth');
-    }
-    navigate({ to: '/login' });
+    setOrganizationId(null);
+    navigate({ to: '/login', replace: true });
+  };
+
+  const refreshProfile = async () => {
+    const { data } = await supabase.auth.getUser();
+    await loadContext(data.user ?? null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete: setIsSplashComplete, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoading,
+        isAuthenticated: Boolean(session?.user),
+        user: session?.user ?? null,
+        session,
+        userRole,
+        userName,
+        organizationId,
+        isSplashComplete,
+        setSplashComplete: setIsSplashComplete,
+        login,
+        logout,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
