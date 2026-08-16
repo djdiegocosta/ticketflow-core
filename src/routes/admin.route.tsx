@@ -11,6 +11,10 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/checkin" });
     }
 
+    if (!ctx.organizationId) {
+      throw redirect({ to: "/primeiro-acesso" });
+    }
+
     if (ctx.role !== "admin" && ctx.role !== "colaborador") {
       throw redirect({ to: "/cliente" });
     }
