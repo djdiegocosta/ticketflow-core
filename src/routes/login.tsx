@@ -1,19 +1,24 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import LoginPage from "@/pages/LoginPage";
+import { supabase } from "@/integrations/supabase/client";
+import { homeRouteForRole, type GuardRole } from "@/lib/auth-guard";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (auth) {
-      const data = JSON.parse(auth);
-      if (data.isAuthenticated) {
-        if (data.userRole === 'admin') throw redirect({ to: '/admin' });
-        if (data.userRole === 'cliente') throw redirect({ to: '/cliente' });
-        if (data.userRole === 'operador_checkin') throw redirect({ to: '/checkin' });
-      }
-    }
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return;
+
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id)
+      .limit(1)
+      .maybeSingle();
+
+    throw redirect({ to: homeRouteForRole((roleRow?.role as GuardRole) ?? "cliente") });
   },
+
 
   head: () => ({
     meta: [
