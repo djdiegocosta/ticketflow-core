@@ -301,6 +301,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          cidade: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -309,6 +310,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          cidade?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          cidade?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -613,6 +616,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bootstrap_organization: { Args: { _name: string }; Returns: string }
       checkin_ticket: {
         Args: { _ticket_code: string }
         Returns: {
