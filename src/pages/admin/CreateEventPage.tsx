@@ -3,6 +3,9 @@ import { Layers, Tag, Upload, Calendar, Clock, MapPin, Plus, Trash2 } from "luci
 import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import { createEventWithBatches, slugify, type BatchInput } from "@/lib/events-queries";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Lote = {
   id: string;
@@ -28,7 +31,18 @@ export function CreateEventPage() {
   const [name, setName] = useState("");
   const [lotes, setLotes] = useState<Lote[]>([]);
   const [draft, setDraft] = useState<Lote | null>(null);
+  const [slugValue, setSlugValue] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [singlePrice, setSinglePrice] = useState("");
+  const [singleQuantity, setSingleQuantity] = useState("");
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user, organizationId } = useAuth();
 
   const openNewLote = () => setDraft(emptyLote());
   const updateDraft = (patch: Partial<Lote>) =>
@@ -57,9 +71,75 @@ export function CreateEventPage() {
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 4));
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
-  const handlePublish = () => {
-    toast.success("Evento publicado com sucesso!");
-    navigate({ to: "/admin/eventos" });
+  const buildBatches = (): BatchInput[] => {
+    if (model === "unico") {
+      return [
+        {
+          name: "Ingresso único",
+          price: Number(singlePrice || 0),
+          quantity: Number(singleQuantity || 0),
+          starts_at: null,
+          ends_at: null,
+        },
+      ];
+    }
+    return lotes.map((l) => ({
+      name: l.nome,
+      price: Number(l.preco || 0),
+      quantity: Number(l.quantidade || 0),
+      starts_at: l.inicio ? new Date(l.inicio).toISOString() : null,
+      ends_at: l.fim ? new Date(l.fim).toISOString() : null,
+    }));
+  };
+
+  const handleSave = async (status: "publicado" | "rascunho") => {
+    if (!organizationId || !user) {
+      toast.error("Sessão inválida. Faça login novamente.");
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Informe o nome do evento");
+      return;
+    }
+    if (!date || !time) {
+      toast.error("Informe data e horário do evento");
+      return;
+    }
+    if (!location.trim()) {
+      toast.error("Informe o local do evento");
+      return;
+    }
+
+    const batches = buildBatches();
+    if (batches.length === 0 || batches.some((b) => b.quantity <= 0)) {
+      toast.error("Configure ao menos um lote com quantidade válida");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await createEventWithBatches(
+        organizationId,
+        user.id,
+        {
+          title: name.trim(),
+          description: description.trim() || null,
+          image_url: imageUrl.trim() || null,
+          event_date: new Date(`${date}T${time}`).toISOString(),
+          location: location.trim(),
+          slug: slug,
+          status,
+        },
+        batches,
+      );
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast.success(status === "publicado" ? "Evento publicado com sucesso!" : "Evento salvo como rascunho");
+      navigate({ to: "/admin/eventos" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar evento");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const StepIndicator = ({ number, label }: { number: number; label: string }) => (
@@ -71,10 +151,7 @@ export function CreateEventPage() {
     </div>
   );
 
-  const slug = name.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
+  const slug = slugValue || slugify(name);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-24 animate-in fade-in duration-500">
@@ -110,6 +187,7 @@ export function CreateEventPage() {
                   <input 
                     type="text" 
                     value={slug}
+                    onChange={(e) => setSlugValue(slugify(e.target.value))}
                     className="flex-1 bg-bg-primary border border-border-default rounded-radius-sm p-1 outline-none focus:border-accent" 
                   />
                 </div>
@@ -117,36 +195,43 @@ export function CreateEventPage() {
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Descrição</label>
-                <textarea rows={4} className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" placeholder="Conte mais sobre o evento..."></textarea>
+                <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" placeholder="Conte mais sobre o evento..."></textarea>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Imagem de capa</label>
                 <div className="border-2 border-dashed border-border-default rounded-radius-md p-8 text-center hover:border-accent transition-colors cursor-pointer group">
                   <Upload className="w-8 h-8 text-text-disabled mx-auto mb-2 group-hover:text-accent" />
-                  <p className="text-small text-text-secondary">Clique para fazer upload ou arraste a imagem</p>
+                  <p className="text-small text-text-secondary">Cole abaixo a URL da imagem de capa</p>
                 </div>
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                />
               </div>
 
               <div className="space-y-2">
                 <label className="text-small font-medium text-text-secondary">Data</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
-                  <input type="date" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-small font-medium text-text-secondary">Horário</label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
-                  <input type="time" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
                 </div>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Local / Endereço</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
-                  <input type="text" placeholder="Ex: Arena Central, São Paulo - SP" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: Arena Central, São Paulo - SP" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent" />
                 </div>
               </div>
             </div>
@@ -319,11 +404,11 @@ export function CreateEventPage() {
               <div className="max-w-md mx-auto space-y-4 pt-8">
                 <div className="space-y-2">
                   <label className="text-small font-medium text-text-secondary">Preço do ingresso (R$)</label>
-                  <input type="number" placeholder="0,00" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" />
+                  <input type="number" value={singlePrice} onChange={(e) => setSinglePrice(e.target.value)} placeholder="0,00" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-small font-medium text-text-secondary">Quantidade total disponível</label>
-                  <input type="number" placeholder="0" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" />
+                  <input type="number" value={singleQuantity} onChange={(e) => setSingleQuantity(e.target.value)} placeholder="0" className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent" />
                 </div>
                 <p className="text-small text-text-secondary italic text-center">Isso será tratado internamente como um lote único chamado 'Ingresso único'.</p>
               </div>
@@ -339,12 +424,19 @@ export function CreateEventPage() {
                 <div className="p-4 bg-bg-primary border border-border-subtle rounded-radius-md space-y-2">
                   <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                   <div className="text-body font-bold">{name || "Nome não definido"}</div>
-                  <div className="text-small text-text-secondary">Data e local pendentes</div>
+                  <div className="text-small text-text-secondary">
+                    {date && time ? `${new Date(`${date}T${time}`).toLocaleString("pt-BR")}` : "Data pendente"}
+                    {location ? ` · ${location}` : ""}
+                  </div>
                 </div>
                 <div className="p-4 bg-bg-primary border border-border-subtle rounded-radius-md space-y-2">
                   <div className="text-micro font-bold text-text-disabled uppercase">Vendas</div>
                   <div className="text-body font-bold">{model === "lotes" ? "Modelo por lotes" : "Preço único"}</div>
-                  <div className="text-small text-text-secondary">Configuração pendente</div>
+                  <div className="text-small text-text-secondary">
+                    {model === "lotes"
+                      ? `${lotes.length} lote(s) configurado(s)`
+                      : `R$ ${singlePrice || "0,00"} · ${singleQuantity || 0} ingressos`}
+                  </div>
                 </div>
               </div>
             </div>
@@ -364,17 +456,19 @@ export function CreateEventPage() {
           <div className="flex gap-3">
             {step === 4 && (
               <button 
-                onClick={() => { toast.info("Salvo como rascunho"); navigate({ to: "/admin/eventos" }); }}
+                onClick={() => handleSave("rascunho")}
+                disabled={saving}
                 className="px-6 py-2 border border-border-default rounded-radius-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
               >
                 Salvar rascunho
               </button>
             )}
             <button 
-              onClick={step === 4 ? handlePublish : handleNext} 
+              onClick={step === 4 ? () => handleSave("publicado") : handleNext}
+              disabled={saving} 
               className="px-8 py-2 bg-accent text-[#111111] rounded-radius-md font-semibold hover:bg-accent-hover transition-colors shadow-sm"
             >
-              {step === 4 ? "Publicar evento" : "Continuar"}
+              {saving ? "Salvando..." : step === 4 ? "Publicar evento" : "Continuar"}
             </button>
           </div>
         </div>
