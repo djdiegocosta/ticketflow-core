@@ -42,9 +42,16 @@ export default function ResetPasswordPage() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: ResetFormValues) => {
-    toast.success("Senha redefinida (simulado)");
-    console.log("Reset data:", data);
+  const onSubmit = async (data: ResetFormValues) => {
+    const { error } = await supabase.auth.updateUser({ password: data.password });
+
+    if (error) {
+      form.setError("password", { message: error.message });
+      return;
+    }
+
+    toast.success("Senha redefinida com sucesso!");
+    navigate({ to: "/login" });
   };
 
   return (
