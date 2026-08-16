@@ -50,14 +50,18 @@ export default function LoginPage() {
     mode: "all",
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    const success = login(data.email, data.password);
-    if (success) {
+  const onSubmit = async (data: LoginFormValues) => {
+    const { error } = await login(data.email, data.password);
+    if (!error) {
       toast.success("Login realizado com sucesso!");
-      // The navigate logic is now handled by the splash screen completion
-      // which updates isSplashComplete and triggers the useEffect above
+      // A navegação acontece após o splash (useEffect acima)
     } else {
-      form.setError("password", { message: "E-mail ou senha incorretos" });
+      form.setError("password", {
+        message:
+          error.toLowerCase().includes("invalid")
+            ? "E-mail ou senha incorretos"
+            : error,
+      });
     }
   };
 
