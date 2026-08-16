@@ -65,9 +65,36 @@ export default function SignupPage() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: SignupFormValues) => {
-    toast.info("Funcionalidade em desenvolvimento");
-    console.log("Signup data:", data);
+  const onSubmit = async (data: SignupFormValues) => {
+    const { data: result, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: formatName(data.name),
+          whatsapp: data.whatsapp,
+          cidade: data.city,
+        },
+      },
+    });
+
+    if (error) {
+      form.setError("email", {
+        message: error.message.toLowerCase().includes("already")
+          ? "Este e-mail já está cadastrado"
+          : error.message,
+      });
+      return;
+    }
+
+    if (result.session) {
+      toast.success("Conta criada com sucesso!");
+      navigate({ to: "/cliente" });
+      return;
+    }
+
+    toast.success("Conta criada! Confirme seu e-mail para acessar.");
   };
 
   return (
