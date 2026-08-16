@@ -1,21 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CheckinHistoryPage } from "@/pages/CheckinHistoryPage";
+import { requireSession } from "@/lib/auth-guard";
 
 export const Route = createFileRoute("/checkin/historico")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) {
-      throw redirect({ to: '/login' });
+  ssr: false,
+  beforeLoad: async () => {
+    const ctx = await requireSession();
+    if (ctx.role !== "operador_checkin" && ctx.role !== "admin" && ctx.role !== "colaborador") {
+      throw redirect({ to: "/cliente" });
     }
-    try {
-      const data = JSON.parse(auth);
-      if (!data.isAuthenticated || (data.userRole !== 'operador_checkin' && data.userRole !== 'admin')) {
-        throw redirect({ to: '/login' });
-      }
-    } catch (e) {
-      throw redirect({ to: '/login' });
-    }
+    return { auth: ctx };
   },
   head: () => ({
     meta: [
