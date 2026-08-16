@@ -31,9 +31,18 @@ export default function RecoverPasswordPage() {
     mode: "onChange",
   });
 
-  const onSubmit = (data: RecoverFormValues) => {
-    toast.success("E-mail de recuperação enviado (simulado)");
-    console.log("Recover data:", data);
+  const onSubmit = async (data: RecoverFormValues) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
+
+    if (error) {
+      form.setError("email", { message: error.message });
+      return;
+    }
+
+    toast.success("Enviamos o link de recuperação para seu e-mail.");
+    form.reset();
   };
 
   return (
