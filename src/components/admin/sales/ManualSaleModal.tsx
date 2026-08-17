@@ -3,9 +3,7 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/sales-data";
 import { useEvents } from "@/lib/events-queries";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import {
@@ -32,7 +30,6 @@ export function ManualSaleModal({
   onCreate: () => void;
 }) {
   const { data: eventsQuery = [] } = useEvents();
-  const { userId } = useAuth();
   const [step, setStep] = useState(1);
   const [eventId, setEventId] = useState("");
   const [lotId, setLotId] = useState("");
@@ -93,7 +90,7 @@ export function ManualSaleModal({
     if (sameAsBuyer && quantity === 1) setParticipants([formatName(buyerName)]);
   }, [sameAsBuyer, buyerName, quantity]);
 
-  // Se fechar e tiver dados, pedir confirmação? O prompt diz "com confirmação se já houver dados preenchidos"
+  // Se fechar e tiver dados, pedir confirmação
   const handleClose = () => {
     const hasData = buyerName || buyerWhatsapp || note || participants.some(p => p !== "");
     if (hasData) {
@@ -147,32 +144,40 @@ export function ManualSaleModal({
     setStep(step - 1);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!validateStep(3)) return;
 
+    setLoading(true);
     const parsedAmount = Number(amount.replace(/\./g, "").replace(",", "."));
-    const seq = Math.floor(1000 + Math.random() * 8999);
-    const sale: Sale = {
-      id: String(seq),
-      buyerName: formatName(buyerName),
-      buyerWhatsapp,
-      eventName: event.name,
-      lotName: lot.name,
-      origin: "Manual",
-      quantity,
-      amount: parsedAmount,
-      status: "Pago",
-      createdAt: new Date().toLocaleString("pt-BR"),
-      paymentMethod,
-      ...(note ? { note } : {}),
-      tickets: participants.slice(0, quantity).map((name, i) => ({
-        code: `TF-M${seq}-${String(i + 1).padStart(4, "0")}`,
-        participantName: formatName(name),
-        checkedIn: false,
-      })),
+    
+    // Mapeamento de métodos de pagamento para o enum do Supabase
+    const methodMap: Record<string, any> = {
+      "Pix manual": "pix_manual",
+      "Dinheiro": "dinheiro",
+      "Cartão": "cartao",
+      "Outro": "outro"
     };
 
-    onCreate(sale);
+    const { error } = await supabase.rpc('create_manual_sale', {
+      _event_id: eventId,
+      _batch_id: lotId,
+      _buyer_name: formatName(buyerName),
+      _buyer_whatsapp: buyerWhatsapp,
+      _quantity: quantity,
+      _participant_names: participants.slice(0, quantity).map(n => formatName(n)),
+      _total_amount: parsedAmount,
+      _payment_method: methodMap[paymentMethod] || "outro",
+      _observation: note
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast.error("Erro ao registrar venda: " + error.message);
+      return;
+    }
+
+    onCreate();
     toast.success(`Venda registrada — ${quantity} ingresso(s) gerado(s)`);
     reset();
     onClose();
@@ -254,7 +259,6 @@ export function ManualSaleModal({
                       target.value = formatName(target.value);
                       setBuyerName(target.value);
                     }}
-
                   />
                   {errors["buyerName"] && <p className={errorClass}>{errors["buyerName"]}</p>}
                 </div>
@@ -318,7 +322,6 @@ export function ManualSaleModal({
                           return next;
                         });
                       }}
-
                     />
                     {errors[`p${i}`] && <p className={errorClass}>{errors[`p${i}`]}</p>}
                   </div>
@@ -334,7 +337,7 @@ export function ManualSaleModal({
                 <div className="space-y-2 rounded-none border border-border-subtle bg-bg-secondary p-4 text-small">
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Evento:</span>
-                    <span className="font-medium text-text-primary">{event?.title || "—"}</span>
+                    <span className="font-medium text-text-primary">{(event as any)?.title || "—"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Lote:</span>
