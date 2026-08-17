@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { Ticket } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface MobileLayoutProps {
   children?: ReactNode;
@@ -14,10 +16,14 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
       {/* Header simples mobile */}
       <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4">
         <div className="flex w-full items-center justify-between gap-4">
+          <Link to="/cliente" className="flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-[var(--accent-text)]" />
+            <span className="text-heading-2 font-bold text-[var(--text-primary)]">TicketFlow</span>
+          </Link>
           <div className="flex items-center gap-2">
-            <Link to="/" className="text-heading-2 font-bold text-[var(--text-primary)]">TicketFlow</Link>
+            {headerContent && <div className="flex-1">{headerContent}</div>}
+            <ThemeToggle />
           </div>
-          {headerContent && <div className="flex-1">{headerContent}</div>}
         </div>
       </header>
 
