@@ -1,5 +1,5 @@
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell, Loader2 } from "recharts";
-import { DollarSign, Ticket, Clock, Eye } from "lucide-react";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
+import { DollarSign, Ticket, Clock, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";

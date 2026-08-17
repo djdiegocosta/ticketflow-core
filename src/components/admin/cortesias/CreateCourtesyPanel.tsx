@@ -18,6 +18,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatName, isFullName } from "@/lib/form-format";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEvents } from "@/lib/events-queries";
+import { Loader2 } from "lucide-react";
 
 interface CreateCourtesyPanelProps {
   open: boolean;
@@ -36,12 +39,26 @@ export function CreateCourtesyPanel({
   onOpenChange,
   onSuccess,
 }: CreateCourtesyPanelProps) {
+  const { data: events = [] } = useEvents();
   const [selectedEvent, setSelectedEvent] = React.useState<string>("");
+  const [selectedBatch, setSelectedBatch] = React.useState<string>("");
+  const [batches, setBatches] = React.useState<any[]>([]);
   const [activeTab, setActiveTab] = React.useState("type");
   const [singleName, setSingleName] = React.useState("");
   const [bulkText, setBulkText] = React.useState("");
   const [participants, setParticipants] = React.useState<ParticipantEntry[]>([]);
   const [isDirty, setIsDirty] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (selectedEvent) {
+      supabase.from("ticket_batches").select("*").eq("event_id", selectedEvent).order("created_at")
+        .then(({ data }) => {
+          setBatches(data || []);
+          if (data && data.length > 0) setSelectedBatch(data[0].id);
+        });
+    }
+  }, [selectedEvent]);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -118,9 +135,9 @@ export function CreateCourtesyPanel({
 
   const validCount = participants.filter(p => p.isValid).length;
 
-  const handleSubmit = () => {
-    if (!selectedEvent) {
-      toast.error("Selecione um evento primeiro.");
+  const handleSubmit = async () => {
+    if (!selectedEvent || !selectedBatch) {
+      toast.error("Selecione um evento e um lote primeiro.");
       return;
     }
     if (validCount === 0) {
@@ -128,12 +145,28 @@ export function CreateCourtesyPanel({
       return;
     }
 
-    onSuccess(validCount);
-    onOpenChange(false);
-    // Reset state
-    setParticipants([]);
-    setSelectedEvent("");
-    setIsDirty(false);
+    setLoading(true);
+    try {
+      const { error } = await supabase.rpc('create_courtesy', {
+        _event_id: selectedEvent,
+        _batch_id: selectedBatch,
+        _participant_names: participants.filter(p => p.isValid).map(p => p.name)
+      });
+
+      if (error) throw error;
+
+      onSuccess(validCount);
+      onOpenChange(false);
+      // Reset state
+      setParticipants([]);
+      setSelectedEvent("");
+      setSelectedBatch("");
+      setIsDirty(false);
+    } catch (err: any) {
+      toast.error("Erro ao emitir cortesias: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClose = (open: boolean) => {
@@ -158,10 +191,17 @@ export function CreateCourtesyPanel({
         <>
           <PanelCancelButton onClick={() => handleClose(false)} />
           <PanelPrimaryButton
-            disabled={!selectedEvent || validCount === 0}
+            disabled={!selectedEvent || !selectedBatch || validCount === 0 || loading}
             onClick={handleSubmit}
           >
-            Emitir {validCount} cortesias
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Emitindo...
+              </>
+            ) : (
+              `Emitir ${validCount} cortesias`
+            )}
           </PanelPrimaryButton>
         </>
       }
@@ -177,11 +217,30 @@ export function CreateCourtesyPanel({
                   <SelectValue placeholder="Selecione o evento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="rock-2024">Show de Rock 2024</SelectItem>
-                  <SelectItem value="jazz-fest">Festival de Jazz</SelectItem>
+                  {events.map((e: any) => (
+                    <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
+
+            {selectedEvent && (
+              <div className="space-y-2">
+                <label className="text-small font-medium text-[var(--text-secondary)]">
+                  Lote da Cortesia
+                </label>
+                <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione o lote" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batches.map((b: any) => (
+                      <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className={!selectedEvent ? "pointer-events-none opacity-50" : ""}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
