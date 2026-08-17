@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Download, Gift, CheckCircle, Loader2, Edit2, Trash2, X, Check } from "lucide-react";
+import { Download, Gift, CheckCircle, Loader2, Edit2, Trash2 } from "lucide-react";
 import {
   DataTable,
   DataTableHeadRow,
@@ -12,14 +12,14 @@ import {
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
-import { formatName } from "@/lib/form-format";
+import { formatName, isFullName } from "@/lib/form-format";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
-import { useCourtesies } from "@/lib/sales-queries";
+import { useCourtesies, useCourtesiesStats } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCourtesiesStats } from "@/lib/sales-queries";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateCourtesyPanelLazy = lazy(() => 
   import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
