@@ -250,7 +250,7 @@ export function SaleDetailPage({ id }: { id: string }) {
             </div>
             <img
               alt={`QR Code do ingresso ${qrTicket.code}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code)}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code || "")}`}
               className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
               loading="lazy"
             />
