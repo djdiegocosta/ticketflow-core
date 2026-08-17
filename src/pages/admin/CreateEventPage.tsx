@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Layers, Tag, Upload, Calendar, Clock, MapPin, Plus, Trash2 } from "lucide-react";
+import { Layers, Tag, Upload, Calendar, Clock, MapPin, Plus, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { createEventWithBatches, slugify, type BatchInput } from "@/lib/events-queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type Lote = {
   id: string;
