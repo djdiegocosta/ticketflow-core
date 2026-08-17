@@ -85,7 +85,8 @@ export function ManualSaleModal({
   // Valor pré-preenchido: preço do lote × quantidade
   useEffect(() => {
     if (lot) {
-      setAmount(String((lot.price * Math.max(1, quantity)).toFixed(2)).replace(".", ","));
+      const price = (lot as any).price || 0;
+      setAmount(String((price * Math.max(1, quantity)).toFixed(2)).replace(".", ","));
     }
   }, [lot, quantity]);
 
@@ -242,7 +243,7 @@ export function ManualSaleModal({
                   >
                     {lots.map((l: any) => (
                       <option key={l.id} value={l.id}>
-                        {l.name} — {formatCurrency(l.price)}
+                        {l.name} — {formatCurrency((l as any).price || 0)}
                       </option>
                     ))}
                   </select>
