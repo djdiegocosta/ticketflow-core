@@ -25,6 +25,13 @@ export async function fetchSales() {
   return data;
 }
 
+export function useSales() {
+  return useQuery({
+    queryKey: ["sales"],
+    queryFn: fetchSales,
+  });
+}
+
 export function useCourtesies() {
   return useQuery({
     queryKey: ["sales", "courtesies"],
