@@ -15,6 +15,7 @@ function StatusBadge({ status }: { status: string }) {
     pago: "Pago",
     pendente: "Pendente",
     cancelado: "Cancelado",
+    reembolsado: "Reembolsado",
   };
 
   return (
@@ -24,6 +25,7 @@ function StatusBadge({ status }: { status: string }) {
         status === "pago" && "bg-accent-muted text-accent-text",
         status === "pendente" && "bg-warning-muted text-warning-text",
         status === "cancelado" && "bg-error-muted text-error-text",
+        status === "reembolsado" && "bg-bg-tertiary text-text-secondary border border-border-subtle",
       )}
     >
       {statusLabels[status] || status}
@@ -129,9 +131,23 @@ export function SaleDetailPage({ id }: { id: string }) {
                 <FileText className="h-4 w-4" />
                 Gerar lista PDF
               </button>
+              
+              {sale.status === "pago" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRefundAmount(String(sale.total_amount));
+                    setRefundOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
+                >
+                  Reembolsar
+                </button>
+              )}
+
               <button
                 type="button"
-                disabled={sale.status === "cancelado" || cancelling}
+                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || cancelling}
                 onClick={() => setConfirmOpen(true)}
                 className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
