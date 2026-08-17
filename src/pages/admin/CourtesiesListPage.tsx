@@ -55,14 +55,8 @@ export function CourtesiesListPage() {
     });
   }, [courtesies, search, eventFilter]);
 
-  const totalCortesias = filteredData.length;
-  const totalCheckins = React.useMemo(() => {
-    return filteredData.reduce((acc: number, item: any) => {
-      const tickets = item.tickets || [];
-      const checkedInCount = tickets.filter((t: any) => t.checked_in).length;
-      return acc + checkedInCount;
-    }, 0);
-  }, [filteredData]);
+  const totalCortesias = stats?.total || 0;
+  const totalCheckins = stats?.checkins || 0;
 
   const paginatedData = React.useMemo(() => {
     const size = parseInt(pageSize);

@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FileText, QrCode, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/sales-data";
+import { useSale, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
 import { useSale } from "@/lib/sales-queries";
