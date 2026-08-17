@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Calendar, MapPin, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, ChevronLeft, ChevronRight, ExternalLink, Edit2, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ListPageHeader, PrimaryActionLink } from "@/components/admin/PrimaryActionButton";
 import { FilterTabs } from "@/components/admin/FilterBar";
 import { useEvents, eventStatusLabel, formatEventDate } from "@/lib/events-queries";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const FILTER_MAP: Record<string, string> = {
   Publicados: "Publicado",
@@ -16,6 +19,9 @@ export function EventsListPage() {
   const [filter, setFilter] = useState("Todos");
   const [pageSize, setPageSize] = useState(25);
   const { data: events = [], isLoading, error } = useEvents();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const filteredEvents = events.filter((event) => {
     if (filter === "Todos") return true;
@@ -97,8 +103,49 @@ export function EventsListPage() {
             </div>
             
             <div className="p-4 flex flex-col flex-1 gap-3">
-              <h2 className="text-heading-2 text-text-primary group-hover:text-accent transition-colors">{event.title}</h2>
+              <h2 className="text-heading-2 text-text-primary group-hover:text-accent transition-colors truncate pr-16">{event.title}</h2>
               
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate({ to: "/admin/eventos/$id", params: { id: event.id } });
+                  }}
+                  className="bg-bg-secondary p-2 border border-border-default shadow-sm text-text-secondary hover:text-accent transition-colors rounded-[var(--radius-sm)]"
+                  title="Editar evento"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting === event.id}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!window.confirm(`Tem certeza que deseja excluir o evento "${event.title}"?`)) return;
+                    setIsDeleting(event.id);
+                    try {
+                      const { error } = await supabase.rpc("delete_event", {
+                        _event_id: event.id
+                      });
+                      if (error) throw error;
+                      toast.success("Evento excluído com sucesso");
+                      queryClient.invalidateQueries({ queryKey: ["events"] });
+                    } catch (err: any) {
+                      toast.error("Erro ao excluir: " + (err.message || "Verifique se há vendas pagas vinculadas."));
+                    } finally {
+                      setIsDeleting(null);
+                    }
+                  }}
+                  className="bg-bg-secondary p-2 border border-border-default shadow-sm text-text-secondary hover:text-error transition-colors rounded-[var(--radius-sm)] disabled:opacity-50"
+                  title="Excluir evento"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-small text-text-secondary">
                   <Calendar className="w-4 h-4 text-accent" />
