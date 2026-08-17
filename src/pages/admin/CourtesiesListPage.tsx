@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Download, Gift, CheckCircle, Loader2 } from "lucide-react";
+import { Download, Gift, CheckCircle, Loader2, Edit2, Trash2 } from "lucide-react";
 import {
   DataTable,
   DataTableHeadRow,
@@ -12,14 +12,14 @@ import {
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
-import { formatName } from "@/lib/form-format";
+import { formatName, isFullName } from "@/lib/form-format";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
-import { useCourtesies } from "@/lib/sales-queries";
+import { useCourtesies, useCourtesiesStats } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCourtesiesStats } from "@/lib/sales-queries";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateCourtesyPanelLazy = lazy(() => 
   import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
@@ -36,6 +36,10 @@ export function CourtesiesListPage() {
   const [pageSize, setPageSize] = React.useState("25");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [editingTicket, setEditingTicket] = React.useState<any>(null);
+  const [newName, setNewName] = React.useState("");
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   React.useEffect(() => {
     const checkMobile = () => {
@@ -157,11 +161,11 @@ export function CourtesiesListPage() {
 
       <DataTableShell>
         <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
-          <DataTableHeadRow columns={isMobile ? ["Convidado", "Data", "Status"] : ["Convidado", "Evento", "Data de emissão", "Status"]} />
+          <DataTableHeadRow columns={isMobile ? ["Convidado", "Data", "Status"] : ["Convidado", "Evento", "Data de emissão", "Status", "Ações"]} />
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <DataTableCell colSpan={isMobile ? 3 : 4} className="py-10 text-center text-body">
+                <DataTableCell colSpan={isMobile ? 3 : 5} className="py-10 text-center text-body">
                   Nenhuma cortesia encontrada.
                 </DataTableCell>
               </tr>
@@ -183,6 +187,47 @@ export function CourtesiesListPage() {
                         {checkinStatusLabel}
                       </StatusPill>
                     </DataTableCell>
+                    {!isMobile && (
+                      <DataTableCell>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingTicket(item);
+                              setNewName(item.participant_name);
+                            }}
+                            className="p-1 text-text-secondary hover:text-accent transition-colors"
+                            title="Editar nome"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isCheckedIn || isDeleting}
+                            onClick={async () => {
+                              if (!window.confirm(`Excluir cortesia de "${item.participant_name}"?`)) return;
+                              setIsDeleting(true);
+                              try {
+                                const { error } = await supabase.rpc("delete_courtesy_ticket", {
+                                  _ticket_id: item.id
+                                });
+                                if (error) throw error;
+                                toast.success("Cortesia excluída");
+                                queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });
+                              } catch (err: any) {
+                                toast.error("Erro ao excluir: " + err.message);
+                              } finally {
+                                setIsDeleting(false);
+                              }
+                            }}
+                            className="p-1 text-text-secondary hover:text-error transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title={isCheckedIn ? "Não é possível excluir cortesia já utilizada" : "Excluir cortesia"}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </DataTableCell>
+                    )}
                   </DataTableRow>
                 );
               })
@@ -190,6 +235,60 @@ export function CourtesiesListPage() {
           </tbody>
         </DataTable>
       </DataTableShell>
+
+      {editingTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
+          <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+            <h3 className="text-heading-2 text-text-primary">Editar nome do convidado</h3>
+            <div className="mt-4">
+              <label className="text-small font-medium text-text-secondary">Nome completo</label>
+              <input
+                type="text"
+                autoFocus
+                value={newName}
+                onChange={(e) => setNewName(formatName(e.target.value))}
+                className="mt-1 w-full border border-border-default bg-bg-secondary px-3 py-2 outline-none focus:border-accent"
+              />
+              {newName && !isFullName(newName) && (
+                <p className="mt-1 text-[10px] text-error">Mínimo 2 palavras</p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setEditingTicket(null)}
+                className="border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary hover:border-accent"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isUpdating || !isFullName(newName)}
+                onClick={async () => {
+                  setIsUpdating(true);
+                  try {
+                    const { error } = await supabase.rpc("update_courtesy_participant", {
+                      _ticket_id: editingTicket.id,
+                      _name: newName
+                    });
+                    if (error) throw error;
+                    toast.success("Nome atualizado");
+                    queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });
+                    setEditingTicket(null);
+                  } catch (err: any) {
+                    toast.error("Erro ao atualizar: " + err.message);
+                  } finally {
+                    setIsUpdating(false);
+                  }
+                }}
+                className="bg-accent px-4 py-2 text-body font-semibold text-[#111111] hover:opacity-90 disabled:opacity-50"
+              >
+                {isUpdating ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DataTablePagination
         pageSize={size}

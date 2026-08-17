@@ -173,6 +173,8 @@ export function useSalesStats(eventId?: string) {
             stats.pendingSales++;
           } else if (s.status === "cancelado") {
             stats.cancelledSales++;
+          } else if (s.status === "reembolsado") {
+            // Reembolsado não soma na receita ativa
           }
         }
 
