@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useSale, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
-import { useSale } from "@/lib/sales-queries";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -174,23 +174,23 @@ export function SaleDetailPage({ id }: { id: string }) {
         <div className="space-y-2">
           {(sale.tickets || []).map((ticket: any) => (
             <div
-              key={ticket.code}
+              key={ticket.ticket_code}
               className="flex flex-col gap-3 border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-body text-text-primary">{ticket.participant_name}</p>
-                <p className="font-mono-token mt-1 text-text-secondary">{ticket.code}</p>
+                <p className="font-mono-token mt-1 text-text-secondary">{ticket.ticket_code}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span
                   className={cn(
                     "rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-                    ticket.checked_in
+                    ticket.checked_in_at
                       ? "bg-accent-muted text-accent-text"
                       : "bg-bg-tertiary text-text-secondary",
                   )}
                 >
-                  {ticket.checked_in ? "Check-in realizado" : "Aguardando check-in"}
+                  {ticket.checked_in_at ? "Check-in realizado" : "Aguardando check-in"}
                 </span>
                 <button
                   type="button"
