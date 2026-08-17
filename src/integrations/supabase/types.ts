@@ -527,6 +527,9 @@ export type Database = {
           paid_at: string | null
           payment_method: Database["public"]["Enums"]["payment_method"] | null
           quantity: number
+          refund_reason: string | null
+          refunded_amount: number | null
+          refunded_at: string | null
           sale_code: string
           status: Database["public"]["Enums"]["sale_status"]
           total_amount: number
@@ -557,6 +560,9 @@ export type Database = {
           paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
           quantity: number
+          refund_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           sale_code: string
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount: number
@@ -587,6 +593,9 @@ export type Database = {
           paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
           quantity?: number
+          refund_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           sale_code?: string
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount?: number
@@ -903,7 +912,12 @@ export type Database = {
           total_amount: number
         }[]
       }
+      delete_courtesy_ticket: {
+        Args: { _ticket_id: string }
+        Returns: undefined
+      }
       delete_customer: { Args: { _customer_id: string }; Returns: undefined }
+      delete_event: { Args: { _event_id: string }; Returns: undefined }
       draw_raffle_winner: {
         Args: { _raffle_id: string }
         Returns: {
@@ -944,6 +958,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      refund_sale: {
+        Args: { _reason: string; _refund_amount: number; _sale_id: string }
+        Returns: undefined
+      }
       signup_customer: {
         Args: {
           _cidade: string
@@ -962,6 +980,10 @@ export type Database = {
           _buyer_whatsapp: string
           _event_id: string
         }
+        Returns: undefined
+      }
+      update_courtesy_participant: {
+        Args: { _name: string; _ticket_id: string }
         Returns: undefined
       }
       update_customer: {
@@ -1002,7 +1024,7 @@ export type Database = {
         | "cartao"
         | "outro"
       sale_origin: "ticketflow" | "manual" | "importado"
-      sale_status: "pendente" | "pago" | "cancelado"
+      sale_status: "pendente" | "pago" | "cancelado" | "reembolsado"
       ticket_status: "valido" | "utilizado" | "cancelado"
       verification_type: "webhook_hmac" | "manual_admin" | "importado"
     }
@@ -1147,7 +1169,7 @@ export const Constants = {
         "outro",
       ],
       sale_origin: ["ticketflow", "manual", "importado"],
-      sale_status: ["pendente", "pago", "cancelado"],
+      sale_status: ["pendente", "pago", "cancelado", "reembolsado"],
       ticket_status: ["valido", "utilizado", "cancelado"],
       verification_type: ["webhook_hmac", "manual_admin", "importado"],
     },
