@@ -1,34 +1,14 @@
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
-import { DollarSign, Ticket, Clock, Eye, TrendingUp } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell, Loader2 } from "recharts";
+import { DollarSign, Ticket, Clock, Eye } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { StatusPill, type PillTone } from "@/components/admin/DataTable";
+import { StatusPill } from "@/components/admin/DataTable";
+import { useEvents } from "@/lib/events-queries";
+import { useSales, useSalesStats } from "@/lib/sales-queries";
+import { formatCurrency } from "@/lib/sales-data";
 
-// --- Mock Data ---
-
-const MOCK_EVENTS = [
-  { id: "1", name: "Festa de Verão" },
-  { id: "2", name: "Show do Ano" },
-];
-
-const MOCK_SALES_DATA = [
-  { date: "17/07", value: 4 },
-  { date: "18/07", value: 3 },
-  { date: "19/07", value: 6 },
-  { date: "20/07", value: 8 },
-  { date: "21/07", value: 5 },
-  { date: "22/07", value: 9 },
-  { date: "23/07", value: 12 },
-  { date: "24/07", value: 7 },
-  { date: "25/07", value: 10 },
-  { date: "26/07", value: 8 },
-  { date: "27/07", value: 11 },
-  { date: "28/07", value: 9 },
-  { date: "29/07", value: 12 },
-  { date: "30/07", value: 11 },
-];
-
+// --- Mock Data for fields not yet in DB ---
 const MOCK_HOURLY_DATA = [
   { hour: "00h", value: 2 },
   { hour: "02h", value: 1 },
@@ -37,22 +17,11 @@ const MOCK_HOURLY_DATA = [
   { hour: "08h", value: 4 },
   { hour: "10h", value: 7 },
   { hour: "12h", value: 10 },
-  { hour: "14h", value: 15 }, // Peak
+  { hour: "14h", value: 15 },
   { hour: "16h", value: 12 },
   { hour: "18h", value: 14 },
-  { hour: "20h", value: 16 }, // Peak
+  { hour: "20h", value: 16 },
   { hour: "22h", value: 8 },
-];
-
-const MOCK_LAST_SALES = [
-  { id: 1, name: "João Silva", event: "Festa de Verão", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 3 min" },
-  { id: 2, name: "Maria Souza", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Pendente", time: "há 12 min" },
-  { id: 3, name: "Carlos Mendes", event: "Show do Ano", tickets: "4x", value: "R$ 360,00", status: "Pago", time: "há 28 min" },
-  { id: 4, name: "Ana Lima", event: "Festa de Verão", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 45 min" },
-  { id: 5, name: "Pedro Costa", event: "Show do Ano", tickets: "1x", value: "R$ 90,00", status: "Cancelado", time: "há 1h" },
-  { id: 6, name: "Juliana Ramos", event: "Festa de Verão", tickets: "3x", value: "R$ 270,00", status: "Pago", time: "há 2h" },
-  { id: 7, name: "Rafael Oliveira", event: "Show do Ano", tickets: "2x", value: "R$ 180,00", status: "Pago", time: "há 3h" },
-  { id: 8, name: "Camila Ferreira", event: "Festa de Verão", tickets: "1x", value: "R$ 90,00", status: "Pendente", time: "há 4h" },
 ];
 
 // --- Components ---
@@ -66,9 +35,8 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
       </div>
       
       <div className="flex items-end justify-between gap-3">
-
         <div className="flex-1">
-          {value && <div className="text-heading-1 text-text-primary mb-1">{value}</div>}
+          {value !== undefined && <div className="text-heading-1 text-text-primary mb-1">{value}</div>}
           {trend && <div className="text-small text-success">{trend}</div>}
           {secondary && <div className="text-small text-text-secondary">{secondary}</div>}
           {subtext && <div className="text-small text-text-secondary mt-1">{subtext}</div>}
@@ -116,9 +84,23 @@ const MetricCard = ({ title, value, icon: Icon, trend, secondary, progress, gaug
 };
 
 export function AdminDashboard() {
-  const [currentEvent, setCurrentEvent] = useState<string>("1");
+  const [currentEvent, setCurrentEvent] = useState<string>("overview");
+  const { data: events = [] } = useEvents();
+  const { data: stats, isLoading: statsLoading } = useSalesStats(currentEvent);
+  const { data: sales = [], isLoading: salesLoading } = useSales();
 
   const isOverview = currentEvent === "overview";
+
+  const lastSales = sales.slice(0, 8);
+
+  if (statsLoading || salesLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <span className="animate-spin mr-2"><Clock className="h-6 w-6" /></span>
+        Carregando métricas...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -126,11 +108,11 @@ export function AdminDashboard() {
         <h1 className="text-heading-1 text-text-primary mb-6">Dashboard</h1>
         
         {/* Context Selector */}
-        <div className="flex border-b border-border-subtle gap-1">
+        <div className="flex border-b border-border-subtle gap-1 overflow-x-auto pb-px">
           <button
             onClick={() => setCurrentEvent("overview")}
             className={cn(
-              "px-4 py-2 text-body transition-all relative border-b-2",
+              "px-4 py-2 text-body transition-all relative border-b-2 whitespace-nowrap",
               isOverview 
                 ? "bg-accent-muted text-accent-text border-accent rounded-t-[var(--radius-sm)]" 
                 : "text-text-secondary hover:bg-bg-tertiary border-transparent rounded-t-[var(--radius-sm)]"
@@ -138,18 +120,18 @@ export function AdminDashboard() {
           >
             Visão Geral
           </button>
-          {MOCK_EVENTS.map((event) => (
+          {events.map((event) => (
             <button
               key={event.id}
               onClick={() => setCurrentEvent(event.id)}
               className={cn(
-                "px-4 py-2 text-body transition-all relative border-b-2",
+                "px-4 py-2 text-body transition-all relative border-b-2 whitespace-nowrap",
                 currentEvent === event.id 
                   ? "bg-accent-muted text-accent-text border-accent rounded-t-[var(--radius-sm)]" 
                   : "text-text-secondary hover:bg-bg-tertiary border-transparent rounded-t-[var(--radius-sm)]"
               )}
             >
-              {event.name}
+              {event.title}
             </button>
           ))}
         </div>
@@ -159,31 +141,29 @@ export function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <MetricCard
           title="Receita Total"
-          value="R$ 4.230,00"
+          value={formatCurrency(stats?.totalRevenue || 0)}
           icon={DollarSign}
-          trend="+12% vs. semana anterior"
+          trend={stats?.paidSales ? `Baseado em ${stats.paidSales} vendas` : "Nenhuma venda paga"}
           iconColor="text-accent"
         />
         <MetricCard
           title="Ingressos Vendidos"
-          value="89"
-          secondary="de 200 disponíveis"
+          value={stats?.totalTickets || 0}
+          secondary="ingressos confirmados"
           icon={Ticket}
-          progress={(89 / 200) * 100}
           iconColor="text-accent"
         />
         <MetricCard
           title="Aguardando Pagamento"
           icon={Clock}
-          gaugeValue={18}
-          value={undefined}
-          subtext="7 pedidos pendentes"
+          gaugeValue={stats?.totalSales ? Math.round((stats.pendingSales / stats.totalSales) * 100) : 0}
+          subtext={`${stats?.pendingSales || 0} pedidos pendentes`}
           iconColor="text-warning"
         />
         <MetricCard
-          title="Visitas na Página do Evento"
-          value="1.247"
-          secondary="7,1% converteram"
+          title="Cortesias Emitidas"
+          value={stats?.courtesies || 0}
+          secondary="ingressos gratuitos"
           icon={Eye}
           iconColor="text-info"
         />
@@ -193,10 +173,10 @@ export function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
         {/* Sales Evolution */}
         <div className="lg:col-span-6 bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
-          <h2 className="text-heading-2 text-text-primary mb-6">Vendas diárias</h2>
+          <h2 className="text-heading-2 text-text-primary mb-6">Vendas diárias (últimos 14 dias)</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_SALES_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={stats?.last14Days || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.15}/>
@@ -238,7 +218,7 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Hourly Peaks */}
+        {/* Hourly Peaks (Mocked for now) */}
         <div className="lg:col-span-4 bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
           <h2 className="text-heading-2 text-text-primary mb-6">Pico de vendas por horário</h2>
           <div className="h-[300px] w-full">
@@ -274,7 +254,7 @@ export function AdminDashboard() {
                   {MOCK_HOURLY_DATA.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.value >= 15 ? "var(--accent)" : "var(--accent)"} 
+                      fill="var(--accent)" 
                       className={entry.value >= 15 ? "opacity-100" : "opacity-60"}
                     />
                   ))}
@@ -304,42 +284,50 @@ export function AdminDashboard() {
         </div>
 
         <div className="divide-y divide-border-subtle">
-          {MOCK_LAST_SALES.map((sale) => (
-            <div key={sale.id} className="py-4 flex items-center gap-4 group">
-              <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-text-primary text-small font-semibold">
-                {sale.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              
-              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 items-center">
-                <div>
-                  <div className="text-body text-text-primary font-medium">{sale.name}</div>
-                  <div className="text-small text-text-secondary">{sale.event}</div>
+          {lastSales.map((sale: any) => {
+            const timeStr = new Date(sale.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+            const eventTitle = (sale.events as any)?.title || "—";
+            
+            return (
+              <div key={sale.id} className="py-4 flex items-center gap-4 group">
+                <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-text-primary text-small font-semibold">
+                  {sale.buyer_name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 
-                <div className="hidden md:block text-small text-text-secondary">
-                  {sale.tickets}
-                </div>
-                
-                <div className="text-body font-semibold text-text-primary">
-                  {sale.value}
-                </div>
-                
-                <div className="flex items-center justify-between gap-4">
-                  <StatusPill 
-                    tone={
-                      sale.status === "Pago" ? "accent" : 
-                      sale.status === "Cancelado" ? "error" : "warning"
-                    }
-                  >
-                    {sale.status}
-                  </StatusPill>
-                  <div className="text-small text-text-disabled whitespace-nowrap">
-                    {sale.time}
+                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 items-center">
+                  <div>
+                    <div className="text-body text-text-primary font-medium">{sale.buyer_name}</div>
+                    <div className="text-small text-text-secondary">{eventTitle}</div>
+                  </div>
+                  
+                  <div className="hidden md:block text-small text-text-secondary">
+                    {sale.quantity}x
+                  </div>
+                  
+                  <div className="text-body font-semibold text-text-primary">
+                    {formatCurrency(sale.total_amount)}
+                  </div>
+                  
+                  <div className="flex items-center justify-between gap-4">
+                    <StatusPill 
+                      tone={
+                        sale.status === "pago" ? "accent" : 
+                        sale.status === "cancelado" ? "error" : "warning"
+                      }
+                    >
+                      {sale.status}
+                    </StatusPill>
+                    <div className="text-small text-text-disabled whitespace-nowrap">
+                      {timeStr}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {lastSales.length === 0 && (
+            <div className="py-8 text-center text-text-secondary">Nenhuma venda registrada.</div>
+          )}
         </div>
       </div>
     </div>
