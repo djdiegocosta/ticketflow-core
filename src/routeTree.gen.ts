@@ -15,6 +15,7 @@ import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
+import { Route as OrganizacaoPendenteRouteImport } from './routes/organizacao-pendente'
 import { Route as PrimeiroAcessoRouteImport } from './routes/primeiro-acesso'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
@@ -82,6 +83,11 @@ const LoginRoute = LoginRouteImport.update({
 const MeusIngressosRoute = MeusIngressosRouteImport.update({
   id: '/meus-ingressos',
   path: '/meus-ingressos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizacaoPendenteRoute = OrganizacaoPendenteRouteImport.update({
+  id: '/organizacao-pendente',
+  path: '/organizacao-pendente',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrimeiroAcessoRoute = PrimeiroAcessoRouteImport.update({
@@ -284,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -328,6 +335,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
+  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
+    | '/organizacao-pendente'
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
@@ -466,6 +476,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/meus-ingressos'
+    | '/organizacao-pendente'
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
+    | '/organizacao-pendente'
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
@@ -558,6 +570,7 @@ export interface RootRouteChildren {
   ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
+  OrganizacaoPendenteRoute: typeof OrganizacaoPendenteRoute
   PrimeiroAcessoRoute: typeof PrimeiroAcessoRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       path: '/meus-ingressos'
       fullPath: '/meus-ingressos'
       preLoaderRoute: typeof MeusIngressosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizacao-pendente': {
+      id: '/organizacao-pendente'
+      path: '/organizacao-pendente'
+      fullPath: '/organizacao-pendente'
+      preLoaderRoute: typeof OrganizacaoPendenteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/primeiro-acesso': {
@@ -975,6 +995,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
+  OrganizacaoPendenteRoute: OrganizacaoPendenteRoute,
   PrimeiroAcessoRoute: PrimeiroAcessoRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
