@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { EVENTS, formatCurrency } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-data";
 import { useSales } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
@@ -23,18 +23,19 @@ import { useAuth } from "@/lib/auth-context";
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Cancelado"] as const;
 
-function StatusBadge({ status }: { status: Sale["status"] }) {
+function StatusBadge({ status }: { status: string }) {
   return (
     <StatusPill
-      tone={status === "Pago" ? "accent" : status === "Pendente" ? "warning" : "error"}
+      tone={status === "pago" ? "accent" : status === "pendente" ? "warning" : "error"}
     >
-      {status}
+      {status === "pago" ? "Pago" : status === "pendente" ? "Pendente" : "Cancelado"}
     </StatusPill>
   );
 }
 
-function OriginBadge({ origin }: { origin: Sale["origin"] }) {
-  return <StatusPill tone="neutral">{origin}</StatusPill>;
+function OriginBadge({ origin }: { origin: string }) {
+  const label = origin === "ticketflow" ? "TicketFlow" : origin === "manual" ? "Manual" : "Importada";
+  return <StatusPill tone="neutral">{label}</StatusPill>;
 }
 
 
@@ -98,15 +99,15 @@ export function SalesListPage() {
       "Data",
     ];
     const rows = filtered.map((s) => [
-      s.buyerName,
-      s.buyerWhatsapp,
-      s.eventName,
-      s.lotName,
+      s.buyer_name,
+      s.buyer_whatsapp,
+      (s.events as any)?.title || "",
+      (s.ticket_batches as any)?.name || "",
       s.origin,
       s.quantity,
-      s.amount.toFixed(2).replace(".", ","),
+      s.total_amount.toFixed(2).replace(".", ","),
       s.status,
-      s.createdAt,
+      new Date(s.created_at).toLocaleString("pt-BR"),
     ]);
     const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
@@ -119,8 +120,10 @@ export function SalesListPage() {
   };
 
   const generatePdf = () => {
-    const scope = filtered.filter((s) => s.status !== "Cancelado");
-    const names = scope.flatMap((s) => s.tickets.map((t) => t.participantName));
+    const scope = filtered.filter((s) => s.status !== "cancelado");
+    // Em um sistema real, precisaríamos buscar os nomes dos participantes de cada ingresso da venda
+    // Por enquanto, usaremos o nome do comprador se não tivermos os participantes
+    const names = scope.map((s) => s.buyer_name);
     if (names.length === 0) {
       toast.error("Nenhum participante para gerar a lista");
       return;
@@ -219,9 +222,9 @@ export function SalesListPage() {
           }}
         >
           <option value="Todos">Todos os eventos</option>
-          {EVENTS.map((e) => (
-            <option key={e.id} value={e.name}>
-              {e.name}
+          {Array.from(new Set(sales.map(s => (s.events as any)?.title).filter(Boolean))).map((name: any) => (
+            <option key={name} value={name}>
+              {name}
             </option>
           ))}
         </select>
@@ -287,11 +290,11 @@ export function SalesListPage() {
                   <OriginBadge origin={sale.origin} />
                 </DataTableCell>
                 <DataTableCell>{sale.quantity}x</DataTableCell>
-                <DataTableCell variant="strong">{formatCurrency(sale.amount)}</DataTableCell>
+                <DataTableCell variant="strong">{formatCurrency(sale.total_amount)}</DataTableCell>
                 <DataTableCell>
                   <StatusBadge status={sale.status} />
                 </DataTableCell>
-                <DataTableCell variant="muted">{sale.createdAt}</DataTableCell>
+                <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
               </DataTableRow>
             ))}
             {pageRows.length === 0 && (
@@ -322,7 +325,7 @@ export function SalesListPage() {
       <ManualSaleModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onCreate={(sale) => setSales((prev) => [sale, ...prev])}
+        onCreate={() => refetch()}
       />
     </div>
   );
