@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { EVENTS, MOCK_SALES, formatCurrency, type Sale } from "@/lib/sales-data";
+import { EVENTS, formatCurrency } from "@/lib/sales-data";
+import { useSales } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import {
@@ -38,7 +39,7 @@ function OriginBadge({ origin }: { origin: Sale["origin"] }) {
 
 
 export function SalesListPage() {
-  const [sales, setSales] = useState<Sale[]>(MOCK_SALES);
+  const { data: sales = [], isLoading, refetch } = useSales();
   const { userRole } = useAuth();
   const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
@@ -54,13 +55,14 @@ export function SalesListPage() {
     return sales.filter((sale) => {
       const originMatch =
         originTab === "Todas" ||
-        (originTab === "Importadas" ? sale.origin === "Importada" : sale.origin === originTab);
-      const eventMatch = eventFilter === "Todos" || sale.eventName === eventFilter;
-      const statusMatch = statusFilter === "Todos" || sale.status === statusFilter;
+        (originTab === "Importadas" ? sale.origin === "importado" : sale.origin === originTab.toLowerCase());
+      const eventName = (sale.events as any)?.title || "";
+      const eventMatch = eventFilter === "Todos" || eventName === eventFilter;
+      const statusMatch = statusFilter === "Todos" || sale.status === statusFilter.toLowerCase();
       const searchMatch =
         !term ||
-        sale.buyerName.toLowerCase().includes(term) ||
-        sale.buyerWhatsapp.replace(/\D/g, "").includes(term.replace(/\D/g, "") || "\u0000");
+        sale.buyer_name.toLowerCase().includes(term) ||
+        sale.buyer_whatsapp.replace(/\D/g, "").includes(term.replace(/\D/g, "") || "\u0000");
       return originMatch && eventMatch && statusMatch && searchMatch;
     });
   }, [sales, originTab, eventFilter, statusFilter, search]);
@@ -71,9 +73,9 @@ export function SalesListPage() {
   const pageRows = filtered.slice(start, start + pageSize);
 
   const metrics = useMemo(() => {
-    const paid = filtered.filter((s) => s.status === "Pago");
-    const pending = filtered.filter((s) => s.status === "Pendente");
-    const revenue = paid.reduce((acc, s) => acc + s.amount, 0);
+    const paid = filtered.filter((s) => s.status === "pago");
+    const pending = filtered.filter((s) => s.status === "pendente");
+    const revenue = paid.reduce((acc, s) => acc + s.total_amount, 0);
     const ticketsSold = paid.reduce((acc, s) => acc + s.quantity, 0);
     const avgTicket = paid.length === 0 ? 0 : revenue / paid.length;
     const considered = paid.length + pending.length;
@@ -144,7 +146,7 @@ export function SalesListPage() {
         <MiniMetricCard
           title="Total vendido no período"
           value={formatCurrency(metrics.revenue)}
-          subtext={`${filtered.filter((s) => s.status === "Pago").length} vendas pagas`}
+          subtext={`${filtered.filter((s) => s.status === "pago").length} vendas pagas`}
           icon={DollarSign}
           iconColor="text-accent-text"
         />
@@ -275,12 +277,12 @@ export function SalesListPage() {
                     params={{ id: sale.id }}
                     className="hover:text-accent-text"
                   >
-                    {sale.buyerName}
+                    {sale.buyer_name}
                   </Link>
                 </DataTableCell>
-                <DataTableCell>{sale.buyerWhatsapp}</DataTableCell>
-                <DataTableCell>{sale.eventName}</DataTableCell>
-                <DataTableCell>{sale.lotName}</DataTableCell>
+                <DataTableCell>{sale.buyer_whatsapp}</DataTableCell>
+                <DataTableCell>{(sale.events as any)?.title}</DataTableCell>
+                <DataTableCell>{(sale.ticket_batches as any)?.name}</DataTableCell>
                 <DataTableCell>
                   <OriginBadge origin={sale.origin} />
                 </DataTableCell>
