@@ -48,7 +48,8 @@ import {
   RemarketingPeriod,
   buildMessage,
 } from "@/lib/remarketing-data";
-import { formatCurrency, MOCK_SALES } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-queries";
+const MOCK_SALES: any[] = [];
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -133,7 +134,7 @@ export function RemarketingPage() {
 
         // Também verificar participantes, pois "Comprador != Participante"
         const matchesParticipant = sale.tickets.some(
-          (t) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
+          (t: any) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
         );
 
         return (matchesWa || matchesParticipant) && matchesEvent && matchesStatus;

@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FileText, QrCode, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/sales-data";
+import { useSale, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
-import { useSale } from "@/lib/sales-queries";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -174,23 +174,23 @@ export function SaleDetailPage({ id }: { id: string }) {
         <div className="space-y-2">
           {(sale.tickets || []).map((ticket: any) => (
             <div
-              key={ticket.code}
+              key={ticket.ticket_code}
               className="flex flex-col gap-3 border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-body text-text-primary">{ticket.participant_name}</p>
-                <p className="font-mono-token mt-1 text-text-secondary">{ticket.code}</p>
+                <p className="font-mono-token mt-1 text-text-secondary">{ticket.ticket_code}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span
                   className={cn(
                     "rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-                    ticket.checked_in
+                    ticket.checked_in_at
                       ? "bg-accent-muted text-accent-text"
                       : "bg-bg-tertiary text-text-secondary",
                   )}
                 >
-                  {ticket.checked_in ? "Check-in realizado" : "Aguardando check-in"}
+                  {ticket.checked_in_at ? "Check-in realizado" : "Aguardando check-in"}
                 </span>
                 <button
                   type="button"
@@ -249,13 +249,13 @@ export function SaleDetailPage({ id }: { id: string }) {
               </button>
             </div>
             <img
-              alt={`QR Code do ingresso ${qrTicket.code}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code || "")}`}
+              alt={`QR Code do ingresso ${qrTicket.ticket_code}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.ticket_code || "")}`}
               className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
               loading="lazy"
             />
             <p className="mt-4 text-body text-text-primary">{qrTicket.participant_name}</p>
-            <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.code}</p>
+            <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.ticket_code}</p>
           </div>
         </div>
       )}

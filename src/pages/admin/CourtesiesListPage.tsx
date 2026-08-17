@@ -19,6 +19,7 @@ import { Suspense, lazy } from "react";
 import { useCourtesies } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCourtesiesStats } from "@/lib/sales-queries";
 
 const CreateCourtesyPanelLazy = lazy(() => 
   import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
@@ -26,6 +27,7 @@ const CreateCourtesyPanelLazy = lazy(() =>
 
 export function CourtesiesListPage() {
   const { data: courtesies = [], isLoading } = useCourtesies();
+  const { data: stats } = useCourtesiesStats();
   const { data: events = [] } = useEvents();
   const queryClient = useQueryClient();
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
@@ -53,14 +55,8 @@ export function CourtesiesListPage() {
     });
   }, [courtesies, search, eventFilter]);
 
-  const totalCortesias = filteredData.length;
-  const totalCheckins = React.useMemo(() => {
-    return filteredData.reduce((acc: number, item: any) => {
-      const tickets = item.tickets || [];
-      const checkedInCount = tickets.filter((t: any) => t.checked_in).length;
-      return acc + checkedInCount;
-    }, 0);
-  }, [filteredData]);
+  const totalCortesias = stats?.total || 0;
+  const totalCheckins = stats?.checkins || 0;
 
   const paginatedData = React.useMemo(() => {
     const size = parseInt(pageSize);
@@ -172,8 +168,8 @@ export function CourtesiesListPage() {
             ) : (
               paginatedData.map((item: any) => {
                 const tickets = item.tickets || [];
-                const allCheckedIn = tickets.length > 0 && tickets.every((t: any) => t.checked_in);
-                const someCheckedIn = tickets.some((t: any) => t.checked_in);
+                const allCheckedIn = tickets.length > 0 && tickets.every((t: any) => t.checked_in_at);
+                const someCheckedIn = tickets.some((t: any) => t.checked_in_at);
                 
                 let checkinStatus = "Aguardando";
                 if (allCheckedIn) checkinStatus = "Realizado";
