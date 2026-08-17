@@ -187,7 +187,7 @@ export function CourtesiesListPage() {
                       {new Date(item.created_at).toLocaleDateString("pt-BR")}
                     </DataTableCell>
                     <DataTableCell>
-                      <StatusPill tone={checkinStatus === "Realizado" ? "accent" : checkinStatus === "Parcial" ? "warning" : "default"}>
+                      <StatusPill tone={checkinStatus === "Realizado" ? "accent" : checkinStatus === "Parcial" ? "warning" : "muted"}>
                         {checkinStatus}
                       </StatusPill>
                     </DataTableCell>
