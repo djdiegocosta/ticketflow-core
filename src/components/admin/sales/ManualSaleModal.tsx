@@ -1,6 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { EVENTS, formatCurrency, type Sale } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-data";
+import { useEvents } from "@/lib/events-queries";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -26,11 +29,13 @@ export function ManualSaleModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreate: (sale: Sale) => void;
+  onCreate: () => void;
 }) {
+  const { data: eventsQuery = [] } = useEvents();
+  const { userId } = useAuth();
   const [step, setStep] = useState(1);
-  const [eventId, setEventId] = useState(EVENTS[0]!.id);
-  const [lotId, setLotId] = useState(EVENTS[0]!.lots[0]!.id);
+  const [eventId, setEventId] = useState("");
+  const [lotId, setLotId] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [buyerWhatsapp, setBuyerWhatsapp] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -40,17 +45,33 @@ export function ManualSaleModal({
   const [paymentMethod, setPaymentMethod] = useState("Pix manual");
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Errors>({});
+  const [loading, setLoading] = useState(false);
 
-  const event = useMemo(() => EVENTS.find((e) => e.id === eventId)!, [eventId]);
-  const lot = useMemo(
-    () => event.lots.find((l) => l.id === lotId) ?? event.lots[0]!,
-    [event, lotId],
-  );
+  const event = useMemo(() => eventsQuery.find((e) => e.id === eventId), [eventsQuery, eventId]);
+  
+  const [eventWithBatches, setEventWithBatches] = useState<any>(null);
 
-  // Lote depende do evento selecionado
   useEffect(() => {
-    setLotId(event.lots[0]!.id);
-  }, [event]);
+    if (eventId) {
+      supabase.from("ticket_batches").select("*").eq("event_id", eventId).order("created_at")
+        .then(({ data }) => setEventWithBatches(data));
+    }
+  }, [eventId]);
+
+  const lots = eventWithBatches || [];
+  const lot = useMemo(() => lots.find((l: any) => l.id === lotId) || lots[0], [lots, lotId]);
+
+  useEffect(() => {
+    if (eventsQuery.length > 0 && !eventId) {
+      setEventId(eventsQuery[0].id);
+    }
+  }, [eventsQuery, eventId]);
+
+  useEffect(() => {
+    if (lots.length > 0) {
+      setLotId(lots[0].id);
+    }
+  }, [lots]);
 
   // Campos de participante seguem a quantidade digitada
   useEffect(() => {
@@ -63,7 +84,9 @@ export function ManualSaleModal({
 
   // Valor pré-preenchido: preço do lote × quantidade
   useEffect(() => {
-    setAmount(String((lot.price * Math.max(1, quantity)).toFixed(2)).replace(".", ","));
+    if (lot) {
+      setAmount(String((lot.price * Math.max(1, quantity)).toFixed(2)).replace(".", ","));
+    }
   }, [lot, quantity]);
 
   useEffect(() => {
@@ -178,7 +201,9 @@ export function ManualSaleModal({
                 <ChevronRight className="h-4 w-4" />
               </PanelPrimaryButton>
             ) : (
-              <PanelPrimaryButton onClick={submit}>Registrar venda</PanelPrimaryButton>
+              <PanelPrimaryButton onClick={submit} disabled={loading}>
+                {loading ? "Registrando..." : "Registrar venda"}
+              </PanelPrimaryButton>
             )}
           </div>
         </>
@@ -195,8 +220,8 @@ export function ManualSaleModal({
                     value={eventId}
                     onChange={(e) => setEventId(e.target.value)}
                   >
-                    {EVENTS.map((e) => (
-                      <option key={e.id} value={e.id}>{e.name}</option>
+                    {eventsQuery.map((e) => (
+                      <option key={e.id} value={e.id}>{e.title}</option>
                     ))}
                   </select>
                 </div>
@@ -207,7 +232,7 @@ export function ManualSaleModal({
                     value={lotId}
                     onChange={(e) => setLotId(e.target.value)}
                   >
-                    {event.lots.map((l) => (
+                    {lots.map((l: any) => (
                       <option key={l.id} value={l.id}>
                         {l.name} — {formatCurrency(l.price)}
                       </option>
@@ -309,11 +334,11 @@ export function ManualSaleModal({
                 <div className="space-y-2 rounded-none border border-border-subtle bg-bg-secondary p-4 text-small">
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Evento:</span>
-                    <span className="font-medium text-text-primary">{event.name}</span>
+                    <span className="font-medium text-text-primary">{event?.title || "—"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Lote:</span>
-                    <span className="font-medium text-text-primary">{lot.name}</span>
+                    <span className="font-medium text-text-primary">{lot?.name || "—"}</span>
                   </div>
                   <div className="flex justify-between border-t border-border-subtle pt-2">
                     <span className="text-text-secondary">Comprador:</span>
