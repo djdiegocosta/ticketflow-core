@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Download, Gift, CheckCircle } from "lucide-react";
+import { Download, Gift, CheckCircle, Loader2 } from "lucide-react";
 import {
   DataTable,
   DataTableHeadRow,
@@ -12,19 +12,22 @@ import {
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
-import { MOCK_COURTESIES, Courtesy } from "@/lib/courtesies-data";
 import { formatName } from "@/lib/form-format";
-
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
-import { CreateCourtesyPanel } from "@/components/admin/cortesias/CreateCourtesyPanel";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
+import { useCourtesies } from "@/lib/sales-queries";
+import { useEvents } from "@/lib/events-queries";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CreateCourtesyPanelLazy = lazy(() => 
   import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
 );
 
 export function CourtesiesListPage() {
+  const { data: courtesies = [], isLoading } = useCourtesies();
+  const { data: events = [] } = useEvents();
+  const queryClient = useQueryClient();
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [eventFilter, setEventFilter] = React.useState("todos");
@@ -42,15 +45,22 @@ export function CourtesiesListPage() {
   }, []);
 
   const filteredData = React.useMemo(() => {
-    return MOCK_COURTESIES.filter((item) => {
-      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-      const matchesEvent = eventFilter === "todos" || item.event === eventFilter;
+    return courtesies.filter((item: any) => {
+      const eventTitle = (item.events as any)?.title || "";
+      const matchesSearch = item.buyer_name.toLowerCase().includes(search.toLowerCase());
+      const matchesEvent = eventFilter === "todos" || eventTitle === eventFilter;
       return matchesSearch && matchesEvent;
     });
-  }, [search, eventFilter]);
+  }, [courtesies, search, eventFilter]);
 
   const totalCortesias = filteredData.length;
-  const totalCheckins = filteredData.filter((c) => c.checkinStatus === "Realizado").length;
+  const totalCheckins = React.useMemo(() => {
+    return filteredData.reduce((acc: number, item: any) => {
+      const tickets = item.tickets || [];
+      const checkedInCount = tickets.filter((t: any) => t.checked_in).length;
+      return acc + checkedInCount;
+    }, 0);
+  }, [filteredData]);
 
   const paginatedData = React.useMemo(() => {
     const size = parseInt(pageSize);
@@ -62,22 +72,30 @@ export function CourtesiesListPage() {
 
   const handleExportPdf = () => {
     const eventName = eventFilter === "todos" ? "Todas as Cortesias" : eventFilter;
-    const names = filteredData.map((c) => c.name);
+    const names = filteredData.map((c: any) => c.buyer_name);
     generateCheckinListPdf(eventName, names);
     toast.success("PDF gerado com sucesso!");
   };
 
-  const handleCreateSuccess = (count: number) => {
-    toast.success(`${count} cortesias emitidas com sucesso!`);
-    // In a real app, we would refetch here.
+  const handleCreateSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["sales", "courtesies"] });
+    toast.success(`Cortesias emitidas com sucesso!`);
+    setIsPanelOpen(false);
   };
 
   const size = parseInt(pageSize);
   const startIndex = (currentPage - 1) * size;
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
-      {/* Header */}
       <ListPageHeader
         title="Cortesias"
         action={
@@ -87,7 +105,6 @@ export function CourtesiesListPage() {
         }
       />
 
-      {/* Mini Dashboard */}
       <MiniMetricGrid className="xl:grid-cols-2">
         <MiniMetricCard
           icon={Gift}
@@ -105,7 +122,6 @@ export function CourtesiesListPage() {
         />
       </MiniMetricGrid>
 
-      {/* Filtros */}
       <FilterBar
         actions={
           <button
@@ -128,8 +144,9 @@ export function CourtesiesListPage() {
           }}
         >
           <option value="todos">Todos os eventos</option>
-          <option value="Show de Rock 2024">Show de Rock 2024</option>
-          <option value="Festival de Jazz">Festival de Jazz</option>
+          {events.map((e: any) => (
+            <option key={e.id} value={e.title}>{e.title}</option>
+          ))}
         </select>
 
         <FilterSearch
@@ -142,32 +159,41 @@ export function CourtesiesListPage() {
         />
       </FilterBar>
 
-      {/* Tabela */}
       <DataTableShell>
         <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
           <DataTableHeadRow columns={isMobile ? ["Convidado", "Data", "Status"] : ["Convidado", "Evento", "Data de emissão", "Status"]} />
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <DataTableCell colSpan={4} className="py-10 text-center text-body">
+                <DataTableCell colSpan={isMobile ? 3 : 4} className="py-10 text-center text-body">
                   Nenhuma cortesia encontrada.
                 </DataTableCell>
               </tr>
             ) : (
-              paginatedData.map((item) => (
-                <DataTableRow key={item.id}>
-                  <DataTableCell variant="primary">{formatName(item.name)}</DataTableCell>
-                  {!isMobile && <DataTableCell>{item.event}</DataTableCell>}
-                  <DataTableCell variant="muted">
-                    {new Date(item.issuedAt).toLocaleDateString("pt-BR")}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <StatusPill tone={item.checkinStatus === "Realizado" ? "accent" : "warning"}>
-                      {item.checkinStatus}
-                    </StatusPill>
-                  </DataTableCell>
-                </DataTableRow>
-              ))
+              paginatedData.map((item: any) => {
+                const tickets = item.tickets || [];
+                const allCheckedIn = tickets.length > 0 && tickets.every((t: any) => t.checked_in);
+                const someCheckedIn = tickets.some((t: any) => t.checked_in);
+                
+                let checkinStatus = "Aguardando";
+                if (allCheckedIn) checkinStatus = "Realizado";
+                else if (someCheckedIn) checkinStatus = "Parcial";
+
+                return (
+                  <DataTableRow key={item.id}>
+                    <DataTableCell variant="primary">{formatName(item.buyer_name)}</DataTableCell>
+                    {!isMobile && <DataTableCell>{(item.events as any)?.title || "—"}</DataTableCell>}
+                    <DataTableCell variant="muted">
+                      {new Date(item.created_at).toLocaleDateString("pt-BR")}
+                    </DataTableCell>
+                    <DataTableCell>
+                      <StatusPill tone={checkinStatus === "Realizado" ? "accent" : checkinStatus === "Parcial" ? "warning" : "neutral"}>
+                        {checkinStatus}
+                      </StatusPill>
+                    </DataTableCell>
+                  </DataTableRow>
+                );
+              })
             )}
           </tbody>
         </DataTable>

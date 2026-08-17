@@ -1,23 +1,32 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, FileText, QrCode, X } from "lucide-react";
+import { ArrowLeft, FileText, QrCode, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MOCK_SALES, formatCurrency, type Sale, type SaleTicket } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-data";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
+import { useSale } from "@/lib/sales-queries";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
-function StatusBadge({ status }: { status: Sale["status"] }) {
+function StatusBadge({ status }: { status: string }) {
+  const statusLabels: Record<string, string> = {
+    pago: "Pago",
+    pendente: "Pendente",
+    cancelado: "Cancelado",
+  };
+
   return (
     <span
       className={cn(
-        "inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-        status === "Pago" && "bg-accent-muted text-accent-text",
-        status === "Pendente" && "bg-warning/15 text-warning",
-        status === "Cancelado" && "bg-error/15 text-error",
+        "inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium capitalize",
+        status === "pago" && "bg-accent-muted text-accent-text",
+        status === "pendente" && "bg-warning-muted text-warning-text",
+        status === "cancelado" && "bg-error-muted text-error-text",
       )}
     >
-      {status}
+      {statusLabels[status] || status}
     </span>
   );
 }
@@ -31,18 +40,26 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-const card =
-  "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
+const card = "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
-  const found = MOCK_SALES.find((s) => s.id === id);
+  const { data: sale, isLoading, error: fetchError } = useSale(id);
   const { userRole } = useAuth();
+  const queryClient = useQueryClient();
   const isColab = userRole === "colaborador";
-  const [status, setStatus] = useState<Sale["status"]>(found?.status ?? "Pago");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [qrTicket, setQrTicket] = useState<SaleTicket | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [qrTicket, setQrTicket] = useState<any>(null);
 
-  if (!found) {
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (fetchError || !sale) {
     return (
       <div className={card}>
         <h1 className="text-heading-1 text-text-primary">Venda não encontrada</h1>
@@ -59,7 +76,28 @@ export function SaleDetailPage({ id }: { id: string }) {
     );
   }
 
-  const sale = found;
+  const handleCancelSale = async () => {
+    setCancelling(true);
+    try {
+      const { error } = await supabase.rpc("cancel_sale", {
+        _sale_id: id,
+      });
+
+      if (error) throw error;
+
+      toast.success("Venda cancelada com sucesso");
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+      setConfirmOpen(false);
+    } catch (err: any) {
+      toast.error("Erro ao cancelar venda: " + err.message);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const eventTitle = (sale.events as any)?.title || "Evento não identificado";
+  const batchName = (sale.ticket_batches as any)?.name || "Lote não identificado";
+  const formattedDate = new Date(sale.created_at).toLocaleString("pt-BR");
 
   return (
     <div className="space-y-6">
@@ -72,8 +110,8 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-heading-1 text-text-primary">{sale.eventName}</h1>
-          <StatusBadge status={status} />
+          <h1 className="text-heading-1 text-text-primary">{eventTitle}</h1>
+          <StatusBadge status={sale.status} />
         </div>
         <div className="flex items-center gap-3">
           {!isColab && (
@@ -82,8 +120,8 @@ export function SaleDetailPage({ id }: { id: string }) {
                 type="button"
                 onClick={() =>
                   generateCheckinListPdf(
-                    sale.eventName,
-                    sale.tickets.map((t) => t.participantName),
+                    eventTitle,
+                    (sale.tickets || []).map((t: any) => t.participant_name),
                   )
                 }
                 className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
@@ -93,11 +131,11 @@ export function SaleDetailPage({ id }: { id: string }) {
               </button>
               <button
                 type="button"
-                disabled={status === "Cancelado"}
+                disabled={sale.status === "cancelado" || cancelling}
                 onClick={() => setConfirmOpen(true)}
                 className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Cancelar venda
+                {cancelling ? "Cancelando..." : "Cancelar venda"}
               </button>
             </>
           )}
@@ -108,51 +146,51 @@ export function SaleDetailPage({ id }: { id: string }) {
         <section className={card}>
           <h2 className="mb-4 text-heading-2 text-text-primary">Comprador</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome" value={sale.buyerName} />
-            <Field label="WhatsApp" value={sale.buyerWhatsapp} />
-            <Field label="E-mail" value={sale.buyerEmail ?? "—"} />
+            <Field label="Nome" value={sale.buyer_name} />
+            <Field label="WhatsApp" value={sale.buyer_whatsapp} />
+            <Field label="E-mail" value={sale.buyer_email ?? "—"} />
           </div>
         </section>
 
         <section className={card}>
           <h2 className="mb-4 text-heading-2 text-text-primary">Dados da venda</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Evento" value={sale.eventName} />
-            <Field label="Lote" value={sale.lotName} />
+            <Field label="Evento" value={eventTitle} />
+            <Field label="Lote" value={batchName} />
             <Field label="Quantidade" value={`${sale.quantity} ingresso(s)`} />
-            <Field label="Valor" value={formatCurrency(sale.amount)} />
+            <Field label="Valor" value={formatCurrency(sale.total_amount)} />
             <Field label="Origem" value={sale.origin} />
-            <Field label="Forma de pagamento" value={sale.paymentMethod} />
-            <Field label="Data da compra" value={sale.createdAt} />
-            {sale.note && <Field label="Observação" value={sale.note} />}
+            <Field label="Forma de pagamento" value={sale.payment_method || "—"} />
+            <Field label="Data da compra" value={formattedDate} />
+            {sale.observation && <Field label="Observação" value={sale.observation} />}
           </div>
         </section>
       </div>
 
       <section className={card}>
         <h2 className="mb-4 text-heading-2 text-text-primary">
-          Ingressos gerados ({sale.tickets.length})
+          Ingressos gerados ({(sale.tickets || []).length})
         </h2>
         <div className="space-y-2">
-          {sale.tickets.map((ticket) => (
+          {(sale.tickets || []).map((ticket: any) => (
             <div
               key={ticket.code}
               className="flex flex-col gap-3 border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="text-body text-text-primary">{ticket.participantName}</p>
+                <p className="text-body text-text-primary">{ticket.participant_name}</p>
                 <p className="font-mono-token mt-1 text-text-secondary">{ticket.code}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span
                   className={cn(
                     "rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium",
-                    ticket.checkedIn
+                    ticket.checked_in
                       ? "bg-accent-muted text-accent-text"
                       : "bg-bg-tertiary text-text-secondary",
                   )}
                 >
-                  {ticket.checkedIn ? "Check-in realizado" : "Aguardando check-in"}
+                  {ticket.checked_in ? "Check-in realizado" : "Aguardando check-in"}
                 </span>
                 <button
                   type="button"
@@ -173,7 +211,7 @@ export function SaleDetailPage({ id }: { id: string }) {
           <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Cancelar venda?</h3>
             <p className="mt-2 text-body text-text-secondary">
-              Esta ação invalida os {sale.tickets.length} ingresso(s) desta venda.
+              Esta ação invalida os {(sale.tickets || []).length} ingresso(s) desta venda.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -185,14 +223,11 @@ export function SaleDetailPage({ id }: { id: string }) {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setStatus("Cancelado");
-                  setConfirmOpen(false);
-                  toast.success("Venda cancelada");
-                }}
-                className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] hover:opacity-90"
+                onClick={handleCancelSale}
+                disabled={cancelling}
+                className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] hover:opacity-90 disabled:opacity-50"
               >
-                Confirmar cancelamento
+                {cancelling ? "Cancelando..." : "Confirmar cancelamento"}
               </button>
             </div>
           </div>
@@ -215,11 +250,11 @@ export function SaleDetailPage({ id }: { id: string }) {
             </div>
             <img
               alt={`QR Code do ingresso ${qrTicket.code}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code)}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code || "")}`}
               className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
               loading="lazy"
             />
-            <p className="mt-4 text-body text-text-primary">{qrTicket.participantName}</p>
+            <p className="mt-4 text-body text-text-primary">{qrTicket.participant_name}</p>
             <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.code}</p>
           </div>
         </div>
