@@ -249,13 +249,13 @@ export function SaleDetailPage({ id }: { id: string }) {
               </button>
             </div>
             <img
-              alt={`QR Code do ingresso ${qrTicket.code}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.code || "")}`}
+              alt={`QR Code do ingresso ${qrTicket.ticket_code}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.ticket_code || "")}`}
               className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
               loading="lazy"
             />
             <p className="mt-4 text-body text-text-primary">{qrTicket.participant_name}</p>
-            <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.code}</p>
+            <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.ticket_code}</p>
           </div>
         </div>
       )}

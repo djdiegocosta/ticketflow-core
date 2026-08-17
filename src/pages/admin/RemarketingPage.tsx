@@ -134,7 +134,7 @@ export function RemarketingPage() {
 
         // Também verificar participantes, pois "Comprador != Participante"
         const matchesParticipant = sale.tickets.some(
-          (t) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
+          (t: any) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
         );
 
         return (matchesWa || matchesParticipant) && matchesEvent && matchesStatus;

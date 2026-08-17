@@ -285,7 +285,7 @@ export function SimuladorPage() {
     if (!event) return;
     setEventName(event.name);
     setLots(
-      event.lots.map((lot, i) => ({
+      event.lots.map((lot: any, i: number) => ({
         id: `${event.id}-${lot.id}-${i}`,
         name: lot.name,
         available: 100,
