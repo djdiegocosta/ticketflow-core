@@ -6,7 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { StatusPill } from "@/components/admin/DataTable";
 import { useEvents } from "@/lib/events-queries";
 import { useSales, useSalesStats } from "@/lib/sales-queries";
-import { formatCurrency } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-queries";
 
 // --- Mock Data for fields not yet in DB ---
 const MOCK_HOURLY_DATA = [

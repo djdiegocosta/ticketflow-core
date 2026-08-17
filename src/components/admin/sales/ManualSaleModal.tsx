@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { formatCurrency } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";

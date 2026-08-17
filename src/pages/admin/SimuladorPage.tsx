@@ -18,7 +18,30 @@ import {
   DataTableShell,
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
-import { EVENTS, formatCurrency } from "@/lib/sales-data";
+import { formatCurrency } from "@/lib/sales-queries";
+const EVENTS = [
+  {
+    id: "1",
+    name: "Festa de Verão",
+    lots: [
+      { id: "1a", name: "1º Lote", price: 90 },
+      { id: "1b", name: "2º Lote", price: 110 },
+    ],
+  },
+  {
+    id: "2",
+    name: "Show do Ano",
+    lots: [
+      { id: "2a", name: "Pista", price: 90 },
+      { id: "2b", name: "VIP", price: 180 },
+    ],
+  },
+  {
+    id: "3",
+    name: "Festival Outono",
+    lots: [{ id: "3a", name: "Ingresso único", price: 70 }],
+  },
+];
 import { formatName } from "@/lib/form-format";
 
 

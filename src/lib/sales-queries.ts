@@ -43,7 +43,7 @@ export function useCourtesies() {
           buyer_name,
           created_at,
           events (title),
-          tickets (checked_in)
+          tickets (checked_in_at)
         `)
         .eq("is_courtesy", true)
         .order("created_at", { ascending: false });
@@ -61,7 +61,7 @@ export function useCourtesiesStats() {
       const { data, error } = await supabase
         .from("tickets")
         .select(`
-          checked_in,
+          checked_in_at,
           sales!inner (is_courtesy)
         `)
         .eq("sales.is_courtesy", true);
@@ -69,7 +69,7 @@ export function useCourtesiesStats() {
       if (error) throw error;
 
       const total = data?.length || 0;
-      const checkins = data?.filter((t) => t.checked_in).length || 0;
+      const checkins = data?.filter((t) => t.checked_in_at).length || 0;
 
       return { total, checkins };
     },
@@ -96,7 +96,7 @@ export function useSale(id: string) {
           created_at,
           events (title),
           ticket_batches (name),
-          tickets (code, participant_name, checked_in)
+          tickets (ticket_code, participant_name, checked_in_at)
         `)
         .eq("id", id)
         .single();
@@ -113,7 +113,7 @@ export function useSalesStats(eventId?: string) {
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
       let query = supabase.from("tickets").select(`
-        checked_in,
+        checked_in_at,
         created_at,
         sales!inner (
           id,
