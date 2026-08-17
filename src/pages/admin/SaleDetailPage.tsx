@@ -160,7 +160,7 @@ export function SaleDetailPage({ id }: { id: string }) {
             <Field label="Quantidade" value={`${sale.quantity} ingresso(s)`} />
             <Field label="Valor" value={formatCurrency(sale.total_amount)} />
             <Field label="Origem" value={sale.origin} />
-            <Field label="Forma de pagamento" value={sale.payment_method} />
+            <Field label="Forma de pagamento" value={sale.payment_method || "—"} />
             <Field label="Data da compra" value={formattedDate} />
             {sale.observation && <Field label="Observação" value={sale.observation} />}
           </div>
