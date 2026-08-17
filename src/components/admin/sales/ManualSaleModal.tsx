@@ -62,7 +62,7 @@ export function ManualSaleModal({
   }, [lots, lotId]);
 
   useEffect(() => {
-    if (eventsQuery.length > 0 && !eventId) {
+    if (eventsQuery && eventsQuery.length > 0 && !eventId) {
       setEventId(eventsQuery[0].id);
     }
   }, [eventsQuery, eventId]);
