@@ -52,6 +52,10 @@ export function SaleDetailPage({ id }: { id: string }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [qrTicket, setQrTicket] = useState<any>(null);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
+  const [refunding, setRefunding] = useState(false);
 
   if (isLoading) {
     return (
@@ -272,6 +276,68 @@ export function SaleDetailPage({ id }: { id: string }) {
             />
             <p className="mt-4 text-body text-text-primary">{qrTicket.participant_name}</p>
             <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.ticket_code}</p>
+          </div>
+        </div>
+      )}
+      {refundOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
+          <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+            <h3 className="text-heading-2 text-text-primary">Reembolsar venda</h3>
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="text-small font-medium text-text-secondary">Valor a reembolsar (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  className="mt-1 w-full border border-border-default bg-bg-secondary px-3 py-2 outline-none focus:border-accent"
+                />
+              </div>
+              <div>
+                <label className="text-small font-medium text-text-secondary">Motivo</label>
+                <textarea
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  className="mt-1 w-full border border-border-default bg-bg-secondary px-3 py-2 outline-none focus:border-accent"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setRefundOpen(false)}
+                className="border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary hover:border-accent"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setRefunding(true);
+                  try {
+                    const { error } = await supabase.rpc("refund_sale", {
+                      _sale_id: id,
+                      _refund_amount: Number(refundAmount),
+                      _reason: refundReason
+                    });
+                    if (error) throw error;
+                    toast.success("Venda reembolsada com sucesso");
+                    queryClient.invalidateQueries({ queryKey: ["sales"] });
+                    setRefundOpen(false);
+                  } catch (err: any) {
+                    toast.error("Erro ao reembolsar: " + err.message);
+                  } finally {
+                    setRefunding(false);
+                  }
+                }}
+                disabled={refunding || !refundAmount || Number(refundAmount) <= 0}
+                className="bg-accent px-4 py-2 text-body font-semibold text-[#111111] hover:opacity-90 disabled:opacity-50"
+              >
+                {refunding ? "Reembolsando..." : "Confirmar reembolso"}
+              </button>
+            </div>
           </div>
         </div>
       )}
