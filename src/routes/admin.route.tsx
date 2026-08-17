@@ -15,6 +15,10 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/primeiro-acesso" });
     }
 
+    if (ctx.organizationStatus === "pending" || ctx.organizationStatus === "suspended") {
+      throw redirect({ to: "/organizacao-pendente" });
+    }
+
     if (ctx.role !== "admin" && ctx.role !== "colaborador") {
       throw redirect({ to: "/cliente" });
     }

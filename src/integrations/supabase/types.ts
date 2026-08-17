@@ -118,6 +118,54 @@ export type Database = {
           },
         ]
       }
+      event_checklist_items: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          event_id: string
+          id: string
+          is_completed: boolean
+          organization_id: string
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          is_completed?: boolean
+          organization_id: string
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_completed?: boolean
+          organization_id?: string
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_checklist_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_checklist_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           closed_at: string | null
@@ -257,6 +305,21 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       points_ledger: {
         Row: {
           created_at: string
@@ -328,6 +391,119 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      raffle_participants: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          raffle_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          raffle_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          raffle_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_participants_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffle_winners: {
+        Row: {
+          drawn_at: string
+          id: string
+          participant_id: string
+          raffle_id: string
+        }
+        Insert: {
+          drawn_at?: string
+          id?: string
+          participant_id: string
+          raffle_id: string
+        }
+        Update: {
+          drawn_at?: string
+          id?: string
+          participant_id?: string
+          raffle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_winners_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "raffle_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "raffle_winners_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          organization_id: string
+          prize_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          organization_id: string
+          prize_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          organization_id?: string
+          prize_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "raffles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales: {
         Row: {
@@ -444,6 +620,44 @@ export type Database = {
           },
           {
             foreignKeyName: "sales_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulations: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          input_data: Json
+          organization_id: string
+          result_summary: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          input_data: Json
+          organization_id: string
+          result_summary: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          input_data?: Json
+          organization_id?: string
+          result_summary?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulations_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -616,7 +830,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_organization: { Args: { _org_id: string }; Returns: undefined }
+      award_points: {
+        Args: { _customer_id: string; _points: number; _reason: string }
+        Returns: undefined
+      }
       bootstrap_organization: { Args: { _name: string }; Returns: string }
+      cancel_sale: { Args: { _sale_id: string }; Returns: undefined }
+      change_organization_plan: {
+        Args: {
+          _org_id: string
+          _plan: Database["public"]["Enums"]["org_plan"]
+        }
+        Returns: undefined
+      }
       checkin_ticket: {
         Args: { _ticket_code: string }
         Returns: {
@@ -676,7 +903,16 @@ export type Database = {
           total_amount: number
         }[]
       }
+      delete_customer: { Args: { _customer_id: string }; Returns: undefined }
+      draw_raffle_winner: {
+        Args: { _raffle_id: string }
+        Returns: {
+          full_name: string
+          participant_id: string
+        }[]
+      }
       generate_short_code: { Args: never; Returns: string }
+      get_default_organization: { Args: never; Returns: string }
       get_sale_by_code: {
         Args: { _code: string }
         Returns: {
@@ -706,6 +942,49 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      signup_customer: {
+        Args: {
+          _cidade: string
+          _email: string
+          _full_name: string
+          _whatsapp: string
+        }
+        Returns: {
+          customer_id: string
+        }[]
+      }
+      suspend_organization: { Args: { _org_id: string }; Returns: undefined }
+      track_checkout_abandonment: {
+        Args: {
+          _buyer_name: string
+          _buyer_whatsapp: string
+          _event_id: string
+        }
+        Returns: undefined
+      }
+      update_customer: {
+        Args: {
+          _cidade: string
+          _customer_id: string
+          _data_nascimento: string
+          _email: string
+          _full_name: string
+          _instagram: string
+          _whatsapp: string
+        }
+        Returns: undefined
+      }
+      update_organization_profile: {
+        Args: {
+          _contact_email: string
+          _contact_phone: string
+          _logo_url: string
+          _name: string
+          _org_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

@@ -14,6 +14,7 @@ interface AuthContextType {
   userRole: UserRole;
   userName: string;
   organizationId: string | null;
+  organizationStatus: string | null;
   isSplashComplete: boolean;
   setSplashComplete: (complete: boolean) => void;
   login: (email: string, pass: string) => Promise<{ error: string | null }>;
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [userName, setUserName] = useState<string>('');
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [organizationStatus, setOrganizationStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSplashComplete, setIsSplashComplete] = useState<boolean>(true);
   const navigate = useNavigate();
@@ -38,13 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserRole(null);
       setUserName('');
       setOrganizationId(null);
+      setOrganizationStatus(null);
       return;
     }
 
     const [{ data: roleRow }, { data: profile }] = await Promise.all([
       supabase
         .from('user_roles')
-        .select('role, organization_id')
+        .select('role, organization_id, organizations!inner(status)')
         .eq('user_id', currentUser.id)
         .limit(1)
         .maybeSingle(),
@@ -53,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUserRole((roleRow?.role as UserRole) ?? 'cliente');
     setOrganizationId(roleRow?.organization_id ?? null);
+    setOrganizationStatus((roleRow?.organizations as any)?.status ?? null);
     setUserName(
       profile?.full_name ||
         (currentUser.user_metadata?.['full_name'] as string | undefined) ||
@@ -111,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserRole(null);
     setUserName('');
     setOrganizationId(null);
+    setOrganizationStatus(null);
     navigate({ to: '/login', replace: true });
   };
 
@@ -129,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userRole,
         userName,
         organizationId,
+        organizationStatus,
         isSplashComplete,
         setSplashComplete: setIsSplashComplete,
         login,

@@ -14,7 +14,11 @@ export const Route = createFileRoute("/primeiro-acesso")({
   beforeLoad: async () => {
     const ctx = await requireSession();
     if (ctx.organizationId) {
-      throw redirect({ to: "/admin" });
+      if (ctx.organizationStatus === 'active') {
+        throw redirect({ to: '/admin' });
+      } else {
+        throw redirect({ to: '/organizacao-pendente' });
+      }
     }
   },
   head: () => ({
@@ -60,7 +64,7 @@ function FirstAccessPage() {
 
     await refreshProfile();
     toast.success("Organização criada com sucesso!");
-    navigate({ to: "/admin" });
+    navigate({ to: "/organizacao-pendente" });
   };
 
   return (

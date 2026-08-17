@@ -7,6 +7,7 @@ export interface GuardContext {
   userId: string;
   role: GuardRole;
   organizationId: string | null;
+  organizationStatus: string | null;
 }
 
 /**
@@ -21,7 +22,7 @@ export async function requireSession(): Promise<GuardContext> {
 
   const { data: roleRow } = await supabase
     .from('user_roles')
-    .select('role, organization_id')
+    .select('role, organization_id, organizations!inner(status)')
     .eq('user_id', data.user.id)
     .limit(1)
     .maybeSingle();
@@ -30,6 +31,7 @@ export async function requireSession(): Promise<GuardContext> {
     userId: data.user.id,
     role: (roleRow?.role as GuardRole) ?? 'cliente',
     organizationId: roleRow?.organization_id ?? null,
+    organizationStatus: (roleRow?.organizations as any)?.status ?? null,
   };
 }
 
