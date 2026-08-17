@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MOCK_USERS, User, UserRoleType } from "@/lib/users-data";
+import { User, UserRoleType } from "@/lib/users-data";
+const MOCK_USERS: any[] = [];
 import { formatName } from "@/lib/form-format";
 
 import {

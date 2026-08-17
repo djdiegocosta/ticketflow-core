@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User } from "lucide-react";
-import { MOCK_CLIENTS, getInitials, whatsappLink } from "@/lib/clients-data";
-import { MOCK_SALES, formatCurrency } from "@/lib/sales-data";
+import { getInitials, whatsappLink } from "@/lib/clients-data";
+import { formatCurrency } from "@/lib/sales-queries";
+const MOCK_CLIENTS: any[] = [];
+const MOCK_SALES: any[] = [];
 import { StatusPill } from "@/components/admin/DataTable";
 
 function InfoRow({ label, value }: { label: string; value: string }) {

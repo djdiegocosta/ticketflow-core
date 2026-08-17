@@ -19,7 +19,7 @@ import {
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { formatCurrency } from "@/lib/sales-queries";
-const EVENTS = [
+const EVENTS: any[] = [
   {
     id: "1",
     name: "Festa de Verão",

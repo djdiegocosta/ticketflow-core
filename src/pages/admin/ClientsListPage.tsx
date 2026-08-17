@@ -14,11 +14,11 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  MOCK_CLIENTS,
   getInitials,
   whatsappLink,
   type Client,
 } from "@/lib/clients-data";
+const MOCK_CLIENTS: any[] = [];
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
 import {
   DataTable,
