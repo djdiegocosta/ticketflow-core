@@ -55,7 +55,7 @@ export function CreateCourtesyPanel({
       supabase.from("ticket_batches").select("*").eq("event_id", selectedEvent).order("created_at")
         .then(({ data }) => {
           setBatches(data || []);
-          if (data && data.length > 0) setSelectedBatch(data[0].id);
+          if (data && data.length > 0) setSelectedBatch(data[0]?.id || "");
         });
     }
   }, [selectedEvent]);
