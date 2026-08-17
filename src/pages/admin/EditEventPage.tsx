@@ -9,6 +9,8 @@ import {
   Trash2,
   Plus,
   ExternalLink,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useParams } from "@tanstack/react-router";
@@ -63,6 +65,7 @@ export function EditEventPage() {
   const [status, setStatus] = useState<"publicado" | "rascunho">("rascunho");
   const [draft, setDraft] = useState<BatchDraft | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const event = data?.event ?? null;
   const batches = data?.batches ?? [];
@@ -286,13 +289,89 @@ export function EditEventPage() {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-small font-medium text-text-secondary">Imagem de capa (URL)</label>
+                <label className="text-small font-medium text-text-secondary">Imagem de capa</label>
+                <div 
+                  className={cn(
+                    "relative border-2 border-dashed border-border-default rounded-radius-md p-8 text-center hover:border-accent transition-all cursor-pointer group overflow-hidden min-h-[160px] flex flex-col items-center justify-center",
+                    imageUrl && "border-solid border-accent/20"
+                  )}
+                  onClick={() => document.getElementById("event-image-upload-edit")?.click()}
+                >
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 text-accent animate-spin" />
+                      <p className="text-small text-text-secondary">Enviando imagem...</p>
+                    </div>
+                  ) : imageUrl ? (
+                    <>
+                      <img src={imageUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+                      <div className="relative z-10 flex flex-col items-center gap-1">
+                        <Upload className="w-6 h-6 text-accent mb-1" />
+                        <p className="text-small font-bold text-accent">Clique para alterar a imagem</p>
+                        <p className="text-[10px] text-text-secondary">Imagem carregada com sucesso</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-8 h-8 text-text-disabled mx-auto mb-2 group-hover:text-accent" />
+                      <p className="text-small text-text-secondary font-medium">Clique para fazer upload da imagem de capa</p>
+                      <p className="text-[10px] text-text-tertiary mt-1 max-w-[280px]">
+                        Tamanho recomendado: 1200×675px (16:9), até 2MB, JPG/PNG/WEBP.
+                      </p>
+                    </>
+                  )}
+                  <input
+                    id="event-image-upload-edit"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      if (file.size > 2 * 1024 * 1024) {
+                        toast.error("A imagem deve ter no máximo 2MB");
+                        return;
+                      }
+
+                      setIsUploading(true);
+                      try {
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                        const filePath = `events/${fileName}`;
+
+                        const { error: uploadError } = await supabase.storage
+                          .from('event-images')
+                          .upload(filePath, file);
+
+                        if (uploadError) throw uploadError;
+
+                        const { data: { publicUrl } } = supabase.storage
+                          .from('event-images')
+                          .getPublicUrl(filePath);
+
+                        setImageUrl(publicUrl);
+                        toast.success("Imagem enviada com sucesso!");
+                      } catch (err: any) {
+                        toast.error("Erro no upload: " + err.message);
+                      } finally {
+                        setIsUploading(false);
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="h-[1px] flex-1 bg-border-subtle"></div>
+                  <span className="text-[10px] text-text-disabled uppercase font-bold tracking-wider">Ou cole uma URL externa</span>
+                  <div className="h-[1px] flex-1 bg-border-subtle"></div>
+                </div>
                 <input
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 text-small outline-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2">
