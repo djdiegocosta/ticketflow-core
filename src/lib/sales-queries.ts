@@ -34,18 +34,25 @@ export function useSales() {
 
 export function useCourtesies() {
   return useQuery({
-    queryKey: ["sales", "courtesies"],
+    queryKey: ["tickets", "courtesies"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("sales")
+        .from("tickets")
         .select(`
           id,
-          buyer_name,
+          ticket_code,
+          participant_name,
+          checked_in_at,
+          status,
           created_at,
-          events (title),
-          tickets (checked_in_at)
+          sales!inner (
+            id,
+            is_courtesy,
+            created_at,
+            events (title)
+          )
         `)
-        .eq("is_courtesy", true)
+        .eq("sales.is_courtesy", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

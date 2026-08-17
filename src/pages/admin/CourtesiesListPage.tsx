@@ -47,9 +47,9 @@ export function CourtesiesListPage() {
   }, []);
 
   const filteredData = React.useMemo(() => {
-    return courtesies.filter((item: any) => {
-      const eventTitle = (item.events as any)?.title || "";
-      const matchesSearch = item.buyer_name.toLowerCase().includes(search.toLowerCase());
+    return (courtesies as any[]).filter((item) => {
+      const eventTitle = item.sales?.events?.title || "";
+      const matchesSearch = item.participant_name.toLowerCase().includes(search.toLowerCase());
       const matchesEvent = eventFilter === "todos" || eventTitle === eventFilter;
       return matchesSearch && matchesEvent;
     });
@@ -68,13 +68,13 @@ export function CourtesiesListPage() {
 
   const handleExportPdf = () => {
     const eventName = eventFilter === "todos" ? "Todas as Cortesias" : eventFilter;
-    const names = filteredData.map((c: any) => c.buyer_name);
+    const names = filteredData.map((c: any) => c.participant_name);
     generateCheckinListPdf(eventName, names);
     toast.success("PDF gerado com sucesso!");
   };
 
   const handleCreateSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["sales", "courtesies"] });
+    queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });
     toast.success(`Cortesias emitidas com sucesso!`);
     setIsPanelOpen(false);
   };
@@ -167,24 +167,20 @@ export function CourtesiesListPage() {
               </tr>
             ) : (
               paginatedData.map((item: any) => {
-                const tickets = item.tickets || [];
-                const allCheckedIn = tickets.length > 0 && tickets.every((t: any) => t.checked_in_at);
-                const someCheckedIn = tickets.some((t: any) => t.checked_in_at);
-                
-                let checkinStatus = "Aguardando";
-                if (allCheckedIn) checkinStatus = "Realizado";
-                else if (someCheckedIn) checkinStatus = "Parcial";
+                const isCheckedIn = !!item.checked_in_at || item.status === 'utilizado';
+                const checkinStatusLabel = isCheckedIn ? "Utilizado" : "Não utilizado";
+                const eventTitle = item.sales?.events?.title || "—";
 
                 return (
                   <DataTableRow key={item.id}>
-                    <DataTableCell variant="primary">{formatName(item.buyer_name)}</DataTableCell>
-                    {!isMobile && <DataTableCell>{(item.events as any)?.title || "—"}</DataTableCell>}
+                    <DataTableCell variant="primary">{formatName(item.participant_name)}</DataTableCell>
+                    {!isMobile && <DataTableCell>{eventTitle}</DataTableCell>}
                     <DataTableCell variant="muted">
                       {new Date(item.created_at).toLocaleDateString("pt-BR")}
                     </DataTableCell>
                     <DataTableCell>
-                      <StatusPill tone={checkinStatus === "Realizado" ? "accent" : checkinStatus === "Parcial" ? "warning" : "neutral"}>
-                        {checkinStatus}
+                      <StatusPill tone={isCheckedIn ? "accent" : "neutral"}>
+                        {checkinStatusLabel}
                       </StatusPill>
                     </DataTableCell>
                   </DataTableRow>
