@@ -56,7 +56,10 @@ export function ManualSaleModal({
   }, [eventId]);
 
   const lots = eventWithBatches || [];
-  const lot = useMemo(() => lots.find((l: any) => l.id === lotId) || lots[0], [lots, lotId]);
+  const lot = useMemo(() => {
+    if (lots.length === 0) return null;
+    return lots.find((l: any) => l.id === lotId) || lots[0];
+  }, [lots, lotId]);
 
   useEffect(() => {
     if (eventsQuery.length > 0 && !eventId) {
