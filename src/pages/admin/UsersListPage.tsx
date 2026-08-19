@@ -28,7 +28,7 @@ export default function UsersListPage() {
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return users.filter((u) => {
+    return users.filter((u: any) => {
       return (
         !term ||
         (u.name || "").toLowerCase().includes(term) ||
@@ -92,7 +92,7 @@ export default function UsersListPage() {
               </tr>
             ) : pageRows.map((user) => (
               <DataTableRow key={user.id}>
-                <DataTableCell variant="primary">{formatName(user.name)}</DataTableCell>
+                <DataTableCell variant="primary">{user.full_name ? formatName(user.full_name) : (user.status === 'Convite pendente' ? 'Pendente' : '—')}</DataTableCell>
                 <DataTableCell>{user.email}</DataTableCell>
                 <DataTableCell>
                   <StatusPill tone={user.role === "admin" ? "accent" : "neutral"}>

@@ -31,7 +31,7 @@ export function useOrganizationUsers() {
       const userList = [
         ...(members || []).map((m: any) => ({
           id: m.user_id,
-          name: m.profiles?.full_name || "Sem nome",
+          full_name: m.profiles?.full_name || "Sem nome",
           email: m.profiles?.email || "Sem e-mail",
           role: m.role as "admin" | "colaborador" | "operador_checkin",
           invitedAt: m.created_at,
@@ -39,7 +39,7 @@ export function useOrganizationUsers() {
         })),
         ...(invites || []).map((i: any) => ({
           id: i.id,
-          name: "Convidado",
+          full_name: "Convidado",
           email: i.email,
           role: i.role as "admin" | "colaborador" | "operador_checkin",
           invitedAt: i.created_at,
