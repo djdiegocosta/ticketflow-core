@@ -30,11 +30,15 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: { name: string; email?: string; phone?: string; logo_url?: string }) => {
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      if (!roleRow) throw new Error("Não autorizado");
+
       const { error } = await supabase.rpc("update_organization_profile", {
         _name: vars.name,
-        _email: vars.email || null,
-        _phone: vars.phone || null,
-        _logo_url: vars.logo_url || null,
+        _contact_email: vars.email || "",
+        _contact_phone: vars.phone || "",
+        _logo_url: vars.logo_url || "",
+        _org_id: roleRow.organization_id
       });
       if (error) throw error;
     },
@@ -52,16 +56,13 @@ export function useMpConfig() {
   return useQuery({
     queryKey: ["mp_config"],
     queryFn: async () => {
-      const { data: roleRow } = await supabase
-        .from("user_roles")
-        .select("organization_id")
-        .limit(1)
-        .single();
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      const organization_id = roleRow?.organization_id || "";
         
       const { data, error } = await supabase
         .from("mp_config")
         .select("*")
-        .eq("organization_id", roleRow?.organization_id)
+        .eq("organization_id", organization_id)
         .maybeSingle();
         
       if (error) throw error;
@@ -83,12 +84,19 @@ export function useUpdateMpConfig() {
       access_token: string,
       webhook_secret?: string
     }) => {
-      const { error } = await supabase.rpc("upsert_mp_config", {
-        _environment: vars.environment,
-        _public_key: vars.public_key,
-        _access_token: vars.access_token,
-        _webhook_secret: vars.webhook_secret || null
-      });
+      // Temporariamente persistindo via tabela até existir RPC upsert_mp_config
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      if (!roleRow) throw new Error("Não autorizado");
+
+      const { error } = await supabase
+        .from("mp_config")
+        .upsert({
+          organization_id: roleRow.organization_id,
+          environment: vars.environment,
+          public_key: vars.public_key,
+          access_token_encrypted: vars.access_token,
+          webhook_secret_encrypted: vars.webhook_secret || null
+        }, { onConflict: 'organization_id,environment' });
       if (error) throw error;
     },
     onSuccess: () => {

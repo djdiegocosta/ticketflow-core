@@ -116,9 +116,11 @@ export function useUpdateCustomer() {
       const { error } = await supabase.rpc("update_customer", {
         _customer_id: vars.id,
         _full_name: vars.full_name,
-        _email: vars.email || null,
+        _email: vars.email || "",
         _whatsapp: vars.whatsapp,
-        _birth_date: vars.birth_date || null,
+        _data_nascimento: vars.birth_date || "",
+        _cidade: "",
+        _instagram: ""
       });
       if (error) throw error;
     },

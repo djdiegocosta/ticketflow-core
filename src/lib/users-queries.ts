@@ -33,7 +33,7 @@ export function useOrganizationUsers() {
           id: m.user_id,
           name: m.profiles?.full_name || "Sem nome",
           email: m.profiles?.email || "Sem e-mail",
-          role: m.role,
+          role: m.role as "admin" | "colaborador" | "operador_checkin",
           invitedAt: m.created_at,
           status: "Ativo" as const,
         })),
@@ -76,9 +76,10 @@ export function useRemoveUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: { user_id: string }) => {
-      const { error } = await supabase.rpc("remove_user_from_org", {
-        _user_id: vars.user_id,
-      });
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", vars.user_id);
       if (error) throw error;
     },
     onSuccess: () => {
