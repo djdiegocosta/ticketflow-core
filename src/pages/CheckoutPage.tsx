@@ -94,13 +94,28 @@ export default function CheckoutPage() {
     let timer: ReturnType<typeof setInterval>;
     if (step === 'payment') {
       timer = setInterval(() => {
-        setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     }
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [step]);
+
+  useEffect(() => {
+    if (countdown === 0 && step === 'payment') {
+      toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
+      setStep('info');
+      setCurrentSaleId(null);
+      setCurrentSaleCode(null);
+    }
+  }, [countdown, step]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -109,7 +124,7 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (data: CheckoutFormValues) => {
-    if (!event || !batch) return;
+    if (!event || !batch || isCreatingSale) return;
     
     setIsCreatingSale(true);
     try {
@@ -123,14 +138,13 @@ export default function CheckoutPage() {
         participant_names: data.participants.map(p => p.name)
       });
 
-      // A RPC deve retornar o ID e o código da venda. Ajustando conforme provável retorno da RPC
-      // Se a RPC retornar apenas ID, precisaremos buscar o código.
-      // Assumindo que a RPC retorna { id, sale_code }
       const resultArr = saleResult as any[];
-      const { sale_id: id, sale_code } = resultArr[0];
+      const { sale_id: id, sale_code, total_amount } = resultArr[0];
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
       
+      // Reset countdown to 30 minutes (1800 seconds)
+      setCountdown(1800);
       setStep('payment');
       window.scrollTo(0, 0);
     } catch (err: any) {
@@ -141,7 +155,7 @@ export default function CheckoutPage() {
   };
 
   const simulatePayment = async () => {
-    if (!currentSaleId || !currentSaleCode || !event) return;
+    if (!currentSaleId || !currentSaleCode || !event || isConfirmingPayment) return;
 
     setIsConfirmingPayment(true);
     try {
@@ -281,9 +295,9 @@ export default function CheckoutPage() {
             <Button 
               type="submit"
               disabled={isCreatingSale}
-              className="mt-4 h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)]"
+              className="mt-4 h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Ir para o pagamento"}
+              {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Gerar Pix"}
             </Button>
           </form>
         )}
@@ -307,7 +321,8 @@ export default function CheckoutPage() {
               <div className="flex w-full flex-col gap-3">
                 <Button 
                   variant="outline" 
-                  className="flex h-12 w-full items-center justify-between border-[var(--border-default)] px-4"
+                  disabled={countdown === 0}
+                  className="flex h-12 w-full items-center justify-between border-[var(--border-default)] px-4 disabled:opacity-50"
                   onClick={copyPix}
                 >
                   <span className="truncate pr-4 text-xs font-mono text-[var(--text-secondary)]">{pixKey.substring(0, 30)}...</span>
@@ -322,8 +337,8 @@ export default function CheckoutPage() {
                 <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Modo de Teste</p>
                 <Button 
                   onClick={simulatePayment}
-                  disabled={isConfirmingPayment}
-                  className="w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] flex items-center justify-center gap-2"
+                  disabled={isConfirmingPayment || countdown === 0}
+                  className="w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isConfirmingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : (
                     <>

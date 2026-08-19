@@ -220,11 +220,14 @@ export function useCreatePendingSale() {
     quantity: number;
     participant_names: string[];
   }) => {
+    // Normalizar WhatsApp
+    const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
+
     const { data, error } = await supabase.rpc("create_pending_sale", {
       _event_id: vars.event_id,
       _batch_id: vars.batch_id,
       _buyer_name: vars.buyer_name,
-      _buyer_whatsapp: vars.buyer_whatsapp,
+      _buyer_whatsapp: cleanWhatsapp,
       _buyer_email: vars.buyer_email || "",
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
@@ -246,10 +249,13 @@ export function useTrackAbandonment() {
     buyer_name: string;
     buyer_whatsapp: string;
   }) => {
+    // Normalizar WhatsApp para 11 dígitos antes de enviar para garantir consistência no rate limiting/on conflict
+    const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
+    
     const { error } = await supabase.rpc("track_checkout_abandonment", {
       _event_id: vars.event_id,
       _buyer_name: vars.buyer_name,
-      _buyer_whatsapp: vars.buyer_whatsapp,
+      _buyer_whatsapp: cleanWhatsapp,
     });
     if (error) console.error("Erro ao registrar abandono:", error);
   };
