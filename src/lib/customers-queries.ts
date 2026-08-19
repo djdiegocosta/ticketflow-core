@@ -114,7 +114,7 @@ export function useUpdateCustomer() {
   return useMutation({
     mutationFn: async (vars: { id: string; full_name: string; email?: string; whatsapp: string; birth_date?: string }) => {
       const { error } = await supabase.rpc("update_customer", {
-        _customer_id: vars.id,
+        _customer_id: vars.id || "00000000-0000-0000-0000-000000000000",
         _full_name: vars.full_name,
         _email: vars.email || "",
         _whatsapp: vars.whatsapp,
