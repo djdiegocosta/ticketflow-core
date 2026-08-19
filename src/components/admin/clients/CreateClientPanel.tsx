@@ -84,13 +84,11 @@ export function CreateClientPanel({
     // NOTA: Se a RPC exigir um UUID, precisamos de outra RPC create_customer.
     // Assumindo que update_customer faz upsert ou lidamos com o erro.
     updateMutation.mutate({
-      id: "", // Identificador para novo cliente
+      id: "", 
       full_name: formatName(name),
       whatsapp: onlyDigits(whatsapp),
-      email: email || undefined,
-      birth_date: birthDate || undefined,
-      // cidade e instagram não estão no objeto vars da mutation em customers-queries.ts v1, 
-      // mas a RPC no handlers já suporta. Precisamos atualizar a mutation lá se necessário.
+      email: email || "",
+      birth_date: birthDate || "",
     }, {
       onSuccess: () => {
         onSave();
