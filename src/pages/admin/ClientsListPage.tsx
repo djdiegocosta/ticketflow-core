@@ -16,9 +16,8 @@ import { cn } from "@/lib/utils";
 import {
   getInitials,
   whatsappLink,
-  type Client,
 } from "@/lib/clients-data";
-const MOCK_CLIENTS: any[] = [];
+import { useCustomers, useDeleteCustomer } from "@/lib/customers-queries";
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
 import {
   DataTable,
@@ -95,20 +94,21 @@ function CopyWhatsapp({ value }: { value: string }) {
 
 export function ClientsListPage() {
   const navigate = useNavigate();
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
+  const { data: clients = [], isLoading } = useCustomers();
+  const deleteMutation = useDeleteCustomer();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("totalTickets");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
-  const [toDelete, setToDelete] = useState<Client | null>(null);
+  const [toDelete, setToDelete] = useState<any | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const totalClients = clients.length;
   const averageAge =
     totalClients === 0
       ? 0
-      : Math.round(clients.reduce((sum, c) => sum + c.age, 0) / totalClients);
+      : Math.round(clients.reduce((sum, c) => sum + (c.age || 0), 0) / totalClients);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -116,16 +116,16 @@ export function ClientsListPage() {
     const list = clients.filter((c) => {
       if (!term) return true;
       return (
-        c.name.toLowerCase().includes(term) ||
+        c.full_name.toLowerCase().includes(term) ||
         (digits.length > 0 && c.whatsapp.replace(/\D/g, "").includes(digits))
       );
     });
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
-      if (sortKey === "name") return a.name.localeCompare(b.name, "pt-BR") * dir;
+      if (sortKey === "name") return a.full_name.localeCompare(b.full_name, "pt-BR") * dir;
       if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt")
-        return (parseDate(a[sortKey]) - parseDate(b[sortKey])) * dir;
-      return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
+        return (new Date(a[sortKey] || 0).getTime() - new Date(b[sortKey] || 0).getTime()) * dir;
+      return (((a as any)[sortKey] as number) - ((b as any)[sortKey] as number)) * dir;
     });
   }, [clients, search, sortKey, sortDir]);
 
@@ -146,9 +146,9 @@ export function ClientsListPage() {
 
   const confirmDelete = () => {
     if (!toDelete) return;
-    setClients((prev) => prev.filter((c) => c.id !== toDelete.id));
-    toast.success(`${toDelete.name} removido`);
-    setToDelete(null);
+    deleteMutation.mutate(toDelete.id, {
+      onSuccess: () => setToDelete(null)
+    });
   };
 
   const columns: { key: SortKey | null; label: string; className?: string }[] = [
@@ -249,7 +249,7 @@ export function ClientsListPage() {
                 key={client.id}
                 className={cn(
                   "cursor-pointer",
-                  client.totalTickets >= 10 && "border-l-2 border-l-accent",
+                  client.total_tickets >= 10 && "border-l-2 border-l-accent",
                 )}
               >
                 <DataTableCell
@@ -258,7 +258,7 @@ export function ClientsListPage() {
                     navigate({ to: "/admin/clientes/$id", params: { id: client.id } })
                   }
                 >
-                  {client.name}
+                  {client.full_name}
                 </DataTableCell>
                 <DataTableCell>
                   <span className="flex items-center gap-1">
@@ -267,16 +267,16 @@ export function ClientsListPage() {
                   </span>
                 </DataTableCell>
                 <DataTableCell>{client.age} anos</DataTableCell>
-                <DataTableCell>{client.totalEvents}</DataTableCell>
-                <DataTableCell variant="strong">{client.totalTickets}</DataTableCell>
-                <DataTableCell>{client.registeredAt}</DataTableCell>
-                <DataTableCell>{client.lastEvent}</DataTableCell>
+                <DataTableCell>{client.total_events}</DataTableCell>
+                <DataTableCell variant="strong">{client.total_tickets}</DataTableCell>
+                <DataTableCell>{new Date(client.created_at).toLocaleDateString('pt-BR')}</DataTableCell>
+                <DataTableCell>{client.last_event_name || "—"}</DataTableCell>
                 <DataTableCell>
                   <div className="flex items-center gap-1">
                     <Link
                       to="/admin/clientes/$id"
                       params={{ id: client.id }}
-                      aria-label={`Visualizar ${client.name}`}
+                      aria-label={`Visualizar ${client.full_name}`}
                       title="Visualizar / editar"
                       className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                     >
@@ -286,7 +286,7 @@ export function ClientsListPage() {
                       href={whatsappLink(client.whatsapp)}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label={`WhatsApp de ${client.name}`}
+                      aria-label={`WhatsApp de ${client.full_name}`}
                       title="WhatsApp"
                       className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
                     >
@@ -295,7 +295,7 @@ export function ClientsListPage() {
                     <button
                       type="button"
                       onClick={() => setToDelete(client)}
-                      aria-label={`Excluir ${client.name}`}
+                      aria-label={`Excluir ${client.full_name}`}
                       title="Excluir"
                       className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     >
@@ -308,7 +308,7 @@ export function ClientsListPage() {
             {pageRows.length === 0 && (
               <tr>
                 <DataTableCell colSpan={8} className="py-10 text-center text-body">
-                  Nenhum cliente encontrado.
+                  {isLoading ? "Carregando clientes..." : "Nenhum cliente encontrado."}
                 </DataTableCell>
               </tr>
             )}
@@ -344,7 +344,7 @@ export function ClientsListPage() {
           >
             <h2 className="text-heading-2 text-text-primary">Excluir cliente</h2>
             <p className="mt-2 text-body text-text-secondary">
-              Tem certeza que deseja excluir <strong className="text-text-primary">{toDelete.name}</strong>?
+              Tem certeza que deseja excluir <strong className="text-text-primary">{toDelete.full_name}</strong>?
               Esta ação não pode ser desfeita.
             </p>
             <div className="mt-5 flex justify-end gap-2">
@@ -357,10 +357,11 @@ export function ClientsListPage() {
               </button>
               <button
                 type="button"
+                disabled={deleteMutation.isPending}
                 onClick={confirmDelete}
-                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90"
+                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                Excluir
+                {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
               </button>
             </div>
           </div>
@@ -370,8 +371,9 @@ export function ClientsListPage() {
       <CreateClientPanel
         open={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
-        onSave={(newClient) => {
-          setClients((prev) => [newClient, ...prev]);
+        onSave={() => {
+          // A lista será atualizada automaticamente pelo React Query devido à invalidação no onSuccess
+          setIsPanelOpen(false);
         }}
       />
     </div>
