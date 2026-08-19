@@ -58,7 +58,7 @@ export function useInviteUser() {
     mutationFn: async (vars: { email: string; role: string }) => {
       const { error } = await supabase.rpc("invite_user", {
         _email: vars.email,
-        _role: vars.role.toLowerCase(),
+        _role: vars.role.toLowerCase() as "admin" | "colaborador" | "operador_checkin",
       });
       if (error) throw error;
     },
