@@ -20,7 +20,7 @@ export function useCurrentCustomer() {
           *,
           points_ledger (*)
         `)
-        .eq("user_id", user.id)
+        .eq("customer_id", customer.id)
         .maybeSingle();
 
       if (error) throw error;
@@ -63,7 +63,7 @@ export function useCustomerSales() {
             checked_in_at
           )
         `)
-        .eq("user_id", user.id)
+        .eq("customer_id", customer.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -80,6 +80,7 @@ export function useCustomerSales() {
 
       return data;
     },
+    enabled: !!customer?.id
   });
 }
 
