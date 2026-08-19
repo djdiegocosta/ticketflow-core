@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { formatName } from "@/lib/form-format";
-import { useOrganizationUsers, useRemoveUserFromOrg } from "@/lib/users-queries";
+import { useOrganizationUsers, useRemoveUser } from "@/lib/users-queries";
 
 import {
   DataTable,
@@ -19,7 +19,7 @@ import { CreateUserPanel } from "@/components/admin/CreateUserPanel";
 
 export default function UsersListPage() {
   const { data: users = [], isLoading } = useOrganizationUsers();
-  const removeMutation = useRemoveUserFromOrg();
+  const removeMutation = useRemoveUser();
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
@@ -31,7 +31,7 @@ export default function UsersListPage() {
     return users.filter((u) => {
       return (
         !term ||
-        (u.full_name || "").toLowerCase().includes(term) ||
+        (u.name || "").toLowerCase().includes(term) ||
         (u.email || "").toLowerCase().includes(term)
       );
     });
@@ -48,7 +48,7 @@ export default function UsersListPage() {
 
   const handleDelete = () => {
     if (!userToDelete) return;
-    removeMutation.mutate(userToDelete.id, {
+    removeMutation.mutate({ user_id: userToDelete.id }, {
       onSuccess: () => {
         setUserToDelete(null);
       }
@@ -92,14 +92,14 @@ export default function UsersListPage() {
               </tr>
             ) : pageRows.map((user) => (
               <DataTableRow key={user.id}>
-                <DataTableCell variant="primary">{user.full_name ? formatName(user.full_name) : (user.status === 'Convite pendente' ? 'Pendente' : '—')}</DataTableCell>
+                <DataTableCell variant="primary">{formatName(user.name)}</DataTableCell>
                 <DataTableCell>{user.email}</DataTableCell>
                 <DataTableCell>
                   <StatusPill tone={user.role === "admin" ? "accent" : "neutral"}>
                     {user.role}
                   </StatusPill>
                 </DataTableCell>
-                <DataTableCell>{user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '—'}</DataTableCell>
+                <DataTableCell>{user.invitedAt ? new Date(user.invitedAt).toLocaleDateString('pt-BR') : '—'}</DataTableCell>
                 <DataTableCell>
                   <StatusPill tone={user.status === "Ativo" ? "accent" : "neutral"}>
                     {user.status}
@@ -111,7 +111,7 @@ export default function UsersListPage() {
                     onClick={() => setUserToDelete(user)}
                     className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     title="Remover usuário"
-                    aria-label={`Remover ${user.full_name || user.email}`}
+                    aria-label={`Remover ${user.name}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -157,7 +157,7 @@ export default function UsersListPage() {
               <h3 className="text-heading-2">Remover usuário?</h3>
             </div>
             <p className="text-body text-text-secondary">
-              O usuário <strong>{userToDelete.full_name || userToDelete.email}</strong> perderá o acesso ao sistema imediatamente.
+              O usuário <strong>{userToDelete.name}</strong> perderá o acesso ao sistema imediatamente.
             </p>
             <div className="mt-8 flex justify-end gap-3">
               <button
