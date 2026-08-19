@@ -17,15 +17,26 @@ export function PrimaryActionButton({
   className,
   withIcon = true,
   type = "button",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   className?: string;
   withIcon?: boolean;
   type?: "button" | "submit";
+  disabled?: boolean;
 }) {
   return (
-    <button type={type} onClick={onClick} className={cn(primaryActionClass, className)}>
+    <button 
+      type={type} 
+      onClick={onClick} 
+      disabled={disabled}
+      className={cn(
+        primaryActionClass, 
+        disabled && "opacity-50 cursor-not-allowed grayscale",
+        className
+      )}
+    >
       {withIcon && <Plus className="h-4 w-4" />}
       {children}
     </button>
