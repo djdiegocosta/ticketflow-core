@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
-import { useMpConfig, useUpsertMpConfig } from "@/lib/settings-queries";
+import { useMpConfig, useUpdateMpConfig } from "@/lib/settings-queries";
 
 const steps = [
   { id: 1, label: "Ambiente", icon: Globe2 },
@@ -62,7 +62,7 @@ function Notice({ children, tone = "info" }: { children: React.ReactNode; tone?:
 
 export function MercadoPagoWizardPage() {
   const { data: currentConfig, isLoading } = useMpConfig();
-  const upsertMutation = useUpsertMpConfig();
+  const upsertMutation = useUpdateMpConfig();
   
   const [current, setCurrent] = useState(1);
   const [validated, setValidated] = useState<number[]>([]);
