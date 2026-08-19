@@ -66,13 +66,18 @@ const MOCK_SALES: Sale[] = [
 ];
 
 export function PublicDataProvider({ children }: { children: ReactNode }) {
-  const [sales, setSales] = useState<Sale[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('ticketflow_public_sales');
-      return saved ? JSON.parse(saved) : MOCK_SALES;
+  const [sales, setSales] = useState<Sale[]>(MOCK_SALES);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ticketflow_public_sales');
+    if (saved) {
+      try {
+        setSales(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved sales", e);
+      }
     }
-    return MOCK_SALES;
-  });
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('ticketflow_public_sales', JSON.stringify(sales));
