@@ -6,13 +6,13 @@ import { homeRouteForRole, type GuardRole } from "@/lib/auth-guard";
 export const Route = createFileRoute("/login")({
   ssr: false,
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
 
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", data.user.id)
+      .eq("user_id", session.user.id)
       .limit(1)
       .maybeSingle();
 
