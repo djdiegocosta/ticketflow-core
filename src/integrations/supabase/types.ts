@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkin_log: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          organization_id: string
+          participant_name: string | null
+          performed_by: string | null
+          result: string
+          ticket_code: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          organization_id: string
+          participant_name?: string | null
+          performed_by?: string | null
+          result: string
+          ticket_code: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          organization_id?: string
+          participant_name?: string | null
+          performed_by?: string | null
+          result?: string
+          ticket_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkin_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkin_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkout_abandonments: {
         Row: {
           abandonment_type: Database["public"]["Enums"]["abandonment_type"]
