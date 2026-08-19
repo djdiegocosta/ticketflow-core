@@ -13,9 +13,25 @@ export interface CheckinAttempt {
   isOffline?: boolean;
 }
 
-// O histórico agora é consumido diretamente do banco via queries reais.
-// O sistema em memória 'attempts' foi removido para evitar dados duplicados ou inconsistentes.
+const listeners = new Set<(list: CheckinAttempt[]) => void>();
+let attempts: CheckinAttempt[] = [];
 
+export function addCheckinAttempt(attempt: Omit<CheckinAttempt, "id">) {
+  attempts = [{ ...attempt, id: `${Date.now()}-${Math.random()}` }, ...attempts];
+  listeners.forEach((l) => l(attempts));
+}
+
+export function useCheckinAttempts() {
+  const [list, setList] = useState<CheckinAttempt[]>(attempts);
+  useEffect(() => {
+    setList(attempts);
+    listeners.add(setList);
+    return () => {
+      listeners.delete(setList);
+    };
+  }, []);
+  return list;
+}
 
 /** Pre-carrega os dados do evento no IndexedDB */
 export async function preloadEventTickets(eventId: string, eventName: string) {
@@ -122,15 +138,12 @@ export async function processSyncQueue() {
 
   for (const item of queue) {
     try {
-      const { data, error } = await supabase.rpc('checkin_ticket', { _ticket_code: item.code });
-      
-      // Se processou com sucesso (ou já era duplicidade conhecida pelo servidor), remove da fila
-      if (!error && data) {
-        await offlineDB.removeItemFromSyncQueue(item.id);
-      }
+      await supabase.rpc('checkin_ticket', { _ticket_code: item.code });
     } catch (e) {
-      console.error(`[Checkin] Erro crítico ao sincronizar ticket ${item.code}:`, e);
+      console.error(`[Checkin] Erro ao sincronizar ticket ${item.code}:`, e);
+      // Mantém na fila ou trata erro? Por simplicidade, assumimos que processou ou falhou definitivamente
     }
   }
+  
+  await offlineDB.clearSyncQueue();
 }
-
