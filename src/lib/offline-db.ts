@@ -116,16 +116,17 @@ export class OfflineDB {
     });
   }
 
-  async clearSyncQueue(): Promise<void> {
+  async removeItemFromSyncQueue(id: string): Promise<void> {
     const db = await this.init();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['checkin_sync_queue'], 'readwrite');
       const store = transaction.objectStore('checkin_sync_queue');
-      store.clear();
+      store.delete(id);
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
     });
   }
+
 
   async saveMyTickets(tickets: any[]): Promise<void> {
     const db = await this.init();
