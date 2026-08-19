@@ -54,21 +54,21 @@ export default function ConfirmationPage() {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Evento</span>
-              <span className="font-semibold text-[var(--text-primary)] text-right">{(sale.events as any)?.title}</span>
+              <span className="font-semibold text-[var(--text-primary)] text-right">{(sale as any).events?.title}</span>
             </div>
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Data</span>
               <span className="font-semibold text-[var(--text-primary)]">
-                {sale.events?.event_date ? new Date(sale.events.event_date).toLocaleDateString('pt-BR') : '—'}
+                {(sale as any).events?.event_date ? new Date((sale as any).events.event_date).toLocaleDateString('pt-BR') : '—'}
               </span>
             </div>
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Qtd. Ingressos</span>
-              <span className="font-semibold text-[var(--text-primary)]">{sale.quantity}</span>
+              <span className="font-semibold text-[var(--text-primary)]">{(sale as any).quantity}</span>
             </div>
             <div className="flex justify-between border-t border-[var(--border-subtle)] pt-2 text-heading-3">
               <span className="text-[var(--text-secondary)]">Total pago</span>
-              <span className="font-bold text-[var(--accent-text)]">R$ {Number(sale.total_amount || 0).toFixed(2)}</span>
+              <span className="font-bold text-[var(--accent-text)]">R$ {Number((sale as any).total_amount || 0).toFixed(2)}</span>
             </div>
           </div>
         </div>
