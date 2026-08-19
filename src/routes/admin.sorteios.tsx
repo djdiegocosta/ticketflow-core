@@ -2,13 +2,9 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Placeholder } from "@/components/Placeholder";
 
 export const Route = createFileRoute("/admin/sorteios")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) throw redirect({ to: '/login' });
-    
-    const data = JSON.parse(auth);
-    if (data.userRole === 'colaborador') {
+  beforeLoad: ({ context }) => {
+    const ctx = (context as any).auth;
+    if (ctx?.role === 'colaborador') {
       throw redirect({ to: '/admin/vendas' });
     }
   },
