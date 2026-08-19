@@ -1033,6 +1033,7 @@ export type Database = {
           participant_id: string
         }[]
       }
+      expire_pending_sales: { Args: never; Returns: number }
       generate_short_code: { Args: never; Returns: string }
       get_default_organization: { Args: never; Returns: string }
       get_sale_by_code: {
