@@ -3,12 +3,12 @@ import { AdminDashboard } from "@/pages/AdminDashboard";
 
 export const Route = createFileRoute("/admin/")({
   beforeLoad: async ({ context }) => {
-    // Rely on the parent route /admin which already calls requireSession()
-    // but just to be safe and specific for this index:
-    if (typeof window === 'undefined') return;
-    
-    // Cleanup legacy mock logic that used window.localStorage directly
-    // and was causing hydration/state mismatches
+    // A rota pai /admin já valida sessão e papel básico.
+    // Aqui apenas tratamos o redirecionamento específico do colaborador.
+    const ctx = (context as any).auth;
+    if (ctx?.role === 'colaborador') {
+      throw redirect({ to: '/admin/vendas' });
+    }
   },
   head: () => ({
     meta: [
