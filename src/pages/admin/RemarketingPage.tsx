@@ -408,9 +408,9 @@ export function RemarketingPage() {
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
-              <StatusPill tone={typeTone[preview.type]}>{preview.type}</StatusPill>
+              <StatusPill tone={typeTone[preview.type as AbandonType]}>{preview.type}</StatusPill>
               <p className="whitespace-pre-wrap border border-[var(--border-subtle)] bg-[var(--bg-tertiary)] p-4 text-body text-[var(--text-primary)]">
-                {buildMessage(templates[preview.type], {
+                {buildMessage(templates[preview.type as AbandonType], {
                   name: preview.name,
                   event: preview.event,
                   lot: preview.lot,
