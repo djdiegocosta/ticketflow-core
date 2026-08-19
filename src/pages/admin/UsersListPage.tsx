@@ -111,7 +111,7 @@ export default function UsersListPage() {
                     onClick={() => setUserToDelete(user)}
                     className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     title="Remover usuário"
-                    aria-label={`Remover ${user.name}`}
+                    aria-label={`Remover ${user.full_name || user.email}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -157,7 +157,7 @@ export default function UsersListPage() {
               <h3 className="text-heading-2">Remover usuário?</h3>
             </div>
             <p className="text-body text-text-secondary">
-              O usuário <strong>{userToDelete.name}</strong> perderá o acesso ao sistema imediatamente.
+              O usuário <strong>{userToDelete.full_name || userToDelete.email}</strong> perderá o acesso ao sistema imediatamente.
             </p>
             <div className="mt-8 flex justify-end gap-3">
               <button
