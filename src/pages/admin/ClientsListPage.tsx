@@ -123,8 +123,10 @@ export function ClientsListPage() {
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "name") return a.full_name.localeCompare(b.full_name, "pt-BR") * dir;
-      if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt")
-        return (new Date(a[sortKey] || 0).getTime() - new Date(b[sortKey] || 0).getTime()) * dir;
+      if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt") {
+        const key = sortKey === "registeredAt" ? "created_at" : "last_purchase_at";
+        return (new Date((a as any)[key] || 0).getTime() - new Date((b as any)[key] || 0).getTime()) * dir;
+      }
       return (((a as any)[sortKey] as number) - ((b as any)[sortKey] as number)) * dir;
     });
   }, [clients, search, sortKey, sortDir]);
