@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  CHECKIN_EVENTS,
   CheckinStatus,
   addCheckinAttempt,
   resolveCheckin,
   preloadEventTickets,
+  processSyncQueue,
 } from "@/lib/checkin-data";
+import { useEvents } from "@/lib/events-queries";
 import { offlineDB } from "@/lib/offline-db";
 
 interface OverlayState {
@@ -24,7 +25,8 @@ interface OverlayState {
 export function CheckinPage() {
   const { userRole, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedEvent, setSelectedEvent] = useState(CHECKIN_EVENTS[0]!);
+  const { data: events = [] } = useEvents();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
@@ -32,6 +34,15 @@ export function CheckinPage() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
+
+  const selectedEvent = events.find(e => e.id === selectedEventId) || events[0];
+
+  useEffect(() => {
+    if (events.length > 0 && !selectedEventId) {
+      const firstEvent = events[0];
+      if (firstEvent) setSelectedEventId(firstEvent.id);
+    }
+  }, [events, selectedEventId]);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const pausedRef = useRef(false);
@@ -45,7 +56,7 @@ export function CheckinPage() {
       navigate({ to: "/login", replace: true });
       return;
     }
-    if (!(userRole === "operador_checkin" || userRole === "admin" || userRole === "colaborador")) {
+    if (userRole && !(userRole === "operador_checkin" || userRole === "admin" || userRole === "colaborador")) {
       navigate({ to: "/admin", replace: true });
     }
   }, [isAuthenticated, userRole, navigate]);
@@ -61,8 +72,7 @@ export function CheckinPage() {
         if (queue.length > 0) {
           toast.promise(
             (async () => {
-              await new Promise(resolve => setTimeout(resolve, 1500)); // Simula processamento
-              await offlineDB.clearSyncQueue();
+              await processSyncQueue();
               setPendingSyncCount(0);
             })(),
             {
@@ -83,9 +93,9 @@ export function CheckinPage() {
       const queue = await offlineDB.getSyncQueue();
       setPendingSyncCount(queue.length);
       
-      if (navigator.onLine) {
-        const count = await preloadEventTickets(selectedEvent.name);
-        console.log(`[Checkin] ${count} ingressos pré-carregados para ${selectedEvent.name}`);
+      if (navigator.onLine && selectedEvent) {
+        const count = await preloadEventTickets(selectedEvent.id, selectedEvent.title);
+        console.log(`[Checkin] ${count} ingressos reais pré-carregados para ${selectedEvent.title}`);
       }
     })();
 
@@ -93,7 +103,7 @@ export function CheckinPage() {
       window.removeEventListener("online", handleConnectivityChange);
       window.removeEventListener("offline", handleConnectivityChange);
     };
-  }, [selectedEvent.name]);
+  }, [selectedEvent?.title]);
 
   // Wake Lock
   useEffect(() => {
@@ -139,10 +149,13 @@ export function CheckinPage() {
   }, []);
 
   const processCheckin = useCallback(async (code: string) => {
-    if (pausedRef.current || !code.trim()) return;
+    if (pausedRef.current || !code.trim() || !selectedEvent) return;
     pausedRef.current = true;
 
-    const result = await resolveCheckin(code, eventRef.current.name);
+    const result = await resolveCheckin(code, selectedEvent.id, selectedEvent.title);
+    
+    // addCheckinAttempt é apenas para o listener do useCheckinAttempts,
+    // o histórico real agora vem do Supabase via CheckinHistoryPage
     addCheckinAttempt({
       name: result.name,
       eventName: result.eventName,
@@ -271,22 +284,20 @@ export function CheckinPage() {
       {/* Header POSICIONADO NO TOPO */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 bg-black/50 px-4 backdrop-blur-sm">
         <div className="flex items-center gap-3 overflow-hidden">
-          {CHECKIN_EVENTS.length > 1 ? (
+          {events.length > 1 ? (
             <select
               className="max-w-[150px] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
-              value={selectedEvent.id}
-              onChange={(e) =>
-                setSelectedEvent(CHECKIN_EVENTS.find((ev) => e.target.value === ev.id) || CHECKIN_EVENTS[0]!)
-              }
+              value={selectedEventId || ""}
+              onChange={(e) => setSelectedEventId(e.target.value)}
             >
-              {CHECKIN_EVENTS.map((ev) => (
+              {events.map((ev) => (
                 <option key={ev.id} value={ev.id} className="text-black">
-                  {ev.name}
+                  {ev.title}
                 </option>
               ))}
             </select>
           ) : (
-            <span className="truncate text-small font-medium text-white/80">{selectedEvent.name}</span>
+            <span className="truncate text-small font-medium text-white/80">{selectedEvent?.title}</span>
           )}
 
           {/* Status Offline/Sync */}

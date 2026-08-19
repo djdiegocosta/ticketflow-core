@@ -6,9 +6,15 @@ import {
   Trash2,
   TrendingDown,
   TrendingUp,
+  Save,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { SidePanel } from "@/components/admin/SidePanel";
 import { filterFieldClass } from "@/components/admin/FilterBar";
 import {
   DataTable,
@@ -232,6 +238,10 @@ const SCENARIOS = [
 /* -------------------------------------------------------------------------- */
 
 export function SimuladorPage() {
+  const { organizationId } = useAuth();
+  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
+  const [history, setHistory] = React.useState<any[]>([]);
+  const [isSaving, setIsSaving] = React.useState(false);
   const [eventName, setEventName] = React.useState("");
   const [capacity, setCapacity] = React.useState(400);
   const [lots, setLots] = React.useState<Lot[]>(INITIAL_LOTS);
@@ -329,9 +339,115 @@ export function SimuladorPage() {
   const occupancyPct = capacity > 0 ? Math.min(100, (totalSold / capacity) * 100) : 0;
   const isProfit = result >= 0;
 
+  const handleSave = async () => {
+    if (!organizationId) return;
+    if (!eventName.trim()) {
+      toast.error("Dê um nome ao evento para salvar a simulação");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const input_data = {
+        capacity,
+        lots,
+        otherRevenue,
+        fixedCosts,
+        variableCosts,
+        artists,
+        security: { qty: securityQty, unit: securityUnit },
+        staff: { qty: staffQty, unit: staffUnit },
+        bar: {
+          hasBar,
+          courtesies: barCourtesies,
+          avgSpend: barAvgSpend,
+          productsCost: barProductsCost,
+        }
+      };
+
+      const result_summary = {
+        totalRevenue,
+        totalCosts,
+        result,
+        margin,
+        breakEvenPct
+      };
+
+      const { error } = await supabase.from('simulations').insert({
+        organization_id: organizationId,
+        event_name: eventName,
+        input_data,
+        result_summary
+      });
+
+      if (error) throw error;
+      toast.success("Simulação salva com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar simulação:", error);
+      toast.error("Erro ao salvar simulação");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const fetchHistory = async () => {
+    if (!organizationId) return;
+    try {
+      const { data, error } = await supabase
+        .from('simulations')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setHistory(data || []);
+      setIsHistoryOpen(true);
+    } catch (error) {
+      toast.error("Erro ao buscar histórico");
+    }
+  };
+
+  const loadSimulation = (sim: any) => {
+    const data = sim.input_data as any;
+    setEventName(sim.event_name);
+    setCapacity(data.capacity || 0);
+    setLots(data.lots || []);
+    setOtherRevenue(data.otherRevenue || emptyAmounts(OTHER_REVENUE_FIELDS));
+    setFixedCosts(data.fixedCosts || emptyAmounts(FIXED_COST_FIELDS));
+    setVariableCosts(data.variableCosts || emptyAmounts(VARIABLE_COST_FIELDS));
+    setArtists(data.artists || []);
+    setSecurityQty(data.security?.qty || 0);
+    setSecurityUnit(data.security?.unit || 0);
+    setStaffQty(data.staff?.qty || 0);
+    setStaffUnit(data.staff?.unit || 0);
+    setHasBar(data.bar?.hasBar || false);
+    setBarCourtesies(data.bar?.courtesies || 0);
+    setBarAvgSpend(data.bar?.avgSpend || 0);
+    setBarProductsCost(data.bar?.productsCost || 0);
+    setIsHistoryOpen(false);
+    toast.success("Simulação carregada!");
+  };
+
   return (
     <div className="animate-in space-y-10 fade-in slide-in-from-bottom-4 duration-500">
-      <ListPageHeader title="Simulador de Evento" />
+      <ListPageHeader 
+        title="Simulador de Evento" 
+        action={
+          <div className="flex gap-3">
+            <button
+              onClick={fetchHistory}
+              className="flex items-center gap-2 border border-border-subtle bg-bg-secondary px-4 py-2.5 text-body font-medium text-text-primary transition-colors hover:bg-bg-tertiary"
+            >
+              <History className="h-4 w-4" />
+              Histórico
+            </button>
+            <PrimaryActionButton onClick={handleSave} disabled={isSaving}>
+              <Save className="mr-2 h-4 w-4" />
+              {isSaving ? "Salvando..." : "Salvar simulação"}
+            </PrimaryActionButton>
+          </div>
+        }
+      />
 
       {/* Etapa 1 */}
       <StepSection step={1} title="Dados gerais">
@@ -929,6 +1045,45 @@ export function SimuladorPage() {
       <p className="border-t border-border-subtle pt-4 text-small text-text-disabled">
         Esta ferramenta trabalha apenas com projeções — não usa nem altera dados reais de vendas.
       </p>
+
+      <SidePanel
+        title="Histórico de Simulações"
+        open={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      >
+        <div className="space-y-4">
+          {history.length === 0 ? (
+            <div className="py-8 text-center text-small text-text-secondary">
+              Nenhuma simulação salva.
+            </div>
+          ) : (
+            history.map((sim) => (
+              <div
+                key={sim.id}
+                onClick={() => loadSimulation(sim)}
+                className="cursor-pointer border border-border-subtle bg-bg-secondary p-4 transition-colors hover:border-accent"
+              >
+                <div className="mb-2 flex items-start justify-between">
+                  <h3 className="text-heading-3 text-text-primary">{sim.event_name}</h3>
+                  <span className="text-micro text-text-disabled">
+                    {new Date(sim.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-small">
+                  <span className="text-text-secondary">
+                    Resultado: <span className={sim.result_summary.result >= 0 ? "text-success" : "text-error"}>
+                      {formatCurrency(sim.result_summary.result)}
+                    </span>
+                  </span>
+                  <span className="text-text-disabled">
+                    {Math.round(sim.result_summary.breakEvenPct)}% break-even
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </SidePanel>
     </div>
   );
 }
