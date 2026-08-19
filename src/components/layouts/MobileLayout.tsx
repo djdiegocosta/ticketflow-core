@@ -45,7 +45,7 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
               <span className="text-[10px]">Início</span>
             </Link>
             <Link 
-              to="/cliente/ingressos" 
+              to="/cliente/ingressos" as any 
               className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
               activeProps={{ className: "text-[var(--accent)]" }}
             >
@@ -53,7 +53,7 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
               <span className="text-[10px]">Ingressos</span>
             </Link>
             <Link 
-              to="/cliente/pontos" 
+              to="/cliente/pontos" as any 
               className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
               activeProps={{ className: "text-[var(--accent)]" }}
             >
@@ -61,7 +61,7 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
               <span className="text-[10px]">Pontos</span>
             </Link>
             <Link 
-              to="/cliente/perfil" 
+              to="/cliente/perfil" as any 
               className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
               activeProps={{ className: "text-[var(--accent)]" }}
             >

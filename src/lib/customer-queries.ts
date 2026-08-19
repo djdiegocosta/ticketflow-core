@@ -189,8 +189,9 @@ export function useUpdateProfile() {
       email: string; 
       whatsapp: string; 
       cidade: string; 
-      data_nascimento?: string | null; 
-      instagram?: string | null; 
+      data_nascimento?: string | null | undefined; 
+      instagram?: string | null | undefined; 
+
 
     }) => {
       if (!customer?.id) throw new Error("Cliente não identificado");
