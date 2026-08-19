@@ -15,7 +15,7 @@ export default function EventPage() {
   // Seleciona o primeiro lote por padrão quando carregar
   useMemo(() => {
     if (event?.ticket_batches && event.ticket_batches.length > 0 && !selectedBatchId) {
-      setSelectedBatchId(event.ticket_batches[0].id);
+      setSelectedBatchId(event.ticket_batches[0]?.id || null);
     }
   }, [event, selectedBatchId]);
 
