@@ -1,10 +1,8 @@
 import { useState, useMemo } from "react";
 import { Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { User, UserRoleType } from "@/lib/users-data";
-const MOCK_USERS: any[] = [];
 import { formatName } from "@/lib/form-format";
+import { useOrganizationUsers, useRemoveUser } from "@/lib/users-queries";
 
 import {
   DataTable,
@@ -20,20 +18,21 @@ import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 import { CreateUserPanel } from "@/components/admin/CreateUserPanel";
 
 export default function UsersListPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const { data: users = [], isLoading } = useOrganizationUsers();
+  const removeMutation = useRemoveUser();
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<any | null>(null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return users.filter((u) => {
+    return users.filter((u: any) => {
       return (
         !term ||
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term)
+        (u.name || "").toLowerCase().includes(term) ||
+        (u.email || "").toLowerCase().includes(term)
       );
     });
   }, [users, search]);
@@ -43,31 +42,17 @@ export default function UsersListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
-  const handleInvite = (userData: { name: string; email: string; role: UserRoleType }) => {
-    const newUser: User = {
-      id: Math.random().toString(36).substring(7),
-      name: formatName(userData.name),
-      email: userData.email,
-      role: userData.role,
-      invitedAt: new Date().toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).replace(",", ""),
-      status: "Convite pendente",
-    };
-
-    setUsers((prev) => [newUser, ...prev]);
-    toast.success("Convite enviado com sucesso!");
+  const handleInviteSuccess = () => {
+    setPanelOpen(false);
   };
 
   const handleDelete = () => {
     if (!userToDelete) return;
-    setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
-    toast.success(`Usuário ${userToDelete.name} removido.`);
-    setUserToDelete(null);
+    removeMutation.mutate({ user_id: userToDelete.id }, {
+      onSuccess: () => {
+        setUserToDelete(null);
+      }
+    });
   };
 
   return (
@@ -96,19 +81,25 @@ export default function UsersListPage() {
       <DataTableShell>
         <DataTable className="min-w-[800px]">
           <DataTableHeadRow
-            columns={["Nome", "E-mail", "Papel", "Convite/Entrada", "Status", "Ações"]}
+            columns={["Nome", "E-mail", "Papel", "Entrada/Convite", "Status", "Ações"]}
           />
           <tbody>
-            {pageRows.map((user) => (
+            {isLoading ? (
+              <tr>
+                <DataTableCell colSpan={6} className="py-10 text-center text-body">
+                  Carregando usuários...
+                </DataTableCell>
+              </tr>
+            ) : pageRows.map((user) => (
               <DataTableRow key={user.id}>
-                <DataTableCell variant="primary">{formatName(user.name)}</DataTableCell>
+                <DataTableCell variant="primary">{user.full_name ? formatName(user.full_name) : (user.status === 'Convite pendente' ? 'Pendente' : '—')}</DataTableCell>
                 <DataTableCell>{user.email}</DataTableCell>
                 <DataTableCell>
-                  <StatusPill tone={user.role === "Admin" ? "accent" : "neutral"}>
+                  <StatusPill tone={user.role === "admin" ? "accent" : "neutral"}>
                     {user.role}
                   </StatusPill>
                 </DataTableCell>
-                <DataTableCell>{user.invitedAt}</DataTableCell>
+                <DataTableCell>{user.invitedAt ? new Date(user.invitedAt).toLocaleDateString('pt-BR') : '—'}</DataTableCell>
                 <DataTableCell>
                   <StatusPill tone={user.status === "Ativo" ? "accent" : "neutral"}>
                     {user.status}
@@ -120,14 +111,14 @@ export default function UsersListPage() {
                     onClick={() => setUserToDelete(user)}
                     className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     title="Remover usuário"
-                    aria-label={`Remover ${user.name}`}
+                    aria-label={`Remover ${user.full_name || user.email}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </DataTableCell>
               </DataTableRow>
             ))}
-            {pageRows.length === 0 && (
+            {!isLoading && pageRows.length === 0 && (
               <tr>
                 <DataTableCell colSpan={6} className="py-10 text-center text-body">
                   Nenhum usuário encontrado.
@@ -154,7 +145,7 @@ export default function UsersListPage() {
       <CreateUserPanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        onInvite={handleInvite}
+        onInvite={handleInviteSuccess}
       />
 
       {/* Delete Confirmation Modal */}
@@ -166,20 +157,23 @@ export default function UsersListPage() {
               <h3 className="text-heading-2">Remover usuário?</h3>
             </div>
             <p className="text-body text-text-secondary">
-              O usuário <strong>{userToDelete.name}</strong> perderá o acesso ao sistema imediatamente.
+              O usuário <strong>{userToDelete.full_name || userToDelete.email}</strong> perderá o acesso ao sistema imediatamente.
             </p>
             <div className="mt-8 flex justify-end gap-3">
               <button
+                type="button"
                 onClick={() => setUserToDelete(null)}
                 className="px-4 py-2 text-body text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancelar
               </button>
               <button
+                type="button"
+                disabled={removeMutation.isPending}
                 onClick={handleDelete}
-                className="bg-error px-4 py-2 text-body font-semibold text-white hover:opacity-90 transition-opacity"
+                className="bg-error px-4 py-2 text-body font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                Confirmar remoção
+                {removeMutation.isPending ? "Removendo..." : "Confirmar remoção"}
               </button>
             </div>
           </div>

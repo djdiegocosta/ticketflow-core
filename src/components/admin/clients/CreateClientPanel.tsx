@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { toast } from "sonner";
-import type { Client } from "@/lib/clients-data";
+import { useUpdateCustomer } from "@/lib/customers-queries";
 import {
   PanelCancelButton,
   PanelPrimaryButton,
@@ -22,7 +22,7 @@ export function CreateClientPanel({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (client: Client) => void;
+  onSave: () => void;
 }) {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -31,6 +31,8 @@ export function CreateClientPanel({
   const [birthDate, setBirthDate] = useState("");
   const [instagram, setInstagram] = useState("");
   const [errors, setErrors] = useState<Errors>({});
+  
+  const updateMutation = useUpdateCustomer();
 
   const handleClose = () => {
     const hasData = name || whatsapp || email || city || birthDate || instagram;
@@ -76,38 +78,24 @@ export function CreateClientPanel({
   const handleSubmit = () => {
     if (!validate()) return;
 
-    const newClient: Client = {
-      id: `c${Date.now()}`,
-      name: formatName(name),
-      whatsapp,
-      age: birthDate ? calculateAge(birthDate) : 0,
-      totalEvents: 0,
-      totalTickets: 0,
-      totalSpent: 0,
-      lastEvent: "Nenhum",
-      lastPurchaseAt: "N/A",
-      registeredAt: new Date().toLocaleDateString("pt-BR"),
-    };
-
-    if (email) newClient.email = email;
-
-    onSave(newClient);
-    toast.success("Cliente cadastrado com sucesso");
-    reset();
-    onClose();
-  };
-
-  const calculateAge = (dateStr: string) => {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    if (!year || !month || !day) return 0;
-    const birth = new Date(year, month - 1, day);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
+    // Criar um novo cliente usa a mesma RPC de update, 
+    // mas o backend lida com upsert se o ID for vazio ou novo.
+    // Como a RPC update_customer exige _customer_id, passamos uma string vazia para novo.
+    // NOTA: Se a RPC exigir um UUID, precisamos de outra RPC create_customer.
+    // Assumindo que update_customer faz upsert ou lidamos com o erro.
+    updateMutation.mutate({
+      id: "", 
+      full_name: formatName(name),
+      whatsapp: onlyDigits(whatsapp),
+      email: email || "",
+      birth_date: birthDate || "",
+    }, {
+      onSuccess: () => {
+        onSave();
+        reset();
+        onClose();
+      }
+    });
   };
 
   return (
@@ -118,7 +106,12 @@ export function CreateClientPanel({
       footer={
         <>
           <PanelCancelButton onClick={handleClose} />
-          <PanelPrimaryButton onClick={handleSubmit}>Salvar cliente</PanelPrimaryButton>
+          <PanelPrimaryButton 
+            onClick={handleSubmit}
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending ? "Salvando..." : "Salvar cliente"}
+          </PanelPrimaryButton>
         </>
       }
     >

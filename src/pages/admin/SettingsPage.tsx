@@ -29,6 +29,9 @@ import {
   type MpStatus,
 } from "@/lib/settings-data";
 
+import { useOrganization, useUpdateOrganization, useMpConfig } from "@/lib/settings-queries";
+import { supabase } from "@/integrations/supabase/client";
+
 type SectionId = "organizacao" | "mercadopago" | "design" | "preferencias" | "backup";
 
 const sections: { id: SectionId; label: string; icon: typeof Settings2 }[] = [
@@ -92,15 +95,45 @@ function Panel({
 
 export function SettingsPage() {
   const [active, setActive] = useState<SectionId>("organizacao");
-  const [org, setOrg] = useState(organizationMock);
+  const { data: organization, isLoading: loadingOrg } = useOrganization();
+  const updateOrgMutation = useUpdateOrganization();
+  const { data: mpConfig, isLoading: loadingMp } = useMpConfig();
+  
+  const [orgForm, setOrgForm] = useState({ name: "", email: "", phone: "", logoUrl: "" });
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [unified, setUnified] = useState(preferencesMock.unifiedCheckinPdf);
   const { theme, setTheme } = useTheme();
   const design = useDesign();
 
-  const mp = mpIntegrationMock;
-  const status = statusMap[mp.status];
+  // Atualizar form quando carregar organização
+  useState(() => {
+    if (organization) {
+      setOrgForm({
+        name: organization.name,
+        email: organization.contact_email || "",
+        phone: organization.contact_phone || "",
+        logoUrl: organization.logo_url || ""
+      });
+      if (organization.logo_url) setLogoPreview(organization.logo_url);
+    }
+  });
+
+  const mpStatus = (mpConfig as any)?.status || (mpConfig ? "conectado" : "nao_configurado");
+  const status = statusMap[mpStatus as MpStatus];
   const StatusIcon = status.icon;
+
+  const handleSaveOrg = () => {
+    updateOrgMutation.mutate({
+      name: orgForm.name,
+      email: orgForm.email,
+      phone: orgForm.phone,
+      logo_url: orgForm.logoUrl
+    });
+  };
+
+  if (loadingOrg || loadingMp) {
+    return <div className="p-8 text-center text-body text-text-secondary">Carregando configurações...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -138,8 +171,8 @@ export function SettingsPage() {
               <div className="space-y-2">
                 <FieldLabel>Nome da organização</FieldLabel>
                 <Input
-                  value={org.name}
-                  onChange={(e) => setOrg({ ...org, name: e.target.value })}
+                  value={orgForm.name}
+                  onChange={(e) => setOrgForm({ ...orgForm, name: e.target.value })}
                   className="rounded-none"
                 />
               </div>
@@ -162,7 +195,10 @@ export function SettingsPage() {
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) setLogoPreview(URL.createObjectURL(file));
+                        if (file) {
+                          setLogoPreview(URL.createObjectURL(file));
+                          // Upload real de logo poderia ser feito aqui, para simplificar mantemos local
+                        }
                       }}
                     />
                   </label>
@@ -174,22 +210,27 @@ export function SettingsPage() {
                   <FieldLabel>E-mail de contato</FieldLabel>
                   <Input
                     type="email"
-                    value={org.email}
-                    onChange={(e) => setOrg({ ...org, email: e.target.value })}
+                    value={orgForm.email}
+                    onChange={(e) => setOrgForm({ ...orgForm, email: e.target.value })}
                     className="rounded-none"
                   />
                 </div>
                 <div className="space-y-2">
                   <FieldLabel>Telefone</FieldLabel>
                   <Input
-                    value={org.phone}
-                    onChange={(e) => setOrg({ ...org, phone: e.target.value })}
+                    value={orgForm.phone}
+                    onChange={(e) => setOrgForm({ ...orgForm, phone: e.target.value })}
                     className="rounded-none"
                   />
                 </div>
               </div>
 
-              <Button onClick={() => toast.success("Alterações salvas")}>Salvar alterações</Button>
+              <Button 
+                onClick={handleSaveOrg}
+                disabled={updateOrgMutation.isPending}
+              >
+                {updateOrgMutation.isPending ? "Salvando..." : "Salvar alterações"}
+              </Button>
             </Panel>
           )}
 
@@ -201,16 +242,16 @@ export function SettingsPage() {
                   <span className={`px-2.5 py-1 text-micro ${status.pill}`}>{status.label}</span>
                 </div>
                 <p className="mt-3 text-body text-[var(--text-secondary)]">{status.description}</p>
-                {mp.status === "conectado" && (
+                {mpStatus === "conectado" && mpConfig && (
                   <p className="mt-2 text-small text-[var(--text-secondary)]">
-                    Ambiente ativo: {environmentLabel(mp.environment)} · Última validação: {mp.lastValidation ?? "—"}
+                    Ambiente ativo: {(mpConfig as any).environment === 'sandbox' ? 'Sandbox' : 'Produção'}
                   </p>
                 )}
               </div>
 
               <Button asChild>
                 <Link to="/admin/configuracoes/mercado-pago">
-                  {mp.status === "nao_configurado" ? "Configurar Mercado Pago" : "Revisar configuração"}
+                  {mpStatus === "nao_configurado" ? "Configurar Mercado Pago" : "Revisar configuração"}
                 </Link>
               </Button>
             </Panel>
@@ -354,7 +395,7 @@ export function SettingsPage() {
                 </Button>
               </div>
               <p className="text-small text-[var(--text-secondary)]">
-                Esta função ficará disponível após a conexão com o banco de dados.
+                Recurso em desenvolvimento.
               </p>
             </Panel>
           )}

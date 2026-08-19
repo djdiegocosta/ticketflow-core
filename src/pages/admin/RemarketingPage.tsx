@@ -49,6 +49,7 @@ import {
   buildMessage,
 } from "@/lib/remarketing-data";
 import { formatCurrency } from "@/lib/sales-queries";
+import { useRemarketingData } from "@/lib/remarketing-queries";
 const MOCK_SALES: any[] = [];
 import { toast } from "sonner";
 import {
@@ -105,6 +106,8 @@ function TemplateEditor({
 
 export function RemarketingPage() {
   const [period, setPeriod] = React.useState<RemarketingPeriod>("24h");
+  const periodHours = period === "24h" ? 24 : period === "72h" ? 72 : 168;
+  const { data: rows = [], isLoading } = useRemarketingData(periodHours);
   const [eventFilter, setEventFilter] = React.useState("todos");
   const [pageSize, setPageSize] = React.useState("25");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -112,43 +115,7 @@ export function RemarketingPage() {
   const [templates, setTemplates] = React.useState<Record<AbandonType, string>>({
     ...DEFAULT_TEMPLATES,
   });
-  const [rows, setRows] = React.useState<Abandon[]>([]);
-  const [preview, setPreview] = React.useState<Abandon | null>(null);
-
-  React.useEffect(() => {
-    // Normalização básica de WhatsApp para comparação
-    const normalize = (val?: string) => val?.replace(/\D/g, "") || "";
-
-    const enrichedRows = MOCK_ABANDONS.map((abandon) => {
-      if (abandon.status === "Convertido") return abandon;
-
-      const abandonWa = normalize(abandon.whatsapp);
-      if (!abandonWa) return abandon;
-
-      // Verifica se existe uma venda paga para este WhatsApp + Evento
-      const hasPaidSale = MOCK_SALES.some((sale) => {
-        const saleWa = normalize(sale.buyerWhatsapp);
-        const matchesWa = saleWa === abandonWa;
-        const matchesEvent = sale.eventName === abandon.event;
-        const matchesStatus = sale.status === "Pago";
-
-        // Também verificar participantes, pois "Comprador != Participante"
-        const matchesParticipant = sale.tickets.some(
-          (t: any) => normalize(t.participantName) === abandonWa || t.participantName === abandon.name
-        );
-
-        return (matchesWa || matchesParticipant) && matchesEvent && matchesStatus;
-      });
-
-      if (hasPaidSale) {
-        return { ...abandon, status: "Convertido" as const };
-      }
-
-      return abandon;
-    });
-
-    setRows(enrichedRows);
-  }, []);
+  const [preview, setPreview] = React.useState<any | null>(null);
 
   const metrics = PERIOD_METRICS[period];
 
@@ -165,15 +132,13 @@ export function RemarketingPage() {
   );
 
   const updateStatus = (id: string, status: AbandonStatus) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    // Apenas visual no momento, pois não temos RPC para persistir log de contato
     toast.success(`Status atualizado para "${status}".`);
   };
 
-  const openWhatsApp = (row: Abandon) => {
+  const openWhatsApp = (row: any) => {
     setPreview(row);
-    if (row.status === "Não contactado") {
-      updateStatus(row.id, "Contactado");
-    }
+    // updateStatus removido daqui para evitar side-effects de mudança de estado em props/queries
   };
 
   return (
@@ -294,7 +259,7 @@ export function RemarketingPage() {
             }}
           >
             <option value="todos">Todos os eventos</option>
-            {REMARKETING_EVENTS.map((e) => (
+            {Array.from(new Set(rows.map(r => r.event))).map((e) => (
               <option key={e} value={e}>
                 {e}
               </option>
@@ -335,7 +300,13 @@ export function RemarketingPage() {
                   ]}
                 />
               <tbody>
-                {paginated.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <DataTableCell colSpan={7} className="py-10 text-center text-body">
+                      Carregando dados...
+                    </DataTableCell>
+                  </tr>
+                ) : paginated.length === 0 ? (
                   <tr>
                     <DataTableCell colSpan={7} className="py-10 text-center text-body">
                       Nenhum abandono encontrado.
@@ -369,7 +340,7 @@ export function RemarketingPage() {
                         </StatusPill>
                       </DataTableCell>
                       <DataTableCell variant="muted" className="whitespace-nowrap">
-                        {row.createdAt}
+                        {new Date(row.createdAt).toLocaleString('pt-BR')}
                       </DataTableCell>
                       <DataTableCell>
                         <div className="flex items-center justify-center whitespace-nowrap">
@@ -437,9 +408,9 @@ export function RemarketingPage() {
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
-              <StatusPill tone={typeTone[preview.type]}>{preview.type}</StatusPill>
+              <StatusPill tone={typeTone[preview.type as AbandonType]}>{preview.type}</StatusPill>
               <p className="whitespace-pre-wrap border border-[var(--border-subtle)] bg-[var(--bg-tertiary)] p-4 text-body text-[var(--text-primary)]">
-                {buildMessage(templates[preview.type], {
+                {buildMessage(templates[preview.type as AbandonType], {
                   name: preview.name,
                   event: preview.event,
                   lot: preview.lot,

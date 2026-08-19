@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Shield, Users, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { UserRoleType } from "@/lib/users-data";
-import { formatName, isFullName } from "@/lib/form-format";
+import { formatName } from "@/lib/form-format";
+import { useInviteUser } from "@/lib/users-queries";
 import {
   PanelCancelButton,
   PanelDiscardDialog,
@@ -13,20 +13,21 @@ import {
   panelLabelClass,
 } from "@/components/admin/SidePanel";
 
+type AppRole = "admin" | "colaborador" | "operador_checkin";
 
 interface CreateUserPanelProps {
   open: boolean;
   onClose: () => void;
-  onInvite: (user: { name: string; email: string; role: UserRoleType }) => void;
+  onInvite: () => void;
 }
 
 export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProps) {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<UserRoleType>("Colaborador");
+  const [role, setRole] = useState<AppRole>("colaborador");
   const [isClosing, setIsClosing] = useState(false);
+  const inviteMutation = useInviteUser();
 
-  const hasData = name.length > 0 || email.length > 0;
+  const hasData = email.length > 0;
 
   const handleClose = () => {
     if (hasData) {
@@ -37,36 +38,36 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
   };
 
   const resetForm = () => {
-    setName("");
     setEmail("");
-    setRole("Colaborador");
+    setRole("colaborador");
     setIsClosing(false);
   };
 
   const handleSubmit = () => {
-    if (!name || !email) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-    if (!isFullName(name)) {
-      toast.error("Informe nome e sobrenome (mínimo 2 palavras)");
+    if (!email) {
+      toast.error("Preencha o e-mail");
       return;
     }
 
-    onInvite({ name, email, role });
-    resetForm();
-    onClose();
+    inviteMutation.mutate({ email, role }, {
+      onSuccess: () => {
+        onInvite();
+        resetForm();
+      }
+    });
   };
 
-  const roleOptions: { value: UserRoleType; icon: typeof Shield; description: string }[] = [
-    { value: "Admin", icon: Shield, description: "Acesso completo a todas as áreas do sistema." },
+  const roleOptions: { value: AppRole; label: string; icon: typeof Shield; description: string }[] = [
+    { value: "admin", label: "Admin", icon: Shield, description: "Acesso completo a todas as áreas do sistema." },
     {
-      value: "Colaborador",
+      value: "colaborador",
+      label: "Colaborador",
       icon: Users,
       description: "Acesso a Vendas (somente leitura) e Check-in.",
     },
     {
-      value: "Operador de Check-in",
+      value: "operador_checkin",
+      label: "Operador de Check-in",
       icon: ShieldCheck,
       description: "Acesso exclusivo ao Check-in — nenhuma outra área do sistema.",
     },
@@ -81,23 +82,16 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
         footer={
           <>
             <PanelCancelButton onClick={handleClose} />
-            <PanelPrimaryButton onClick={handleSubmit}>Enviar convite</PanelPrimaryButton>
+            <PanelPrimaryButton 
+              onClick={handleSubmit}
+              disabled={inviteMutation.isPending}
+            >
+              {inviteMutation.isPending ? "Enviando..." : "Enviar convite"}
+            </PanelPrimaryButton>
           </>
         }
       >
         <div className="space-y-5">
-          <div>
-            <label className={panelLabelClass}>Nome completo</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(formatName(e.target.value))}
-
-              placeholder="Ex: Carlos Eduardo Oliveira"
-              className={panelInputClass}
-            />
-          </div>
-
           <div>
             <label className={panelLabelClass}>E-mail</label>
             <input
@@ -112,7 +106,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
           <div>
             <label className={panelLabelClass}>Papel no sistema</label>
             <div className="grid grid-cols-1 gap-3">
-              {roleOptions.map(({ value, icon: Icon, description }) => (
+              {roleOptions.map(({ value, label, icon: Icon, description }) => (
                 <button
                   key={value}
                   type="button"
@@ -135,7 +129,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-body font-semibold text-text-primary">{value}</p>
+                    <p className="text-body font-semibold text-text-primary">{label}</p>
                     <p className="mt-0.5 text-small text-text-secondary">{description}</p>
                   </div>
                 </button>
@@ -148,7 +142,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
       <PanelDiscardDialog
         open={isClosing}
         title="Descartar convite?"
-        description="Você preencheu alguns dados. Se sair agora, o convite não será enviado."
+        description="Você preencheu o e-mail. Se sair agora, o convite não será enviado."
         onKeepEditing={() => setIsClosing(false)}
         onDiscard={() => {
           resetForm();
