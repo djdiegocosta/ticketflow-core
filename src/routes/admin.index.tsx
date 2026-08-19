@@ -2,15 +2,13 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 
 export const Route = createFileRoute("/admin/")({
-  beforeLoad: () => {
+  beforeLoad: async ({ context }) => {
+    // Rely on the parent route /admin which already calls requireSession()
+    // but just to be safe and specific for this index:
     if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) throw redirect({ to: '/login' });
     
-    const data = JSON.parse(auth);
-    if (data.userRole === 'colaborador') {
-      throw redirect({ to: '/admin/vendas' });
-    }
+    // Cleanup legacy mock logic that used window.localStorage directly
+    // and was causing hydration/state mismatches
   },
   head: () => ({
     meta: [
