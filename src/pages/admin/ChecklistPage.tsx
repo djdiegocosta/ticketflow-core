@@ -29,7 +29,8 @@ export function ChecklistPage() {
 
   useEffect(() => {
     if (events.length > 0 && !selectedEventId) {
-      setSelectedEventId(events[0].id);
+      const firstEvent = events[0];
+      if (firstEvent) setSelectedEventId(firstEvent.id);
     }
   }, [events, selectedEventId]);
 
@@ -40,6 +41,7 @@ export function ChecklistPage() {
   }, [selectedEventId, organizationId]);
 
   const fetchTasks = async () => {
+    if (!selectedEventId || !organizationId) return;
     setIsLoading(true);
     try {
       const { data, error } = await supabase
