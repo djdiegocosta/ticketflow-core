@@ -16,6 +16,7 @@ export async function fetchSales() {
       payment_method,
       observation,
       created_at,
+      event_id,
       events (title),
       ticket_batches (name)
     `)
@@ -66,17 +67,13 @@ export function useCourtesiesStats() {
     queryKey: ["courtesies", "stats"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tickets")
-        .select(`
-          checked_in_at,
-          sales!inner (is_courtesy)
-        `)
-        .eq("sales.is_courtesy", true);
+        .from("event_ticket_stats")
+        .select("cortesias_emitidas, checkins_cortesias");
 
       if (error) throw error;
 
-      const total = data?.length || 0;
-      const checkins = data?.filter((t) => t.checked_in_at).length || 0;
+      const total = (data || []).reduce((acc, v) => acc + (v.cortesias_emitidas || 0), 0);
+      const checkins = (data || []).reduce((acc, v) => acc + (v.checkins_cortesias || 0), 0);
 
       return { total, checkins };
     },
@@ -119,8 +116,17 @@ export function useSalesStats(eventId?: string) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
-      let query = supabase.from("tickets").select(`
-        checked_in_at,
+      // 1. Buscar estatísticas reais da VIEW para Ingressos e Cortesias
+      let statsQuery = supabase.from("event_ticket_stats").select("*");
+      if (eventId && eventId !== "overview") {
+        statsQuery = statsQuery.eq("event_id", eventId);
+      }
+      
+      const { data: viewData, error: viewError } = await statsQuery;
+      if (viewError) throw viewError;
+
+      // 2. Buscar outros dados (financeiro e histórico) da tabela de tickets/sales
+      let ticketsQuery = supabase.from("tickets").select(`
         created_at,
         sales!inner (
           id,
@@ -132,26 +138,24 @@ export function useSalesStats(eventId?: string) {
       `);
 
       if (eventId && eventId !== "overview") {
-        query = query.eq("sales.event_id", eventId);
+        ticketsQuery = ticketsQuery.eq("sales.event_id", eventId);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data: ticketsData, error: ticketsError } = await ticketsQuery;
+      if (ticketsError) throw ticketsError;
 
       const stats = {
         totalRevenue: 0,
         totalSales: 0,
-        totalTickets: 0,
+        totalTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0), 0),
         pendingSales: 0,
         cancelledSales: 0,
         paidSales: 0,
-        courtesies: 0,
+        courtesies: (viewData || []).reduce((acc, v) => acc + (v.cortesias_emitidas || 0), 0),
         last14Days: [] as { date: string; value: number }[],
       };
 
       const saleIds = new Set<string>();
-      const paidSaleIds = new Set<string>();
-
       const now = new Date();
       const dailyMap = new Map<string, number>();
       for (let i = 0; i < 14; i++) {
@@ -160,29 +164,23 @@ export function useSalesStats(eventId?: string) {
         dailyMap.set(d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), 0);
       }
 
-      data.forEach((t) => {
+      (ticketsData || []).forEach((t) => {
         const s = t.sales as any;
         if (!saleIds.has(s.id)) {
           saleIds.add(s.id);
           stats.totalSales++;
           if (s.status === "pago") {
             stats.totalRevenue += Number(s.total_amount);
-            paidSaleIds.add(s.id);
             stats.paidSales++;
           } else if (s.status === "pendente") {
             stats.pendingSales++;
           } else if (s.status === "cancelado") {
             stats.cancelledSales++;
-          } else if (s.status === "reembolsado") {
-            // Reembolsado não soma na receita ativa
           }
         }
 
-        if (s.is_courtesy) {
-          stats.courtesies++;
-        } else if (s.status === "pago") {
-          stats.totalTickets++;
-          
+        // Gráfico histórico apenas para ingressos pagos (não cortesia)
+        if (!s.is_courtesy && s.status === "pago") {
           const dateStr = new Date(t.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
           if (dailyMap.has(dateStr)) {
             dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);

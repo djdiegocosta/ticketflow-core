@@ -22,23 +22,24 @@ export function formatEventDate(iso: string) {
 }
 
 export async function fetchEventsWithStats(): Promise<EventWithStats[]> {
-  const [{ data: events, error }, { data: batches }, { data: sales }] = await Promise.all([
+  const [{ data: events, error }, { data: batches }, { data: stats }] = await Promise.all([
     supabase.from("events").select("*").order("event_date", { ascending: false }),
     supabase.from("ticket_batches").select("event_id, quantity"),
-    supabase.from("sales").select("event_id, quantity, status").eq("status", "pago"),
+    supabase.from("event_ticket_stats").select("*"),
   ]);
 
   if (error) throw error;
 
-  return (events ?? []).map((event) => ({
-    ...event,
-    capacity: (batches ?? [])
-      .filter((b) => b.event_id === event.id)
-      .reduce((acc, b) => acc + (b.quantity ?? 0), 0),
-    sold: (sales ?? [])
-      .filter((s) => s.event_id === event.id)
-      .reduce((acc, s) => acc + (s.quantity ?? 0), 0),
-  }));
+  return (events ?? []).map((event) => {
+    const eventStats = (stats ?? []).find(s => s.event_id === event.id);
+    return {
+      ...event,
+      capacity: (batches ?? [])
+        .filter((b) => b.event_id === event.id)
+        .reduce((acc, b) => acc + (b.quantity ?? 0), 0),
+      sold: eventStats?.ingressos_vendidos || 0,
+    };
+  });
 }
 
 export function useEvents() {

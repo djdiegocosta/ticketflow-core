@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { useSales, formatCurrency } from "@/lib/sales-queries";
+import { useSales, formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import {
@@ -44,6 +44,12 @@ export function SalesListPage() {
   const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
   const [eventFilter, setEventFilter] = useState("Todos");
+  const { data: stats } = useSalesStats(
+    eventFilter === "Todos" 
+      ? "overview" 
+      : sales.find(s => (s.events as any)?.title === eventFilter)?.event_id
+  );
+
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
@@ -76,7 +82,7 @@ export function SalesListPage() {
     const paid = filtered.filter((s) => s.status === "pago");
     const pending = filtered.filter((s) => s.status === "pendente");
     const revenue = paid.reduce((acc, s) => acc + s.total_amount, 0);
-    const ticketsSold = paid.reduce((acc, s) => acc + s.quantity, 0);
+    const ticketsSold = stats?.totalTickets || 0;
     const avgTicket = paid.length === 0 ? 0 : revenue / paid.length;
     const considered = paid.length + pending.length;
     const pendingRate = considered === 0 ? 0 : Math.round((pending.length / considered) * 100);
