@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { useSales, formatCurrency } from "@/lib/sales-queries";
+import { useSales, formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import {
@@ -227,7 +227,7 @@ export function SalesListPage() {
           }}
         >
           <option value="Todos">Todos os eventos</option>
-          {Array.from(new Map(sales.map(s => [(s.events as any)?.title, s.event_id]).filter(Boolean))).map(([title, id]: any) => (
+          {Array.from(new Set(sales.map(s => (s.events as any)?.title).filter(Boolean))).map((name: any) => (
             <option key={name} value={name}>
               {name}
             </option>

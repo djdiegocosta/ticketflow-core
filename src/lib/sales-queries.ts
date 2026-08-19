@@ -16,6 +16,7 @@ export async function fetchSales() {
       payment_method,
       observation,
       created_at,
+      event_id,
       events (title),
       ticket_batches (name)
     `)
