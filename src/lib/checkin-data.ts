@@ -12,6 +12,26 @@ export interface CheckinAttempt {
   isOffline?: boolean;
 }
 
+const listeners = new Set<(list: CheckinAttempt[]) => void>();
+let attempts: CheckinAttempt[] = [];
+
+export function addCheckinAttempt(attempt: Omit<CheckinAttempt, "id">) {
+  attempts = [{ ...attempt, id: `${Date.now()}-${Math.random()}` }, ...attempts];
+  listeners.forEach((l) => l(attempts));
+}
+
+export function useCheckinAttempts() {
+  const [list, setList] = useState<CheckinAttempt[]>(attempts);
+  useEffect(() => {
+    setList(attempts);
+    listeners.add(setList);
+    return () => {
+      listeners.delete(setList);
+    };
+  }, []);
+  return list;
+}
+
 /** Pre-carrega os dados do evento no IndexedDB */
 export async function preloadEventTickets(eventId: string, eventName: string) {
   const { data: tickets, error } = await supabase
@@ -92,6 +112,10 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
     }
 
     const first = data[0];
+    if (!first) {
+      return { status: 'invalid' as CheckinStatus, name: cleanCode, eventName, time, isOffline: false };
+    }
+    
     const status: CheckinStatus = first.result === 'sucesso' ? 'valid' : first.result === 'duplicidade' ? 'already_used' : 'invalid';
     
     return {

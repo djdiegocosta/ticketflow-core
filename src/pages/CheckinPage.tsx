@@ -55,7 +55,7 @@ export function CheckinPage() {
       navigate({ to: "/login", replace: true });
       return;
     }
-    if (!(userRole === "operador_checkin" || userRole === "admin" || userRole === "colaborador")) {
+    if (userRole && !(userRole === "operador_checkin" || userRole === "admin" || userRole === "colaborador")) {
       navigate({ to: "/admin", replace: true });
     }
   }, [isAuthenticated, userRole, navigate]);
@@ -148,7 +148,7 @@ export function CheckinPage() {
   }, []);
 
   const processCheckin = useCallback(async (code: string) => {
-    if (pausedRef.current || !code.trim()) return;
+    if (pausedRef.current || !code.trim() || !selectedEvent) return;
     pausedRef.current = true;
 
     const result = await resolveCheckin(code, selectedEvent.id, selectedEvent.title);
