@@ -9,6 +9,7 @@ export const Route = createFileRoute("/login")({
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
 
+    // Se já estiver logado, buscar o papel real para saber para onde ir
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
@@ -16,7 +17,8 @@ export const Route = createFileRoute("/login")({
       .limit(1)
       .maybeSingle();
 
-    throw redirect({ to: homeRouteForRole((roleRow?.role as GuardRole) ?? "cliente") });
+    const role = (roleRow?.role as GuardRole) ?? "cliente";
+    throw redirect({ to: homeRouteForRole(role) });
   },
 
 
