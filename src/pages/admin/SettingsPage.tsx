@@ -118,7 +118,7 @@ export function SettingsPage() {
     }
   });
 
-  const mpStatus = mpConfig?.status || "nao_configurado";
+  const mpStatus = (mpConfig as any)?.status || (mpConfig ? "conectado" : "nao_configurado");
   const status = statusMap[mpStatus as MpStatus];
   const StatusIcon = status.icon;
 
@@ -242,9 +242,9 @@ export function SettingsPage() {
                   <span className={`px-2.5 py-1 text-micro ${status.pill}`}>{status.label}</span>
                 </div>
                 <p className="mt-3 text-body text-[var(--text-secondary)]">{status.description}</p>
-                {mpStatus === "conectado" && (
+                {mpStatus === "conectado" && mpConfig && (
                   <p className="mt-2 text-small text-[var(--text-secondary)]">
-                    Ambiente ativo: {mpConfig.environment === 'sandbox' ? 'Sandbox' : 'Produção'}
+                    Ambiente ativo: {(mpConfig as any).environment === 'sandbox' ? 'Sandbox' : 'Produção'}
                   </p>
                 )}
               </div>
