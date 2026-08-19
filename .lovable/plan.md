@@ -1,40 +1,26 @@
-# Plano de Blindagem: Fluxo 2 — Check-in por QR Code (Gauntlet AAA)
+# Plano de Evidência e Finalização: Fluxo 1A (Checkout Público)
 
-Este plano visa corrigir os achados de segurança, resiliência e conformidade identificados no Fluxo 2 (Check-in), garantindo a integridade operacional conforme a `TPS.md`.
+Este plano detalha a coleta de evidências concretas para os 4 pontos críticos exigidos para o fechamento do Fluxo 1A, além da conclusão do Rate Limiting.
 
-## Achados e Soluções
+## 1. Evidência de Overselling (Teste de Concorrência)
+- **Ação**: Criar um script Playwright/Python para disparar 20 requisições simultâneas à RPC `create_pending_sale` visando um lote com apenas 1 ingresso disponível.
+- **Resultado Esperado**: Exatamente 1 sucesso e 19 falhas com erro "Estoque insuficiente".
+- **Comprovação**: Log das respostas e print do estado final do banco (estoque = 0).
 
-### 1. Resiliência: Sincronização Robusta (Offline First)
-- **Problema**: `processSyncQueue` apaga a fila mesmo se as chamadas falharem, causando perda de dados.
-- **Solução**: Alterar `lib/checkin-data.ts` para processar cada item individualmente e remover do IndexedDB apenas os itens confirmados pela RPC com sucesso. Itens com erro permanecem para nova tentativa.
+## 2. Centralização de Validação de Nome
+- **Ação**: Mapear todos os componentes que importam `formatName` e `isFullName`.
+- **Unificação**: Garantir que o `CheckoutPage.tsx` utilize estritamente estas funções em seu `zodResolver` e nos handlers de input, eliminando lógicas paralelas.
 
-### 2. Segurança: Isolamento de Rotas (RBAC)
-- **Problema**: Rota `/superadmin` e outras áreas administrativas estão acessíveis a operadores de check-in sem guard de proteção real.
-- **Solução**: Implementar `beforeLoad` em `src/routes/superadmin.tsx` para bloquear qualquer papel que não seja estritamente `superadmin`. Reforçar o redirecionamento de `operador_checkin` para `/checkin` em rotas não autorizadas.
+## 3. Agendamento de Expiração (30 min)
+- **Ação**: Verificar se existe um `cron.schedule` para `expire_pending_sales`.
+- **Implementação**: Se ausente, criar uma migração SQL configurando o `pg_cron` para rodar a cada 5 ou 10 minutos, garantindo que vendas com >30min sejam canceladas e o estoque devolvido.
 
-### 3. Limpeza: Remoção de Código Legado
-- **Problema**: `useCheckinAttempts` mantém uma lista em memória que diverge do `checkin_log` real do banco.
-- **Solução**: Remover `addCheckinAttempt` e `useCheckinAttempts` de `lib/checkin-data.ts` e do componente `CheckinPage.tsx`. O feedback de sucesso/erro virá diretamente da resolução da RPC/Cache local.
+## 4. Idempotência do Backend (Anti-Duplo Clique)
+- **Mecanismo**: A RPC já possui um `ON CONFLICT (event_id, buyer_whatsapp)` na tabela de abandonos, mas precisamos de uma trava na criação da venda.
+- **Melhoria**: Adicionar uma janela de tempo na RPC (ex: impedir nova reserva para o mesmo WhatsApp/Evento se houver uma 'pendente' criada nos últimos 60 segundos).
 
-### 4. Auditoria: Migração do Schema de Check-in
-- **Problema**: Faltam definições SQL para `checkin_log` e RPC `checkin_ticket` no repositório.
-- **Solução**: Criar migration em `supabase/migrations/` com o schema real.
-- **Blindagem**: A RPC `checkin_ticket` deve validar internamente se o `organization_id` do ticket pertence à organização do usuário autenticado (`auth.uid()`), impedindo manipulações via client.
+## 5. Conclusão do Rate Limiting
+- **Implementação**: Finalizar a migração da tabela `checkout_rate_limits` e integrá-la à RPC `create_pending_sale`.
 
-## Detalhes Técnicos
-
-### Backend (SQL)
-- Tabela `checkin_log` com RLS.
-- RPC `checkin_ticket(ticket_code)` com `SECURITY DEFINER` e validação multi-tenant.
-
-### Frontend (React/TanStack)
-- **lib/offline-db.ts**: Adicionar `removeItemFromSyncQueue(id)`.
-- **lib/checkin-data.ts**: Refatorar `processSyncQueue` para ser atômico por item.
-- **routes/superadmin.tsx**: Adicionar guard de papel.
-
-## Etapas de Implementação
-1. Criar migration SQL com infra de check-in e segurança.
-2. Refatorar lógica de sincronização offline para evitar perda de dados.
-3. Proteger rotas administrativas contra operadores.
-4. Remover estado em memória legado.
-5. Validar fluxo completo (Online, Offline e Sync).
+## Tabela de Release Gate (Final)
+Ao concluir, apresentarei os resultados em formato de tabela para aprovação final.
