@@ -118,7 +118,7 @@ export default function CheckoutPage() {
         batch_id: batch.id,
         buyer_name: data.buyerName,
         buyer_whatsapp: data.buyerWhatsApp,
-        buyer_email: data.buyerEmail,
+        buyer_email: data.buyerEmail || "",
         quantity: qty,
         participant_names: data.participants.map(p => p.name)
       });
@@ -126,7 +126,8 @@ export default function CheckoutPage() {
       // A RPC deve retornar o ID e o código da venda. Ajustando conforme provável retorno da RPC
       // Se a RPC retornar apenas ID, precisaremos buscar o código.
       // Assumindo que a RPC retorna { id, sale_code }
-      const { id, sale_code } = saleResult as { id: string, sale_code: string };
+      const resultArr = saleResult as any[];
+      const { sale_id: id, sale_code } = resultArr[0];
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
       
