@@ -201,3 +201,58 @@ export function useSalesStats(eventId?: string) {
 
 export const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export function useConfirmSalePaid() {
+  return async (saleId: string, mpPaymentId: string = "SIMULADO") => {
+    const { error } = await supabase.rpc("confirm_sale_paid", {
+      _sale_id: saleId,
+      _mp_payment_id: mpPaymentId,
+    });
+    if (error) throw error;
+  };
+}
+
+export function useCreatePendingSale() {
+  return async (vars: {
+    event_id: string;
+    batch_id: string;
+    buyer_name: string;
+    buyer_whatsapp: string;
+    buyer_email?: string;
+    quantity: number;
+    participant_names: string[];
+  }) => {
+    const { data, error } = await supabase.rpc("create_pending_sale", {
+      _event_id: vars.event_id,
+      _batch_id: vars.batch_id,
+      _buyer_name: vars.buyer_name,
+      _buyer_whatsapp: vars.buyer_whatsapp,
+      _buyer_email: vars.buyer_email || "",
+      _quantity: vars.quantity,
+      _participant_names: vars.participant_names,
+    });
+
+    if (error) {
+      if (error.message.includes("Estoque insuficiente")) {
+        throw new Error("Desculpe, o estoque para este lote acabou de esgotar.");
+      }
+      throw error;
+    }
+    return data; // Retorna o ID da venda
+  };
+}
+
+export function useTrackAbandonment() {
+  return async (vars: {
+    event_id: string;
+    buyer_name: string;
+    buyer_whatsapp: string;
+  }) => {
+    const { error } = await supabase.rpc("track_checkout_abandonment", {
+      _event_id: vars.event_id,
+      _buyer_name: vars.buyer_name,
+      _buyer_whatsapp: vars.buyer_whatsapp,
+    });
+    if (error) console.error("Erro ao registrar abandono:", error);
+  };
+}
