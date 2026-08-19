@@ -1,48 +1,48 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useCurrentCustomer } from "@/lib/customer-queries";
+import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/cliente/pontos")({
-  head: () => ({
-    meta: [
-      { title: "Meus Pontos | TicketFlow" },
-      { name: "description", content: "Confira seu saldo de pontos e histórico." },
-      { property: "og:title", content: "Meus Pontos | TicketFlow" },
-      { property: "og:description", content: "Confira seu saldo de pontos e histórico." },
-    ],
-  }),
-  component: Page_cliente_pontos,
-});
+export function Page_cliente_pontos() {
+  const { data: customer, isLoading } = useCurrentCustomer();
 
-function Page_cliente_pontos() {
-  const history = [
-    { desc: "Perfil completo", pts: "+50", date: "10/08" },
-    { desc: "Compra confirmada: Festa de Verão", pts: "+30", date: "09/08" },
-    { desc: "Compra confirmada: Show do Ano", pts: "+30", date: "08/08" },
-    { desc: "Check-in realizado: Workshop", pts: "+20", date: "10/07" },
-    { desc: "Bônus de fidelidade", pts: "+20", date: "01/07" },
-    { desc: "Cadastro inicial", pts: "+30", date: "01/06" },
-  ];
+  const history = customer?.points_ledger || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 space-y-6">
       <div className="bg-[var(--accent)] text-[#111111] p-6 rounded-[var(--radius-md)] text-center shadow-lg">
         <div className="text-micro font-bold uppercase tracking-wider opacity-80">Saldo Atual</div>
-        <div className="text-5xl font-bold mt-1">180</div>
+        <div className="text-5xl font-bold mt-1">{customer?.points || 0}</div>
         <div className="text-small opacity-80 mt-1">pontos acumulados</div>
       </div>
 
       <div className="space-y-3">
         <h2 className="text-heading-2 font-bold">Histórico</h2>
-        {history.map((h, i) => (
-          <div key={i} className="flex justify-between items-center border-b border-[var(--border-subtle)] py-3">
-            <div>
-              <p className="text-body font-medium">{h.desc}</p>
-              <p className="text-small text-[var(--text-secondary)]">{h.date}</p>
+        {history.length > 0 ? (
+          history.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((h: any, i: number) => (
+            <div key={i} className="flex justify-between items-center border-b border-[var(--border-subtle)] py-3">
+              <div>
+                <p className="text-body font-medium">{h.reason}</p>
+                <p className="text-small text-[var(--text-secondary)]">
+                  {new Date(h.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                </p>
+              </div>
+              <span className="font-bold text-[var(--accent)]">
+                {h.points > 0 ? `+${h.points}` : h.points}
+              </span>
             </div>
-            <span className="font-bold text-[var(--accent)]">{h.pts}</span>
+          ))
+        ) : (
+          <div className="bg-[var(--bg-tertiary)]/30 border border-dashed border-[var(--border-subtle)] p-8 rounded-[var(--radius-md)] text-center">
+            <p className="text-small text-[var(--text-secondary)]">Nenhum histórico de pontos encontrado.</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

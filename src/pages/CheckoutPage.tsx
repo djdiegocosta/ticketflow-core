@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,14 +8,14 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { usePublicData } from '@/lib/public-data';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, ArrowRight, Loader2 } from 'lucide-react';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
-
+import { usePublicEvent } from '@/lib/customer-queries';
+import { useCreatePendingSale, useConfirmSalePaid, useTrackAbandonment } from '@/lib/sales-queries';
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
@@ -27,32 +27,31 @@ const checkoutSchema = z.object({
   }))
 });
 
-
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-const EVENT = {
-  name: 'Festa de Verão',
-  slug: 'festa-de-verao',
-  date: '20 de Dezembro, 22:00',
-  location: 'Arena Praia, Guarujá',
-  batches: [
-    { id: 'b1', name: 'Lote 01 - Promo', price: 120 },
-    { id: 'b2', name: 'Lote 02', price: 150 }
-  ]
-};
-
 export default function CheckoutPage() {
+  const { slug } = useParams({ from: '/e/$slug/checkout' });
   const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string };
   const qtyInput = parseInt(search.qty || '1');
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
-  const batch = EVENT.batches.find(b => b.id === search.batchId) || EVENT.batches[0];
+  
+  const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
+  const createPendingSale = useCreatePendingSale();
+  const confirmSalePaid = useConfirmSalePaid();
+  const trackAbandonment = useTrackAbandonment();
   
   const [step, setStep] = useState<'info' | 'payment'>('info');
   const [countdown, setCountdown] = useState(1800);
   const [pixCopied, setPixCopied] = useState(false);
+  const [isCreatingSale, setIsCreatingSale] = useState(false);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+  const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
+  const [currentSaleCode, setCurrentSaleCode] = useState<string | null>(null);
   
   const navigate = useNavigate();
-  const { addSale } = usePublicData();
+  const abandonmentTracked = useRef(false);
+
+  const batch = event?.ticket_batches?.find(b => b.id === search.batchId) || event?.ticket_batches?.[0];
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -65,11 +64,31 @@ export default function CheckoutPage() {
     }
   });
 
-
   const { fields } = useFieldArray({
     control: form.control,
     name: "participants"
   });
+
+  // Tracking de abandono ao desmontar se preencheu algo mas não gerou venda
+  useEffect(() => {
+    return () => {
+      const data = form.getValues();
+      if (
+        event?.id && 
+        !currentSaleId && 
+        !abandonmentTracked.current && 
+        data.buyerName.length > 3 && 
+        onlyDigits(data.buyerWhatsApp).length >= 10
+      ) {
+        trackAbandonment({
+          event_id: event.id,
+          buyer_name: data.buyerName,
+          buyer_whatsapp: data.buyerWhatsApp
+        });
+        abandonmentTracked.current = true;
+      }
+    };
+  }, [event?.id, currentSaleId, form, trackAbandonment]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -89,39 +108,51 @@ export default function CheckoutPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onSubmit = (data: CheckoutFormValues) => {
-    console.log("Submitting:", data);
-    setStep('payment');
-    window.scrollTo(0, 0);
+  const onSubmit = async (data: CheckoutFormValues) => {
+    if (!event || !batch) return;
+    
+    setIsCreatingSale(true);
+    try {
+      const saleResult = await createPendingSale({
+        event_id: event.id,
+        batch_id: batch.id,
+        buyer_name: data.buyerName,
+        buyer_whatsapp: data.buyerWhatsApp,
+        buyer_email: data.buyerEmail || "",
+        quantity: qty,
+        participant_names: data.participants.map(p => p.name)
+      });
+
+      // A RPC deve retornar o ID e o código da venda. Ajustando conforme provável retorno da RPC
+      // Se a RPC retornar apenas ID, precisaremos buscar o código.
+      // Assumindo que a RPC retorna { id, sale_code }
+      const resultArr = saleResult as any[];
+      const { sale_id: id, sale_code } = resultArr[0];
+      setCurrentSaleId(id);
+      setCurrentSaleCode(sale_code);
+      
+      setStep('payment');
+      window.scrollTo(0, 0);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao processar reserva. Tente novamente.");
+    } finally {
+      setIsCreatingSale(false);
+    }
   };
 
-  const simulatePayment = () => {
-    const data = form.getValues();
-    const newSaleCode = `TF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  const simulatePayment = async () => {
+    if (!currentSaleId || !currentSaleCode || !event) return;
 
-    const newSale = {
-      id: Math.random().toString(36).substring(7),
-      sale_code: newSaleCode,
-      event_slug: EVENT.slug,
-      event_name: EVENT.name,
-      event_date: EVENT.date,
-      amount_paid: (batch?.price || 0) * qty,
-      quantity: qty,
-      status: 'pago' as const,
-      tickets: data.participants.map((p, i) => ({
-        id: Math.random().toString(36).substring(7),
-        ticket_code: `TKT-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${i}`,
-        participant_name: p.name,
-        event_name: EVENT.name,
-        event_date: EVENT.date,
-        event_location: EVENT.location,
-        status: 'Válido' as const
-      }))
-    };
-
-    addSale(newSale);
-    toast.success("Pagamento confirmado com sucesso!");
-    navigate({ to: `/e/${EVENT.slug}/confirmacao/${newSaleCode}` });
+    setIsConfirmingPayment(true);
+    try {
+      await confirmSalePaid(currentSaleId);
+      toast.success("Pagamento confirmado com sucesso!");
+      navigate({ to: `/e/${event.slug}/confirmacao/${currentSaleCode}` });
+    } catch (err: any) {
+      toast.error("Erro ao confirmar pagamento simulado: " + err.message);
+    } finally {
+      setIsConfirmingPayment(false);
+    }
   };
 
   const handleSameAsBuyer = (checked: boolean | 'indeterminate') => {
@@ -139,6 +170,16 @@ export default function CheckoutPage() {
     setTimeout(() => setPixCopied(false), 2000);
   };
 
+  if (isLoadingEvent) {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
@@ -147,7 +188,7 @@ export default function CheckoutPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
           <div className="flex flex-col gap-1">
             <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
-            <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{EVENT.name}</h2>
+            <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
             <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
               <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
               <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
@@ -204,7 +245,6 @@ export default function CheckoutPage() {
                     )}
                   />
                 </div>
-
               </div>
             </div>
 
@@ -240,9 +280,10 @@ export default function CheckoutPage() {
 
             <Button 
               type="submit"
+              disabled={isCreatingSale}
               className="mt-4 h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)]"
             >
-              Ir para o pagamento
+              {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Ir para o pagamento"}
             </Button>
           </form>
         )}
@@ -281,10 +322,15 @@ export default function CheckoutPage() {
                 <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Modo de Teste</p>
                 <Button 
                   onClick={simulatePayment}
+                  disabled={isConfirmingPayment}
                   className="w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] flex items-center justify-center gap-2"
                 >
-                  Simular Pagamento Confirmado
-                  <ArrowRight className="h-4 w-4" />
+                  {isConfirmingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                    <>
+                      Simular Pagamento Confirmado
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
