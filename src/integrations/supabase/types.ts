@@ -871,7 +871,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      event_ticket_stats: {
+        Row: {
+          checkins_cortesias: number | null
+          checkins_vendidos: number | null
+          cortesias_emitidas: number | null
+          event_id: string | null
+          ingressos_vendidos: number | null
+          organization_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_organization: { Args: { _org_id: string }; Returns: undefined }
