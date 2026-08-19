@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   CheckinStatus,
-  addCheckinAttempt,
+
   resolveCheckin,
   preloadEventTickets,
   processSyncQueue,
@@ -154,16 +154,9 @@ export function CheckinPage() {
 
     const result = await resolveCheckin(code, selectedEvent.id, selectedEvent.title);
     
-    // addCheckinAttempt é apenas para o listener do useCheckinAttempts,
-    // o histórico real agora vem do Supabase via CheckinHistoryPage
-    addCheckinAttempt({
-      name: result.name,
-      eventName: result.eventName,
-      time: result.time,
-      status: result.status,
-      isOffline: result.isOffline,
-    });
+    // O histórico real agora vem do Supabase via CheckinHistoryPage ou queries diretas.
     setOverlay({ status: result.status, name: result.name, visible: true });
+
 
     // Atualiza contagem de pendentes se necessário
     const queue = await offlineDB.getSyncQueue();
