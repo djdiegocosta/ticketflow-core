@@ -30,16 +30,20 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete } = useAuth();
+  const { login, isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && isSplashComplete) {
-      if (userRole === 'admin' || userRole === 'colaborador') navigate({ to: '/admin' });
-      else if (userRole === 'cliente') navigate({ to: '/cliente' });
-      else if (userRole === 'operador_checkin') navigate({ to: '/checkin' });
+    if (!isLoading && isAuthenticated && isSplashComplete) {
+      if (userRole === 'admin' || userRole === 'colaborador') {
+        navigate({ to: '/admin', replace: true });
+      } else if (userRole === 'cliente') {
+        navigate({ to: '/cliente', replace: true });
+      } else if (userRole === 'operador_checkin') {
+        navigate({ to: '/checkin', replace: true });
+      }
     }
-  }, [isAuthenticated, userRole, isSplashComplete, navigate]);
+  }, [isLoading, isAuthenticated, userRole, isSplashComplete, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),

@@ -68,26 +68,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
-      setSession(data.session ?? null);
-      await loadContext(data.session?.user ?? null);
-      if (active) setIsLoading(false);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (!active) return;
-      if (
-        event !== 'SIGNED_IN' &&
-        event !== 'SIGNED_OUT' &&
-        event !== 'USER_UPDATED' &&
-        event !== 'INITIAL_SESSION'
-      ) {
-        setSession(newSession ?? null);
-        return;
+    const initializeAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!active) return;
+        
+        const currentSession = data.session;
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          await loadContext(currentSession.user);
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+      } finally {
+        if (active) setIsLoading(false);
       }
-      setSession(newSession ?? null);
-      void loadContext(newSession?.user ?? null);
+    };
+
+    initializeAuth();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!active) return;
+
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setSession(newSession);
+        await loadContext(newSession?.user ?? null);
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUserRole(null);
+        setUserName('');
+        setOrganizationId(null);
+        setOrganizationStatus(null);
+      } else if (event === 'TOKEN_REFRESHED') {
+        setSession(newSession);
+      }
     });
 
     return () => {

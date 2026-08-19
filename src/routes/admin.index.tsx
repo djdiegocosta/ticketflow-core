@@ -2,13 +2,11 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 
 export const Route = createFileRoute("/admin/")({
-  beforeLoad: () => {
-    if (typeof window === 'undefined') return;
-    const auth = window.localStorage.getItem('ticketflow_auth');
-    if (!auth) throw redirect({ to: '/login' });
-    
-    const data = JSON.parse(auth);
-    if (data.userRole === 'colaborador') {
+  beforeLoad: async ({ context }) => {
+    // A rota pai /admin já valida sessão e papel básico.
+    // Aqui apenas tratamos o redirecionamento específico do colaborador.
+    const ctx = (context as any).auth;
+    if (ctx?.role === 'colaborador') {
       throw redirect({ to: '/admin/vendas' });
     }
   },
