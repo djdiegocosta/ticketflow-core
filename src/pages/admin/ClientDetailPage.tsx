@@ -82,8 +82,8 @@ export function ClientDetailPage({ id }: { id: string }) {
 
   // Cálculo de idade aproximado
   let age = null;
-  if (client.birth_date) {
-    const birth = new Date(client.birth_date);
+  if (client.data_nascimento) {
+    const birth = new Date(client.data_nascimento);
     const now = new Date();
     age = now.getFullYear() - birth.getFullYear();
     if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {
@@ -91,8 +91,8 @@ export function ClientDetailPage({ id }: { id: string }) {
     }
   }
 
-  const lastPurchaseAt = history.length > 0 ? history[0].createdAt : "—";
-  const lastEvent = history.length > 0 ? history[0].eventName : "—";
+  const lastPurchaseAt = history && history.length > 0 ? history[0].createdAt : "—";
+  const lastEvent = history && history.length > 0 ? history[0].eventName : "—";
 
   return (
     <div className="space-y-6">
