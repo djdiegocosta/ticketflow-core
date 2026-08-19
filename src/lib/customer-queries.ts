@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,7 +19,7 @@ export function useCurrentCustomer() {
           *,
           points_ledger (*)
         `)
-        .eq("customer_id", customer.id)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) throw error;
@@ -33,11 +32,12 @@ export function useCurrentCustomer() {
  * Hook para buscar as vendas/ingressos do cliente logado
  */
 export function useCustomerSales() {
+  const { data: customer } = useCurrentCustomer();
+
   return useQuery({
-    queryKey: ["customer-sales"],
+    queryKey: ["customer-sales", customer?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!customer) return [];
 
       const { data, error } = await supabase
         .from("sales")
@@ -173,5 +173,45 @@ export function useTicketByCode(code: string) {
       return data;
     },
     enabled: !!code
+  });
+}
+
+/**
+ * Hook para atualizar o perfil do cliente
+ */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  const { data: customer } = useCurrentCustomer();
+
+  return useMutation({
+    mutationFn: async (vars: { 
+      full_name: string; 
+      email: string; 
+      whatsapp: string; 
+      cidade: string; 
+      data_nascimento?: string; 
+      instagram?: string; 
+    }) => {
+      if (!customer?.id) throw new Error("Cliente não identificado");
+
+      const { error } = await supabase.rpc("update_customer", {
+        _customer_id: customer.id,
+        _full_name: vars.full_name,
+        _email: vars.email,
+        _whatsapp: vars.whatsapp,
+        _data_nascimento: vars.data_nascimento || "",
+        _cidade: vars.cidade,
+        _instagram: vars.instagram || ""
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["current-customer"] });
+      toast.success("Perfil atualizado com sucesso");
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar perfil: " + error.message);
+    }
   });
 }
