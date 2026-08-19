@@ -1,14 +1,23 @@
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { usePublicData } from '@/lib/public-data';
 import { useParams, Link } from '@tanstack/react-router';
-import { CheckCircle2, QrCode, Download, UserPlus } from 'lucide-react';
+import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useSaleByCode } from '@/lib/customer-queries';
 
 export default function ConfirmationPage() {
   const { sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
-  const { getSaleByCode } = usePublicData();
-  const sale = getSaleByCode(sale_code);
+  const { data: sale, isLoading } = useSaleByCode(sale_code);
+
+  if (isLoading) {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
 
   if (!sale) {
     return (
@@ -45,11 +54,13 @@ export default function ConfirmationPage() {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Evento</span>
-              <span className="font-semibold text-[var(--text-primary)]">{sale.event_name}</span>
+              <span className="font-semibold text-[var(--text-primary)] text-right">{(sale.events as any)?.title}</span>
             </div>
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Data</span>
-              <span className="font-semibold text-[var(--text-primary)]">{new Date(sale.event_date).toLocaleDateString('pt-BR')}</span>
+              <span className="font-semibold text-[var(--text-primary)]">
+                {sale.events?.event_date ? new Date(sale.events.event_date).toLocaleDateString('pt-BR') : '—'}
+              </span>
             </div>
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Qtd. Ingressos</span>
@@ -57,7 +68,7 @@ export default function ConfirmationPage() {
             </div>
             <div className="flex justify-between border-t border-[var(--border-subtle)] pt-2 text-heading-3">
               <span className="text-[var(--text-secondary)]">Total pago</span>
-              <span className="font-bold text-[var(--accent-text)]">R$ {sale.amount_paid.toFixed(2)}</span>
+              <span className="font-bold text-[var(--accent-text)]">R$ {Number(sale.total_amount || 0).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -66,7 +77,7 @@ export default function ConfirmationPage() {
         <div className="flex flex-col gap-4">
           <h3 className="text-heading-3 font-bold text-[var(--text-primary)]">Seus Ingressos</h3>
           <div className="flex flex-col gap-4">
-            {sale.tickets.map((ticket) => (
+            {(sale.tickets || []).map((ticket: any) => (
               <div key={ticket.id} className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-primary)] overflow-hidden">
                 <div className="flex items-center gap-4 p-4 border-b border-dashed border-[var(--border-subtle)]">
                   <div className="bg-white p-2 rounded-md">
