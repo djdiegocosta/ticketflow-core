@@ -102,7 +102,7 @@ export function CheckinPage() {
       window.removeEventListener("online", handleConnectivityChange);
       window.removeEventListener("offline", handleConnectivityChange);
     };
-  }, [selectedEvent.name]);
+  }, [selectedEvent?.title]);
 
   // Wake Lock
   useEffect(() => {
