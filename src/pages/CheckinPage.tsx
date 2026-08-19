@@ -39,7 +39,8 @@ export function CheckinPage() {
 
   useEffect(() => {
     if (events.length > 0 && !selectedEventId) {
-      setSelectedEventId(events[0].id);
+      const firstEvent = events[0];
+      if (firstEvent) setSelectedEventId(firstEvent.id);
     }
   }, [events, selectedEventId]);
 
