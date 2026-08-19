@@ -1,24 +1,34 @@
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { usePublicData } from '@/lib/public-data';
-import { useParams, Link } from '@tanstack/react-router';
-import { Calendar, MapPin, User, ChevronLeft, Share2 } from 'lucide-react';
+import { useParams, Link, useNavigate } from '@tanstack/react-router';
+import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Badge } from '@/components/ui/badge';
+import { useTicketByCode } from '@/lib/customer-queries';
 
 export default function TicketDetailPage() {
   const { ticket_code } = useParams({ from: '/ingresso/$ticket_code' });
-  const { getTicketByCode } = usePublicData();
-  const ticket = getTicketByCode(ticket_code);
+  const { data: ticket, isLoading, error } = useTicketByCode(ticket_code);
+  const navigate = useNavigate();
 
-  if (!ticket) {
+  if (isLoading) {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (error || !ticket) {
     return (
       <MobileLayout showFooter={false}>
         <div className="flex flex-col items-center justify-center gap-4 px-5 py-20 text-center">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Ingresso não encontrado</h2>
           <p className="text-small text-[var(--text-secondary)]">O código do ingresso é inválido.</p>
-          <Button asChild className="bg-[var(--accent)] text-[#111111]">
-            <Link to="/meus-ingressos">Buscar outro</Link>
+          <Button onClick={() => navigate({ to: '/meus-ingressos' })} className="bg-[var(--accent)] text-[#111111]">
+            Buscar outro
           </Button>
         </div>
       </MobileLayout>
@@ -33,6 +43,8 @@ export default function TicketDetailPage() {
       default: return 'outline';
     }
   };
+
+  const eventData = (ticket.sales as any)?.events;
 
   return (
     <MobileLayout 
@@ -53,8 +65,8 @@ export default function TicketDetailPage() {
         
         {/* Ticket Branding Header */}
         <div className="flex flex-col items-center gap-2 text-center mb-2">
-          <h1 className="text-display font-bold leading-tight text-[var(--text-primary)]">
-            {ticket.event_name}
+          <h1 className="text-display font-bold leading-tight text-[var(--text-primary)] text-center">
+            {eventData?.title || "Evento"}
           </h1>
           <Badge variant={getStatusVariant(ticket.status) as any} className="mt-1">
             {ticket.status}
@@ -94,7 +106,9 @@ export default function TicketDetailPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs text-[var(--text-secondary)] uppercase font-semibold tracking-wider">Data do Evento</span>
-                <span className="text-body font-bold text-[var(--text-primary)]">{new Date(ticket.event_date).toLocaleString('pt-BR')}</span>
+                <span className="text-body font-bold text-[var(--text-primary)]">
+                  {eventData?.event_date ? new Date(eventData.event_date).toLocaleString('pt-BR') : '—'}
+                </span>
               </div>
             </div>
 
@@ -104,7 +118,7 @@ export default function TicketDetailPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs text-[var(--text-secondary)] uppercase font-semibold tracking-wider">Local</span>
-                <span className="text-body font-bold text-[var(--text-primary)]">{ticket.event_location}</span>
+                <span className="text-body font-bold text-[var(--text-primary)]">{eventData?.location || "Local não informado"}</span>
               </div>
             </div>
           </div>

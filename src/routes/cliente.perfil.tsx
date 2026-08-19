@@ -1,49 +1,68 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
-import { useState } from "react";
 import { formatName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useCurrentCustomer, useUpdateProfile } from "@/lib/customer-queries";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 const profileSchema = z.object({
-  nome: z.string().min(1, "Nome obrigatório"),
-  zap: z.string().min(1, "WhatsApp obrigatório"),
+  full_name: z.string().min(1, "Nome obrigatório"),
+  whatsapp: z.string().min(1, "WhatsApp obrigatório"),
   email: z.string().email("E-mail inválido"),
   cidade: z.string().min(1, "Cidade obrigatória"),
-  nasc: z.string().optional(),
-  insta: z.string().optional(),
+  data_nascimento: z.string().optional(),
+  instagram: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+export function Page_cliente_perfil() {
+  const { data: customer, isLoading } = useCurrentCustomer();
+  const updateProfile = useUpdateProfile();
 
-export const Route = createFileRoute("/cliente/perfil")({
-  head: () => ({
-    meta: [
-      { title: "Meu Perfil | TicketFlow" },
-      { name: "description", content: "Gerencie suas informações pessoais." },
-      { property: "og:title", content: "Meu Perfil | TicketFlow" },
-      { property: "og:description", content: "Gerencie suas informações pessoais." },
-    ],
-  }),
-  component: Page_cliente_perfil,
-});
-
-function Page_cliente_perfil() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      nome: "Marina Duarte",
-      zap: "(11) 99999-9999",
-      email: "cliente@ticketflow.com",
-      cidade: "São Paulo",
-      nasc: "1995-05-15",
-      insta: "@marina.d"
+      full_name: "",
+      whatsapp: "",
+      email: "",
+      cidade: "",
+      data_nascimento: "",
+      instagram: ""
     }
   });
 
-  const [completude, setCompletude] = useState(85);
+  useEffect(() => {
+    if (customer) {
+      form.reset({
+        full_name: customer.full_name || "",
+        whatsapp: customer.whatsapp || "",
+        email: customer.email || "",
+        cidade: customer.cidade || "",
+        data_nascimento: customer.data_nascimento || "",
+        instagram: customer.instagram || ""
+      });
+    }
+  }, [customer, form]);
+
+  const onSubmit = (data: ProfileFormValues) => {
+    updateProfile.mutate(data);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+      </div>
+    );
+  }
+
+  // Cálculo de completude simples
+  const fields = ['full_name', 'whatsapp', 'email', 'cidade', 'data_nascimento', 'instagram'];
+  const completedFields = fields.filter(f => !!form.watch(f as any)).length;
+  const completude = Math.round((completedFields / fields.length) * 100);
 
   return (
     <div className="p-4 space-y-6">
@@ -58,29 +77,31 @@ function Page_cliente_perfil() {
         </div>
       </div>
 
-      <form className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-20">
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Nome completo</label>
           <input 
-            {...form.register("nome")}
+            {...form.register("full_name")}
             onInput={(e) => {
               const target = e.target as HTMLInputElement;
               target.value = formatName(target.value);
             }}
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
+          {form.formState.errors.full_name && <p className="text-micro text-error">{form.formState.errors.full_name.message}</p>}
         </div>
 
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">WhatsApp</label>
           <input 
-            {...form.register("zap")}
+            {...form.register("whatsapp")}
             onInput={(e) => {
               const target = e.target as HTMLInputElement;
               target.value = maskWhatsApp(target.value);
             }}
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
+          {form.formState.errors.whatsapp && <p className="text-micro text-error">{form.formState.errors.whatsapp.message}</p>}
         </div>
 
         <div className="space-y-1">
@@ -90,6 +111,7 @@ function Page_cliente_perfil() {
             type="email"
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
+          {form.formState.errors.email && <p className="text-micro text-error">{form.formState.errors.email.message}</p>}
         </div>
 
         <div className="space-y-1">
@@ -97,28 +119,22 @@ function Page_cliente_perfil() {
           <Controller
             control={form.control}
             name="cidade"
-            render={({ field }) => {
-              return (
-                <div className="flex flex-col gap-1">
-                  <CityAutocomplete
-                    value={field.value}
-                    onChange={field.onChange}
-                    uf={null}
-                    className="rounded-[var(--radius-sm)]"
-                  />
-                  {form.formState.errors.cidade && (
-                    <span className="text-small text-error">{form.formState.errors.cidade.message}</span>
-                  )}
-                </div>
-              );
-            }}
+            render={({ field }) => (
+              <CityAutocomplete
+                value={field.value}
+                onChange={field.onChange}
+                uf={null}
+                className="rounded-[var(--radius-sm)]"
+              />
+            )}
           />
+          {form.formState.errors.cidade && <p className="text-micro text-error">{form.formState.errors.cidade.message}</p>}
         </div>
 
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Data de Nascimento</label>
           <input 
-            {...form.register("nasc")}
+            {...form.register("data_nascimento")}
             type="date"
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
@@ -127,16 +143,20 @@ function Page_cliente_perfil() {
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Instagram</label>
           <input 
-            {...form.register("insta")}
+            {...form.register("instagram")}
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
         </div>
 
-        <button type="button" className="w-full bg-[var(--accent)] text-[#111111] font-bold py-3 rounded-[var(--radius-md)]">
+        <button 
+          type="submit" 
+          disabled={updateProfile.isPending}
+          className="w-full bg-[var(--accent)] text-[#111111] font-bold py-3 rounded-[var(--radius-md)] flex items-center justify-center gap-2"
+        >
+          {updateProfile.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           Salvar Alterações
         </button>
       </form>
-
     </div>
   );
 }

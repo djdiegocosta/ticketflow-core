@@ -1,26 +1,33 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
+import { useCustomerStats, useCustomerSales } from "@/lib/customer-queries";
+import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/cliente/")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard | TicketFlow" },
-      { name: "description", content: "Sua central de eventos e ingressos." },
-      { property: "og:title", content: "Dashboard | TicketFlow" },
-      { property: "og:description", content: "Sua central de eventos e ingressos." },
-    ],
-  }),
-  component: Page_cliente_index,
-});
-
-function Page_cliente_index() {
+export function Page_cliente_index() {
   const { userName } = useAuth();
+  const { points, totalEvents, totalTickets } = useCustomerStats();
+  const { data: sales = [], isLoading } = useCustomerSales();
   
   const stats = [
-    { label: "Eventos", value: "3" },
-    { label: "Ingressos", value: "5" },
-    { label: "Pontos", value: "180" },
+    { label: "Eventos", value: totalEvents },
+    { label: "Ingressos", value: totalTickets },
+    { label: "Pontos", value: points },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+      </div>
+    );
+  }
+
+  const upcomingEvents = sales.filter((s: any) => 
+    s.status === 'pago' && new Date(s.events?.event_date) > new Date()
+  ).slice(0, 3);
+
+  const pastEvents = sales.filter((s: any) => 
+    s.status === 'pago' && new Date(s.events?.event_date) <= new Date()
+  ).slice(0, 3);
 
   return (
     <div className="p-4 space-y-6">
@@ -37,19 +44,39 @@ function Page_cliente_index() {
 
       <div className="space-y-4">
         <h2 className="text-heading-2 font-bold">Próximos eventos</h2>
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)]">
-          <p className="font-semibold">Festa de Verão</p>
-          <p className="text-small text-[var(--text-secondary)]">15/08/2026 • 2 ingressos</p>
-        </div>
+        {upcomingEvents.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {upcomingEvents.map((sale: any) => (
+              <div key={sale.id} className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)]">
+                <p className="font-semibold">{sale.events?.title}</p>
+                <p className="text-small text-[var(--text-secondary)]">
+                  {new Date(sale.events?.event_date).toLocaleDateString('pt-BR')} • {sale.quantity} ingresso{sale.quantity > 1 ? 's' : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-[var(--bg-tertiary)]/30 border border-dashed border-[var(--border-subtle)] p-6 rounded-[var(--radius-md)] text-center">
+            <p className="text-small text-[var(--text-secondary)]">Nenhum evento futuro encontrado.</p>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-heading-2 font-bold">Eventos passados</h2>
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)] opacity-80">
-          <p className="font-semibold">Workshop de Tech</p>
-          <p className="text-small text-[var(--text-secondary)]">10/07/2026</p>
+      {pastEvents.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-heading-2 font-bold">Eventos passados</h2>
+          <div className="flex flex-col gap-3">
+            {pastEvents.map((sale: any) => (
+              <div key={sale.id} className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)] opacity-80">
+                <p className="font-semibold">{sale.events?.title}</p>
+                <p className="text-small text-[var(--text-secondary)]">
+                  {new Date(sale.events?.event_date).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
