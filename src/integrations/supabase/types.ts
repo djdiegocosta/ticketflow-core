@@ -113,6 +113,41 @@ export type Database = {
           },
         ]
       }
+      checkout_rate_limits: {
+        Row: {
+          attempts_count: number | null
+          buyer_whatsapp: string
+          event_id: string | null
+          id: string
+          ip_address: string | null
+          last_attempt_at: string | null
+        }
+        Insert: {
+          attempts_count?: number | null
+          buyer_whatsapp: string
+          event_id?: string | null
+          id?: string
+          ip_address?: string | null
+          last_attempt_at?: string | null
+        }
+        Update: {
+          attempts_count?: number | null
+          buyer_whatsapp?: string
+          event_id?: string | null
+          id?: string
+          ip_address?: string | null
+          last_attempt_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_rate_limits_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           cidade: string | null
