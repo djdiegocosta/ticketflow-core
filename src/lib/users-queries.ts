@@ -41,7 +41,7 @@ export function useOrganizationUsers() {
           id: i.id,
           name: "Convidado",
           email: i.email,
-          role: i.role,
+          role: i.role as "admin" | "colaborador" | "operador_checkin",
           invitedAt: i.created_at,
           status: "Convite pendente" as const,
         })),
