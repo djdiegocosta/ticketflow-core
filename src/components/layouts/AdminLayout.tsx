@@ -192,7 +192,6 @@ export function AdminLayout() {
           </div>
         </header>
 
-        {/* Content Area - Independent Scroll */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin">
           <Outlet />
         </main>
