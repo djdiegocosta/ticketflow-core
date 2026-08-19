@@ -91,8 +91,8 @@ export function ClientDetailPage({ id }: { id: string }) {
     }
   }
 
-  const lastPurchaseAt = history && history.length > 0 ? history[0].createdAt : "—";
-  const lastEvent = history && history.length > 0 ? history[0].eventName : "—";
+  const lastPurchaseAt = history && history.length > 0 ? (history[0]?.createdAt || "—") : "—";
+  const lastEvent = history && history.length > 0 ? (history[0]?.eventName || "—") : "—";
 
   return (
     <div className="space-y-6">
