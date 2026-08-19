@@ -12,8 +12,8 @@ const profileSchema = z.object({
   whatsapp: z.string().min(1, "WhatsApp obrigatório"),
   email: z.string().email("E-mail inválido"),
   cidade: z.string().min(1, "Cidade obrigatória"),
-  data_nascimento: z.string().nullable().optional(),
-  instagram: z.string().nullable().optional(),
+  data_nascimento: z.string().nullable().default(null),
+  instagram: z.string().nullable().default(null),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
