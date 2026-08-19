@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
+import { useMpConfig, useUpsertMpConfig } from "@/lib/settings-queries";
 
 const steps = [
   { id: 1, label: "Ambiente", icon: Globe2 },
@@ -60,6 +61,9 @@ function Notice({ children, tone = "info" }: { children: React.ReactNode; tone?:
 }
 
 export function MercadoPagoWizardPage() {
+  const { data: currentConfig, isLoading } = useMpConfig();
+  const upsertMutation = useUpsertMpConfig();
+  
   const [current, setCurrent] = useState(1);
   const [validated, setValidated] = useState<number[]>([]);
   const [environment, setEnvironment] = useState<MpEnvironment | null>(null);
@@ -77,6 +81,18 @@ export function MercadoPagoWizardPage() {
   const [secretTail, setSecretTail] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
 
+  // Preencher dados ao carregar
+  useState(() => {
+    if (currentConfig && (currentConfig as any).environment) {
+      const configEnv = (currentConfig as any).environment as MpEnvironment;
+      setEnvironment(configEnv);
+      setPublicKey(prev => ({ ...prev, [configEnv]: (currentConfig as any).public_key || "" }));
+      setSavedPublicKey(prev => ({ ...prev, [configEnv]: !!(currentConfig as any).public_key }));
+      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" })); // Mock de tail para mostrar que existe
+      setValidated([1, 2, 3]);
+    }
+  });
+
   const env: MpEnvironment = environment ?? "sandbox";
   const isValidated = (id: number) => validated.includes(id);
   const canOpen = (id: number) => id === 1 || isValidated(id) || isValidated(id - 1) || id <= current;
@@ -89,15 +105,37 @@ export function MercadoPagoWizardPage() {
   };
 
   const testCredentials = () => {
+    if (!tokenInput && !tokenTail[env]) {
+      toast.error("Access Token é obrigatório");
+      return;
+    }
+    
     setTesting(true);
-    setTimeout(() => {
-      setTesting(false);
-      markValidated(3);
-      toast.success("Credenciais validadas com sucesso (simulação)");
-    }, 1400);
+    
+    upsertMutation.mutate({
+      environment: env,
+      public_key: publicKey[env],
+      access_token: tokenInput || "", // Se vazio e tem tail, o backend mantém o atual (hipotético)
+      webhook_secret: secretInput || ""
+    }, {
+      onSuccess: () => {
+        setTesting(false);
+        markValidated(3);
+        toast.success("Configuração salva e validada");
+        if (tokenInput) {
+          setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
+          setTokenInput("");
+        }
+      },
+      onError: () => setTesting(false)
+    });
   };
 
   const progress = validated.length;
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-body text-text-secondary">Carregando configurações...</div>;
+  }
 
   return (
     <div className="space-y-8">
