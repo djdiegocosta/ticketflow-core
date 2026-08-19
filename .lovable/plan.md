@@ -1,26 +1,45 @@
-# Plano de Evidência e Finalização: Fluxo 1A (Checkout Público)
+# Plano de Blindagem AAA — Checkout Público & Check-in QR Code
 
-Este plano detalha a coleta de evidências concretas para os 4 pontos críticos exigidos para o fechamento do Fluxo 1A, além da conclusão do Rate Limiting.
+## 1. Checkout Público (Fluxo 1A) — Conclusão e Evidências
+Mapeamento de evidências para os 4 pontos críticos e finalização do Rate Limiting.
 
-## 1. Evidência de Overselling (Teste de Concorrência)
-- **Ação**: Criar um script Playwright/Python para disparar 20 requisições simultâneas à RPC `create_pending_sale` visando um lote com apenas 1 ingresso disponível.
-- **Resultado Esperado**: Exatamente 1 sucesso e 19 falhas com erro "Estoque insuficiente".
-- **Comprovação**: Log das respostas e print do estado final do banco (estoque = 0).
+### 🔴 Auditor de Negócio & Adversário
+- **Overselling (Teste de Estresse)**: Executar script em Python com `asyncio` para disparar 20 chamadas simultâneas à RPC `create_pending_sale` contra um lote com 1 ingresso.
+  - **Meta**: 1 sucesso, 19 erros de estoque insuficiente.
+- **Centralização de Nome**: Auditar e unificar o uso de `formatName` e `isFullName` em `src/pages/CheckoutPage.tsx`. Atualmente, o frontend usa `zod` e `onBlur` separadamente; a meta é garantir que o banco receba o dado já processado pela RPC `SECURITY DEFINER`.
+- **Expiração Automática**: A RPC `expire_pending_sales` já existe, mas não está agendada.
+  - **Ação**: Criar migração SQL para habilitar `pg_cron` e agendar a execução a cada 5 minutos.
+- **Idempotência (Backend)**: Implementar trava de 60 segundos na RPC `create_pending_sale` baseada no par `(event_id, buyer_whatsapp)` para evitar reservas duplicadas em rajada, complementando a trava de UI.
 
-## 2. Centralização de Validação de Nome
-- **Ação**: Mapear todos os componentes que importam `formatName` e `isFullName`.
-- **Unificação**: Garantir que o `CheckoutPage.tsx` utilize estritamente estas funções em seu `zodResolver` e nos handlers de input, eliminando lógicas paralelas.
+### 🟡 Caos
+- **Rate Limiting**: Finalizar a implementação da tabela `checkout_rate_limits` e injetar a verificação na RPC de venda.
 
-## 3. Agendamento de Expiração (30 min)
-- **Ação**: Verificar se existe um `cron.schedule` para `expire_pending_sales`.
-- **Implementação**: Se ausente, criar uma migração SQL configurando o `pg_cron` para rodar a cada 5 ou 10 minutos, garantindo que vendas com >30min sejam canceladas e o estoque devolvido.
+---
 
-## 4. Idempotência do Backend (Anti-Duplo Clique)
-- **Mecanismo**: A RPC já possui um `ON CONFLICT (event_id, buyer_whatsapp)` na tabela de abandonos, mas precisamos de uma trava na criação da venda.
-- **Melhoria**: Adicionar uma janela de tempo na RPC (ex: impedir nova reserva para o mesmo WhatsApp/Evento se houver uma 'pendente' criada nos últimos 60 segundos).
+## 2. Check-in por QR Code (Fluxo 2) — Blindagem
+Foco em resiliência offline e segurança de acesso (RBAC).
 
-## 5. Conclusão do Rate Limiting
-- **Implementação**: Finalizar a migração da tabela `checkout_rate_limits` e integrá-la à RPC `create_pending_sale`.
+### 🔎 Achados e Correções
+- **Achado #1 (Perda de Dados)**: Corrigir `processSyncQueue` em `src/lib/checkin-data.ts`.
+  - **Ação**: Alterar o loop para remover do IndexedDB apenas itens com `status: 200`. Itens com erro devem permanecer na fila para nova tentativa.
+- **Achado #2 (Guard SuperAdmin)**: Proteger `/superadmin`.
+  - **Ação**: Adicionar `beforeLoad` em `src/routes/superadmin.tsx` validando `has_role(auth.uid(), 'superadmin')`. Redirecionar operadores para `/checkin`.
+- **Achado #3 (Limpeza de Legado)**: Remover `useCheckinAttempts` e `addCheckinAttempt` de `src/lib/checkin-data.ts`.
+  - **Ação**: Substituir chamadas em `CheckinPage.tsx` pelo histórico real filtrado do banco/cache local.
+- **Achado #4 (Schema & Isolamento)**:
+  - **Ação**: Criar migration para `checkin_log` e RPC `checkin_ticket` (atualmente apenas introspectadas). Garantir que a RPC valide `organization_id` comparando o `event_id` do ticket com a organização do usuário logado.
 
-## Tabela de Release Gate (Final)
-Ao concluir, apresentarei os resultados em formato de tabela para aprovação final.
+---
+
+## 3. Comitê AAA (Check-in)
+- **🔴 Adversário**: Rate limiting na RPC `checkin_ticket` para evitar brute force no código manual.
+- **🟡 Caos**: Proteção contra disparos duplicados de sincronização em redes instáveis (lock de execução em `processSyncQueue`).
+- **🔵 Auditor**: Garantir que `checkin_log` registre `invalid` e `duplicate` (hoje pode estar ignorando falhas no offline).
+- **🟣 Borda**: Refinar o indicador de "Sincronização Pendente" no header para ser visualmente mais urgente se a fila crescer.
+
+## Cronograma de Execução
+1. Executar testes de Overselling e gerar relatório.
+2. Aplicar migrações de agendamento (cron) e rate limit.
+3. Refatorar `checkin-data.ts` (offline e limpeza de legado).
+4. Implementar Guards de rota em SuperAdmin.
+5. Atualizar Tabela de Status final (Release Gate).
