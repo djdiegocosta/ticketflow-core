@@ -1,36 +1,55 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Minus, Plus } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
-
-// Mock data
-const EVENT = {
-  id: 'e1',
-  name: 'Festa de Verão',
-  slug: 'festa-de-verao',
-  date: 'Sábado, 20 de Dezembro • 22:00',
-  location: 'Arena Praia, Guarujá',
-  description: 'A melhor festa do verão chega ao Guarujá com open bar premium, atrações nacionais e uma estrutura nunca antes vista na praia. Prepare-se para uma noite inesquecível com pé na areia e o melhor do House Music e Open Format.',
-  coverImage: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=1200',
-  batches: [
-    { id: 'b1', name: 'Lote 01 - Promo', price: 120, status: 'disponivel', stock: 5 },
-    { id: 'b2', name: 'Lote 02', price: 150, status: 'disponivel', stock: 50 }
-  ]
-};
+import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { usePublicEvent } from '@/lib/customer-queries';
 
 export default function EventPage() {
-  const [selectedBatchId, setSelectedBatchId] = useState(EVENT.batches[0]?.id || '');
+  const { slug } = useParams({ from: '/e/$slug/' });
+  const { data: event, isLoading, error } = usePublicEvent(slug);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  const selectedBatch = EVENT.batches.find(b => b.id === selectedBatchId) || EVENT.batches[0];
+  // Seleciona o primeiro lote por padrão quando carregar
+  useMemo(() => {
+    if (event?.ticket_batches?.length && !selectedBatchId) {
+      setSelectedBatchId(event.ticket_batches[0].id);
+    }
+  }, [event, selectedBatchId]);
+
+  if (isLoading) {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex flex-col items-center justify-center gap-4 px-5 py-20 text-center">
+          <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Evento não encontrado</h2>
+          <p className="text-small text-[var(--text-secondary)]">Este evento não existe ou não está mais disponível.</p>
+          <Button onClick={() => navigate({ to: '/' })} className="bg-[var(--accent)] text-[#111111]">
+            Voltar ao início
+          </Button>
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  const selectedBatch = event.ticket_batches.find(b => b.id === selectedBatchId) || event.ticket_batches[0];
   const totalPrice = (selectedBatch?.price || 0) * quantity;
 
   const handleBuy = () => {
     if (!selectedBatchId) return;
     navigate({ 
-      to: `/e/${EVENT.slug}/checkout`,
+      to: `/e/${event.slug}/checkout`,
       search: { batchId: selectedBatchId, qty: String(quantity) }
     });
   };
@@ -39,12 +58,18 @@ export default function EventPage() {
     <MobileLayout showFooter={false}>
       <div className="flex flex-col animate-in fade-in duration-500">
         {/* Cover Image */}
-        <div className="relative h-64 w-full">
-          <img 
-            src={EVENT.coverImage} 
-            alt={EVENT.name}
-            className="h-full w-full object-cover"
-          />
+        <div className="relative h-64 w-full bg-[var(--bg-tertiary)]">
+          {event.image_url ? (
+            <img 
+              src={event.image_url} 
+              alt={event.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[var(--text-disabled)]">
+              Sem imagem
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] to-transparent opacity-60" />
         </div>
 
@@ -52,31 +77,31 @@ export default function EventPage() {
         <div className="relative -mt-8 flex flex-col gap-6 rounded-t-3xl bg-[var(--bg-primary)] px-5 pt-8 pb-32 safe-area-bottom">
           <div className="flex flex-col gap-2">
             <h1 className="text-display font-bold leading-tight text-[var(--text-primary)]">
-              {EVENT.name}
+              {event.title}
             </h1>
             <div className="flex flex-col gap-1.5 mt-2">
               <div className="flex items-center gap-2 text-small text-[var(--text-secondary)]">
                 <Calendar className="h-4 w-4 text-[var(--accent)]" />
-                <span>{EVENT.date}</span>
+                <span>{new Date(event.event_date).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}</span>
               </div>
               <div className="flex items-center gap-2 text-small text-[var(--text-secondary)]">
                 <MapPin className="h-4 w-4 text-[var(--accent)]" />
-                <span>{EVENT.location}</span>
+                <span>{event.location}</span>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
             <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Sobre o evento</h3>
-            <p className="text-body text-[var(--text-secondary)] leading-relaxed">
-              {EVENT.description}
+            <p className="text-body text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
+              {event.description || "Nenhuma descrição informada."}
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Selecione o ingresso</h3>
             <div className="flex flex-col gap-3">
-              {EVENT.batches.map((batch) => (
+              {event.ticket_batches.map((batch) => (
                 <button
                   key={batch.id}
                   onClick={() => setSelectedBatchId(batch.id)}
@@ -129,6 +154,7 @@ export default function EventPage() {
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 py-4 safe-area-bottom shadow-lg">
         <Button
           onClick={handleBuy}
+          disabled={!selectedBatchId}
           className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] transition-all active:scale-[0.98]"
         >
           <span>Comprar agora • R$ {totalPrice.toFixed(2)}</span>
