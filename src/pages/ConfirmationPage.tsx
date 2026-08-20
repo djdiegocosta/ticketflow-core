@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { useParams, Link } from '@tanstack/react-router';
 import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useSaleByCode } from '@/lib/customer-queries';
+import { useSaleByCode, useApplyPublicDesign } from '@/lib/customer-queries';
 
 export default function ConfirmationPage() {
-  const { sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
+  const { slug } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
   const { data: sale, isLoading } = useSaleByCode(sale_code);
+  useApplyPublicDesign(slug);
 
   if (isLoading) {
     return (
