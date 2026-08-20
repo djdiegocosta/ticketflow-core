@@ -6,7 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useSaleByCode, useApplyPublicDesign } from '@/lib/customer-queries';
 
 export default function ConfirmationPage() {
-  const { slug } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
+  const { slug, sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
   const { data: sale, isLoading } = useSaleByCode(sale_code);
   useApplyPublicDesign(slug);
 
