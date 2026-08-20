@@ -422,11 +422,7 @@ export function MercadoPagoWizardPage() {
                   <Button
                     variant="secondary"
                     disabled={tokenInput.trim().length < 4}
-                    onClick={() => {
-                      setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
-                      setTokenInput("");
-                      toast.success("Access Token salvo com segurança");
-                    }}
+                    onClick={saveCredentials}
                   >
                     Salvar
                   </Button>
