@@ -49,7 +49,6 @@ export async function fetchSales(): Promise<Sale[]> {
 
 export function useSales() {
   return useQuery<Sale[]>({
-  return useQuery({
     queryKey: ["sales"],
     queryFn: fetchSales,
   });
@@ -104,7 +103,6 @@ export function useCourtesiesStats() {
 
 export function useSale(id: string) {
   return useQuery<Sale>({
-  return useQuery({
     queryKey: ["sales", id],
     queryFn: async () => {
       const { data, error } = await supabase
