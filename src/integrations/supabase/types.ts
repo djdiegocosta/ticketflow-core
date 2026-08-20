@@ -150,6 +150,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          account_created_at: string | null
           cidade: string | null
           created_at: string
           data_nascimento: string | null
@@ -164,6 +165,7 @@ export type Database = {
           whatsapp: string
         }
         Insert: {
+          account_created_at?: string | null
           cidade?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -178,6 +180,7 @@ export type Database = {
           whatsapp: string
         }
         Update: {
+          account_created_at?: string | null
           cidade?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -991,6 +994,7 @@ export type Database = {
         Returns: undefined
       }
       bootstrap_organization: { Args: { _name: string }; Returns: string }
+      cancel_event: { Args: { _event_id: string }; Returns: undefined }
       cancel_sale: { Args: { _sale_id: string }; Returns: undefined }
       change_organization_plan: {
         Args: {
@@ -1177,7 +1181,7 @@ export type Database = {
       abandonment_status: "nao_contactado" | "contactado" | "convertido"
       abandonment_type: "sem_pix" | "pix_nao_pago"
       app_role: "admin" | "colaborador" | "operador_checkin"
-      event_status: "rascunho" | "publicado"
+      event_status: "rascunho" | "publicado" | "cancelado"
       mp_environment: "sandbox" | "producao"
       org_plan: "start" | "pro" | "business"
       org_status: "pending" | "active" | "suspended" | "cancelled"
@@ -1188,7 +1192,12 @@ export type Database = {
         | "cartao"
         | "outro"
       sale_origin: "ticketflow" | "manual" | "importado"
-      sale_status: "pendente" | "pago" | "cancelado" | "reembolsado"
+      sale_status:
+        | "pendente"
+        | "pago"
+        | "cancelado"
+        | "reembolsado"
+        | "expirado"
       ticket_status: "valido" | "utilizado" | "cancelado"
       verification_type: "webhook_hmac" | "manual_admin" | "importado"
     }
@@ -1321,7 +1330,7 @@ export const Constants = {
       abandonment_status: ["nao_contactado", "contactado", "convertido"],
       abandonment_type: ["sem_pix", "pix_nao_pago"],
       app_role: ["admin", "colaborador", "operador_checkin"],
-      event_status: ["rascunho", "publicado"],
+      event_status: ["rascunho", "publicado", "cancelado"],
       mp_environment: ["sandbox", "producao"],
       org_plan: ["start", "pro", "business"],
       org_status: ["pending", "active", "suspended", "cancelled"],
@@ -1333,7 +1342,7 @@ export const Constants = {
         "outro",
       ],
       sale_origin: ["ticketflow", "manual", "importado"],
-      sale_status: ["pendente", "pago", "cancelado", "reembolsado"],
+      sale_status: ["pendente", "pago", "cancelado", "reembolsado", "expirado"],
       ticket_status: ["valido", "utilizado", "cancelado"],
       verification_type: ["webhook_hmac", "manual_admin", "importado"],
     },
