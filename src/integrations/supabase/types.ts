@@ -357,8 +357,10 @@ export type Database = {
       }
       organizations: {
         Row: {
+          accent_color: string
           contact_email: string | null
           contact_phone: string | null
+          corner_style: string
           created_at: string
           id: string
           logo_url: string | null
@@ -368,8 +370,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string
           contact_email?: string | null
           contact_phone?: string | null
+          corner_style?: string
           created_at?: string
           id?: string
           logo_url?: string | null
@@ -379,8 +383,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string
           contact_email?: string | null
           contact_phone?: string | null
+          corner_style?: string
           created_at?: string
           id?: string
           logo_url?: string | null
@@ -1091,6 +1097,13 @@ export type Database = {
         }[]
       }
       get_new_customers_count: { Args: { _days: number }; Returns: number }
+      get_public_organization_design: {
+        Args: { _slug: string }
+        Returns: {
+          accent_color: string
+          corner_style: string
+        }[]
+      }
       get_sale_by_code: {
         Args: { _code: string }
         Returns: {
