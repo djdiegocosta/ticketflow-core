@@ -1,7 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { EditEventPage } from "@/pages/admin/EditEventPage";
 
 export const Route = createFileRoute("/admin/eventos/$id")({
+  beforeLoad: ({ context }) => {
+    const ctx = (context as any).auth;
+    if (ctx?.role === "colaborador") {
+      throw redirect({ to: "/admin/vendas" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Editar Evento | TicketFlow" },

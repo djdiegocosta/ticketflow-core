@@ -2,8 +2,12 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { ClientDetailPage } from "@/pages/admin/ClientDetailPage";
 
 export const Route = createFileRoute("/admin/clientes/$id")({
-  // Confia no requireSession do AdminRoute layout pai
-  beforeLoad: () => {},
+  beforeLoad: ({ context }) => {
+    const ctx = (context as any).auth;
+    if (ctx?.role === "colaborador") {
+      throw redirect({ to: "/admin/vendas" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Ficha do cliente | TicketFlow" },

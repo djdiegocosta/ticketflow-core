@@ -37,9 +37,9 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/clientes", label: "Clientes", icon: Users },
   { to: "/checkin", label: "Check-in", icon: ShieldCheck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/admin/ferramentas", label: "Ferramentas", icon: Wrench },
   { to: "/admin/importacao", label: "Importação", icon: Upload },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/admin/ferramentas", label: "Ferramentas", icon: Wrench },
   { to: "/admin/usuarios", label: "Usuários", icon: UsersRound },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
