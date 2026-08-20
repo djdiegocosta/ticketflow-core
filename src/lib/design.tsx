@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useTheme } from "./theme";
+import { useOrganization, useUpdateDesignSettings } from "./settings-queries";
 
-type AccentColor = "green" | "blue" | "purple" | "red";
-type CornerStyle = "straight" | "rounded";
+export type AccentColor = "green" | "blue" | "purple" | "red";
+export type CornerStyle = "straight" | "rounded";
 
 interface ColorSet {
   accent: string;
@@ -11,7 +12,7 @@ interface ColorSet {
   text: string;
 }
 
-const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSet }> = {
+export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSet }> = {
   green: {
     light: { accent: "#00e676", hover: "#00c853", muted: "#e8fff4", text: "#00a844" },
     dark: { accent: "#00e676", hover: "#00c853", muted: "#0d2a1a", text: "#00e676" },
@@ -30,7 +31,7 @@ const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSet }> = 
   },
 };
 
-const CORNER_STYLES = {
+export const CORNER_STYLES = {
   straight: { sm: "0px", md: "0px", lg: "0px", xl: "0px" },
   rounded: { sm: "6px", md: "10px", lg: "14px", xl: "20px" },
 };
@@ -49,7 +50,10 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
   const [accent, setAccentState] = useState<AccentColor>("green");
   const [radius, setRadiusState] = useState<CornerStyle>("straight");
   const { theme } = useTheme();
+  const { data: organization } = useOrganization();
+  const updateDesign = useUpdateDesignSettings();
 
+  // Load from localStorage as initial fallback
   useEffect(() => {
     const savedColor = window.localStorage.getItem(STORAGE_COLOR_KEY) as AccentColor;
     if (savedColor && ACCENT_COLORS[savedColor]) setAccentState(savedColor);
@@ -57,6 +61,18 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     const savedRadius = window.localStorage.getItem(STORAGE_RADIUS_KEY) as CornerStyle;
     if (savedRadius && CORNER_STYLES[savedRadius]) setRadiusState(savedRadius);
   }, []);
+
+  // Sync with organization data when available (has precedence)
+  useEffect(() => {
+    if (organization) {
+      if (organization.accent_color && ACCENT_COLORS[organization.accent_color as AccentColor]) {
+        setAccentState(organization.accent_color as AccentColor);
+      }
+      if (organization.corner_style && CORNER_STYLES[organization.corner_style as CornerStyle]) {
+        setRadiusState(organization.corner_style as CornerStyle);
+      }
+    }
+  }, [organization]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -86,12 +102,18 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
   const setAccent = useCallback((color: AccentColor) => {
     setAccentState(color);
     window.localStorage.setItem(STORAGE_COLOR_KEY, color);
-  }, []);
+    if (organization) {
+      updateDesign.mutate({ accent_color: color });
+    }
+  }, [organization, updateDesign]);
 
   const setRadius = useCallback((style: CornerStyle) => {
     setRadiusState(style);
     window.localStorage.setItem(STORAGE_RADIUS_KEY, style);
-  }, []);
+    if (organization) {
+      updateDesign.mutate({ corner_style: style });
+    }
+  }, [organization, updateDesign]);
 
   return (
     <DesignContext.Provider value={{ accent, setAccent, radius, setRadius }}>

@@ -14,7 +14,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Copy, CheckCircle2, Clock, ArrowRight, Loader2 } from 'lucide-react';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
-import { usePublicEvent } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
 import { useCreatePendingSale, useConfirmSalePaid, useTrackAbandonment } from '@/lib/sales-queries';
 
 const checkoutSchema = z.object({
@@ -36,6 +36,7 @@ export default function CheckoutPage() {
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
+  useApplyPublicDesign(slug);
   const createPendingSale = useCreatePendingSale();
   const confirmSalePaid = useConfirmSalePaid();
   const trackAbandonment = useTrackAbandonment();

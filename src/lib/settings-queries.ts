@@ -62,6 +62,34 @@ export function useUpdateOrganization() {
   });
 }
 
+export function useUpdateDesignSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { accent_color?: string; corner_style?: string }) => {
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      if (!roleRow) throw new Error("Não autorizado");
+
+      const updateData: any = {};
+      if (vars.accent_color !== undefined) updateData.accent_color = vars.accent_color;
+      if (vars.corner_style !== undefined) updateData.corner_style = vars.corner_style;
+
+      const { error } = await supabase
+        .from("organizations")
+        .update(updateData)
+        .eq("id", roleRow.organization_id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization"] });
+      toast.success("Design atualizado com sucesso");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
 export function useMpConfig() {
   return useQuery({
     queryKey: ["mp_config"],

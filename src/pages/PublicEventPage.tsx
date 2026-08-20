@@ -3,11 +3,12 @@ import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { usePublicEvent } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
   const { data: event, isLoading, error } = usePublicEvent(slug);
+  useApplyPublicDesign(slug);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();

@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { ACCENT_COLORS, CORNER_STYLES, AccentColor, CornerStyle } from "./design";
 
 export interface Customer {
   id: string;
@@ -155,4 +157,52 @@ export function useDeleteCustomer() {
       }
     },
   });
+}
+
+export function usePublicOrgDesign(slug: string | undefined) {
+  return useQuery({
+    queryKey: ["public_org_design", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_public_organization_design", {
+        _slug: slug || "",
+      });
+
+      if (error) throw error;
+      return (data as any)?.[0] as { accent_color: string; corner_style: string };
+    },
+    enabled: !!slug,
+  });
+}
+
+export function useApplyPublicDesign(slug: string | undefined) {
+  const { data: design } = usePublicOrgDesign(slug);
+
+  useEffect(() => {
+    if (!design) return;
+
+    const root = document.documentElement;
+    const accent = design.accent_color as AccentColor;
+    const radius = design.corner_style as CornerStyle;
+
+    // Apply Colors
+    if (ACCENT_COLORS[accent]) {
+      const colorSet = ACCENT_COLORS[accent].light; // Default to light for public pages
+      root.style.setProperty("--accent", colorSet.accent);
+      root.style.setProperty("--accent-hover", colorSet.hover);
+      root.style.setProperty("--accent-muted", colorSet.muted);
+      root.style.setProperty("--accent-text", colorSet.text);
+      root.style.setProperty("--primary", colorSet.accent);
+      root.style.setProperty("--ring", colorSet.accent);
+    }
+
+    // Apply Radius
+    if (CORNER_STYLES[radius]) {
+      const style = CORNER_STYLES[radius];
+      root.style.setProperty("--radius-sm", style.sm);
+      root.style.setProperty("--radius-md", style.md);
+      root.style.setProperty("--radius-lg", style.lg);
+      root.style.setProperty("--radius-xl", style.xl);
+      root.style.setProperty("--radius", style.md);
+    }
+  }, [design]);
 }
