@@ -648,7 +648,7 @@ export function MercadoPagoWizardPage() {
               </div>
 
               <p className="text-small text-[var(--text-secondary)]">
-                Esta etapa será concluída automaticamente quando o backend estiver conectado.
+                Utilize o botão acima para gerar um pagamento real de R$ 0,01. Após pagar, o status será atualizado via Webhook.
               </p>
 
               <div className="flex justify-between">
