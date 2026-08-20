@@ -644,6 +644,7 @@ export type Database = {
           origin: Database["public"]["Enums"]["sale_origin"]
           paid_at: string | null
           payment_method: Database["public"]["Enums"]["payment_method"] | null
+          pending_participant_names: Json | null
           quantity: number
           refund_reason: string | null
           refunded_amount: number | null
@@ -677,6 +678,7 @@ export type Database = {
           origin?: Database["public"]["Enums"]["sale_origin"]
           paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          pending_participant_names?: Json | null
           quantity: number
           refund_reason?: string | null
           refunded_amount?: number | null
@@ -710,6 +712,7 @@ export type Database = {
           origin?: Database["public"]["Enums"]["sale_origin"]
           paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          pending_participant_names?: Json | null
           quantity?: number
           refund_reason?: string | null
           refunded_amount?: number | null
@@ -1019,10 +1022,15 @@ export type Database = {
           sale_id: string
         }[]
       }
-      create_locked_tickets: {
-        Args: { _participant_names: string[]; _sale_id: string }
-        Returns: undefined
-      }
+      create_locked_tickets:
+        | {
+            Args: { _participant_names: Json; _sale_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: { _participant_names: string[]; _sale_id: string }
+            Returns: undefined
+          }
       create_manual_sale: {
         Args: {
           _batch_id: string
