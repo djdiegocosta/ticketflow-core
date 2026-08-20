@@ -6,6 +6,8 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Log básico para depuração (opcional)
+        // console.log("Webhook MP recebido");
         const url = new URL(request.url);
         const orgId = url.searchParams.get("org_id");
         let dataId = url.searchParams.get("data.id");
