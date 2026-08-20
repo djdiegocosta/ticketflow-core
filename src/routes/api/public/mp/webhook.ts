@@ -72,7 +72,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           }
 
           // Processamento
-          const accessToken = await decrypt(validConfig.access_token_encrypted);
+          const accessToken = await decrypt(validConfig.access_token_encrypted!);
           const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
             headers: { Authorization: `Bearer ${accessToken}` }
           });
