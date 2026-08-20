@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Boxes,
   CheckCircle2,
+  Copy,
   ExternalLink,
   Globe2,
   Info,
@@ -17,7 +18,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
-import { useMpConfig, useUpdateMpConfig } from "@/lib/settings-queries";
+import { 
+  useMpConfig, 
+  useUpdateMpConfig, 
+  useValidateMpConfig,
+  useTestMpWebhook,
+  useCreateTestPix,
+  useOrganization
+} from "@/lib/settings-queries";
 
 const steps = [
   { id: 1, label: "Ambiente", icon: Globe2 },
