@@ -120,6 +120,7 @@ export function useSale(id: string) {
           observation,
           is_courtesy,
           created_at,
+          event_id,
           events (title),
           ticket_batches (name),
           tickets (ticket_code, participant_name, checked_in_at)

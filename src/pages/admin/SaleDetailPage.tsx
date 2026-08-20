@@ -45,7 +45,7 @@ function Field({ label, value }: { label: string; value: string }) {
 const card = "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
-  const { data: sale, isLoading, error: fetchError } = useSale(id);
+  const { data: sale, isLoading, error: fetchError } = useSale(id) as any;
   const { userRole } = useAuth();
   const queryClient = useQueryClient();
   const isColab = userRole === "colaborador";
