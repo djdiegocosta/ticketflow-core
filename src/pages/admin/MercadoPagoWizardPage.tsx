@@ -581,16 +581,63 @@ export function MercadoPagoWizardPage() {
               </span>
 
               <div className="space-y-3">
-                <div title="Disponível após conectar o Supabase">
-                  <Button disabled className="w-full">
-                    Criar PIX de teste
+                {pixResult ? (
+                  <div className="flex flex-col items-center gap-4 border border-[var(--border-default)] p-6">
+                    <img 
+                      src={`data:image/png;base64,${pixResult.qr_code_base64}`} 
+                      alt="QR Code PIX" 
+                      className="h-48 w-48"
+                    />
+                    <div className="w-full space-y-2">
+                      <p className="text-center text-micro text-[var(--text-secondary)]">Copia e Cola:</p>
+                      <div className="flex items-center gap-2 bg-[var(--bg-tertiary)] p-2">
+                        <code className="flex-1 truncate text-micro">{pixResult.qr_code}</code>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => {
+                            navigator.clipboard.writeText(pixResult.qr_code);
+                            toast.success("Código copiado!");
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Button 
+                    className="w-full"
+                    disabled={createPixMutation.isPending}
+                    onClick={async () => {
+                      // Para teste, criamos uma venda fictícia de R$ 0,01 ou usamos uma existente
+                      // O prompt pede para criar PIX de R$ 0,01.
+                      // Vamos criar uma venda pendente real no banco para isso.
+                      const { data: sale } = await supabase.from("sales").insert({
+                        organization_id: orgId,
+                        total_amount: 0.01,
+                        status: 'pendente',
+                        buyer_name: 'Teste Checkout',
+                        buyer_email: 'teste@ticketflow.com',
+                        buyer_whatsapp: '5511999999999',
+                        payment_method: 'pix_ticketflow'
+                      }).select().single();
+
+                      if (sale) {
+                        createPixMutation.mutate({ sale_id: sale.id }, {
+                          onSuccess: (data: any) => setPixResult(data)
+                        });
+                      }
+                    }}
+                  >
+                    {createPixMutation.isPending ? (
+                       <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Gerando PIX...
+                      </span>
+                    ) : "Criar PIX de teste (R$ 0,01)"}
                   </Button>
-                </div>
-                <div title="Disponível após conectar o Supabase">
-                  <Button disabled variant="secondary" className="w-full">
-                    Atualizar status
-                  </Button>
-                </div>
+                )}
               </div>
 
               <p className="text-small text-[var(--text-secondary)]">
