@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
+import { supabase } from "@/integrations/supabase/client";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
 import { 
   useMpConfig, 
