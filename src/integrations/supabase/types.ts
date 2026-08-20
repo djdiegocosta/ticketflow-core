@@ -1076,9 +1076,17 @@ export type Database = {
           participant_id: string
         }[]
       }
-      expire_pending_sales: { Args: never; Returns: number }
+      expire_pending_sales: { Args: never; Returns: undefined }
       generate_short_code: { Args: never; Returns: string }
       get_default_organization: { Args: never; Returns: string }
+      get_hourly_sales_stats: {
+        Args: { _event_id?: string }
+        Returns: {
+          hour: string
+          value: number
+        }[]
+      }
+      get_new_customers_count: { Args: { _days: number }; Returns: number }
       get_sale_by_code: {
         Args: { _code: string }
         Returns: {
