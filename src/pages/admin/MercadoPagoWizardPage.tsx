@@ -625,7 +625,7 @@ export function MercadoPagoWizardPage() {
                       }).select().single();
 
                       if (sale) {
-                        createPixMutation.mutate({ sale_id: sale.id }, {
+                        createPixMutation.mutate({ sale_id: sale.id! }, {
                           onSuccess: (data: any) => setPixResult(data)
                         });
                       }
