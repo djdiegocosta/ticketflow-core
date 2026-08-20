@@ -92,7 +92,7 @@ export const createMpPix = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { data: sale, error: saleError } = await supabaseAdmin
       .from("sales")
-      .select("*, events(organization_id)")
+      .select("*, events!inner(organization_id)")
       .eq("id", data.sale_id)
       .single();
 
