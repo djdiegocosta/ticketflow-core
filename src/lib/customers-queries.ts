@@ -168,7 +168,7 @@ export function usePublicOrgDesign(slug: string | undefined) {
       });
 
       if (error) throw error;
-      return data as { accent_color: string; corner_style: string };
+      return (data as any)?.[0] as { accent_color: string; corner_style: string };
     },
     enabled: !!slug,
   });
