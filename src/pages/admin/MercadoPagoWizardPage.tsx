@@ -614,6 +614,7 @@ export function MercadoPagoWizardPage() {
                       // Para teste, criamos uma venda fictícia de R$ 0,01 ou usamos uma existente
                       // O prompt pede para criar PIX de R$ 0,01.
                       // Vamos criar uma venda pendente real no banco para isso.
+                      if (!orgId) return;
                       const { data: sale } = await supabase.from("sales").insert({
                         organization_id: orgId,
                         total_amount: 0.01,
