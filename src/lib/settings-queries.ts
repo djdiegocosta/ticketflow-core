@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { 
+  saveMpCredentials, 
+  validateMpCredentials, 
+  testMpWebhook, 
+  createMpPix 
+} from "./mp/mercado-pago.functions";
 
 export function useOrganization() {
   return useQuery({
