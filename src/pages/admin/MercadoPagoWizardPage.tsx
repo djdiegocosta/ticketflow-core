@@ -617,13 +617,18 @@ export function MercadoPagoWizardPage() {
                       if (!orgId) return;
                       const { data: sale } = await supabase.from("sales").insert({
                         organization_id: orgId,
+                        event_id: '00000000-0000-0000-0000-000000000000', // UUID dummy se necessário ou buscar um evento
+                        batch_id: '00000000-0000-0000-0000-000000000000',
+                        quantity: 1,
+                        unit_price: 0.01,
                         total_amount: 0.01,
                         status: 'pendente',
                         buyer_name: 'Teste Checkout',
                         buyer_email: 'teste@ticketflow.com',
                         buyer_whatsapp: '5511999999999',
-                        payment_method: 'pix_ticketflow'
-                      }).select().single();
+                        payment_method: 'pix_ticketflow',
+                        sale_code: 'TEST' + Math.floor(Math.random() * 1000)
+                      } as any).select().single();
 
                       if (sale) {
                         createPixMutation.mutate({ sale_id: sale.id! }, {
