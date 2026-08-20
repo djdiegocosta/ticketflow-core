@@ -25,6 +25,8 @@ import {
   useEvent,
   slugify,
   type BatchRow,
+  cancelEvent,
+  deleteEvent,
 } from "@/lib/events-queries";
 
 type BatchDraft = {
@@ -240,6 +242,41 @@ export function EditEventPage() {
           <FastForward className="w-4 h-4" />
           Virada Expressa de Lote
         </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              if (!window.confirm("Tem certeza que deseja cancelar este evento? Todos os ingressos serão invalidados e as vendas associadas serão marcadas como canceladas. Esta ação não pode ser desfeita.")) return;
+              try {
+                await cancelEvent(id);
+                toast.success("Evento cancelado com sucesso");
+                refresh();
+              } catch (err: any) {
+                toast.error("Erro ao cancelar evento: " + (err.message || "Tente novamente."));
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-bg-secondary border border-error/40 text-error px-4 py-2 rounded-radius-md font-semibold hover:bg-error/10 transition-colors"
+          >
+            Cancelar Evento
+          </button>
+          
+          <button
+            onClick={async () => {
+              if (!window.confirm("Tem certeza que deseja excluir permanentemente este evento? Esta ação só é permitida se não houver vendas pagas.")) return;
+              try {
+                await deleteEvent(id);
+                toast.success("Evento excluído com sucesso");
+                navigate({ to: "/admin/eventos" });
+              } catch (err: any) {
+                toast.error("Erro ao excluir evento: " + (err.message || "Verifique se há vendas pagas vinculadas."));
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-error text-white px-4 py-2 rounded-radius-md font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Trash2 className="w-4 h-4" />
+            Excluir
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-radius-lg border border-border-subtle shadow-sm">

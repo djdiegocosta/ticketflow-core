@@ -11,7 +11,7 @@ export interface EventWithStats extends EventRow {
 }
 
 export const eventStatusLabel = (event: EventRow) =>
-  event.is_closed ? "Encerrado" : event.status === "publicado" ? "Publicado" : "Rascunho";
+  event.status === "cancelado" ? "Cancelado" : (event.is_closed ? "Encerrado" : (event.status === "publicado" ? "Publicado" : "Rascunho"));
 
 export function formatEventDate(iso: string) {
   const d = new Date(iso);
@@ -113,6 +113,16 @@ export async function createEventWithBatches(
 
 export async function updateEvent(id: string, input: Partial<EventInput>) {
   const { error } = await supabase.from("events").update(input).eq("id", id);
+  if (error) throw error;
+}
+
+export async function cancelEvent(id: string) {
+  const { error } = await supabase.rpc("cancel_event", { _event_id: id });
+  if (error) throw error;
+}
+
+export async function deleteEvent(id: string) {
+  const { error } = await supabase.rpc("delete_event", { _event_id: id });
   if (error) throw error;
 }
 

@@ -76,6 +76,7 @@ export function EventsListPage() {
                 status === "Publicado" && "bg-success text-[#111111]",
                 status === "Rascunho" && "bg-bg-tertiary text-text-primary",
                 status === "Encerrado" && "bg-error/20 text-error border border-error/20 backdrop-blur-sm",
+                status === "Cancelado" && "bg-error text-white",
               )}>
                 {status}
               </div>

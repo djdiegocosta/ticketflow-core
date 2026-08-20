@@ -40,13 +40,16 @@ export function useUpdateOrganization() {
       const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
       if (!roleRow) throw new Error("Não autorizado");
 
-      const { error } = await supabase.rpc("update_organization_profile", {
-        _name: vars.name,
-        _contact_email: vars.email || "",
-        _contact_phone: vars.phone || "",
-        _logo_url: vars.logo_url || "",
-        _org_id: roleRow.organization_id
-      });
+      const { error } = await supabase
+        .from("organizations")
+        .update({
+          name: vars.name,
+          contact_email: vars.email || null,
+          contact_phone: vars.phone || null,
+          logo_url: vars.logo_url || null,
+        })
+        .eq("id", roleRow.organization_id);
+
       if (error) throw error;
     },
     onSuccess: () => {
