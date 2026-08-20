@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { EventsListPage } from "@/pages/admin/EventsListPage";
 
-export const Route = createFileRoute("/admin/eventos/")({
+export const Route = createFileRoute("/admin/eventos")({
   beforeLoad: ({ context }) => {
     const ctx = (context as any).auth;
     if (ctx?.role === 'colaborador') {
