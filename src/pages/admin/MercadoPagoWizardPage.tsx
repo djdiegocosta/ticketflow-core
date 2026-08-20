@@ -655,6 +655,9 @@ export function MercadoPagoWizardPage() {
                 <Button variant="secondary" onClick={() => setCurrent(4)}>
                   Voltar
                 </Button>
+                <Button variant="primary" asChild>
+                  <Link to="/admin/configuracoes">Concluir Configuração</Link>
+                </Button>
               </div>
             </div>
           )}
