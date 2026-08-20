@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SalesListPage } from "@/pages/admin/SalesListPage";
 
 
-export const Route = createFileRoute("/admin/vendas")({
+export const Route = createFileRoute("/admin/vendas/")({
   head: () => ({
     meta: [
       { title: "Vendas | TicketFlow" },
