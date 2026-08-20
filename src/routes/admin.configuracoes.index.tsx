@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { SettingsPage } from "@/pages/admin/SettingsPage";
 
-export const Route = createFileRoute("/admin/configuracoes/")({
+export const Route = createFileRoute("/admin/configuracoes")({
   beforeLoad: ({ context }) => {
     const ctx = (context as any).auth;
     if (ctx?.role === 'colaborador') {
