@@ -214,14 +214,19 @@ export function EditEventPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
+        <div className="flex-1">
           <h1 className="text-heading-1 text-text-primary">Editar Evento</h1>
-          <p className="text-small text-text-secondary">
-            Status:{" "}
-            <span className={status === "publicado" ? "text-success font-bold" : "font-bold"}>
-              {status === "publicado" ? "Publicado" : "Rascunho"}
-            </span>
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <span className="text-small text-text-secondary">Status:</span>
+            <div className={cn(
+              "text-micro px-2 py-0.5 font-bold uppercase",
+              status === "publicado" && "bg-success text-[#111111]",
+              status === "rascunho" && "bg-bg-tertiary text-text-primary",
+              status === "cancelado" && "bg-error text-white",
+            )}>
+              {status}
+            </div>
+          </div>
           <div className="mt-2">
             <a
               href={`/e/${event.slug}`}

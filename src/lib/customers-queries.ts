@@ -37,7 +37,7 @@ export function useCustomers() {
       // Buscar estatísticas em paralelo para evitar N+1
       const { data: salesStats, error: statsError } = await supabase
         .from("sales")
-        .select("customer_id, total_amount, status, event_id, events(title), tickets(id)")
+        .select("customer_id, total_amount, status, event_id, created_at, events(title), tickets(id)")
         .eq("status", "pago");
 
       if (statsError) throw statsError;
