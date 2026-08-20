@@ -84,6 +84,8 @@ export function useMpConfig() {
 
 export function useUpdateMpConfig() {
   const queryClient = useQueryClient();
+  const saveFn = useServerFn(saveMpCredentials);
+  
   return useMutation({
     mutationFn: async (vars: { 
       environment: "sandbox" | "producao",
@@ -91,27 +93,67 @@ export function useUpdateMpConfig() {
       access_token: string,
       webhook_secret?: string
     }) => {
-      // Temporariamente persistindo via tabela até existir RPC upsert_mp_config
       const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
       if (!roleRow) throw new Error("Não autorizado");
 
-      const { error } = await supabase
-        .from("mp_config")
-        .upsert({
+      return await saveFn({
+        data: {
           organization_id: roleRow.organization_id,
           environment: vars.environment,
           public_key: vars.public_key,
-          access_token_encrypted: vars.access_token,
-          webhook_secret_encrypted: vars.webhook_secret || null
-        }, { onConflict: 'organization_id,environment' });
-      if (error) throw error;
+          access_token: vars.access_token,
+          webhook_secret: vars.webhook_secret
+        }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mp_config"] });
-      toast.success("Configuração do Mercado Pago salva");
+      toast.success("Configuração do Mercado Pago salva com segurança");
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(error.message || "Erro ao salvar credenciais");
     },
+  });
+}
+
+export function useValidateMpConfig() {
+  const validateFn = useServerFn(validateMpCredentials);
+  return useMutation({
+    mutationFn: async (vars: { organization_id: string, environment: "sandbox" | "producao" }) => {
+      return await validateFn({ data: vars });
+    },
+    onSuccess: () => {
+      toast.success("Credenciais validadas com sucesso");
+    },
+    onError: (error) => {
+      toast.error("Credenciais inválidas ou expiradas");
+    }
+  });
+}
+
+export function useTestMpWebhook() {
+  const testFn = useServerFn(testMpWebhook);
+  return useMutation({
+    mutationFn: async (vars: { organization_id: string, environment: "sandbox" | "producao" }) => {
+      return await testFn({ data: vars });
+    },
+    onError: (error) => {
+      toast.error("Falha ao validar segredo do webhook");
+    }
+  });
+}
+
+export function useCreateTestPix() {
+  const createFn = useServerFn(createMpPix);
+  return useMutation({
+    mutationFn: async (vars: { sale_id: string }) => {
+      return await createFn({ data: vars });
+    },
+    onSuccess: () => {
+      toast.success("PIX de teste gerado com sucesso");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao gerar PIX");
+    }
   });
 }
