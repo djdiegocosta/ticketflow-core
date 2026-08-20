@@ -6,14 +6,14 @@ export function useOrganizationUsers() {
   return useQuery({
     queryKey: ["org_users"],
     queryFn: async () => {
-      // 1. Obter membros atuais
+      // 1. Obter membros atuais (incluindo o usuário logado)
       const { data: members, error: memError } = await supabase
         .from("user_roles")
         .select(`
           user_id,
           role,
           created_at,
-          profiles (
+          profiles!user_roles_user_id_fkey (
             full_name,
             email
           )
@@ -31,8 +31,8 @@ export function useOrganizationUsers() {
       const userList = [
         ...(members || []).map((m: any) => ({
           id: m.user_id,
-          full_name: m.profiles?.full_name || "Sem nome",
-          email: m.profiles?.email || "Sem e-mail",
+          full_name: m.profiles?.full_name || m.profiles?.[0]?.full_name || "Sem nome",
+          email: m.profiles?.email || m.profiles?.[0]?.email || "Sem e-mail",
           role: m.role as "admin" | "colaborador" | "operador_checkin",
           invitedAt: m.created_at,
           status: "Ativo" as const,

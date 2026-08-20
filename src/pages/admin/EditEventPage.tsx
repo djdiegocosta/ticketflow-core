@@ -25,6 +25,8 @@ import {
   useEvent,
   slugify,
   type BatchRow,
+  cancelEvent,
+  deleteEvent,
 } from "@/lib/events-queries";
 
 type BatchDraft = {
@@ -62,7 +64,7 @@ export function EditEventPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState<"publicado" | "rascunho">("rascunho");
+  const [status, setStatus] = useState<"publicado" | "rascunho" | "cancelado">("rascunho");
   const [draft, setDraft] = useState<BatchDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -212,14 +214,19 @@ export function EditEventPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
+        <div className="flex-1">
           <h1 className="text-heading-1 text-text-primary">Editar Evento</h1>
-          <p className="text-small text-text-secondary">
-            Status:{" "}
-            <span className={status === "publicado" ? "text-success font-bold" : "font-bold"}>
-              {status === "publicado" ? "Publicado" : "Rascunho"}
-            </span>
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <span className="text-small text-text-secondary">Status:</span>
+            <div className={cn(
+              "text-micro px-2 py-0.5 font-bold uppercase",
+              status === "publicado" && "bg-success text-[#111111]",
+              status === "rascunho" && "bg-bg-tertiary text-text-primary",
+              status === "cancelado" && "bg-error text-white",
+            )}>
+              {status}
+            </div>
+          </div>
           <div className="mt-2">
             <a
               href={`/e/${event.slug}`}
@@ -240,6 +247,41 @@ export function EditEventPage() {
           <FastForward className="w-4 h-4" />
           Virada Expressa de Lote
         </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              if (!window.confirm("Tem certeza que deseja cancelar este evento? Todos os ingressos serão invalidados e as vendas associadas serão marcadas como canceladas. Esta ação não pode ser desfeita.")) return;
+              try {
+                await cancelEvent(id);
+                toast.success("Evento cancelado com sucesso");
+                refresh();
+              } catch (err: any) {
+                toast.error("Erro ao cancelar evento: " + (err.message || "Tente novamente."));
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-bg-secondary border border-error/40 text-error px-4 py-2 rounded-radius-md font-semibold hover:bg-error/10 transition-colors"
+          >
+            Cancelar Evento
+          </button>
+          
+          <button
+            onClick={async () => {
+              if (!window.confirm("Tem certeza que deseja excluir permanentemente este evento? Esta ação só é permitida se não houver vendas pagas.")) return;
+              try {
+                await deleteEvent(id);
+                toast.success("Evento excluído com sucesso");
+                navigate({ to: "/admin/eventos" });
+              } catch (err: any) {
+                toast.error("Erro ao excluir evento: " + (err.message || "Verifique se há vendas pagas vinculadas."));
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-error text-white px-4 py-2 rounded-radius-md font-semibold hover:opacity-90 transition-opacity"
+          >
+            <Trash2 className="w-4 h-4" />
+            Excluir
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-radius-lg border border-border-subtle shadow-sm">

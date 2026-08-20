@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Building2,
@@ -106,7 +106,7 @@ export function SettingsPage() {
   const design = useDesign();
 
   // Atualizar form quando carregar organização
-  useState(() => {
+  useEffect(() => {
     if (organization) {
       setOrgForm({
         name: organization.name,
@@ -116,7 +116,7 @@ export function SettingsPage() {
       });
       if (organization.logo_url) setLogoPreview(organization.logo_url);
     }
-  });
+  }, [organization]);
 
   const mpStatus = (mpConfig as any)?.status || (mpConfig ? "conectado" : "nao_configurado");
   const status = statusMap[mpStatus as MpStatus];
