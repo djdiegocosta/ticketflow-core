@@ -32,8 +32,8 @@ export async function decrypt(encryptedData: string) {
   const [ivBase64, encryptedBase64] = encryptedData.split(":");
   const key = await getEncryptionKey();
   
-  const iv = new Uint8Array(atob(ivBase64).split("").map(c => c.charCodeAt(0)));
-  const encrypted = new Uint8Array(atob(encryptedBase64).split("").map(c => c.charCodeAt(0)));
+  const iv = new Uint8Array(atob(ivBase64!).split("").map(c => c.charCodeAt(0)));
+  const encrypted = new Uint8Array(atob(encryptedBase64!).split("").map(c => c.charCodeAt(0)));
   
   const decrypted = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv },

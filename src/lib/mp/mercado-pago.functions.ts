@@ -48,7 +48,7 @@ export const validateMpCredentials = createServerFn({ method: "POST" })
 
     if (configError || !config) throw new Error("Configuração não encontrada");
 
-    const accessToken = await decrypt(config.access_token_encrypted);
+    const accessToken = await decrypt(config.access_token_encrypted!);
 
     const mpRes = await fetch("https://api.mercadopago.com/users/me", {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -81,7 +81,7 @@ export const testMpWebhook = createServerFn({ method: "POST" })
     if (configError || !config) throw new Error("Configuração não encontrada");
     if (!config.webhook_secret_encrypted) return { status: "Não configurado" };
 
-    await decrypt(config.webhook_secret_encrypted);
+    await decrypt(config.webhook_secret_encrypted!);
     return { status: "Configurado" };
   });
 
@@ -113,10 +113,10 @@ export const createMpPix = createServerFn({ method: "POST" })
 
     if (!config) throw new Error("Mercado Pago não configurado para esta organização");
 
-    const accessToken = await decrypt(config.access_token_encrypted);
+    const accessToken = await decrypt(config.access_token_encrypted!);
     
     // URL Webhook Dinâmica
-    const siteUrl = process.env.VITE_SITE_URL || 'https://ticketflow2.lovable.app';
+    const siteUrl = process.env['VITE_SITE_URL'] || 'https://ticketflow2.lovable.app';
     const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
 
     const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
