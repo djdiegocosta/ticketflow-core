@@ -480,8 +480,22 @@ export function MercadoPagoWizardPage() {
 
               <div className="space-y-2">
                 <label className="text-small text-[var(--text-secondary)]">URL do webhook</label>
-                <div className="border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-4 text-body text-[var(--text-secondary)]">
-                  Conecte o Supabase ao projeto para gerar a URL do webhook automaticamente.
+                <div className="flex items-center gap-2 border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-4">
+                  <code className="flex-1 break-all text-body text-[var(--text-secondary)]">
+                    {webhookUrl || "Carregando URL..."}
+                  </code>
+                  {webhookUrl && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(webhookUrl);
+                        toast.success("URL copiada!");
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
