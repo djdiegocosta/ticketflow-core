@@ -27,35 +27,34 @@ export function useCustomers() {
           full_name,
           whatsapp,
           email,
-          birth_date,
-          created_at,
-          sales (
-            id,
-            total_amount,
-            status,
-            event_id,
-            events (title),
-            tickets (id)
-          )
+          data_nascimento,
+          created_at
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // Buscar estatísticas em paralelo para evitar N+1
+      const { data: salesStats, error: statsError } = await supabase
+        .from("sales")
+        .select("customer_id, total_amount, status, event_id, events(title), tickets(id)")
+        .eq("status", "pago");
+
+      if (statsError) throw statsError;
+
       return (data || []).map((c: any) => {
-        const paidSales = c.sales?.filter((s: any) => s.status === "pago") || [];
+        const paidSales = (salesStats || []).filter((s: any) => s.customer_id === c.id);
         const uniqueEvents = new Set(paidSales.map((s: any) => s.event_id)).size;
         const totalTickets = paidSales.reduce((sum: number, s: any) => sum + (s.tickets?.length || 0), 0);
         const totalSpent = paidSales.reduce((sum: number, s: any) => sum + Number(s.total_amount), 0);
         
         const lastSale = paidSales.length > 0 
-          ? paidSales.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+          ? [...paidSales].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
           : null;
 
-        // Cálculo de idade aproximado
         let age = null;
-        if (c.birth_date) {
-          const birth = new Date(c.birth_date);
+        if (c.data_nascimento) {
+          const birth = new Date(c.data_nascimento);
           const now = new Date();
           age = now.getFullYear() - birth.getFullYear();
           if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {

@@ -64,7 +64,7 @@ export function EditEventPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState<"publicado" | "rascunho">("rascunho");
+  const [status, setStatus] = useState<"publicado" | "rascunho" | "cancelado">("rascunho");
   const [draft, setDraft] = useState<BatchDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
