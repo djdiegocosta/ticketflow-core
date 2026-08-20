@@ -529,20 +529,28 @@ export function MercadoPagoWizardPage() {
                   <Button
                     variant="secondary"
                     disabled={secretInput.trim().length < 4}
-                    onClick={() => {
-                      setSecretTail(secretInput.trim().slice(-4));
-                      setSecretInput("");
-                      toast.success("Webhook Secret salvo com segurança");
-                    }}
+                    onClick={saveCredentials}
                   >
                     Salvar
                   </Button>
                 </div>
               </div>
 
-              <div title="Disponível após conectar o Supabase">
-                <Button disabled className="w-full">
-                  Testar Webhook
+              <div>
+                <Button 
+                  className="w-full"
+                  disabled={testWebhookMutation.isPending || !orgId}
+                  onClick={() => {
+                    if (!orgId) return;
+                    testWebhookMutation.mutate({ organization_id: orgId, environment: env });
+                  }}
+                >
+                  {testWebhookMutation.isPending ? (
+                     <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Testando...
+                    </span>
+                  ) : "Testar Webhook"}
                 </Button>
               </div>
 
