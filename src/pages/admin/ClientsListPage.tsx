@@ -37,15 +37,16 @@ const parseDate = (value: string) => {
   return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
 };
 
+import { useNewCustomersCount } from "@/lib/dashboard-queries";
+
 function NewClientsCard() {
   const [period, setPeriod] = useState("30");
-
-  const data = { "7": 12, "15": 23, "30": 41 };
+  const { data: count = 0 } = useNewCustomersCount(Number(period));
 
   return (
     <MiniMetricCard
       title="Novos Clientes"
-      value={data[period as keyof typeof data]}
+      value={count}
       subtext="novos cadastros"
       headerRight={
         <select
@@ -62,6 +63,7 @@ function NewClientsCard() {
     />
   );
 }
+
 
 function CopyWhatsapp({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);

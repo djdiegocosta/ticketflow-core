@@ -8,21 +8,8 @@ import { useEvents } from "@/lib/events-queries";
 import { useSales, useSalesStats } from "@/lib/sales-queries";
 import { formatCurrency } from "@/lib/sales-queries";
 
-// --- Mock Data for fields not yet in DB ---
-const MOCK_HOURLY_DATA = [
-  { hour: "00h", value: 2 },
-  { hour: "02h", value: 1 },
-  { hour: "04h", value: 0 },
-  { hour: "06h", value: 1 },
-  { hour: "08h", value: 4 },
-  { hour: "10h", value: 7 },
-  { hour: "12h", value: 10 },
-  { hour: "14h", value: 15 },
-  { hour: "16h", value: 12 },
-  { hour: "18h", value: 14 },
-  { hour: "20h", value: 16 },
-  { hour: "22h", value: 8 },
-];
+import { useHourlySalesStats } from "@/lib/dashboard-queries";
+
 
 // --- Components ---
 
@@ -88,12 +75,14 @@ export function AdminDashboard() {
   const { data: events = [] } = useEvents();
   const { data: stats, isLoading: statsLoading } = useSalesStats(currentEvent);
   const { data: sales = [], isLoading: salesLoading } = useSales();
+  const { data: hourlyData = [], isLoading: hourlyLoading } = useHourlySalesStats(currentEvent);
+
 
   const isOverview = currentEvent === "overview";
 
   const lastSales = sales.slice(0, 8);
 
-  if (statsLoading || salesLoading) {
+  if (statsLoading || salesLoading || hourlyLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <span className="animate-spin mr-2"><Clock className="h-6 w-6" /></span>
@@ -224,7 +213,8 @@ export function AdminDashboard() {
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={MOCK_HOURLY_DATA} 
+                data={hourlyData} 
+
                 layout="vertical" 
                 margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
                 barSize={6}
@@ -251,13 +241,14 @@ export function AdminDashboard() {
                   radius={[0, 3, 3, 0]} 
                   background={{ fill: 'var(--bg-tertiary)', radius: 3 }}
                 >
-                  {MOCK_HOURLY_DATA.map((entry, index) => (
+                  {hourlyData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill="var(--accent)" 
-                      className={entry.value >= 15 ? "opacity-100" : "opacity-60"}
+                      className="opacity-60 hover:opacity-100"
                     />
                   ))}
+
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -312,10 +303,12 @@ export function AdminDashboard() {
                     <StatusPill 
                       tone={
                         sale.status === "pago" ? "accent" : 
+                        sale.status === "expirado" ? "neutral" :
                         sale.status === "cancelado" ? "error" : "warning"
                       }
                     >
                       {sale.status}
+
                     </StatusPill>
                     <div className="text-small text-text-disabled whitespace-nowrap">
                       {timeStr}

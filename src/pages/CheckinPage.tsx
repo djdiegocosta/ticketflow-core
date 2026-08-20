@@ -129,10 +129,16 @@ export function CheckinPage() {
       e.returnValue = "";
     };
     const handlePopState = () => {
-      if (!window.confirm("Tem certeza que deseja sair do Check-in?")) {
+      if (window.confirm("Tem certeza que deseja sair do Check-in?")) {
+        // Redireciona Admin e Colaborador para o Dashboard
+        if (userRole === "admin" || userRole === "colaborador") {
+          navigate({ to: "/admin" });
+        }
+      } else {
         window.history.pushState(null, "", window.location.href);
       }
     };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("popstate", handlePopState);
     window.history.pushState(null, "", window.location.href);
