@@ -1,7 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export async function fetchSales() {
+export interface Sale {
+  id: string;
+  buyer_name: string;
+  buyer_whatsapp: string;
+  buyer_email: string | null;
+  total_amount: number;
+  quantity: number;
+  status: "pago" | "pendente" | "cancelado" | "expirado" | "reembolsado";
+  origin: "ticketflow" | "manual" | "importado";
+  payment_method: string | null;
+  observation: string | null;
+  is_courtesy: boolean;
+  created_at: string;
+  event_id: string;
+  events: { title: string };
+  ticket_batches: { name: string };
+  tickets?: { ticket_code: string; participant_name: string; checked_in_at: string | null }[];
+}
+
+export async function fetchSales(): Promise<Sale[]> {
   const { data, error } = await supabase
     .from("sales")
     .select(`
@@ -15,11 +34,13 @@ export async function fetchSales() {
       origin,
       payment_method,
       observation,
+      is_courtesy,
       created_at,
       event_id,
       events (title),
       ticket_batches (name)
     `)
+    .eq("is_courtesy", false)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -27,7 +48,7 @@ export async function fetchSales() {
 }
 
 export function useSales() {
-  return useQuery({
+  return useQuery<Sale[]>({
     queryKey: ["sales"],
     queryFn: fetchSales,
   });
@@ -81,7 +102,7 @@ export function useCourtesiesStats() {
 }
 
 export function useSale(id: string) {
-  return useQuery({
+  return useQuery<Sale>({
     queryKey: ["sales", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -97,12 +118,15 @@ export function useSale(id: string) {
           origin,
           payment_method,
           observation,
+          is_courtesy,
           created_at,
+          event_id,
           events (title),
           ticket_batches (name),
           tickets (ticket_code, participant_name, checked_in_at)
         `)
         .eq("id", id)
+        .eq("is_courtesy", false)
         .single();
 
       if (error) throw error;

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { StatusPill } from "@/components/admin/DataTable";
 import { useEvents } from "@/lib/events-queries";
-import { useSales, useSalesStats } from "@/lib/sales-queries";
+import { useSales, useSalesStats, type Sale } from "@/lib/sales-queries";
 import { formatCurrency } from "@/lib/sales-queries";
 
 import { useHourlySalesStats } from "@/lib/dashboard-queries";
@@ -80,7 +80,7 @@ export function AdminDashboard() {
 
   const isOverview = currentEvent === "overview";
 
-  const lastSales = sales.slice(0, 8);
+  const lastSales = sales.filter((s: any) => !s.is_courtesy).slice(0, 8);
 
   if (statsLoading || salesLoading || hourlyLoading) {
     return (
@@ -275,7 +275,7 @@ export function AdminDashboard() {
         </div>
 
         <div className="divide-y divide-border-subtle">
-          {lastSales.map((sale: any) => {
+          {lastSales.map((sale: Sale) => {
             const timeStr = new Date(sale.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
             const eventTitle = (sale.events as any)?.title || "—";
             

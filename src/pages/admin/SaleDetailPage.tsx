@@ -45,7 +45,7 @@ function Field({ label, value }: { label: string; value: string }) {
 const card = "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
-  const { data: sale, isLoading, error: fetchError } = useSale(id);
+  const { data: sale, isLoading, error: fetchError } = useSale(id) as any;
   const { userRole } = useAuth();
   const queryClient = useQueryClient();
   const isColab = userRole === "colaborador";
@@ -136,7 +136,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                 Gerar lista PDF
               </button>
               
-              {sale.status === "pago" && (
+              {sale.status === "pago" && !sale.is_courtesy && (
                 <button
                   type="button"
                   onClick={() => {
@@ -151,7 +151,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
               <button
                 type="button"
-                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || cancelling}
+                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || sale.is_courtesy || cancelling}
                 onClick={() => setConfirmOpen(true)}
                 className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
