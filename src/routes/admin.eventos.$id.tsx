@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { EditEventPage } from "@/pages/admin/EditEventPage";
 
 export const Route = createFileRoute("/admin/eventos/$id")({
