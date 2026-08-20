@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useTheme } from "./theme";
+import { useOrganization, useUpdateDesignSettings } from "./settings-queries";
 
-type AccentColor = "green" | "blue" | "purple" | "red";
-type CornerStyle = "straight" | "rounded";
+export type AccentColor = "green" | "blue" | "purple" | "red";
+export type CornerStyle = "straight" | "rounded";
 
 interface ColorSet {
   accent: string;
