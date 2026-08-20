@@ -20,14 +20,19 @@ import { FilterBar, FilterSearch, FilterTabs, filterFieldClass } from "@/compone
 import { useAuth } from "@/lib/auth-context";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
-const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Cancelado"] as const;
+const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
 function StatusBadge({ status }: { status: string }) {
   return (
     <StatusPill
-      tone={status === "pago" ? "accent" : status === "pendente" ? "warning" : "error"}
+      tone={
+        status === "pago" ? "accent" : 
+        status === "pendente" ? "warning" : 
+        status === "expirado" ? "neutral" : "error"
+      }
     >
-      {status === "pago" ? "Pago" : status === "pendente" ? "Pendente" : "Cancelado"}
+      {status === "pago" ? "Pago" : status === "pendente" ? "Pendente" : status === "expirado" ? "Expirado" : "Cancelado"}
+
     </StatusPill>
   );
 }
