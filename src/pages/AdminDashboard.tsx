@@ -80,7 +80,7 @@ export function AdminDashboard() {
 
   const isOverview = currentEvent === "overview";
 
-  const lastSales = sales.slice(0, 8);
+  const lastSales = sales.filter((s: any) => !s.is_courtesy).slice(0, 8);
 
   if (statsLoading || salesLoading || hourlyLoading) {
     return (

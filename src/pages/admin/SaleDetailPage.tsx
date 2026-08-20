@@ -136,7 +136,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                 Gerar lista PDF
               </button>
               
-              {sale.status === "pago" && (
+              {sale.status === "pago" && !sale.is_courtesy && (
                 <button
                   type="button"
                   onClick={() => {
@@ -151,7 +151,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
               <button
                 type="button"
-                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || cancelling}
+                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || sale.is_courtesy || cancelling}
                 onClick={() => setConfirmOpen(true)}
                 className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >

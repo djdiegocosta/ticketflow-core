@@ -20,6 +20,7 @@ export async function fetchSales() {
       events (title),
       ticket_batches (name)
     `)
+    .eq("is_courtesy", false)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -103,6 +104,7 @@ export function useSale(id: string) {
           tickets (ticket_code, participant_name, checked_in_at)
         `)
         .eq("id", id)
+        .eq("is_courtesy", false)
         .single();
 
       if (error) throw error;
