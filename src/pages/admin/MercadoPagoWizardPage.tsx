@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Boxes,
   CheckCircle2,
+  Copy,
   ExternalLink,
   Globe2,
   Info,
@@ -16,8 +17,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
+import { supabase } from "@/integrations/supabase/client";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
-import { useMpConfig, useUpdateMpConfig } from "@/lib/settings-queries";
+import { 
+  useMpConfig, 
+  useUpdateMpConfig, 
+  useValidateMpConfig,
+  useTestMpWebhook,
+  useCreateTestPix,
+  useOrganization
+} from "@/lib/settings-queries";
 
 const steps = [
   { id: 1, label: "Ambiente", icon: Globe2 },
@@ -62,7 +71,11 @@ function Notice({ children, tone = "info" }: { children: React.ReactNode; tone?:
 
 export function MercadoPagoWizardPage() {
   const { data: currentConfig, isLoading } = useMpConfig();
+  const { data: org } = useOrganization();
   const upsertMutation = useUpdateMpConfig();
+  const validateMutation = useValidateMpConfig();
+  const testWebhookMutation = useTestMpWebhook();
+  const createPixMutation = useCreateTestPix();
   
   const [current, setCurrent] = useState(1);
   const [validated, setValidated] = useState<number[]>([]);
@@ -79,21 +92,27 @@ export function MercadoPagoWizardPage() {
   });
   const [secretInput, setSecretInput] = useState("");
   const [secretTail, setSecretTail] = useState<string | null>(null);
-  const [testing, setTesting] = useState(false);
+  const [pixResult, setPixResult] = useState<{ qr_code: string, qr_code_base64: string } | null>(null);
 
   // Preencher dados ao carregar
-  useState(() => {
+  useEffect(() => {
     if (currentConfig && (currentConfig as any).environment) {
       const configEnv = (currentConfig as any).environment as MpEnvironment;
       setEnvironment(configEnv);
       setPublicKey(prev => ({ ...prev, [configEnv]: (currentConfig as any).public_key || "" }));
       setSavedPublicKey(prev => ({ ...prev, [configEnv]: !!(currentConfig as any).public_key }));
-      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" })); // Mock de tail para mostrar que existe
+      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" }));
       setValidated([1, 2, 3]);
     }
-  });
+  }, [currentConfig]);
 
   const env: MpEnvironment = environment ?? "sandbox";
+  const orgId = org?.id;
+  
+  // URL dinâmica para webhook
+  const siteUrl = import.meta.env['VITE_SITE_URL'] || 'https://ticketflow2.lovable.app';
+  const webhookUrl = orgId ? `${siteUrl}/api/public/mp/webhook?org_id=${orgId}` : "";
+
   const isValidated = (id: number) => validated.includes(id);
   const canOpen = (id: number) => id === 1 || isValidated(id) || isValidated(id - 1) || id <= current;
 
@@ -104,30 +123,41 @@ export function MercadoPagoWizardPage() {
     if (canOpen(id)) setCurrent(id);
   };
 
-  const testCredentials = () => {
+  const saveCredentials = () => {
     if (!tokenInput && !tokenTail[env]) {
       toast.error("Access Token é obrigatório");
       return;
     }
     
-    setTesting(true);
-    
     upsertMutation.mutate({
       environment: env,
       public_key: publicKey[env],
-      access_token: tokenInput || "", // Se vazio e tem tail, o backend mantém o atual (hipotético)
+      access_token: tokenInput || "",
       webhook_secret: secretInput || ""
     }, {
       onSuccess: () => {
-        setTesting(false);
         markValidated(3);
-        toast.success("Configuração salva e validada");
         if (tokenInput) {
           setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
           setTokenInput("");
         }
-      },
-      onError: () => setTesting(false)
+        if (secretInput) {
+          setSecretTail(secretInput.trim().slice(-4));
+          setSecretInput("");
+        }
+      }
+    });
+  };
+
+  const testCredentials = () => {
+    if (!orgId) return;
+    validateMutation.mutate({
+      organization_id: orgId,
+      environment: env
+    }, {
+      onSuccess: () => {
+        markValidated(3);
+      }
     });
   };
 
@@ -393,11 +423,7 @@ export function MercadoPagoWizardPage() {
                   <Button
                     variant="secondary"
                     disabled={tokenInput.trim().length < 4}
-                    onClick={() => {
-                      setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
-                      setTokenInput("");
-                      toast.success("Access Token salvo com segurança");
-                    }}
+                    onClick={saveCredentials}
                   >
                     Salvar
                   </Button>
@@ -415,10 +441,10 @@ export function MercadoPagoWizardPage() {
 
               <Button
                 className="w-full"
-                disabled={testing || !tokenTail[env] || !savedPublicKey[env]}
+                disabled={validateMutation.isPending || !tokenTail[env] || !savedPublicKey[env]}
                 onClick={testCredentials}
               >
-                {testing ? (
+                {validateMutation.isPending ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Testando...
@@ -455,8 +481,22 @@ export function MercadoPagoWizardPage() {
 
               <div className="space-y-2">
                 <label className="text-small text-[var(--text-secondary)]">URL do webhook</label>
-                <div className="border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-4 text-body text-[var(--text-secondary)]">
-                  Conecte o Supabase ao projeto para gerar a URL do webhook automaticamente.
+                <div className="flex items-center gap-2 border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-4">
+                  <code className="flex-1 break-all text-body text-[var(--text-secondary)]">
+                    {webhookUrl || "Carregando URL..."}
+                  </code>
+                  {webhookUrl && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(webhookUrl);
+                        toast.success("URL copiada!");
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -490,20 +530,28 @@ export function MercadoPagoWizardPage() {
                   <Button
                     variant="secondary"
                     disabled={secretInput.trim().length < 4}
-                    onClick={() => {
-                      setSecretTail(secretInput.trim().slice(-4));
-                      setSecretInput("");
-                      toast.success("Webhook Secret salvo com segurança");
-                    }}
+                    onClick={saveCredentials}
                   >
                     Salvar
                   </Button>
                 </div>
               </div>
 
-              <div title="Disponível após conectar o Supabase">
-                <Button disabled className="w-full">
-                  Testar Webhook
+              <div>
+                <Button 
+                  className="w-full"
+                  disabled={testWebhookMutation.isPending || !orgId}
+                  onClick={() => {
+                    if (!orgId) return;
+                    testWebhookMutation.mutate({ organization_id: orgId, environment: env });
+                  }}
+                >
+                  {testWebhookMutation.isPending ? (
+                     <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Testando...
+                    </span>
+                  ) : "Testar Webhook"}
                 </Button>
               </div>
 
@@ -534,16 +582,69 @@ export function MercadoPagoWizardPage() {
               </span>
 
               <div className="space-y-3">
-                <div title="Disponível após conectar o Supabase">
-                  <Button disabled className="w-full">
-                    Criar PIX de teste
+                {pixResult ? (
+                  <div className="flex flex-col items-center gap-4 border border-[var(--border-default)] p-6">
+                    <img 
+                      src={`data:image/png;base64,${pixResult.qr_code_base64}`} 
+                      alt="QR Code PIX" 
+                      className="h-48 w-48"
+                    />
+                    <div className="w-full space-y-2">
+                      <p className="text-center text-micro text-[var(--text-secondary)]">Copia e Cola:</p>
+                      <div className="flex items-center gap-2 bg-[var(--bg-tertiary)] p-2">
+                        <code className="flex-1 truncate text-micro">{pixResult.qr_code}</code>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => {
+                            navigator.clipboard.writeText(pixResult.qr_code);
+                            toast.success("Código copiado!");
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Button 
+                    className="w-full"
+                    disabled={createPixMutation.isPending}
+                    onClick={async () => {
+                      // Para teste, criamos uma venda fictícia de R$ 0,01 ou usamos uma existente
+                      // O prompt pede para criar PIX de R$ 0,01.
+                      // Vamos criar uma venda pendente real no banco para isso.
+                      if (!orgId) return;
+                      const { data: sale } = await supabase.from("sales").insert({
+                        organization_id: orgId,
+                        event_id: '00000000-0000-0000-0000-000000000000', // UUID dummy se necessário ou buscar um evento
+                        batch_id: '00000000-0000-0000-0000-000000000000',
+                        quantity: 1,
+                        unit_price: 0.01,
+                        total_amount: 0.01,
+                        status: 'pendente',
+                        buyer_name: 'Teste Checkout',
+                        buyer_email: 'teste@ticketflow.com',
+                        buyer_whatsapp: '5511999999999',
+                        payment_method: 'pix_ticketflow',
+                        sale_code: 'TEST' + Math.floor(Math.random() * 1000)
+                      } as any).select().single();
+
+                      if (sale) {
+                        createPixMutation.mutate({ sale_id: sale.id! }, {
+                          onSuccess: (data: any) => setPixResult(data)
+                        });
+                      }
+                    }}
+                  >
+                    {createPixMutation.isPending ? (
+                       <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Gerando PIX...
+                      </span>
+                    ) : "Criar PIX de teste (R$ 0,01)"}
                   </Button>
-                </div>
-                <div title="Disponível após conectar o Supabase">
-                  <Button disabled variant="secondary" className="w-full">
-                    Atualizar status
-                  </Button>
-                </div>
+                )}
               </div>
 
               <p className="text-small text-[var(--text-secondary)]">
@@ -553,6 +654,9 @@ export function MercadoPagoWizardPage() {
               <div className="flex justify-between">
                 <Button variant="secondary" onClick={() => setCurrent(4)}>
                   Voltar
+                </Button>
+                <Button asChild>
+                  <Link to="/admin/configuracoes">Concluir Configuração</Link>
                 </Button>
               </div>
             </div>

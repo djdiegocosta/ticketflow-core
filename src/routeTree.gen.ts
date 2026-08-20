@@ -49,6 +49,7 @@ import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.inde
 import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
 import { Route as ESlugCheckoutRouteImport } from './routes/e.$slug.checkout'
+import { Route as ApiPublicMpWebhookRouteImport } from './routes/api/public/mp/webhook'
 import { Route as ESlugConfirmacaoSale_codeRouteImport } from './routes/e.$slug.confirmacao.$sale_code'
 
 const IndexRoute = IndexRouteImport.update({
@@ -252,6 +253,11 @@ const ESlugCheckoutRoute = ESlugCheckoutRouteImport.update({
   path: '/e/$slug/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMpWebhookRoute = ApiPublicMpWebhookRouteImport.update({
+  id: '/api/public/mp/webhook',
+  path: '/api/public/mp/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ESlugConfirmacaoSale_codeRoute =
   ESlugConfirmacaoSale_codeRouteImport.update({
     id: '/e/$slug/confirmacao/$sale_code',
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/admin/ferramentas/': typeof AdminFerramentasIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
+  '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesByTo {
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/admin/ferramentas': typeof AdminFerramentasIndexRoute
   '/admin/vendas': typeof AdminVendasIndexRoute
   '/e/$slug': typeof ESlugIndexRoute
+  '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesById {
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/admin/ferramentas/': typeof AdminFerramentasIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
+  '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRouteTypes {
@@ -430,6 +439,7 @@ export interface FileRouteTypes {
     | '/admin/ferramentas/'
     | '/admin/vendas/'
     | '/e/$slug/'
+    | '/api/public/mp/webhook'
     | '/e/$slug/confirmacao/$sale_code'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/admin/ferramentas'
     | '/admin/vendas'
     | '/e/$slug'
+    | '/api/public/mp/webhook'
     | '/e/$slug/confirmacao/$sale_code'
   id:
     | '__root__'
@@ -514,6 +525,7 @@ export interface FileRouteTypes {
     | '/admin/ferramentas/'
     | '/admin/vendas/'
     | '/e/$slug/'
+    | '/api/public/mp/webhook'
     | '/e/$slug/confirmacao/$sale_code'
   fileRoutesById: FileRoutesById
 }
@@ -534,6 +546,7 @@ export interface RootRouteChildren {
   CheckinIndexRoute: typeof CheckinIndexRoute
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
+  ApiPublicMpWebhookRoute: typeof ApiPublicMpWebhookRoute
   ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
 }
 
@@ -819,6 +832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ESlugCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mp/webhook': {
+      id: '/api/public/mp/webhook'
+      path: '/api/public/mp/webhook'
+      fullPath: '/api/public/mp/webhook'
+      preLoaderRoute: typeof ApiPublicMpWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/e/$slug/confirmacao/$sale_code': {
       id: '/e/$slug/confirmacao/$sale_code'
       path: '/e/$slug/confirmacao/$sale_code'
@@ -914,6 +934,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckinIndexRoute: CheckinIndexRoute,
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
+  ApiPublicMpWebhookRoute: ApiPublicMpWebhookRoute,
   ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
 }
 export const routeTree = rootRouteImport
