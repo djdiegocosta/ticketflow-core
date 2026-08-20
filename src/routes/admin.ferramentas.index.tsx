@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Calculator, Target, Trophy, Gift, Wrench, CheckSquare } from 'lucide-react'
 
-export const Route = createFileRoute('/admin/ferramentas/')({
+export const Route = createFileRoute('/admin/ferramentas')({
   beforeLoad: ({ context }) => {
     const ctx = (context as any).auth;
     if (ctx?.role === 'colaborador') {
