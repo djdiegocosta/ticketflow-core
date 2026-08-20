@@ -70,7 +70,11 @@ function Notice({ children, tone = "info" }: { children: React.ReactNode; tone?:
 
 export function MercadoPagoWizardPage() {
   const { data: currentConfig, isLoading } = useMpConfig();
+  const { data: org } = useOrganization();
   const upsertMutation = useUpdateMpConfig();
+  const validateMutation = useValidateMpConfig();
+  const testWebhookMutation = useTestMpWebhook();
+  const createPixMutation = useCreateTestPix();
   
   const [current, setCurrent] = useState(1);
   const [validated, setValidated] = useState<number[]>([]);
@@ -87,19 +91,26 @@ export function MercadoPagoWizardPage() {
   });
   const [secretInput, setSecretInput] = useState("");
   const [secretTail, setSecretTail] = useState<string | null>(null);
-  const [testing, setTesting] = useState(false);
+  const [pixResult, setPixResult] = useState<{ qr_code: string, qr_code_base64: string } | null>(null);
 
   // Preencher dados ao carregar
-  useState(() => {
+  useEffect(() => {
     if (currentConfig && (currentConfig as any).environment) {
       const configEnv = (currentConfig as any).environment as MpEnvironment;
       setEnvironment(configEnv);
       setPublicKey(prev => ({ ...prev, [configEnv]: (currentConfig as any).public_key || "" }));
       setSavedPublicKey(prev => ({ ...prev, [configEnv]: !!(currentConfig as any).public_key }));
-      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" })); // Mock de tail para mostrar que existe
+      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" }));
       setValidated([1, 2, 3]);
     }
-  });
+  }, [currentConfig]);
+
+  const env: MpEnvironment = environment ?? "sandbox";
+  const orgId = org?.organization_id;
+  
+  // URL dinâmica para webhook
+  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://ticketflow2.lovable.app';
+  const webhookUrl = orgId ? `${siteUrl}/api/public/mp/webhook?org_id=${orgId}` : "";
 
   const env: MpEnvironment = environment ?? "sandbox";
   const isValidated = (id: number) => validated.includes(id);
