@@ -38,8 +38,9 @@ export function useRemarketingData(periodHours: number = 24) {
           ticket_batches (name),
           expires_at
         `)
-        .in("status", ["pendente", "expirado"])
+        .in("status", ["pendente", "expirado"] as any)
         .or(`expires_at.lt.${new Date().toISOString()},status.eq.expirado`)
+
 
         .gte("created_at", new Date(Date.now() - periodHours * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: false });

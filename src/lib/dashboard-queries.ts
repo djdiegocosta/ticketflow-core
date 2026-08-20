@@ -19,7 +19,7 @@ export function useHourlySalesStats(eventId?: string) {
     queryKey: ["sales", "hourly-stats", eventId],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_hourly_sales_stats", {
-        _event_id: eventId === "overview" ? null : eventId,
+        _event_id: (eventId === "overview" || !eventId) ? undefined : eventId,
       });
       if (error) throw error;
       return data as { hour: string; value: number }[];
