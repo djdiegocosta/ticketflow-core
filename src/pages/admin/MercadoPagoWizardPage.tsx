@@ -106,13 +106,12 @@ export function MercadoPagoWizardPage() {
   }, [currentConfig]);
 
   const env: MpEnvironment = environment ?? "sandbox";
-  const orgId = org?.organization_id;
+  const orgId = org?.id;
   
   // URL dinâmica para webhook
-  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://ticketflow2.lovable.app';
+  const siteUrl = import.meta.env['VITE_SITE_URL'] || 'https://ticketflow2.lovable.app';
   const webhookUrl = orgId ? `${siteUrl}/api/public/mp/webhook?org_id=${orgId}` : "";
 
-  const env: MpEnvironment = environment ?? "sandbox";
   const isValidated = (id: number) => validated.includes(id);
   const canOpen = (id: number) => id === 1 || isValidated(id) || isValidated(id - 1) || id <= current;
 
@@ -123,30 +122,41 @@ export function MercadoPagoWizardPage() {
     if (canOpen(id)) setCurrent(id);
   };
 
-  const testCredentials = () => {
+  const saveCredentials = () => {
     if (!tokenInput && !tokenTail[env]) {
       toast.error("Access Token é obrigatório");
       return;
     }
     
-    setTesting(true);
-    
     upsertMutation.mutate({
       environment: env,
       public_key: publicKey[env],
-      access_token: tokenInput || "", // Se vazio e tem tail, o backend mantém o atual (hipotético)
+      access_token: tokenInput || "",
       webhook_secret: secretInput || ""
     }, {
       onSuccess: () => {
-        setTesting(false);
         markValidated(3);
-        toast.success("Configuração salva e validada");
         if (tokenInput) {
           setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
           setTokenInput("");
         }
-      },
-      onError: () => setTesting(false)
+        if (secretInput) {
+          setSecretTail(secretInput.trim().slice(-4));
+          setSecretInput("");
+        }
+      }
+    });
+  };
+
+  const testCredentials = () => {
+    if (!orgId) return;
+    validateMutation.mutate({
+      organization_id: orgId,
+      environment: env
+    }, {
+      onSuccess: () => {
+        markValidated(3);
+      }
     });
   };
 
