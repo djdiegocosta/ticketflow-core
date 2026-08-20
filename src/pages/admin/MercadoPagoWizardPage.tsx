@@ -440,10 +440,10 @@ export function MercadoPagoWizardPage() {
 
               <Button
                 className="w-full"
-                disabled={testing || !tokenTail[env] || !savedPublicKey[env]}
+                disabled={validateMutation.isPending || !tokenTail[env] || !savedPublicKey[env]}
                 onClick={testCredentials}
               >
-                {testing ? (
+                {validateMutation.isPending ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Testando...
