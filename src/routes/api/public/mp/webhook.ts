@@ -8,7 +8,13 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
       POST: async ({ request }) => {
         const url = new URL(request.url);
         const orgId = url.searchParams.get("org_id");
-        const dataId = url.searchParams.get("data.id");
+        let dataId = url.searchParams.get("data.id");
+        if (!dataId) {
+          try {
+             const body = await request.clone().json();
+             dataId = body?.data?.id;
+          } catch(e) {}
+        }
 
         if (!orgId || !dataId) {
           return new Response("Invalid request", { status: 400 });
