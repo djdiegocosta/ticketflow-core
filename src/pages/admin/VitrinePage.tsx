@@ -233,7 +233,7 @@ export default function VitrinePage() {
     <div className="flex flex-col gap-6">
       <ListPageHeader
         title="Vitrine de Banners"
-        action={<Button onClick={() => handleOpenPanel()}><Plus size={18} className="mr-2" />Novo Banner</Button>}
+        action={<PrimaryActionButton onClick={() => handleOpenPanel()}>Novo Banner</PrimaryActionButton>}
       />
 
 
