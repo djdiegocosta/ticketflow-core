@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { offlineDB } from "@/lib/offline-db";
 import { Database, Loader2 } from "lucide-react";
-import { useCustomerSales } from "@/lib/customer-queries";
+import { useCustomerSales, ticketStatusMeta } from "@/lib/customer-queries";
 import { Link } from "@tanstack/react-router";
+import { StatusPill } from "@/components/admin/DataTable";
 
 export function Page_cliente_ingressos() {
   const { data: sales = [], isLoading } = useCustomerSales();
@@ -108,13 +109,9 @@ export function Page_cliente_ingressos() {
                 </p>
                 <p className="text-micro text-[var(--text-disabled)] font-mono">{t.participant_name}</p>
               </div>
-              <div className={`px-2 py-1 text-micro rounded-[var(--radius-sm)] ${
-                t.status === 'Válido' ? 'bg-success/10 text-success' : 
-                t.status === 'Utilizado' ? 'bg-warning/10 text-warning' : 
-                'bg-error/10 text-error'
-              }`}>
-                {t.status}
-              </div>
+              <StatusPill tone={ticketStatusMeta(t.status).tone}>
+                {ticketStatusMeta(t.status).label}
+              </StatusPill>
             </Link>
           ))
         ) : (

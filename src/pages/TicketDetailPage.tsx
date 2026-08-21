@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Badge } from '@/components/ui/badge';
-import { useTicketByCode } from '@/lib/customer-queries';
+import { useTicketByCode, ticketStatusMeta } from '@/lib/customer-queries';
+import { StatusPill } from '@/components/admin/DataTable';
 
 export default function TicketDetailPage() {
   const { ticket_code } = useParams({ from: '/ingresso/$ticket_code' });
@@ -35,14 +35,6 @@ export default function TicketDetailPage() {
     );
   }
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'Válido': return 'success';
-      case 'Utilizado': return 'warning';
-      case 'Cancelado': return 'destructive';
-      default: return 'outline';
-    }
-  };
 
   const eventData = (ticket.sales as any)?.events;
 
@@ -68,9 +60,9 @@ export default function TicketDetailPage() {
           <h1 className="text-display font-bold leading-tight text-[var(--text-primary)] text-center">
             {eventData?.title || "Evento"}
           </h1>
-          <Badge variant={getStatusVariant(ticket.status) as any} className="mt-1">
-            {ticket.status}
-          </Badge>
+          <StatusPill tone={ticketStatusMeta(ticket.status).tone} className="mt-1">
+            {ticketStatusMeta(ticket.status).label}
+          </StatusPill>
         </div>
 
         {/* QR Code Container */}

@@ -6,6 +6,16 @@ import { offlineDB } from "./offline-db";
 import { ACCENT_COLORS, CORNER_STYLES, AccentColor, CornerStyle } from "./design";
 import { useAuth } from "./auth-context";
 import { useTheme } from "./theme";
+import type { PillTone } from "@/components/admin/DataTable";
+
+export function ticketStatusMeta(status: string): { label: string; tone: PillTone } {
+  switch (status) {
+    case "valido": return { label: "Válido", tone: "success" };
+    case "utilizado": return { label: "Utilizado", tone: "warning" };
+    case "cancelado": return { label: "Cancelado", tone: "error" };
+    default: return { label: status, tone: "neutral" };
+  }
+}
 
 /**
  * Hook para buscar dados do cliente logado (customer)
