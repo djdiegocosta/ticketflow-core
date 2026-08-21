@@ -55,7 +55,10 @@ export function useUpdateOrganization() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data) {
+        throw new Error("Não foi possível salvar: verifique suas permissões");
+      }
       queryClient.invalidateQueries({ queryKey: ["organization"] });
       toast.success("Organização atualizada com sucesso");
     },
