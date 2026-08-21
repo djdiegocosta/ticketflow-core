@@ -286,12 +286,4 @@ export function useDeleteBanner() {
   });
 }
 
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["banners"] });
-      toast.success("Banner excluído com sucesso");
-    },
-  });
-}
-
 
