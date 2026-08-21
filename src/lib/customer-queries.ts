@@ -362,6 +362,7 @@ export function useApplyCustomerDesign() {
       root.style.setProperty("--radius", style.md);
     }
   }, [design, theme]);
+}
 
 /**
  * Hook para buscar o banner ativo da organização do cliente
@@ -387,5 +388,6 @@ export function useActiveBanner() {
     enabled: !!customer?.organization_id
   });
 }
+
 
 
