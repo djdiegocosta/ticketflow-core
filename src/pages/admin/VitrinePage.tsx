@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { 
   DataTable, 
   DataTableShell, 
@@ -15,7 +15,7 @@ import {
   useDeleteBanner 
 } from "@/lib/settings-queries";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit2, Image as ImageIcon, ExternalLink, Power } from "lucide-react";
+import { Trash2, Edit2, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { 
   Sheet, 
   SheetContent, 
