@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
+import { setLastVisitedOrg } from '@/lib/org-context';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
@@ -19,6 +20,12 @@ export default function EventPage() {
       setSelectedBatchId(event.ticket_batches[0]?.id || null);
     }
   }, [event, selectedBatchId]);
+
+  useEffect(() => {
+    if (event?.organization_id) {
+      setLastVisitedOrg(event.organization_id);
+    }
+  }, [event?.organization_id]);
 
   if (isLoading) {
     return (
