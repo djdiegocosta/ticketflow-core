@@ -40,7 +40,7 @@ export function useUpdateOrganization() {
       const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
       if (!roleRow) throw new Error("Não autorizado");
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("organizations")
         .update({
           name: vars.name,
@@ -48,9 +48,12 @@ export function useUpdateOrganization() {
           contact_phone: vars.phone || null,
           logo_url: vars.logo_url || null,
         })
-        .eq("id", roleRow.organization_id);
+        .eq("id", roleRow.organization_id)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
