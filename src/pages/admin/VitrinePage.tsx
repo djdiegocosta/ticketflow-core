@@ -227,9 +227,9 @@ export default function VitrinePage() {
     <div className="flex flex-col gap-6">
       <ListPageHeader
         title="Vitrine de Banners"
-        description="Gerencie os banners exibidos na área do cliente. Apenas um banner pode estar ativo por vez."
         action={<Button onClick={() => handleOpenPanel()}><Plus size={18} className="mr-2" />Novo Banner</Button>}
       />
+
 
 
       <DataTableShell>
