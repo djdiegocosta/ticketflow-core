@@ -3,6 +3,7 @@ import { Link, Outlet } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Ticket } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useApplyCustomerDesign } from "@/lib/customer-queries";
 
 interface MobileLayoutProps {
   children?: ReactNode;
@@ -11,6 +12,7 @@ interface MobileLayoutProps {
 }
 
 export function MobileLayout({ children, headerContent, showFooter = true }: MobileLayoutProps) {
+  useApplyCustomerDesign();
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)] overflow-x-hidden">
       {/* Header simples mobile */}
