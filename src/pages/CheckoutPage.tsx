@@ -17,6 +17,7 @@ import { getUFByDDD } from '@/lib/ibge-data';
 import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { supabase } from '@/integrations/supabase/client';
+import { setLastVisitedOrg } from '@/lib/org-context';
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
@@ -94,6 +95,12 @@ export default function CheckoutPage() {
       }
     };
   }, [event?.id, currentSaleId, form, trackAbandonment]);
+
+  useEffect(() => {
+    if (event?.organization_id) {
+      setLastVisitedOrg(event.organization_id);
+    }
+  }, [event?.organization_id]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
