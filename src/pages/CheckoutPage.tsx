@@ -128,10 +128,11 @@ export default function CheckoutPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onSubmit = async (data: CheckoutFormValues) => {
+  const onSubmit = async (values: CheckoutFormValues) => {
     if (!event || !batch || isCreatingSale) return;
     
     setIsCreatingSale(true);
+    setPixData(null); // Reset pix data for new submission
     try {
       let customerId: string | undefined;
       
@@ -148,18 +149,31 @@ export default function CheckoutPage() {
       const saleResult = await createPendingSale({
         event_id: event.id,
         batch_id: batch.id,
-        buyer_name: data.buyerName,
-        buyer_whatsapp: data.buyerWhatsApp,
-        buyer_email: data.buyerEmail || "",
+        buyer_name: values.buyerName,
+        buyer_whatsapp: values.buyerWhatsApp,
+        buyer_email: values.buyerEmail || "",
         quantity: qty,
-        participant_names: data.participants.map(p => p.name),
+        participant_names: values.participants.map(p => p.name),
         customer_id: customerId as any
       });
 
       const resultArr = saleResult as any[];
-      const { sale_id: id, sale_code, total_amount } = resultArr[0];
+      const { sale_id: id, sale_code } = resultArr[0];
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
+
+      // Gerar Pix Real
+      try {
+        const pixResult = await generateSalePix({ sale_id: id });
+        setPixData({
+          qr_code: pixResult.qr_code,
+          qr_code_base64: pixResult.qr_code_base64
+        });
+      } catch (pixErr: any) {
+        toast.error("Erro ao gerar o Pix. Por favor, tente novamente.");
+        setIsCreatingSale(false);
+        return; // Não avança o step
+      }
       
       // Reset countdown to 30 minutes (1800 seconds)
       setCountdown(1800);

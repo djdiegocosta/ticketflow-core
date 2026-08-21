@@ -304,7 +304,7 @@ export function useSaleStatus(saleId: string | null) {
       const { data, error } = await supabase
         .from("sales")
         .select("status")
-        .eq("id", saleId)
+        .eq("id", saleId!)
         .single();
 
       if (error) throw error;
