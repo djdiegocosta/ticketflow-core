@@ -351,9 +351,9 @@ export default function VitrinePage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Imagem do Banner (Proporção 9:16 recomendada)</Label>
+              <Label>Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)</Label>
               <div className="flex items-start gap-4">
-                <div className="w-24 h-32 bg-muted border flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-30 bg-muted border flex items-center justify-center overflow-hidden">
                   {formData.image_url ? (
                     <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
@@ -369,7 +369,7 @@ export default function VitrinePage() {
                     className="cursor-pointer"
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    Formatos: JPG, PNG, WebP. Máximo 2MB.
+                    Formatos: JPG, PNG, WebP. Máximo 3MB.
                   </p>
                 </div>
               </div>
