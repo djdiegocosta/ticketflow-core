@@ -1,9 +1,15 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useAuth } from "@/lib/auth-context";
 import { useCustomerStats, useCustomerSales } from "@/lib/customer-queries";
 import { Loader2 } from "lucide-react";
 import { ClientVitrine } from "@/components/cliente/ClientVitrine";
 import { WelcomeSplash } from "@/components/WelcomeSplash";
 import { useState, useEffect } from "react";
+
+export const Route = createFileRoute('/cliente/')({
+  component: Page_cliente_index,
+});
+
 
 
 export function Page_cliente_index() {

@@ -1,9 +1,15 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState, useMemo } from "react";
 import { offlineDB } from "@/lib/offline-db";
 import { Database, Loader2 } from "lucide-react";
 import { useCustomerSales, ticketStatusMeta } from "@/lib/customer-queries";
 import { Link } from "@tanstack/react-router";
 import { StatusPill } from "@/components/admin/DataTable";
+
+export const Route = createFileRoute('/cliente/ingressos')({
+  component: Page_cliente_ingressos,
+});
+
 
 export function Page_cliente_ingressos() {
   const { data: sales = [], isLoading } = useCustomerSales();
