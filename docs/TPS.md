@@ -198,11 +198,21 @@ Regras:
 
 Mobile first — usa `MobileLayout` (ver 13.2). Apenas para usuários com conta completa.
 
-### 7.1 Dashboard do cliente
-- Saudação com nome.
+### 7.1 Dashboard do cliente (`/cliente` — "Início")
+- Linguagem informal e jovem em toda a tela, com instruções curtas guiando o usuário (nunca texto longo).
+- Mensagem de boas-vindas: "Que bom que você chegou! Seja bem-vindo(a)!" na primeira visita (sinalizada pelo fluxo de cadastro, não calculada por data — mais simples e confiável); "Bom ver você aqui de novo!" nas visitas seguintes.
+- **Vitrine** (ver 8.18): exibe o banner ativo cadastrado pelo admin, se houver — imagem 9:16 ajustada à tela com botão de link, ou texto simples quando não houver imagem. Nada é exibido se não houver banner ativo (sem placeholder vazio).
 - Cards: total de eventos, total de ingressos, pontos acumulados.
 - Próximos eventos com ingresso.
 - Eventos passados.
+
+### 8.18 Vitrine (`/admin/ferramentas/vitrine`)
+Novo card no hub de Ferramentas — "Divulgue seu próximo evento (ou qualquer coisa) na tela inicial dos seus clientes".
+
+- Listagem dos banners cadastrados, com indicação de qual está ativo (só um por vez).
+- Criar/editar banner: imagem (upload, proporção 9:16 — orientação de tamanho recomendado na tela), link (URL, opcional, qualquer destino — normalmente a página pública de um evento, mas não restrito a isso), texto (usado como conteúdo quando não há imagem, ou como legenda quando há).
+- Toggle "Ativo" — ativar um banner desativa automaticamente qualquer outro (nunca dois ativos ao mesmo tempo).
+- Sem carrossel/rotação — deliberadamente simples, um banner por vez.
 
 ### 7.2 Meus ingressos (`/cliente/ingressos`)
 - Lista de todos os ingressos.
@@ -267,7 +277,7 @@ Configurações
 - Grid de cards visuais (mesmo padrão dos cards de Eventos): ícone/imagem representando a ferramenta, nome, breve descrição de uma linha.
 - Cada card leva para a rota já existente da ferramenta (/admin/simulador, /admin/remarketing, /admin/sorteios).
 - Preparado para receber novas ferramentas futuras sem exigir novo item de menu.
-- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Checklist do Evento ("Organize as tarefas do dia do evento para não esquecer nada"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
+- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Checklist do Evento ("Organize as tarefas do dia do evento para não esquecer nada"), Vitrine ("Divulgue seu próximo evento na tela inicial dos seus clientes"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
 
 **Checklist do Evento (`/admin/ferramentas/checklist`):**
 - Ferramenta simples de lista de tarefas, vinculada a um evento (dropdown de seleção no topo).
@@ -1011,7 +1021,8 @@ Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual
 - **Mobile first:** área pública e área do cliente.
 - **Desktop first:** painel admin e super admin.
 - **Multi-tenant:** RLS por `organization_id` desde o início.
-- **Aprovação de organizações:** manual pelo super admin, campo preparado para automação futura.
+- **Aprovação de organizações:** manual pelo super admin, campo preparado para automação futura. **Correção registrada (13/08/2026):** a implementação inicial da migração para Supabase criou um fluxo de "primeiro acesso" que ativava a organização automaticamente (self-service) — contrariava esta decisão e foi corrigido para: nova organização nasce com status `pending`, usuário vira admin *daquela organização pendente*, mas fica numa tela de espera ("Conta criada, aguardando aprovação") até o Super Admin aprovar em `/superadmin/organizacoes`.
+- **Login:** e-mail/senha + Google (OAuth) — ambos válidos, mesma lógica de resolução de organização/papel após autenticação, independente do método usado.
 - **Pagamento de ingressos:** direto na conta MP do produtor. TicketFlow não intermedia.
 - **Importação:** arquitetura de adaptadores — novas plataformas = novos adaptadores.
 
