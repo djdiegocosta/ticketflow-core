@@ -160,6 +160,7 @@ export type Database = {
           instagram: string | null
           organization_id: string
           points: number
+          sexo: Database["public"]["Enums"]["customer_gender"] | null
           updated_at: string
           user_id: string | null
           whatsapp: string
@@ -175,6 +176,7 @@ export type Database = {
           instagram?: string | null
           organization_id: string
           points?: number
+          sexo?: Database["public"]["Enums"]["customer_gender"] | null
           updated_at?: string
           user_id?: string | null
           whatsapp: string
@@ -190,6 +192,7 @@ export type Database = {
           instagram?: string | null
           organization_id?: string
           points?: number
+          sexo?: Database["public"]["Enums"]["customer_gender"] | null
           updated_at?: string
           user_id?: string | null
           whatsapp?: string
@@ -1088,6 +1091,13 @@ export type Database = {
       }
       expire_pending_sales: { Args: never; Returns: undefined }
       generate_short_code: { Args: never; Returns: string }
+      get_customer_organization_design: {
+        Args: never
+        Returns: {
+          accent_color: string
+          corner_style: string
+        }[]
+      }
       get_default_organization: { Args: never; Returns: string }
       get_hourly_sales_stats: {
         Args: { _event_id?: string }
@@ -1194,6 +1204,7 @@ export type Database = {
       abandonment_status: "nao_contactado" | "contactado" | "convertido"
       abandonment_type: "sem_pix" | "pix_nao_pago"
       app_role: "admin" | "colaborador" | "operador_checkin"
+      customer_gender: "masculino" | "feminino" | "prefiro_nao_informar"
       event_status: "rascunho" | "publicado" | "cancelado"
       mp_environment: "sandbox" | "producao"
       org_plan: "start" | "pro" | "business"
@@ -1343,6 +1354,7 @@ export const Constants = {
       abandonment_status: ["nao_contactado", "contactado", "convertido"],
       abandonment_type: ["sem_pix", "pix_nao_pago"],
       app_role: ["admin", "colaborador", "operador_checkin"],
+      customer_gender: ["masculino", "feminino", "prefiro_nao_informar"],
       event_status: ["rascunho", "publicado", "cancelado"],
       mp_environment: ["sandbox", "producao"],
       org_plan: ["start", "pro", "business"],
