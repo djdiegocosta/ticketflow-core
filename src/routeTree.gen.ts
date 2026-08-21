@@ -45,6 +45,7 @@ import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.in
 import { Route as AdminEventosIdRouteImport } from './routes/admin.eventos.$id'
 import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.novo'
 import { Route as AdminFerramentasIndexRouteImport } from './routes/admin.ferramentas.index'
+import { Route as AdminFerramentasVitrineRouteImport } from './routes/admin.ferramentas.vitrine'
 import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.index'
 import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
@@ -233,6 +234,11 @@ const AdminFerramentasIndexRoute = AdminFerramentasIndexRouteImport.update({
   path: '/ferramentas/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminFerramentasVitrineRoute = AdminFerramentasVitrineRouteImport.update({
+  id: '/ferramentas/vitrine',
+  path: '/ferramentas/vitrine',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminVendasIndexRoute = AdminVendasIndexRouteImport.update({
   id: '/vendas/',
   path: '/vendas/',
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes': typeof AdminClientesIndexRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
@@ -431,6 +440,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
@@ -473,6 +483,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes'
@@ -517,6 +528,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
@@ -804,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFerramentasIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/ferramentas/vitrine': {
+      id: '/admin/ferramentas/vitrine'
+      path: '/ferramentas/vitrine'
+      fullPath: '/admin/ferramentas/vitrine'
+      preLoaderRoute: typeof AdminFerramentasVitrineRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/vendas/': {
       id: '/admin/vendas/'
       path: '/vendas'
@@ -865,6 +884,7 @@ interface AdminRouteRouteChildren {
   AdminConfiguracoesMercadoPagoRoute: typeof AdminConfiguracoesMercadoPagoRoute
   AdminEventosIdRoute: typeof AdminEventosIdRoute
   AdminEventosNovoRoute: typeof AdminEventosNovoRoute
+  AdminFerramentasVitrineRoute: typeof AdminFerramentasVitrineRoute
   AdminVendasIdRoute: typeof AdminVendasIdRoute
   AdminClientesIndexRoute: typeof AdminClientesIndexRoute
   AdminConfiguracoesIndexRoute: typeof AdminConfiguracoesIndexRoute
@@ -889,6 +909,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminConfiguracoesMercadoPagoRoute: AdminConfiguracoesMercadoPagoRoute,
   AdminEventosIdRoute: AdminEventosIdRoute,
   AdminEventosNovoRoute: AdminEventosNovoRoute,
+  AdminFerramentasVitrineRoute: AdminFerramentasVitrineRoute,
   AdminVendasIdRoute: AdminVendasIdRoute,
   AdminClientesIndexRoute: AdminClientesIndexRoute,
   AdminConfiguracoesIndexRoute: AdminConfiguracoesIndexRoute,
