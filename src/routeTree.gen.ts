@@ -34,6 +34,7 @@ import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as CheckinIndexRouteImport } from './routes/checkin.index'
 import { Route as CheckinHistoricoRouteImport } from './routes/checkin.historico'
 import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClienteEventosRouteImport } from './routes/cliente.eventos'
 import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
 import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
 import { Route as ClientePontosRouteImport } from './routes/cliente.pontos'
@@ -182,6 +183,11 @@ const ClienteIndexRoute = ClienteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ClienteRoute,
 } as any)
+const ClienteEventosRoute = ClienteEventosRouteImport.update({
+  id: '/eventos',
+  path: '/eventos',
+  getParentRoute: () => ClienteRoute,
+} as any)
 const ClienteIngressosRoute = ClienteIngressosRouteImport.update({
   id: '/ingressos',
   path: '/ingressos',
@@ -318,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/eventos': typeof ClienteEventosRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -364,6 +371,7 @@ export interface FileRoutesByTo {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/eventos': typeof ClienteEventosRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -414,6 +422,7 @@ export interface FileRoutesById {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/eventos': typeof ClienteEventosRoute
   '/cliente/ingressos': typeof ClienteIngressosRoute
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
@@ -465,6 +474,7 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/eventos'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -511,6 +521,7 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/eventos'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -560,6 +571,7 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/eventos'
     | '/cliente/ingressos'
     | '/cliente/perfil'
     | '/cliente/pontos'
@@ -785,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClienteIndexRouteImport
       parentRoute: typeof ClienteRoute
     }
+    '/cliente/eventos': {
+      id: '/cliente/eventos'
+      path: '/eventos'
+      fullPath: '/cliente/eventos'
+      preLoaderRoute: typeof ClienteEventosRouteImport
+      parentRoute: typeof ClienteRoute
+    }
     '/cliente/ingressos': {
       id: '/cliente/ingressos'
       path: '/ingressos'
@@ -997,6 +1016,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 )
 
 interface ClienteRouteChildren {
+  ClienteEventosRoute: typeof ClienteEventosRoute
   ClienteIngressosRoute: typeof ClienteIngressosRoute
   ClientePerfilRoute: typeof ClientePerfilRoute
   ClientePontosRoute: typeof ClientePontosRoute
@@ -1004,6 +1024,7 @@ interface ClienteRouteChildren {
 }
 
 const ClienteRouteChildren: ClienteRouteChildren = {
+  ClienteEventosRoute: ClienteEventosRoute,
   ClienteIngressosRoute: ClienteIngressosRoute,
   ClientePerfilRoute: ClientePerfilRoute,
   ClientePontosRoute: ClientePontosRoute,
