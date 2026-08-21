@@ -25,11 +25,13 @@ export interface Customer {
   cidade: string | null;
   points: number;
   user_id: string;
+  organization_id: string;
   updated_at: string;
   instagram: string | null;
   data_nascimento: string | null;
   points_ledger?: any[];
 }
+
 
 /**
  * Hook para buscar todos os registros de customer associados ao usuário logado

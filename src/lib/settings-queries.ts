@@ -171,6 +171,19 @@ export function useTestMpWebhook() {
     onError: (error) => {
       toast.error("Falha ao validar segredo do webhook");
     }
+export function useCreateTestPix() {
+  const createFn = useServerFn(createMpPix);
+  return useMutation({
+    mutationFn: async (vars: { sale_id: string }) => {
+      return await createFn({ data: vars });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mp_config"] });
+      toast.success("PIX de teste gerado com sucesso");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao gerar PIX");
+    }
   });
 }
 
@@ -261,6 +274,14 @@ export function useDeleteBanner() {
         .eq("id", id);
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast.success("Banner excluído com sucesso");
+    },
+  });
+}
+
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["banners"] });
