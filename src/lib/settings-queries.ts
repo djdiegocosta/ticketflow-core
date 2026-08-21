@@ -174,20 +174,6 @@ export function useTestMpWebhook() {
   });
 }
 
-export function useCreateTestPix() {
-  const createFn = useServerFn(createMpPix);
-  return useMutation({
-    mutationFn: async (vars: { sale_id: string }) => {
-      return await createFn({ data: vars });
-    },
-    onSuccess: () => {
-      toast.success("PIX de teste gerado com sucesso");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Erro ao gerar PIX");
-    }
-  });
-
 export function useBanners() {
   return useQuery({
     queryKey: ["banners"],
@@ -282,4 +268,5 @@ export function useDeleteBanner() {
     },
   });
 }
+
 
