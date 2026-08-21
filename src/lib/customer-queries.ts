@@ -370,24 +370,24 @@ export function useApplyCustomerDesign() {
  * Hook para buscar o banner ativo da organização do cliente
  */
 export function useActiveBanner() {
-  const { data: customer } = useCurrentCustomer();
+  const { organizationId } = useAuth();
   
   return useQuery({
-    queryKey: ["active-banner", customer?.organization_id],
+    queryKey: ["active-banner", organizationId],
     queryFn: async () => {
-      if (!customer?.organization_id) return null;
+      if (!organizationId) return null;
       
       const { data, error } = await supabase
         .from("client_banners")
         .select("*")
-        .eq("organization_id", customer.organization_id)
+        .eq("organization_id", organizationId)
         .eq("is_active", true)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!customer?.organization_id
+    enabled: !!organizationId
   });
 }
 
