@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StatusPill } from "@/components/admin/DataTable";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -218,14 +219,9 @@ export function EditEventPage() {
           <h1 className="text-heading-1 text-text-primary">Editar Evento</h1>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-small text-text-secondary">Status:</span>
-            <div className={cn(
-              "text-micro px-2 py-0.5 font-bold uppercase",
-              status === "publicado" && "bg-success text-[#111111]",
-              status === "rascunho" && "bg-bg-tertiary text-text-primary",
-              status === "cancelado" && "bg-error text-white",
-            )}>
+            <StatusPill tone={status === 'rascunho' ? 'warning' : 'neutral'}>
               {status}
-            </div>
+            </StatusPill>
           </div>
           <div className="mt-2">
             <a

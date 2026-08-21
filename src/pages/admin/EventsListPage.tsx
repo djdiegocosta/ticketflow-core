@@ -3,6 +3,7 @@ import { Calendar, MapPin, ChevronLeft, ChevronRight, ExternalLink, Edit2, Trash
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ListPageHeader, PrimaryActionLink } from "@/components/admin/PrimaryActionButton";
+import { StatusPill } from "@/components/admin/DataTable";
 import { FilterTabs } from "@/components/admin/FilterBar";
 import { useEvents, eventStatusLabel, formatEventDate } from "@/lib/events-queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,15 +72,12 @@ export function EventsListPage() {
                 alt={event.title} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className={cn(
-                "absolute top-3 left-3 text-micro px-2 py-0.5 font-bold uppercase",
-                status === "Publicado" && "bg-success text-[#111111]",
-                status === "Rascunho" && "bg-bg-tertiary text-text-primary",
-                status === "Encerrado" && "bg-error/20 text-error border border-error/20 backdrop-blur-sm",
-                status === "Cancelado" && "bg-error text-white",
-              )}>
+              <StatusPill 
+                tone={status.toLowerCase() === 'rascunho' ? 'warning' : 'neutral'}
+                className="absolute top-3 left-3"
+              >
                 {status}
-              </div>
+              </StatusPill>
               <div className="absolute top-3 right-3 flex gap-2">
                 {status === "Publicado" ? (
                   <a 
