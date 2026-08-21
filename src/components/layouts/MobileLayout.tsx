@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { Ticket } from "lucide-react";
+import { Ticket, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApplyCustomerDesign } from "@/lib/customer-queries";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
 
 interface MobileLayoutProps {
   children?: ReactNode;
@@ -13,6 +15,8 @@ interface MobileLayoutProps {
 
 export function MobileLayout({ children, headerContent, showFooter = true }: MobileLayoutProps) {
   useApplyCustomerDesign();
+  const { logout } = useAuth();
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)] overflow-x-hidden">
       {/* Header simples mobile */}
@@ -25,6 +29,14 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
           <div className="flex items-center gap-2">
             {headerContent && <div className="flex-1">{headerContent}</div>}
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => logout()}
+              className="h-9 w-9 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
