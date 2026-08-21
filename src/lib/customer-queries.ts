@@ -122,7 +122,7 @@ export function useCustomerSales() {
 
       return data;
     },
-    enabled: !!customer?.id
+    enabled: !!customers && customers.length > 0
   });
 }
 
