@@ -13,13 +13,13 @@ export function Page_cliente_index() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    const splashDone = localStorage.getItem('splash_done');
-    if (splashDone === 'true') {
+    const isNewRegistration = localStorage.getItem('is_new_registration');
+    if (isNewRegistration === 'true') {
       setShowWelcome(true);
-      // Opcional: remover para mostrar apenas uma vez por sessão
-      // localStorage.removeItem('splash_done');
+      localStorage.removeItem('is_new_registration');
     }
   }, []);
+
 
   
   const stats = [
