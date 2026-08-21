@@ -40,7 +40,7 @@ export function useUpdateOrganization() {
       const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
       if (!roleRow) throw new Error("Não autorizado");
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("organizations")
         .update({
           name: vars.name,
@@ -48,11 +48,17 @@ export function useUpdateOrganization() {
           contact_phone: vars.phone || null,
           logo_url: vars.logo_url || null,
         })
-        .eq("id", roleRow.organization_id);
+        .eq("id", roleRow.organization_id)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data) {
+        throw new Error("Não foi possível salvar: verifique suas permissões");
+      }
       queryClient.invalidateQueries({ queryKey: ["organization"] });
       toast.success("Organização atualizada com sucesso");
     },
@@ -73,14 +79,20 @@ export function useUpdateDesignSettings() {
       if (vars.accent_color !== undefined) updateData.accent_color = vars.accent_color;
       if (vars.corner_style !== undefined) updateData.corner_style = vars.corner_style;
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("organizations")
         .update(updateData)
-        .eq("id", roleRow.organization_id);
+        .eq("id", roleRow.organization_id)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data) {
+        throw new Error("Não foi possível salvar: verifique suas permissões");
+      }
       queryClient.invalidateQueries({ queryKey: ["organization"] });
       toast.success("Design atualizado com sucesso");
     },
