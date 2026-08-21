@@ -1,38 +1,30 @@
----
-name: Auditoria - Vitrine na Tela Inicial do Cliente
-description: Diagnóstico da falha na exibição de banners ativos na área do cliente.
-type: feature
----
-
-# Diagnóstico de Auditoria - Vitrine do Cliente
+# Auditoria — Vitrine na Tela Inicial do Cliente
 
 ## 1. Diagnóstico
-O banner ativo não está sendo exibido na tela `/cliente` devido a um provável problema de **RLS (Row Level Security)** na tabela `client_banners`. Embora a tabela exista, contenha dados corretos (incluindo `organization_id` e `is_active: true`) e o frontend esteja chamando o hook `useActiveBanner`, as políticas de segurança do Supabase para o papel `authenticated` (que o cliente possui) podem não estar permitindo a leitura dos registros, ou o vínculo do cliente com a organização não está sendo resolvido corretamente no momento da consulta.
+O banner ativo não está aparecendo na `/cliente` porque a consulta ao Supabase no hook `useActiveBanner` não está retornando dados, apesar de existir um banner ativo no banco. Isso ocorre provavelmente devido a **Políticas de RLS restritivas** que não permitem que o papel `authenticated` (atribuído ao cliente) leia a tabela `client_banners`, ou porque o `organization_id` do cliente logado não está sendo recuperado corretamente para filtrar o banner.
 
-## 2. Ponto de Falha
-O problema está localizado na camada de **RLS / Consulta ao Banco**.
-- **Cadastro**: OK (Banners são salvos corretamente via Admin).
-- **Banco**: OK (Dados persistem com `is_active: true` e `organization_id` válido).
-- **Storage**: OK (URL pública gerada e funcional).
-- **Componente**: OK (Renderiza condicionalmente baseado no estado `banner`).
-- **Estado/Consulta**: Falha (A query retorna `null` ou vazio, impedindo a renderização).
+## 2. Ponto de falha
+O problema está ocorrendo na etapa de **RLS / Consulta**.
+- **Cadastro**: OK (Admin salva no banco).
+- **Banco**: OK (Tabela e dados existem).
+- **Storage**: OK (Arquivos acessíveis via URL pública).
+- **Componente**: OK (Pronto para renderizar se receber o objeto `banner`).
+- **Renderização**: Bloqueada pela ausência de dados no estado `banner`.
 
 ## 3. Evidências
-- **Tabela `client_banners`**: Possui o registro `41d112cb...` com `is_active: true` vinculado à organização `07ac211b...`.
-- **`src/lib/customer-queries.ts`**: O hook `useActiveBanner` filtra por `organization_id`. Se a RLS não permitir que o cliente veja registros dessa tabela, o Supabase retorna vazio.
-- **`src/components/cliente/ClientVitrine.tsx`**: O código `if (!banner) return null;` (Linha 13) silencia a exibição se a query falhar ou retornar vazio.
-- **`src/routes/cliente.index.tsx`**: O componente `<ClientVitrine />` está montado, mas não aparece no preview.
+- **Arquivo `src/lib/customer-queries.ts`**: O hook `useActiveBanner` (linhas 372-392) depende de `customer?.organization_id`. Se este ID for nulo ou a RLS bloquear, a query retorna vazio.
+- **Arquivo `src/components/cliente/ClientVitrine.tsx`**: A linha 13 (`if (!banner) return null;`) confirma que o componente se oculta quando não há dados.
+- **Banco de Dados**: A query manual confirmou a existência de um banner ativo (`is_active: true`) para a organização `07ac211b...`.
+- **Fluxo Auth**: O `AuthContext` tenta carregar a `organization_id` da tabela `user_roles`. Se o cliente não tiver um registro lá, o `organization_id` será nulo.
 
-## 4. Correção Necessária
-1. **Permissões RLS**: Garantir que a tabela `client_banners` possua uma política de `SELECT` para usuários `authenticated`.
+## 4. Correção necessária
+1. **Migração de RLS**: Adicionar permissão de leitura (`SELECT`) para o role `authenticated` na tabela `client_banners`.
    ```sql
    GRANT SELECT ON public.client_banners TO authenticated;
-   CREATE POLICY "Users can view banners for their organization" ON public.client_banners
-   FOR SELECT TO authenticated USING (true); -- Ou filtrar por organization_id se houver vínculo direto
+   CREATE POLICY "Allow authenticated users to read banners" ON public.client_banners FOR SELECT TO authenticated USING (true);
    ```
-2. **Vínculo do Cliente**: Verificar se o hook `useCurrentCustomer` está retornando o `organization_id` corretamente para o usuário logado. Se o `customer` vier sem `organization_id`, a query do banner será desabilitada (`enabled: !!customer?.organization_id`).
+2. **Garantia de Organização**: Assegurar que ao criar um cliente (`customer`), ele seja associado a uma `organization_id` válida para que o filtro da vitrine funcione.
+3. **Fallback no Hook**: Se o RLS permitir, remover a dependência estrita de `customer.organization_id` no hook de vitrine para testes, ou garantir que o `AuthContext` exponha corretamente essa informação para clientes.
 
-### Próximos Passos
-1. Validar políticas de RLS no banco de dados.
-2. Garantir que o perfil do cliente no Supabase tenha o campo `organization_id` preenchido.
-3. Se o RLS estiver ok, verificar se a query do banner no hook `useActiveBanner` precisa ser ajustada para ignorar filtros restritivos demais.
+NÃO implemente a correção ainda. A auditoria está concluída.
+
