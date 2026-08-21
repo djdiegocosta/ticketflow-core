@@ -147,16 +147,6 @@ export default function VitrinePage() {
 
   const handleToggleActive = async (banner: any) => {
     try {
-      // Se estiver ativando, desativar outros banners
-      if (!banner.is_active) {
-        const otherActiveBanners = banners?.filter(b => b.is_active && b.id !== banner.id);
-        if (otherActiveBanners && otherActiveBanners.length > 0) {
-          for (const b of otherActiveBanners) {
-            await updateBanner.mutateAsync({ id: b.id, is_active: false });
-          }
-        }
-      }
-      
       await updateBanner.mutateAsync({
         id: banner.id,
         is_active: !banner.is_active
