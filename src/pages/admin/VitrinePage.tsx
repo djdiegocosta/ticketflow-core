@@ -99,10 +99,26 @@ export default function VitrinePage() {
     const file = e.target.files?.[0];
     if (!file || !organization) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("A imagem deve ter no máximo 2MB");
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 3MB");
       return;
     }
+
+    // Validação de proporção
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const aspectRatio = img.width / img.height;
+        const targetRatio = 4 / 5; // 0.8
+        const tolerance = 0.1;
+
+        if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+          toast.warning("A imagem não está na proporção 4:5 sugerida. Recomendamos 1080x1350px para melhor exibição.");
+        }
+        resolve(null);
+      };
+    });
 
     setIsUploading(true);
     try {
