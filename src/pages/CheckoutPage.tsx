@@ -129,6 +129,18 @@ export default function CheckoutPage() {
     
     setIsCreatingSale(true);
     try {
+      let customerId: string | undefined;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: customerData } = await supabase.rpc('get_or_create_customer', { 
+          _organization_id: event.organization_id 
+        });
+        if (customerData) {
+          customerId = customerData as string;
+        }
+      }
+
       const saleResult = await createPendingSale({
         event_id: event.id,
         batch_id: batch.id,
@@ -136,7 +148,8 @@ export default function CheckoutPage() {
         buyer_whatsapp: data.buyerWhatsApp,
         buyer_email: data.buyerEmail || "",
         quantity: qty,
-        participant_names: data.participants.map(p => p.name)
+        participant_names: data.participants.map(p => p.name),
+        customer_id: customerId
       });
 
       const resultArr = saleResult as any[];

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm, Controller } from "react-hook-form";
@@ -52,12 +52,13 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const { org_id, whatsapp } = useSearch({ from: '/cadastro' }) as { org_id?: string; whatsapp?: string };
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      whatsapp: "",
+      whatsapp: whatsapp || "",
       email: "",
       city: "",
       password: "",
@@ -91,6 +92,9 @@ export default function SignupPage() {
     }
 
     if (result.session) {
+      if (org_id) {
+        await supabase.rpc('get_or_create_customer', { _organization_id: org_id });
+      }
       toast.success("Conta criada com sucesso!");
       navigate({ to: "/cliente" });
       return;

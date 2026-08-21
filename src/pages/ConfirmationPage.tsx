@@ -115,7 +115,14 @@ export default function ConfirmationPage() {
               Quer acompanhar seus ingressos e pontuar em compras futuras?
             </p>
             <Button asChild className="w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]">
-              <Link to="/cadastro" className="flex items-center justify-center gap-2">
+              <Link 
+                to="/cadastro" 
+                search={{ 
+                  org_id: (sale as any).events?.organization_id,
+                  whatsapp: sale.buyer_whatsapp 
+                }}
+                className="flex items-center justify-center gap-2"
+              >
                 <UserPlus className="h-5 w-5" />
                 Criar minha conta agora
               </Link>

@@ -18,23 +18,20 @@ export function ticketStatusMeta(status: string): { label: string; tone: PillTon
 }
 
 /**
- * Hook para buscar dados do cliente logado (customer)
+ * Hook para buscar todos os registros de customer associados ao usuário logado
  */
-export function useCurrentCustomer() {
+export function useMyCustomerRecords() {
   return useQuery({
-    queryKey: ["current-customer"],
+    queryKey: ["my-customer-records"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from("customers")
-        .select(`
-          *,
-          points_ledger (*)
-        `)
+        .select("*")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -43,15 +40,29 @@ export function useCurrentCustomer() {
 }
 
 /**
+ * Hook para buscar dados do cliente logado (customer) - Retorna o mais recente
+ */
+export function useCurrentCustomer() {
+  const { data: customers } = useMyCustomerRecords();
+  
+  return {
+    data: customers?.[0] || null,
+    isLoading: !customers,
+  };
+}
+
+/**
  * Hook para buscar as vendas/ingressos do cliente logado
  */
 export function useCustomerSales() {
-  const { data: customer } = useCurrentCustomer();
+  const { data: customers } = useMyCustomerRecords();
 
   return useQuery({
-    queryKey: ["customer-sales", customer?.id],
+    queryKey: ["customer-sales", customers?.map(c => c.id).join(',')],
     queryFn: async () => {
-      if (!customer) return [];
+      if (!customers || customers.length === 0) return [];
+
+      const customerIds = customers.map(c => c.id);
 
       const { data, error } = await supabase
         .from("sales")
@@ -77,7 +88,7 @@ export function useCustomerSales() {
             checked_in_at
           )
         `)
-        .eq("customer_id", customer.id)
+        .in("customer_id", customerIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
