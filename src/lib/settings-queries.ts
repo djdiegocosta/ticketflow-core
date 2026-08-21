@@ -175,8 +175,9 @@ export function useTestMpWebhook() {
 }
 
 export function useCreateTestPix() {
-
+  const queryClient = useQueryClient();
   const createFn = useServerFn(createMpPix);
+
   return useMutation({
     mutationFn: async (vars: { sale_id: string }) => {
       return await createFn({ data: vars });
