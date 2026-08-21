@@ -10,12 +10,12 @@ import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
 import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { QRCodeSVG } from 'qrcode.react';
+
 import { Copy, CheckCircle2, Clock, ArrowRight, Loader2 } from 'lucide-react';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
 import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
-import { useCreatePendingSale, useConfirmSalePaid, useTrackAbandonment } from '@/lib/sales-queries';
+import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { supabase } from '@/integrations/supabase/client';
 
 const checkoutSchema = z.object({
@@ -39,7 +39,7 @@ export default function CheckoutPage() {
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
   useApplyPublicDesign(slug);
   const createPendingSale = useCreatePendingSale();
-  const confirmSalePaid = useConfirmSalePaid();
+  const generateSalePix = useGenerateSalePix();
   const trackAbandonment = useTrackAbandonment();
   
   const [step, setStep] = useState<'info' | 'payment'>('info');
@@ -49,6 +49,9 @@ export default function CheckoutPage() {
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
   const [currentSaleCode, setCurrentSaleCode] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string } | null>(null);
+  
+  const { data: saleStatus } = useSaleStatus(currentSaleId);
   
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
@@ -169,20 +172,12 @@ export default function CheckoutPage() {
     }
   };
 
-  const simulatePayment = async () => {
-    if (!currentSaleId || !currentSaleCode || !event || isConfirmingPayment) return;
-
-    setIsConfirmingPayment(true);
-    try {
-      await confirmSalePaid(currentSaleId);
+  useEffect(() => {
+    if (saleStatus === 'pago' && event && currentSaleCode) {
       toast.success("Pagamento confirmado com sucesso!");
       navigate({ to: `/e/${event.slug}/confirmacao/${currentSaleCode}` });
-    } catch (err: any) {
-      toast.error("Erro ao confirmar pagamento simulado: " + err.message);
-    } finally {
-      setIsConfirmingPayment(false);
     }
-  };
+  }, [saleStatus, event, currentSaleCode, navigate]);
 
   const handleSameAsBuyer = (checked: boolean | 'indeterminate') => {
     if (checked === true && qty === 1) {
@@ -190,10 +185,11 @@ export default function CheckoutPage() {
     }
   };
 
-  const pixKey = "00020126580014BR.GOV.BCB.PIX0136629a9b92-2d82-42e6-a83d-1a1a1a1a1a1a520400005303986540510.005802BR5913TICKETFLOW SA6008SAO PAULO62070503***6304E2D8";
+  
 
   const copyPix = () => {
-    navigator.clipboard.writeText(pixKey);
+    if (!pixData) return;
+    navigator.clipboard.writeText(pixData.qr_code);
     setPixCopied(true);
     toast.success("Código Pix copiado!");
     setTimeout(() => setPixCopied(false), 2000);
@@ -330,40 +326,29 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex flex-col items-center gap-6 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
-              <div className="bg-white p-4 rounded-xl shadow-sm">
-                <QRCodeSVG value={pixKey} size={200} />
+              <div className="bg-white p-4 rounded-xl shadow-sm min-h-[232px] min-w-[232px] flex items-center justify-center">
+                {pixData ? (
+                  <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-[200px] w-[200px]" />
+                ) : (
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+                )}
               </div>
               <div className="flex w-full flex-col gap-3">
                 <Button 
                   variant="outline" 
-                  disabled={countdown === 0}
+                  disabled={countdown === 0 || !pixData}
                   className="flex h-12 w-full items-center justify-between border-[var(--border-default)] px-4 disabled:opacity-50"
                   onClick={copyPix}
                 >
-                  <span className="truncate pr-4 text-xs font-mono text-[var(--text-secondary)]">{pixKey.substring(0, 30)}...</span>
+                  <span className="truncate pr-4 text-xs font-mono text-[var(--text-secondary)]">
+                    {pixData ? pixData.qr_code.substring(0, 30) : "Gerando código..."}...
+                  </span>
                   {pixCopied ? <CheckCircle2 className="h-5 w-5 text-success" /> : <Copy className="h-5 w-5" />}
                 </Button>
                 <p className="text-center text-xs text-[var(--text-secondary)]">Copie o código acima e pague no app do seu banco</p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 pt-4">
-              <div className="rounded-[var(--radius-md)] bg-[var(--bg-tertiary)] p-4 border border-[var(--border-subtle)]">
-                <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Modo de Teste</p>
-                <Button 
-                  onClick={simulatePayment}
-                  disabled={isConfirmingPayment || countdown === 0}
-                  className="w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {isConfirmingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    <>
-                      Simular Pagamento Confirmado
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
           </div>
         )}
 

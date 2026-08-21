@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+import { useServerFn } from "@tanstack/react-start";
+import { createMpPix } from "./mp/mercado-pago.functions";
+
 export interface Sale {
   id: string;
   buyer_name: string;
@@ -285,4 +288,32 @@ export function useTrackAbandonment() {
     });
     if (error) console.error("Erro ao registrar abandono:", error);
   };
+}
+
+export function useGenerateSalePix() {
+  const createFn = useServerFn(createMpPix);
+  return async (vars: { sale_id: string }) => {
+    return await createFn({ data: vars });
+  };
+}
+
+export function useSaleStatus(saleId: string | null) {
+  return useQuery({
+    queryKey: ["sales", "status", saleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sales")
+        .select("status")
+        .eq("id", saleId)
+        .single();
+
+      if (error) throw error;
+      return data.status;
+    },
+    enabled: !!saleId,
+    refetchInterval: (query) => {
+      if (query.state.data === "pago") return false;
+      return 4000;
+    },
+  });
 }
