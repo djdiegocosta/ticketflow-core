@@ -33,6 +33,10 @@ import { Route as AdminSorteiosRouteImport } from './routes/admin.sorteios'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as CheckinIndexRouteImport } from './routes/checkin.index'
 import { Route as CheckinHistoricoRouteImport } from './routes/checkin.historico'
+import { Route as ClienteIndexRouteImport } from './routes/cliente.index'
+import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos'
+import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
+import { Route as ClientePontosRouteImport } from './routes/cliente.pontos'
 import { Route as IngressoTicket_codeRouteImport } from './routes/ingresso.$ticket_code'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as SuperadminOrganizacoesRouteImport } from './routes/superadmin.organizacoes'
@@ -173,6 +177,26 @@ const CheckinHistoricoRoute = CheckinHistoricoRouteImport.update({
   path: '/checkin/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClienteIndexRoute = ClienteIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClienteIngressosRoute = ClienteIngressosRouteImport.update({
+  id: '/ingressos',
+  path: '/ingressos',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClientePerfilRoute = ClientePerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => ClienteRoute,
+} as any)
+const ClientePontosRoute = ClientePontosRouteImport.update({
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => ClienteRoute,
+} as any)
 const IngressoTicket_codeRoute = IngressoTicket_codeRouteImport.update({
   id: '/ingresso/$ticket_code',
   path: '/ingresso/$ticket_code',
@@ -275,7 +299,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/cliente': typeof ClienteRoute
+  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/organizacao-pendente': typeof OrganizacaoPendenteRoute
@@ -294,11 +318,15 @@ export interface FileRoutesByFullPath {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
   '/checkin/': typeof CheckinIndexRoute
+  '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
@@ -319,7 +347,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
-  '/cliente': typeof ClienteRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/organizacao-pendente': typeof OrganizacaoPendenteRoute
@@ -337,11 +364,15 @@ export interface FileRoutesByTo {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin': typeof AdminIndexRoute
   '/checkin': typeof CheckinIndexRoute
+  '/cliente': typeof ClienteIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
@@ -364,7 +395,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/cliente': typeof ClienteRoute
+  '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/organizacao-pendente': typeof OrganizacaoPendenteRoute
@@ -383,11 +414,15 @@ export interface FileRoutesById {
   '/admin/sorteios': typeof AdminSorteiosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/checkin/historico': typeof CheckinHistoricoRoute
+  '/cliente/ingressos': typeof ClienteIngressosRoute
+  '/cliente/perfil': typeof ClientePerfilRoute
+  '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
   '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
   '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
   '/checkin/': typeof CheckinIndexRoute
+  '/cliente/': typeof ClienteIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
@@ -430,11 +465,15 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
     | '/ingresso/$ticket_code'
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
     | '/checkin/'
+    | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
@@ -455,7 +494,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
-    | '/cliente'
     | '/login'
     | '/meus-ingressos'
     | '/organizacao-pendente'
@@ -473,11 +511,15 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
     | '/ingresso/$ticket_code'
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin'
     | '/checkin'
+    | '/cliente'
     | '/superadmin'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
@@ -518,11 +560,15 @@ export interface FileRouteTypes {
     | '/admin/sorteios'
     | '/admin/usuarios'
     | '/checkin/historico'
+    | '/cliente/ingressos'
+    | '/cliente/perfil'
+    | '/cliente/pontos'
     | '/ingresso/$ticket_code'
     | '/superadmin/organizacoes'
     | '/superadmin/planos'
     | '/admin/'
     | '/checkin/'
+    | '/cliente/'
     | '/superadmin/'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
@@ -545,7 +591,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CadastroRoute: typeof CadastroRoute
-  ClienteRoute: typeof ClienteRoute
+  ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
   OrganizacaoPendenteRoute: typeof OrganizacaoPendenteRoute
@@ -731,6 +777,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkin/historico'
       preLoaderRoute: typeof CheckinHistoricoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/cliente/': {
+      id: '/cliente/'
+      path: '/'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof ClienteIndexRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/ingressos': {
+      id: '/cliente/ingressos'
+      path: '/ingressos'
+      fullPath: '/cliente/ingressos'
+      preLoaderRoute: typeof ClienteIngressosRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/perfil': {
+      id: '/cliente/perfil'
+      path: '/perfil'
+      fullPath: '/cliente/perfil'
+      preLoaderRoute: typeof ClientePerfilRouteImport
+      parentRoute: typeof ClienteRoute
+    }
+    '/cliente/pontos': {
+      id: '/cliente/pontos'
+      path: '/pontos'
+      fullPath: '/cliente/pontos'
+      preLoaderRoute: typeof ClientePontosRouteImport
+      parentRoute: typeof ClienteRoute
     }
     '/ingresso/$ticket_code': {
       id: '/ingresso/$ticket_code'
@@ -922,6 +996,23 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface ClienteRouteChildren {
+  ClienteIngressosRoute: typeof ClienteIngressosRoute
+  ClientePerfilRoute: typeof ClientePerfilRoute
+  ClientePontosRoute: typeof ClientePontosRoute
+  ClienteIndexRoute: typeof ClienteIndexRoute
+}
+
+const ClienteRouteChildren: ClienteRouteChildren = {
+  ClienteIngressosRoute: ClienteIngressosRoute,
+  ClientePerfilRoute: ClientePerfilRoute,
+  ClientePontosRoute: ClientePontosRoute,
+  ClienteIndexRoute: ClienteIndexRoute,
+}
+
+const ClienteRouteWithChildren =
+  ClienteRoute._addFileChildren(ClienteRouteChildren)
+
 interface SuperadminRouteChildren {
   SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
   SuperadminPlanosRoute: typeof SuperadminPlanosRoute
@@ -942,7 +1033,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CadastroRoute: CadastroRoute,
-  ClienteRoute: ClienteRoute,
+  ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
   OrganizacaoPendenteRoute: OrganizacaoPendenteRoute,
