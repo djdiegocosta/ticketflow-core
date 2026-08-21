@@ -26,6 +26,8 @@ export interface Customer {
   points: number;
   user_id: string;
   updated_at: string;
+  instagram: string | null;
+  data_nascimento: string | null;
   points_ledger?: any[];
 }
 
@@ -128,6 +130,7 @@ export function useCustomerSales() {
  * Hook para buscar as estatísticas resumidas do cliente
  */
 export function useCustomerStats() {
+  const { data: customer } = useCurrentCustomer();
   const { data: sales = [] } = useCustomerSales();
 
   const paidSales = (sales as any[]).filter(s => s.status === 'pago');
