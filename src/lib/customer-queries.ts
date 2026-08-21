@@ -391,5 +391,33 @@ export function useActiveBanner() {
   });
 }
 
+/**
+ * Hook para buscar eventos ativos da organização do cliente
+ */
+export function useOrgActiveEvents() {
+  const { data: customer } = useCurrentCustomer();
+  const organizationId = customer?.organization_id;
+
+  return useQuery({
+    queryKey: ["org-active-events", organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, title, slug, event_date, location, image_url")
+        .eq("organization_id", organizationId)
+        .eq("status", "publicado")
+        .eq("is_closed", false)
+        .gte("event_date", new Date().toISOString())
+        .order("event_date", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!organizationId,
+  });
+}
+
 
 
