@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Circle,
   Palette,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
@@ -101,6 +102,7 @@ export function SettingsPage() {
   
   const [orgForm, setOrgForm] = useState({ name: "", email: "", phone: "", logoUrl: "" });
   const [logoPreview, setLogoPreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const [unified, setUnified] = useState(preferencesMock.unifiedCheckinPdf);
   const { theme, setTheme } = useTheme();
   const design = useDesign();
@@ -180,24 +182,57 @@ export function SettingsPage() {
               <div className="space-y-2">
                 <FieldLabel>Logo</FieldLabel>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-20 w-20 items-center justify-center border border-[var(--border-default)] bg-[var(--bg-tertiary)]">
-                    {logoPreview ? (
+                  <div className="flex h-20 w-20 items-center justify-center border border-[var(--border-default)] bg-[var(--bg-tertiary)] overflow-hidden relative">
+                    {isUploading ? (
+                      <Loader2 className="h-6 w-6 text-[var(--accent)] animate-spin" />
+                    ) : logoPreview ? (
                       <img src={logoPreview} alt="Logo da organização" className="h-full w-full object-contain" />
                     ) : (
                       <ImageIcon className="h-6 w-6 text-[var(--text-disabled)]" />
                     )}
                   </div>
-                  <label className="cursor-pointer border border-[var(--border-default)] bg-[var(--bg-tertiary)] px-4 py-2 text-body text-[var(--text-primary)] transition-colors hover:border-[var(--accent)]">
-                    Escolher imagem
+                  <label className={cn(
+                    "cursor-pointer border border-[var(--border-default)] bg-[var(--bg-tertiary)] px-4 py-2 text-body text-[var(--text-primary)] transition-colors hover:border-[var(--accent)]",
+                    isUploading && "opacity-50 cursor-not-allowed"
+                  )}>
+                    {isUploading ? "Enviando..." : "Escolher imagem"}
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      disabled={isUploading}
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          setLogoPreview(URL.createObjectURL(file));
-                          // Upload real de logo poderia ser feito aqui, para simplificar mantemos local
+                        if (!file || !organization) return;
+                        
+                        if (file.size > 2 * 1024 * 1024) {
+                          toast.error("A imagem deve ter no máximo 2MB");
+                          return;
+                        }
+
+                        setIsUploading(true);
+                        try {
+                          const fileExt = file.name.split('.').pop();
+                          const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                          const filePath = `${organization.id}/${fileName}`;
+
+                          const { error: uploadError } = await supabase.storage
+                            .from('organization-logos')
+                            .upload(filePath, file);
+
+                          if (uploadError) throw uploadError;
+
+                          const { data: { publicUrl } } = supabase.storage
+                            .from('organization-logos')
+                            .getPublicUrl(filePath);
+
+                          setLogoPreview(publicUrl);
+                          setOrgForm(prev => ({ ...prev, logoUrl: publicUrl }));
+                          toast.success("Logo enviada com sucesso!");
+                        } catch (err: any) {
+                          toast.error("Erro no upload: " + err.message);
+                        } finally {
+                          setIsUploading(false);
                         }
                       }}
                     />
