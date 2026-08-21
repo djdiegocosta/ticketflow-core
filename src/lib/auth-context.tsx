@@ -44,18 +44,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const [{ data: roleRow }, { data: profile }] = await Promise.all([
+    const [{ data: roleRow }, { data: customerRow }, { data: profile }] = await Promise.all([
       supabase
         .from('user_roles')
         .select('role, organization_id, organizations!inner(status)')
         .eq('user_id', currentUser.id)
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from('customers')
+        .select('organization_id')
+        .eq('user_id', currentUser.id)
+        .limit(1)
+        .maybeSingle(),
       supabase.from('profiles').select('full_name').eq('id', currentUser.id).maybeSingle(),
     ]);
 
-    setUserRole((roleRow?.role as UserRole) ?? 'cliente');
-    setOrganizationId(roleRow?.organization_id ?? null);
+    const role = (roleRow?.role as UserRole) ?? 'cliente';
+    setUserRole(role);
+    
+    // Prioriza organization_id de user_roles (staff), fallback para customers (cliente)
+    const orgId = roleRow?.organization_id || customerRow?.organization_id || null;
+    setOrganizationId(orgId);
+    
     setOrganizationStatus((roleRow?.organizations as any)?.status ?? null);
     setUserName(
       profile?.full_name ||
