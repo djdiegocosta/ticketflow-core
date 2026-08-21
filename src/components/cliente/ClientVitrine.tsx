@@ -13,7 +13,7 @@ export function ClientVitrine() {
   if (!banner) return null;
 
   const content = (
-    <div className="relative w-full aspect-[9/16] max-h-[400px] bg-muted overflow-hidden border-b">
+    <div className="relative w-full aspect-[9/16] max-h-[400px] bg-muted overflow-hidden border-t">
       {banner.image_url ? (
         <img 
           src={banner.image_url} 
@@ -41,8 +41,11 @@ export function ClientVitrine() {
       )}
 
       {banner.link_url && (
-        <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md p-2 rounded-full text-white">
-          <ExternalLink size={16} />
+        <div className="absolute bottom-4 right-4">
+          <div className="bg-[var(--accent)] text-white p-3 shadow-lg flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
+            <span>Acessar</span>
+            <ExternalLink size={16} />
+          </div>
         </div>
       )}
     </div>
