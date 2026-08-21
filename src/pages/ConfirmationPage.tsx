@@ -119,7 +119,7 @@ export default function ConfirmationPage() {
                 to="/cadastro" 
                 search={{ 
                   org_id: (sale as any).events?.organization_id,
-                  whatsapp: sale.buyer_whatsapp 
+                  whatsapp: (sale as any).buyer_whatsapp 
                 }}
                 className="flex items-center justify-center gap-2"
               >

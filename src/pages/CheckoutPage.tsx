@@ -16,6 +16,7 @@ import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
 import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
 import { useCreatePendingSale, useConfirmSalePaid, useTrackAbandonment } from '@/lib/sales-queries';
+import { supabase } from '@/integrations/supabase/client';
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
@@ -149,7 +150,7 @@ export default function CheckoutPage() {
         buyer_email: data.buyerEmail || "",
         quantity: qty,
         participant_names: data.participants.map(p => p.name),
-        customer_id: customerId
+        customer_id: customerId as any
       });
 
       const resultArr = saleResult as any[];

@@ -17,6 +17,18 @@ export function ticketStatusMeta(status: string): { label: string; tone: PillTon
   }
 }
 
+export interface Customer {
+  id: string;
+  full_name: string;
+  email: string | null;
+  whatsapp: string;
+  cidade: string | null;
+  points: number;
+  user_id: string;
+  updated_at: string;
+  points_ledger?: any[];
+}
+
 /**
  * Hook para buscar todos os registros de customer associados ao usuário logado
  */
@@ -29,12 +41,15 @@ export function useMyCustomerRecords() {
 
       const { data, error } = await supabase
         .from("customers")
-        .select("*")
+        .select(`
+          *,
+          points_ledger (*)
+        `)
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Customer[];
     },
   });
 }
@@ -113,10 +128,9 @@ export function useCustomerSales() {
  * Hook para buscar as estatísticas resumidas do cliente
  */
 export function useCustomerStats() {
-  const { data: customer } = useCurrentCustomer();
   const { data: sales = [] } = useCustomerSales();
 
-  const paidSales = sales.filter(s => s.status === 'pago');
+  const paidSales = (sales as any[]).filter(s => s.status === 'pago');
   const totalEvents = new Set(paidSales.map(s => (s.events as any)?.id)).size;
   const totalTickets = paidSales.reduce((acc, s) => acc + (s.tickets?.length || 0), 0);
   const points = customer?.points || 0;
