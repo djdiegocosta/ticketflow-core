@@ -102,6 +102,6 @@ export function Page_cliente_index() {
       )}
       </div>
     </div>
-
   );
 }
+

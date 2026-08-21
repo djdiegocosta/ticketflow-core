@@ -95,7 +95,9 @@ export default function SignupPage() {
       if (org_id) {
         await supabase.rpc('get_or_create_customer', { _organization_id: org_id });
       }
+      localStorage.setItem('is_new_registration', 'true');
       toast.success("Conta criada com sucesso!");
+
       navigate({ to: "/cliente" });
       return;
     }
