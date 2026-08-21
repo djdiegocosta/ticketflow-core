@@ -1193,6 +1193,7 @@ export type Database = {
           total_amount: number
         }[]
       }
+      get_single_organization_id: { Args: never; Returns: string }
       get_tickets_by_sale_code: {
         Args: { _code: string }
         Returns: {
