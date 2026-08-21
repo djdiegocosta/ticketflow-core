@@ -171,7 +171,11 @@ export function useTestMpWebhook() {
     onError: (error) => {
       toast.error("Falha ao validar segredo do webhook");
     }
+  });
+}
+
 export function useCreateTestPix() {
+
   const createFn = useServerFn(createMpPix);
   return useMutation({
     mutationFn: async (vars: { sale_id: string }) => {
