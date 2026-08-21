@@ -1060,22 +1060,40 @@ export type Database = {
           sale_id: string
         }[]
       }
-      create_pending_sale: {
-        Args: {
-          _batch_id: string
-          _buyer_email: string
-          _buyer_name: string
-          _buyer_whatsapp: string
-          _event_id: string
-          _participant_names: string[]
-          _quantity: number
-        }
-        Returns: {
-          sale_code: string
-          sale_id: string
-          total_amount: number
-        }[]
-      }
+      create_pending_sale:
+        | {
+            Args: {
+              _batch_id: string
+              _buyer_email: string
+              _buyer_name: string
+              _buyer_whatsapp: string
+              _event_id: string
+              _participant_names: string[]
+              _quantity: number
+            }
+            Returns: {
+              sale_code: string
+              sale_id: string
+              total_amount: number
+            }[]
+          }
+        | {
+            Args: {
+              _batch_id: string
+              _buyer_email: string
+              _buyer_name: string
+              _buyer_whatsapp: string
+              _customer_id?: string
+              _event_id: string
+              _participant_names: string[]
+              _quantity: number
+            }
+            Returns: {
+              sale_code: string
+              sale_id: string
+              total_amount: number
+            }[]
+          }
       delete_courtesy_ticket: {
         Args: { _ticket_id: string }
         Returns: undefined
@@ -1107,6 +1125,10 @@ export type Database = {
         }[]
       }
       get_new_customers_count: { Args: { _days: number }; Returns: number }
+      get_or_create_customer: {
+        Args: { _organization_id: string }
+        Returns: string
+      }
       get_public_organization_design: {
         Args: { _slug: string }
         Returns: {

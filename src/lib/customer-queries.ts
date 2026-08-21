@@ -17,15 +17,29 @@ export function ticketStatusMeta(status: string): { label: string; tone: PillTon
   }
 }
 
+export interface Customer {
+  id: string;
+  full_name: string;
+  email: string | null;
+  whatsapp: string;
+  cidade: string | null;
+  points: number;
+  user_id: string;
+  updated_at: string;
+  instagram: string | null;
+  data_nascimento: string | null;
+  points_ledger?: any[];
+}
+
 /**
- * Hook para buscar dados do cliente logado (customer)
+ * Hook para buscar todos os registros de customer associados ao usuário logado
  */
-export function useCurrentCustomer() {
+export function useMyCustomerRecords() {
   return useQuery({
-    queryKey: ["current-customer"],
+    queryKey: ["my-customer-records"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from("customers")
@@ -34,24 +48,38 @@ export function useCurrentCustomer() {
           points_ledger (*)
         `)
         .eq("user_id", user.id)
-        .maybeSingle();
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Customer[];
     },
   });
+}
+
+/**
+ * Hook para buscar dados do cliente logado (customer) - Retorna o mais recente
+ */
+export function useCurrentCustomer() {
+  const { data: customers } = useMyCustomerRecords();
+  
+  return {
+    data: customers?.[0] || null,
+    isLoading: !customers,
+  };
 }
 
 /**
  * Hook para buscar as vendas/ingressos do cliente logado
  */
 export function useCustomerSales() {
-  const { data: customer } = useCurrentCustomer();
+  const { data: customers } = useMyCustomerRecords();
 
   return useQuery({
-    queryKey: ["customer-sales", customer?.id],
+    queryKey: ["customer-sales", customers?.map(c => c.id).join(',')],
     queryFn: async () => {
-      if (!customer) return [];
+      if (!customers || customers.length === 0) return [];
+
+      const customerIds = customers.map(c => c.id);
 
       const { data, error } = await supabase
         .from("sales")
@@ -77,7 +105,7 @@ export function useCustomerSales() {
             checked_in_at
           )
         `)
-        .eq("customer_id", customer.id)
+        .in("customer_id", customerIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -94,7 +122,7 @@ export function useCustomerSales() {
 
       return data;
     },
-    enabled: !!customer?.id
+    enabled: !!customers && customers.length > 0
   });
 }
 
@@ -105,7 +133,7 @@ export function useCustomerStats() {
   const { data: customer } = useCurrentCustomer();
   const { data: sales = [] } = useCustomerSales();
 
-  const paidSales = sales.filter(s => s.status === 'pago');
+  const paidSales = (sales as any[]).filter(s => s.status === 'pago');
   const totalEvents = new Set(paidSales.map(s => (s.events as any)?.id)).size;
   const totalTickets = paidSales.reduce((acc, s) => acc + (s.tickets?.length || 0), 0);
   const points = customer?.points || 0;

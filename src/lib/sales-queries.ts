@@ -243,6 +243,7 @@ export function useCreatePendingSale() {
     buyer_email?: string;
     quantity: number;
     participant_names: string[];
+    customer_id?: string;
   }) => {
     // Normalizar WhatsApp
     const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
@@ -255,6 +256,7 @@ export function useCreatePendingSale() {
       _buyer_email: vars.buyer_email || "",
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
+      _customer_id: vars.customer_id,
     });
 
     if (error) {
