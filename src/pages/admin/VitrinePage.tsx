@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
+import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { 
   DataTable, 
   DataTableShell, 
@@ -15,7 +15,7 @@ import {
   useDeleteBanner 
 } from "@/lib/settings-queries";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit2, Image as ImageIcon, ExternalLink, Power } from "lucide-react";
+import { Trash2, Edit2, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { 
   Sheet, 
   SheetContent, 
@@ -99,10 +99,26 @@ export default function VitrinePage() {
     const file = e.target.files?.[0];
     if (!file || !organization) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("A imagem deve ter no máximo 2MB");
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 3MB");
       return;
     }
+
+    // Validação de proporção
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const aspectRatio = img.width / img.height;
+        const targetRatio = 4 / 5; // 0.8
+        const tolerance = 0.1;
+
+        if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+          toast.warning("A imagem não está na proporção 4:5 sugerida. Recomendamos 1080x1350px para melhor exibição.");
+        }
+        resolve(null);
+      };
+    });
 
     setIsUploading(true);
     try {
@@ -131,16 +147,6 @@ export default function VitrinePage() {
 
   const handleToggleActive = async (banner: any) => {
     try {
-      // Se estiver ativando, desativar outros banners
-      if (!banner.is_active) {
-        const otherActiveBanners = banners?.filter(b => b.is_active && b.id !== banner.id);
-        if (otherActiveBanners && otherActiveBanners.length > 0) {
-          for (const b of otherActiveBanners) {
-            await updateBanner.mutateAsync({ id: b.id, is_active: false });
-          }
-        }
-      }
-      
       await updateBanner.mutateAsync({
         id: banner.id,
         is_active: !banner.is_active
@@ -227,7 +233,7 @@ export default function VitrinePage() {
     <div className="flex flex-col gap-6">
       <ListPageHeader
         title="Vitrine de Banners"
-        action={<Button onClick={() => handleOpenPanel()}><Plus size={18} className="mr-2" />Novo Banner</Button>}
+        action={<PrimaryActionButton onClick={() => handleOpenPanel()}>Novo Banner</PrimaryActionButton>}
       />
 
 
@@ -345,9 +351,9 @@ export default function VitrinePage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Imagem do Banner (Proporção 9:16 recomendada)</Label>
+              <Label>Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)</Label>
               <div className="flex items-start gap-4">
-                <div className="w-24 h-32 bg-muted border flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-30 bg-muted border flex items-center justify-center overflow-hidden">
                   {formData.image_url ? (
                     <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
@@ -363,7 +369,7 @@ export default function VitrinePage() {
                     className="cursor-pointer"
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    Formatos: JPG, PNG, WebP. Máximo 2MB.
+                    Formatos: JPG, PNG, WebP. Máximo 3MB.
                   </p>
                 </div>
               </div>

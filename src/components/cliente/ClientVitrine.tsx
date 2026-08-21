@@ -1,68 +1,52 @@
 import React from "react";
 import { useActiveBanner } from "@/lib/customer-queries";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink } from "lucide-react";
 
 export function ClientVitrine() {
   const { data: banner, isLoading } = useActiveBanner();
 
   if (isLoading) {
-    return <Skeleton className="w-full aspect-[9/16] max-h-[400px] rounded-none" />;
+    return <Skeleton className="w-full aspect-[4/5] rounded-[var(--radius-md)]" />;
   }
 
-  if (!banner) return null;
+  // Só renderizar se banner.image_url existir E banner.link_url existir
+  if (!banner || !banner.image_url || !banner.link_url) return null;
 
-  const content = (
-    <div className="relative w-full aspect-[9/16] max-h-[400px] bg-muted overflow-hidden border-t">
-      {banner.image_url ? (
+  return (
+    <div className="border border-[var(--border-subtle)] rounded-[var(--radius-md)] bg-[var(--bg-secondary)] overflow-hidden">
+      {/* Container da imagem */}
+      <div className="w-full aspect-[4/5] bg-[var(--bg-tertiary)] flex items-center justify-center">
         <img 
           src={banner.image_url} 
           alt={banner.title || "Banner"} 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
-      ) : (
-
-        <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-accent/5">
-          <h2 className="text-2xl font-bold mb-2">{banner.title}</h2>
-          {banner.text_content && (
-            <p className="text-muted-foreground">{banner.text_content}</p>
-          )}
-        </div>
-      )}
+      </div>
       
-      {/* Overlay para texto se houver imagem e texto */}
-      {banner.image_url && (banner.title || banner.text_content) && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-          <h2 className="text-xl font-bold">{banner.title}</h2>
-          {banner.text_content && (
-            <p className="text-sm opacity-90 line-clamp-2 mt-1">{banner.text_content}</p>
-          )}
-        </div>
-      )}
-
-      {banner.link_url && (
-        <div className="absolute bottom-4 right-4">
-          <div className="bg-[var(--accent)] text-white p-3 shadow-lg flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
-            <span>Acessar</span>
-            <ExternalLink size={16} />
-          </div>
-        </div>
-      )}
+      {/* Padding com conteúdo */}
+      <div className="p-4 flex flex-col gap-3">
+        {banner.title && (
+          <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">
+            {banner.title}
+          </h2>
+        )}
+        
+        {banner.text_content && (
+          <p className="text-body text-[var(--text-secondary)] line-clamp-3">
+            {banner.text_content}
+          </p>
+        )}
+        
+        {/* Botão Acessar - Estilo do Checkout */}
+        <a 
+          href={banner.link_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center justify-center h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] rounded-[var(--radius-sm)] transition-colors"
+        >
+          Acessar
+        </a>
+      </div>
     </div>
   );
-
-  if (banner.link_url) {
-    return (
-      <a 
-        href={banner.link_url} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block transition-opacity hover:opacity-95"
-      >
-        {content}
-      </a>
-    );
-  }
-
-  return content;
 }
