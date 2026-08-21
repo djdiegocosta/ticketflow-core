@@ -27,4 +27,3 @@ O problema está ocorrendo na etapa de **RLS / Consulta**.
 3. **Fallback no Hook**: Se o RLS permitir, remover a dependência estrita de `customer.organization_id` no hook de vitrine para testes, ou garantir que o `AuthContext` exponha corretamente essa informação para clientes.
 
 NÃO implemente a correção ainda. A auditoria está concluída.
-
