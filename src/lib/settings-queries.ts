@@ -187,4 +187,99 @@ export function useCreateTestPix() {
       toast.error(error.message || "Erro ao gerar PIX");
     }
   });
+
+export function useBanners() {
+  return useQuery({
+    queryKey: ["banners"],
+    queryFn: async () => {
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      if (!roleRow) throw new Error("Não autorizado");
+
+      const { data, error } = await supabase
+        .from("client_banners")
+        .select("*")
+        .eq("organization_id", roleRow.organization_id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
 }
+
+export function useCreateBanner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { 
+      title: string; 
+      text_content?: string; 
+      image_url?: string; 
+      link_url?: string; 
+      is_active?: boolean 
+    }) => {
+      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
+      if (!roleRow) throw new Error("Não autorizado");
+
+      const { data, error } = await supabase
+        .from("client_banners")
+        .insert([{
+          ...vars,
+          organization_id: roleRow.organization_id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast.success("Banner criado com sucesso");
+    },
+  });
+}
+
+export function useUpdateBanner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { 
+      id: string;
+      title?: string; 
+      text_content?: string; 
+      image_url?: string; 
+      link_url?: string; 
+      is_active?: boolean 
+    }) => {
+      const { id, ...updateData } = vars;
+      const { error } = await supabase
+        .from("client_banners")
+        .update(updateData)
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast.success("Banner atualizado com sucesso");
+    },
+  });
+}
+
+export function useDeleteBanner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("client_banners")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast.success("Banner excluído com sucesso");
+    },
+  });
+}
+

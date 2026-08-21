@@ -362,4 +362,29 @@ export function useApplyCustomerDesign() {
       root.style.setProperty("--radius", style.md);
     }
   }, [design, theme]);
+
+/**
+ * Hook para buscar o banner ativo da organização do cliente
+ */
+export function useActiveBanner() {
+  const { data: customer } = useCurrentCustomer();
+  
+  return useQuery({
+    queryKey: ["active-banner", customer?.organization_id],
+    queryFn: async () => {
+      if (!customer?.organization_id) return null;
+      
+      const { data, error } = await supabase
+        .from("client_banners")
+        .select("*")
+        .eq("organization_id", customer.organization_id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!customer?.organization_id
+  });
 }
+
