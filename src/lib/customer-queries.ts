@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { offlineDB } from "./offline-db";
 import { ACCENT_COLORS, CORNER_STYLES, AccentColor, CornerStyle } from "./design";
+import { useAuth } from "./auth-context";
+import { useTheme } from "./theme";
 
 /**
  * Hook para buscar dados do cliente logado (customer)
@@ -266,4 +268,60 @@ export function useApplyPublicDesign(slug: string | undefined) {
       root.style.setProperty("--radius", style.md);
     }
   }, [design]);
+}
+
+/**
+ * Hook para buscar o design da organização vinculada ao cliente logado
+ */
+export function useCustomerOrgDesign() {
+  const { userRole } = useAuth();
+
+  return useQuery({
+    queryKey: ["customer_org_design"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_customer_organization_design");
+
+      if (error) throw error;
+      return (data as any)?.[0] as { accent_color: string; corner_style: string };
+    },
+    enabled: userRole === "cliente",
+  });
+}
+
+/**
+ * Hook para aplicar o design da organização na área do cliente
+ */
+export function useApplyCustomerDesign() {
+  const { data: design } = useCustomerOrgDesign();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    if (!design) return;
+
+    const root = document.documentElement;
+    const accent = design.accent_color as AccentColor;
+    const radius = design.corner_style as CornerStyle;
+    const isDark = theme === "dark";
+
+    // Aplica Cores
+    if (ACCENT_COLORS[accent]) {
+      const colorSet = ACCENT_COLORS[accent][isDark ? "dark" : "light"];
+      root.style.setProperty("--accent", colorSet.accent);
+      root.style.setProperty("--accent-hover", colorSet.hover);
+      root.style.setProperty("--accent-muted", colorSet.muted);
+      root.style.setProperty("--accent-text", colorSet.text);
+      root.style.setProperty("--primary", colorSet.accent);
+      root.style.setProperty("--ring", colorSet.accent);
+    }
+
+    // Aplica Radius
+    if (CORNER_STYLES[radius]) {
+      const style = CORNER_STYLES[radius];
+      root.style.setProperty("--radius-sm", style.sm);
+      root.style.setProperty("--radius-md", style.md);
+      root.style.setProperty("--radius-lg", style.lg);
+      root.style.setProperty("--radius-xl", style.xl);
+      root.style.setProperty("--radius", style.md);
+    }
+  }, [design, theme]);
 }
