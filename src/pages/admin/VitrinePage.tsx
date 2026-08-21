@@ -228,12 +228,9 @@ export default function VitrinePage() {
       <ListPageHeader
         title="Vitrine de Banners"
         description="Gerencie os banners exibidos na área do cliente. Apenas um banner pode estar ativo por vez."
-        action={{
-          label: "Novo Banner",
-          icon: <Plus size={18} />,
-          onClick: () => handleOpenPanel()
-        }}
+        action={<Button onClick={() => handleOpenPanel()}><Plus size={18} className="mr-2" />Novo Banner</Button>}
       />
+
 
       <DataTableShell>
         <DataTable>

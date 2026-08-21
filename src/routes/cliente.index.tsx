@@ -46,8 +46,9 @@ export function Page_cliente_index() {
 
   return (
     <div className="space-y-6">
-      <WelcomeSplash />
+      <WelcomeSplash userName={userName || ""} onComplete={() => setShowWelcome(true)} />
       <ClientVitrine />
+
       
       <div className="p-4 space-y-6">
         <h1 className="text-heading-1">
