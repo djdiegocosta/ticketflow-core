@@ -25,11 +25,13 @@ export interface Customer {
   cidade: string | null;
   points: number;
   user_id: string;
+  organization_id: string;
   updated_at: string;
   instagram: string | null;
   data_nascimento: string | null;
   points_ledger?: any[];
 }
+
 
 /**
  * Hook para buscar todos os registros de customer associados ao usuário logado
@@ -363,3 +365,31 @@ export function useApplyCustomerDesign() {
     }
   }, [design, theme]);
 }
+
+/**
+ * Hook para buscar o banner ativo da organização do cliente
+ */
+export function useActiveBanner() {
+  const { data: customer } = useCurrentCustomer();
+  
+  return useQuery({
+    queryKey: ["active-banner", customer?.organization_id],
+    queryFn: async () => {
+      if (!customer?.organization_id) return null;
+      
+      const { data, error } = await supabase
+        .from("client_banners")
+        .select("*")
+        .eq("organization_id", customer.organization_id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!customer?.organization_id
+  });
+}
+
+
+

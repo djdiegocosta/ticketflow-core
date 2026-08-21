@@ -1,5 +1,11 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useCurrentCustomer } from "@/lib/customer-queries";
 import { Loader2 } from "lucide-react";
+
+export const Route = createFileRoute('/cliente/pontos')({
+  component: Page_cliente_pontos,
+});
+
 
 export function Page_cliente_pontos() {
   const { data: customer, isLoading } = useCurrentCustomer();

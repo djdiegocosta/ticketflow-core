@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useForm, Controller } from "react-hook-form";
 import { formatName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
@@ -6,6 +7,11 @@ import * as z from "zod";
 import { useCurrentCustomer, useUpdateProfile } from "@/lib/customer-queries";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+
+export const Route = createFileRoute('/cliente/perfil')({
+  component: Page_cliente_perfil,
+});
+
 
 const profileSchema = z.object({
   full_name: z.string().min(1, "Nome obrigatório"),
