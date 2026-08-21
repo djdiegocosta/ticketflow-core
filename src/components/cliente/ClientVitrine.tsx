@@ -17,10 +17,11 @@ export function ClientVitrine() {
       {banner.image_url ? (
         <img 
           src={banner.image_url} 
-          alt={banner.title} 
+          alt={banner.title || "Banner"} 
           className="w-full h-full object-cover"
         />
       ) : (
+
         <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-accent/5">
           <h2 className="text-2xl font-bold mb-2">{banner.title}</h2>
           {banner.text_content && (

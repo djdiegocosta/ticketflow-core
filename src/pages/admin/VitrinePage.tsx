@@ -1,6 +1,13 @@
 import React, { useState } from "react";
-import { ListPageHeader } from "@/components/admin/ListPageHeader";
-import { DataTable } from "@/components/admin/DataTable";
+import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
+import { 
+  DataTable, 
+  DataTableShell, 
+  DataTableHeadRow, 
+  DataTableRow, 
+  DataTableCell 
+} from "@/components/admin/DataTable";
+
 import { 
   useBanners, 
   useCreateBanner, 
@@ -228,11 +235,88 @@ export default function VitrinePage() {
         }}
       />
 
-      <DataTable
-        columns={columns}
-        data={banners || []}
-        isLoading={isLoading}
-      />
+      <DataTableShell>
+        <DataTable>
+          <DataTableHeadRow 
+            columns={["Status", "Banner", "Conteúdo", "Ações"]} 
+          />
+          <tbody>
+            {banners?.map((row: any) => (
+              <DataTableRow key={row.id}>
+                <DataTableCell>
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      checked={row.is_active} 
+                      onCheckedChange={() => handleToggleActive(row)}
+                    />
+                    <span className={row.is_active ? "text-green-600 font-medium" : "text-muted-foreground"}>
+                      {row.is_active ? "Ativo" : "Inativo"}
+                    </span>
+                  </div>
+                </DataTableCell>
+                <DataTableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-16 bg-muted flex items-center justify-center border overflow-hidden">
+                      {row.image_url ? (
+                        <img src={row.image_url} alt={row.title || ""} className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">{row.title}</p>
+                      {row.link_url && (
+                        <a href={row.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
+                          Link externo <ExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </DataTableCell>
+                <DataTableCell>
+                  <p className="max-w-[300px] truncate text-sm text-muted-foreground">
+                    {row.text_content || "-"}
+                  </p>
+                </DataTableCell>
+                <DataTableCell>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPanel(row)}>
+                      <Edit2 size={16} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        if (confirm("Tem certeza que deseja excluir este banner?")) {
+                          deleteBanner.mutate(row.id);
+                        }
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                </DataTableCell>
+              </DataTableRow>
+            ))}
+            {!isLoading && banners?.length === 0 && (
+              <DataTableRow>
+                <DataTableCell colSpan={4} className="text-center py-8">
+                  Nenhum banner encontrado.
+                </DataTableCell>
+              </DataTableRow>
+            )}
+            {isLoading && (
+              <DataTableRow>
+                <DataTableCell colSpan={4} className="text-center py-8">
+                  Carregando...
+                </DataTableCell>
+              </DataTableRow>
+            )}
+          </tbody>
+        </DataTable>
+      </DataTableShell>
+
 
       <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
         <SheetContent className="sm:max-w-[500px]">

@@ -1,11 +1,26 @@
 import { useAuth } from "@/lib/auth-context";
 import { useCustomerStats, useCustomerSales } from "@/lib/customer-queries";
 import { Loader2 } from "lucide-react";
+import { ClientVitrine } from "@/components/cliente/ClientVitrine";
+import { WelcomeSplash } from "@/components/WelcomeSplash";
+import { useState, useEffect } from "react";
+
 
 export function Page_cliente_index() {
   const { userName } = useAuth();
   const { points, totalEvents, totalTickets } = useCustomerStats();
   const { data: sales = [], isLoading } = useCustomerSales();
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    const splashDone = localStorage.getItem('splash_done');
+    if (splashDone === 'true') {
+      setShowWelcome(true);
+      // Opcional: remover para mostrar apenas uma vez por sessão
+      // localStorage.removeItem('splash_done');
+    }
+  }, []);
+
   
   const stats = [
     { label: "Eventos", value: totalEvents },
@@ -30,8 +45,15 @@ export function Page_cliente_index() {
   ).slice(0, 3);
 
   return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-heading-1">Olá, {userName}!</h1>
+    <div className="space-y-6">
+      <WelcomeSplash />
+      <ClientVitrine />
+      
+      <div className="p-4 space-y-6">
+        <h1 className="text-heading-1">
+          {showWelcome ? "Que bom que você chegou!" : "Olá,"} {userName}!
+        </h1>
+
       
       <div className="grid grid-cols-3 gap-3">
         {stats.map((stat) => (
@@ -77,6 +99,8 @@ export function Page_cliente_index() {
           </div>
         </div>
       )}
+      </div>
     </div>
+
   );
 }
