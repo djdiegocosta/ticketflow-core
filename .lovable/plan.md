@@ -7,14 +7,13 @@ Otimizar a interface inicial do cliente (mobile), ajustando a hierarquia de info
 
 ### 1. Refatoração de `src/routes/cliente.index.tsx`
 - **Remover Dashboard:** Excluir o grid de estatísticas (Eventos, Ingressos, Pontos).
+- **Remover Eventos Passados:** Excluir a listagem de eventos passados.
 - **Ajustar Saudação:** Reduzir tamanho da fonte (`text-heading-2` em vez de `text-heading-1`) e fixar em linha única: "Que bom que você chegou, {userName}!".
-- **Reordenar Conteúdo:** Mover a seção "Próximos eventos" para logo abaixo da mensagem de boas-vindas.
-- **Estrutura Final da Página:**
+- **Reordenar Conteúdo:**
   1. Splash (se houver)
-  2. Vitrine (Banner)
-  3. Saudação (Linha única)
-  4. Próximos Eventos
-  5. Eventos Passados (se houver)
+  2. Saudação (Linha única)
+  3. Próximos Eventos
+  4. Vitrine (Banner)
 
 ### 2. Adição de Botão de Logout
 - Adicionar ícone de logout (`LogOut`) no `MobileLayout.tsx` ou diretamente no `cliente.index.tsx` (cabeçalho).
