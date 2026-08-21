@@ -79,12 +79,15 @@ export function useUpdateDesignSettings() {
       if (vars.accent_color !== undefined) updateData.accent_color = vars.accent_color;
       if (vars.corner_style !== undefined) updateData.corner_style = vars.corner_style;
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("organizations")
         .update(updateData)
-        .eq("id", roleRow.organization_id);
+        .eq("id", roleRow.organization_id)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
