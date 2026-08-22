@@ -110,7 +110,7 @@ export default function SignupPage() {
       <div className="flex flex-col items-center justify-center p-4 py-8">
         <div className="mb-8 flex items-center gap-2">
           <Ticket className="h-8 w-8 text-[var(--accent-text)]" />
-          <h1 className="text-display text-white font-bold">TicketFlow</h1>
+          <h1 className="text-display text-white dark:text-[var(--text-primary)] font-bold">TicketFlow</h1>
         </div>
 
         <Card className="w-full max-w-[440px] bg-bg-secondary border-border-default shadow-md rounded-lg">
