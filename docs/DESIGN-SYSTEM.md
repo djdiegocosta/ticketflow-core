@@ -128,6 +128,8 @@ Bordas arredondadas suaves — estilo macOS. Não usar bordas muito agressivas n
 
 ```css
 > **Atualização:** cantos retos são o padrão inicial do sistema, mas a partir de agora isso é **configurável pelo usuário** (Configurações → Design), não fixo. Os dois conjuntos de valores abaixo devem existir no código, trocáveis via variável — nunca hardcoded num componente específico.
+>
+> **Implementado:** a escolha fica salva em `organizations.corner_style`, por organização — não é preferência local do navegador. Vale tanto para o admin quanto para as páginas públicas do evento e a Área do Cliente daquela organização. Cliente logado não tem acesso a essa escolha (é decisão do admin), só ao tema claro/escuro.
 
 **Conjunto "Retos" (padrão):**
 ```
@@ -271,9 +273,9 @@ Usado para formulários com múltiplas etapas que não cabem confortavelmente em
 
 ---
 
-## 9. Temas de cor futuros
+## 9. Temas de cor — implementado
 
-Quando implementados, seguem exatamente a mesma estrutura de variáveis — só os valores de `--accent`, `--accent-hover`, `--accent-muted` e `--accent-text` mudam.
+Os quatro temas abaixo já estão implementados e seguem exatamente a mesma estrutura de variáveis — só os valores de `--accent`, `--accent-hover`, `--accent-muted` e `--accent-text` mudam. A escolha é feita pelo admin em Configurações → Design, salva em `organizations.accent_color`, e vale para o admin, páginas públicas do evento e Área do Cliente daquela organização — nunca é uma preferência individual salva no navegador de cada visitante.
 
 | Tema | `--accent` | `--accent-hover` |
 |---|---|---|
@@ -313,7 +315,7 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 ### Barra de filtros
 - Desktop: abas de origem/tipo (quando existirem) à esquerda, dropdowns/busca à direita, mesma linha.
 - Mesmo espaçamento entre os filtros em todas as áreas.
-- **Mobile — nunca empilhar tudo em uma coluna única quando sobrar espaço lateral.** Regra: agrupar elementos de filtro compatíveis (dropdown de evento, campo de busca, dropdowns de status/origem) em pares lado a lado (grid de 2 colunas), na ordem em que aparecem. Se um elemento de filtro ficar sozinho em sua linha (sem par), ele deve ocupar 100% da largura (col-span-2). Botões de ação que fazem mais sentido sozinhos (ex: "Gerar lista PDF", "Exportar CSV") ocupam a largura total, numa linha própria abaixo dos pares. Aplicar esse padrão em toda área com barra de filtros (Vendas, Cortesias, Clientes, Remarketing, Usuários). (Implementado via `FilterBar` com grid de 2 colunas e expansão automática em mobile).
+- **Mobile — nunca empilhar tudo em uma coluna única quando sobrar espaço lateral.** Regra: agrupar elementos de filtro compatíveis (dropdown de evento, campo de busca, dropdowns de status/origem) em pares lado a lado (grid de 2 colunas), na ordem em que aparecem. Botões de ação que fazem mais sentido sozinhos (ex: "Gerar lista PDF", "Exportar CSV") ocupam a largura total, numa linha própria abaixo dos pares. Aplicar esse padrão em toda área com barra de filtros (Vendas, Cortesias, Clientes, Remarketing, Usuários) — não só onde o problema foi identificado visualmente.
 
 ### Tabela de listagem
 - Componente único e compartilhado — nunca reimplementado por tela.
@@ -331,6 +333,13 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 
 ### Painel lateral (Sheet)
 - Ver especificação completa na seção 8. Sempre que uma tela precisar de formulário maior que um modal simples, reaproveitar este componente — não criar variação nova de modal.
+- **Implementação de referência:** componente único `SidePanel` (cabeçalho fixo, conteúdo central rolável, rodapé de ações sempre fixo e visível). Todo painel lateral do sistema deve ser construído em cima dele — usar o Sheet genérico do shadcn direto, sem essa estrutura, já causou um bug real (painel sem rolagem no celular, botão de ação inacessível).
+
+### Vitrine (banner da tela inicial do cliente)
+- Imagem em proporção fixa 4:5 (1080×1350px, mesmo padrão de post do Instagram), até 3MB.
+- Exibição sempre em card (borda, fundo, cantos conforme `--radius-md`), imagem **nunca cortada** — encaixe por conter (object-contain), com fundo neutro preenchendo qualquer sobra quando a imagem enviada não for exatamente 4:5.
+- Botão de ação abaixo da imagem (nunca sobreposto a ela), rótulo "Acessar", mesmo tratamento visual do botão principal do Checkout.
+- Regra "um banner ativo por vez" garantida por trigger no banco, não por lógica de tela.
 
 ### Legenda de status por cor (bolinha)
 - Usada quando o status é representado só por cor (sem texto na célula, como em Remarketing).

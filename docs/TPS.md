@@ -182,8 +182,10 @@ Regras:
 ---
 
 ### 6.6 Login, Cadastro, Recuperação de senha
-- Login: e-mail + senha, links para cadastro e recuperação.
-- Cadastro: nome completo, WhatsApp, e-mail, cidade, senha (mín. 8 caracteres). Ao cadastrar, vincula automaticamente compras anteriores pelo WhatsApp.
+- Login: e-mail + senha, links para cadastro e recuperação. Fundo com foto discreta em tons monocromáticos (imagem estática do projeto hoje; planejado virar configurável pelo Super Admin no futuro).
+- Cadastro: nome completo, WhatsApp, e-mail, cidade, senha (mín. 8 caracteres).
+- **Vínculo automático com a organização (implementado):** como `/login` e `/cadastro` são rotas genéricas (sem contexto de organização na URL), o sistema guarda em `localStorage` a última organização visitada (ao abrir a página pública de um evento) e usa isso para vincular a conta de cliente à organização certa ao entrar em `/cliente` — funciona tanto para cadastro novo quanto para login em conta já existente. Se não houver essa pista (ex.: acesso direto a `/login`), cai de volta para a única organização do sistema, quando houver exatamente uma. Essa é a lógica que garante que toda conta de cliente tenha um registro correspondente na organização certa (ver seção 11, tabela `customers`).
+- **Pendente:** o vínculo automático por WhatsApp com compras anteriores feitas como visitante (sem conta) ainda não existe — hoje o vínculo só acontece daqui para frente (compra estando logado, ou cadastro feito a partir do link "Criar minha conta" na confirmação de uma compra).
 
 **Campo Cidade — autocomplete simples (Opção A — decisão revisada):**
 - Tentativa anterior (filtro automático por DDD/estado) descartada — falhou porque a base de cidades usada estava incompleta (trouxe só as maiores cidades do estado, não a lista oficial completa). Causa raiz foi qualidade da base de dados, não a lógica de filtro em si.
@@ -198,21 +200,21 @@ Regras:
 
 Mobile first — usa `MobileLayout` (ver 13.2). Apenas para usuários com conta completa.
 
-### 7.1 Dashboard do cliente (`/cliente` — "Início")
-- Linguagem informal e jovem em toda a tela, com instruções curtas guiando o usuário (nunca texto longo).
-- Mensagem de boas-vindas: "Que bom que você chegou! Seja bem-vindo(a)!" na primeira visita (sinalizada pelo fluxo de cadastro, não calculada por data — mais simples e confiável); "Bom ver você aqui de novo!" nas visitas seguintes.
-- **Vitrine** (ver 8.18): exibe o banner ativo cadastrado pelo admin, se houver — imagem 9:16 ajustada à tela com botão de link, ou texto simples quando não houver imagem. Nada é exibido se não houver banner ativo (sem placeholder vazio).
-- Cards: total de eventos, total de ingressos, pontos acumulados.
-- Próximos eventos com ingresso.
-- Eventos passados.
+### 7.1 Dashboard do cliente (`/cliente`) — revisado
+Tela deliberadamente limpa, sem nenhum conteúdo que dispute atenção com a Vitrine (abaixo):
+- Saudação fixa "Seja Bem Vindo!" (não usa mais o nome do cliente nem distingue primeiro acesso).
+- **Vitrine** (ver 7.1a) — conteúdo principal da tela, logo abaixo da saudação.
+- Sem cards de estatística e sem "Próximos eventos" nesta tela (removidos — ver 7.1b, "Eventos", que assumiu esse papel de forma mais completa).
 
-### 8.18 Vitrine (`/admin/ferramentas/vitrine`)
-Novo card no hub de Ferramentas — "Divulgue seu próximo evento (ou qualquer coisa) na tela inicial dos seus clientes".
+### 7.1a Vitrine (implementado)
+Banners configuráveis pelo admin em Ferramentas → Vitrine, exibidos no topo da tela inicial do cliente.
+- Cada banner: imagem (proporção fixa 4:5, 1080×1350px, até 3MB), título opcional, texto auxiliar opcional, link de destino.
+- Exibição: card com acabamento igual ao resto do sistema, imagem sempre encaixada na proporção 4:5 sem cortar nenhuma parte (barras neutras nas laterais/topo se a imagem enviada não for exatamente 4:5), botão "Acessar" abaixo da imagem (mesmo estilo do botão principal do Checkout), abrindo o link em nova aba.
+- Regra "um banner ativo por vez": garantida pelo próprio banco (trigger), não pela tela — ativar um banner desativa automaticamente qualquer outro da mesma organização.
+- Se não houver banner ativo cadastrado, a seção simplesmente não aparece (tela some para o card, sem espaço vazio nem placeholder).
 
-- Listagem dos banners cadastrados, com indicação de qual está ativo (só um por vez).
-- Criar/editar banner: imagem (upload, proporção 9:16 — orientação de tamanho recomendado na tela), link (URL, opcional, qualquer destino — normalmente a página pública de um evento, mas não restrito a isso), texto (usado como conteúdo quando não há imagem, ou como legenda quando há).
-- Toggle "Ativo" — ativar um banner desativa automaticamente qualquer outro (nunca dois ativos ao mesmo tempo).
-- Sem carrossel/rotação — deliberadamente simples, um banner por vez.
+### 7.1b Eventos (`/cliente/eventos`) — implementado
+Nova aba do menu inferior (entre Início e Ingressos). Lista os eventos ativos (publicados, não encerrados, com data futura) da organização do cliente, reaproveitando os mesmos dados cadastrados em Eventos no Admin — inclusive a imagem de capa. Cada card leva para a página pública do evento (`/e/:slug`), onde a compra acontece.
 
 ### 7.2 Meus ingressos (`/cliente/ingressos`)
 - Lista de todos os ingressos.
@@ -227,8 +229,9 @@ Campos editáveis:
 - Cidade.
 - Data de nascimento (opcional).
 - Instagram (opcional — dado de CRM, não de autenticação).
-- Foto de perfil (opcional).
-- Preferência de tema (light/dark).
+- Sexo (opcional — Masculino / Feminino / Prefiro não informar).
+- Foto de perfil (opcional) — **pendente**: sem campo no banco e sem upload implementado ainda.
+- Preferência de tema (light/dark) — hoje só salva localmente no navegador (`localStorage`); **pendente** salvar na conta do cliente para acompanhar entre dispositivos.
 
 **Gamificação:** preenchimento completo do perfil gera pontos. Instagram é um dos campos que geram pontos por preenchimento.
 
@@ -277,7 +280,7 @@ Configurações
 - Grid de cards visuais (mesmo padrão dos cards de Eventos): ícone/imagem representando a ferramenta, nome, breve descrição de uma linha.
 - Cada card leva para a rota já existente da ferramenta (/admin/simulador, /admin/remarketing, /admin/sorteios).
 - Preparado para receber novas ferramentas futuras sem exigir novo item de menu.
-- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Checklist do Evento ("Organize as tarefas do dia do evento para não esquecer nada"), Vitrine ("Divulgue seu próximo evento na tela inicial dos seus clientes"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
+- Cards do 1º momento de desenvolvimento: Simulador de Evento ("Projete a viabilidade financeira antes do evento acontecer"), Remarketing ("Recupere compradores que quase finalizaram uma compra"), Checklist do Evento ("Organize as tarefas do dia do evento para não esquecer nada"). Card de Sorteios entra apenas no 2º momento (ver 8.2.1) — não exibir card desabilitado/"em breve" enquanto isso.
 
 **Checklist do Evento (`/admin/ferramentas/checklist`):**
 - Ferramenta simples de lista de tarefas, vinculada a um evento (dropdown de seleção no topo).
@@ -406,8 +409,15 @@ Deliberadamente mais simples que Vendas: cortesia não exige WhatsApp nem distin
 - Card "Check-ins de cortesias" (quantos já fizeram check-in).
 - Apenas esses dois — sem métricas financeiras, já que cortesia não gera receita.
 
-**Emitir cortesias — painel único, três formas de adicionar nome:**
+**Lote de Cortesias (implementado):** cortesia nunca é emitida num lote pago normal — cada evento precisa de um lote próprio marcado como "Cortesia" (checkbox na edição do evento, junto dos demais lotes). Um lote de cortesias tem preço travado em R$ 0 e quantidade **opcional** (em branco = sem limite máximo; preenchido = teto real, aplicado pelo banco no momento da emissão, não só decorativo). O checkout público nunca lista nem aceita venda de um lote marcado como cortesia.
+
+**Emitir cortesias a partir de um cliente já cadastrado (implementado):** na ficha do cliente (`/admin/clientes/:id`), botão "+ Nova Cortesia" abre um painel simplificado (evento + lote de cortesias do evento, nome pré-preenchido com o do cliente) e emite já vinculada àquele registro de cliente — a cortesia aparece na área "Meus Ingressos" dessa pessoa.
+
+**Cortesia nunca aparece como "Pago" (implementado):** internamente, o ingresso de cortesia é gravado com o mesmo status de validade de uma venda paga (para funcionar normalmente em Meus Ingressos e no Check-in), mas é sempre identificado por uma marcação própria (`is_courtesy`). Em qualquer tela administrativa (Vendas, ficha do cliente, etc.), esse registro aparece com o rótulo "Cortesia", nunca "Pago", e é sempre excluído de faturamento e de contagem de vendas pagas. Cortesia não aceita reembolso e não é reutilizável em outro evento.
+
+**Emitir cortesias — painel único, três formas de adicionar nome (fluxo original, lista de convidados sem conta):**
 - Selecionar evento (obrigatório, único campo antes de começar a adicionar nomes).
+- Só lista lotes marcados como "Cortesia" do evento selecionado — se o evento não tiver nenhum, o painel avisa e pede para criar um na edição do evento primeiro.
 - Três formas de adicionar, todas alimentando a mesma lista acumulada na sessão:
   1. **Digitar um por vez:** campo de texto único — digita o nome, aperta Enter, nome é adicionado à lista e o campo limpa e permanece focado para o próximo.
   2. **Colar lista:** área de texto, um nome por linha, sistema separa e adiciona todos de uma vez.
@@ -500,7 +510,7 @@ Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes d
 
 **Dois layouts distintos, não um layout responsivo genérico:**
 - `AdminLayout` — desktop-first, sidebar, tabelas densas. Já em uso em todas as telas administrativas construídas até aqui.
-- `MobileLayout` — mobile-first, navegação inferior, componentes touch-friendly. Usado pela Área do Cliente, Área Pública, e por telas específicas do admin que são de uso em campo (Check-in). **A navegação inferior não é fixa/genérica — muda conforme o módulo:** Área do Cliente mostra "Início / Ingressos / Pontos / Perfil"; Check-in não mostra navegação inferior nenhuma (é tela única, sem outras telas para navegar dentro do módulo) ou, no máximo, um cabeçalho simples com o nome do evento — nunca os itens da Área do Cliente. Área Pública (evento/checkout) também não usa a navegação da Área do Cliente. Corrigido: bug identificado onde Check-in exibia a barra "Início/Ingressos/Pontos/Perfil" da Área do Cliente.
+- `MobileLayout` — mobile-first, navegação inferior, componentes touch-friendly. Usado pela Área do Cliente, Área Pública, e por telas específicas do admin que são de uso em campo (Check-in). **A navegação inferior não é fixa/genérica — muda conforme o módulo:** Área do Cliente mostra "Início / Eventos / Ingressos / Pontos / Perfil"; Check-in não mostra navegação inferior nenhuma (é tela única, sem outras telas para navegar dentro do módulo) ou, no máximo, um cabeçalho simples com o nome do evento — nunca os itens da Área do Cliente. Área Pública (evento/checkout) também não usa a navegação da Área do Cliente. Corrigido: bug identificado onde Check-in exibia a barra "Início/Ingressos/Pontos/Perfil" da Área do Cliente.
 - Troca de layout decidida por rota/contexto (qual tela é), não por tamanho de tela — uma tela de Check-in continua em `MobileLayout` mesmo aberta numa janela larga de desktop.
 
 **Check-in — comportamento de app nativo (uso em campo, risco de fechamento acidental):**
@@ -964,25 +974,27 @@ Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual
 
 | Entidade | Descrição |
 |---|---|
-| `organizations` | Cada produtor / tenant |
-| `profiles` | Contas de usuário (admin, operador, cliente) |
-| `user_roles` | Papel do usuário dentro da organização |
+| `organizations` | Cada produtor / tenant. Inclui `accent_color` e `corner_style` (identidade visual persistida, ver seção 9 do Design System) |
+| `profiles` | Conta de autenticação (todo usuário logado, criada automaticamente no cadastro) — **não** contém os dados funcionais de cliente, ver `customers` abaixo |
+| `user_roles` | Papel do usuário dentro da organização — só existe para Admin, Colaborador e Operador de Check-in. Cliente não tem linha aqui |
 | `events` | Eventos de uma organização |
-| `ticket_batches` | Lotes de ingresso por evento |
-| `sales` | Vendas (um pedido, múltiplos ingressos) |
+| `ticket_batches` | Lotes de ingresso por evento. Campo `is_courtesy` marca lotes exclusivos de cortesia (preço R$0, `quantity` opcional = sem limite quando nulo) |
+| `sales` | Vendas (um pedido, múltiplos ingressos). `is_courtesy` identifica cortesias — sempre excluídas de faturamento/reembolso mesmo com `status = 'pago'` |
 | `tickets` | Ingressos individuais |
-| `customers` | Cadastro simplificado de compradores |
+| `customers` | Conta funcional do cliente (nome, WhatsApp, e-mail, cidade, data de nascimento, Instagram, sexo, pontos) — **uma linha por (organização, usuário)**, não uma conta global única. Ver `get_or_create_customer` na seção 13.1 |
+| `client_banners` | Banners da Vitrine (ver 7.1a e Ferramentas → Vitrine) |
 | `mp_config` | Credenciais Mercado Pago por organização |
 | `event_financial` | Dados financeiros manuais por evento |
 | `checkout_abandonments` | Abandonos de checkout para remarketing |
-| `raffles` / `raffle_participants` / `raffle_winners` | Sorteios |
+| `raffles` / `raffle_participants` / `raffle_winners` | Sorteios — tabelas já existem no banco, interface ainda não construída (backlog) |
 | `points_ledger` | Histórico de pontos por cliente |
 
 **Princípios:**
 - Toda entidade pertence a uma `organization_id`.
 - Isolamento total via RLS no Supabase.
-- `customers` criado automaticamente em toda compra.
+- Um comprador que compra de organizações diferentes tem **um registro de `customers` por organização** (decisão confirmada) — a Área do Cliente soma as compras de todos os registros vinculados ao mesmo login.
 - `sales.batch_id` sempre preenchido.
+- `sales.customer_id` preenchido quando o comprador está logado no momento da compra (checkout ou emissão de cortesia a partir da ficha do cliente); permanece nulo em compra feita como visitante.
 - WhatsApp: sempre `5511999999999`.
 - Nomes: sempre title case (exceto conectivos).
 
@@ -1017,12 +1029,11 @@ Cada etapa: ícone + nome. Etapa concluída = ícone de check verde. Etapa atual
 - **Ícones:** Lucide Icons.
 - **Tipografia:** Geist (Sans + Mono).
 - **Temas:** Light (padrão) + Dark, via variáveis CSS.
-- **Temas de cor:** Verde neon (padrão); estrutura preparada para azul, roxo, vermelho.
+- **Temas de cor:** Verde neon (padrão), azul, roxo e vermelho neon — **implementado e persistido por organização** (`organizations.accent_color`/`corner_style`), aplicado tanto no admin quanto nas páginas públicas do evento e na Área do Cliente. Cliente logado só controla claro/escuro — cor e cantos são sempre os definidos pelo admin da organização.
 - **Mobile first:** área pública e área do cliente.
 - **Desktop first:** painel admin e super admin.
 - **Multi-tenant:** RLS por `organization_id` desde o início.
-- **Aprovação de organizações:** manual pelo super admin, campo preparado para automação futura. **Correção registrada (13/08/2026):** a implementação inicial da migração para Supabase criou um fluxo de "primeiro acesso" que ativava a organização automaticamente (self-service) — contrariava esta decisão e foi corrigido para: nova organização nasce com status `pending`, usuário vira admin *daquela organização pendente*, mas fica numa tela de espera ("Conta criada, aguardando aprovação") até o Super Admin aprovar em `/superadmin/organizacoes`.
-- **Login:** e-mail/senha + Google (OAuth) — ambos válidos, mesma lógica de resolução de organização/papel após autenticação, independente do método usado.
+- **Aprovação de organizações:** manual pelo super admin, campo preparado para automação futura.
 - **Pagamento de ingressos:** direto na conta MP do produtor. TicketFlow não intermedia.
 - **Importação:** arquitetura de adaptadores — novas plataformas = novos adaptadores.
 
@@ -1035,6 +1046,8 @@ Decisão registrada para quando o schema real for construído — não depende d
 - Nenhuma escrita direta nas tabelas `sales`/`tickets` — toda criação e mudança de status passa por funções `SECURITY DEFINER` controladas (RLS ativo em todas as tabelas de negócio).
 - Toda venda carrega o registro de como foi confirmada: origem `ticketflow` exige validação de assinatura HMAC do webhook do Mercado Pago; origem `manual` registra o usuário admin responsável pelo lançamento (rastreabilidade); origem `importado` registra a plataforma de origem.
 - Limite de tentativas no checkout público (rate limiting) para evitar geração em massa de vendas pendentes por script/bot.
+- **`confirm_sale_paid` e `create_locked_tickets` são executáveis apenas por `service_role`** (revogado de `anon`/`authenticated`/`PUBLIC`) — só o webhook do Mercado Pago, rodando com a chave de serviço, pode confirmar uma venda como paga. O checkout público nunca chama essas funções diretamente.
+- `get_or_create_customer(organization_id)`: função que garante (criando se necessário) o registro de `customers` do usuário logado para uma organização específica — chamada ao entrar na Área do Cliente (ver seção 6.6) e ao comprar/receber cortesia estando logado.
 
 ## 14. Backlog (documentado, não implementado)
 
@@ -1042,6 +1055,9 @@ Decisão registrada para quando o schema real for construído — não depende d
 - Comparativo previsto × realizado (Simulador vs. Histórico Financeiro).
 - Padrões de comportamento de clientes (compra antecipada, compra em grupo, frequência).
 - Notificações (e-mail / WhatsApp) para compradores.
-- Múltiplos temas de cor (azul, roxo, vermelho neon).
-- App mobile nativo (PWA como primeiro passo).
+- App mobile nativo Android para o módulo de Check-in — substituiria oficialmente a versão web do Check-in, sem desativá-la. Arquitetura já favorável: check-in inteiro passa pela função `checkin_ticket` no banco (não por lógica no frontend), reaproveitável por um app nativo sem reescrever regra de negócio.
+- Exclusão de conta de cliente pela própria interface — hoje só é possível remover uma conta diretamente pelo banco de dados; nem cliente nem admin têm essa opção na tela.
+- Refinamento visual do ingresso individual (`/ingresso/:ticket_code` e tela de detalhe) — sair do visual genérico atual para algo mais personalizado (tratamento de cor, acabamento tipo "ticket físico"). Em andamento, aguardando referências visuais do usuário.
+- Configuração da imagem de fundo do Login pelo Super Admin (hoje é um arquivo estático do projeto).
+- Retroalimentação por WhatsApp: vincular automaticamente compras feitas como visitante (sem conta) a uma conta criada depois — hoje o vínculo só existe daqui para frente, não retroativo (ver 6.6).
 - Módulo de billing / assinaturas automatizado.
