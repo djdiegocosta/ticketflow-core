@@ -84,7 +84,7 @@ export function SalesListPage() {
   const pageRows = filtered.slice(start, start + pageSize);
 
   const metrics = useMemo(() => {
-    const paid = filtered.filter((s) => s.status === "pago");
+    const paid = filtered.filter((s) => s.status === "pago" && !s.is_courtesy);
     const pending = filtered.filter((s) => s.status === "pendente");
     const revenue = paid.reduce((acc, s) => acc + s.total_amount, 0);
     const ticketsSold = stats?.totalTickets || 0;
@@ -159,7 +159,7 @@ export function SalesListPage() {
         <MiniMetricCard
           title="Total vendido no período"
           value={formatCurrency(metrics.revenue)}
-          subtext={`${filtered.filter((s) => s.status === "pago").length} vendas pagas`}
+          subtext={`${filtered.filter((s) => s.status === "pago" && !s.is_courtesy).length} vendas pagas`}
           icon={DollarSign}
           iconColor="text-accent-text"
         />
