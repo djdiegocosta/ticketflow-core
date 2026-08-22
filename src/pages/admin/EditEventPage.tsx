@@ -37,6 +37,7 @@ type BatchDraft = {
   quantidade: string;
   inicio: string;
   fim: string;
+  is_courtesy?: boolean;
 };
 
 const toLocalInput = (iso: string | null) => (iso ? new Date(iso).toISOString().slice(0, 16) : "");
@@ -45,9 +46,10 @@ const batchToDraft = (b: BatchRow): BatchDraft => ({
   id: b.id,
   nome: b.name,
   preco: String(b.price),
-  quantidade: String(b.quantity),
+  quantidade: b.quantity !== null ? String(b.quantity) : "",
   inicio: toLocalInput(b.starts_at),
   fim: toLocalInput(b.ends_at),
+  is_courtesy: !!b.is_courtesy,
 });
 
 export function EditEventPage() {
@@ -126,8 +128,9 @@ export function EditEventPage() {
       await upsertBatch(organizationId, id, {
         ...(draft.id ? { id: draft.id } : {}),
         name: draft.nome.trim(),
-        price: Number(draft.preco || 0),
-        quantity: Number(draft.quantidade || 0),
+        price: draft.is_courtesy ? 0 : Number(draft.preco || 0),
+        quantity: draft.quantidade ? Number(draft.quantidade) : null,
+        is_courtesy: draft.is_courtesy,
         starts_at: draft.inicio ? new Date(draft.inicio).toISOString() : null,
         ends_at: draft.fim ? new Date(draft.fim).toISOString() : null,
       });
@@ -529,7 +532,7 @@ export function EditEventPage() {
                   <div className="min-w-0">
                     <div className="text-body font-bold truncate">{b.name}</div>
                     <div className="text-small text-text-secondary">
-                      R$ {Number(b.price).toFixed(2)} • {b.quantity} unidades
+                      R$ {Number(b.price).toFixed(2)} • {b.quantity !== null ? b.quantity : "Sem limite"} unidades {b.is_courtesy && "• Cortesia"}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -563,15 +566,34 @@ export function EditEventPage() {
                       className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
                     />
                   </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={draft.is_courtesy}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setDraft({
+                            ...draft,
+                            is_courtesy: isChecked,
+                            preco: isChecked ? "0.00" : draft.preco
+                          });
+                        }}
+                        className="w-4 h-4 text-accent border-border-default rounded focus:ring-accent"
+                      />
+                      <span className="text-small font-medium text-text-secondary">Este lote é de Cortesias</span>
+                    </label>
+                  </div>
                   <div className="space-y-2">
                     <label className="text-small font-medium text-text-secondary">Preço (R$)</label>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
-                      value={draft.preco}
+                      value={draft.is_courtesy ? "0.00" : draft.preco}
                       onChange={(e) => setDraft({ ...draft, preco: e.target.value })}
-                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                      disabled={draft.is_courtesy}
+                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent disabled:opacity-50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -581,6 +603,7 @@ export function EditEventPage() {
                       min="0"
                       value={draft.quantidade}
                       onChange={(e) => setDraft({ ...draft, quantidade: e.target.value })}
+                      placeholder={draft.is_courtesy ? "Deixe em branco para sem limite" : ""}
                       className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
                     />
                   </div>
