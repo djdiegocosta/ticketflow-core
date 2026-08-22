@@ -201,12 +201,15 @@ export function useTicketByCode(code: string) {
         .from("tickets")
         .select(`
           *,
+          ticket_batches ( name ),
           sales (
             sale_code,
+            created_at,
             events (
               title,
               event_date,
-              location
+              location,
+              organizations ( name )
             )
           )
         `)
