@@ -4,7 +4,7 @@ import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -108,7 +108,8 @@ export default function LoginPage() {
           style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
         />
         <div className="absolute inset-0 -z-10 bg-[var(--bg-primary)]/85" />
-        <div className="mb-8">
+        <div className="mb-8 flex items-center gap-2">
+          <Ticket className="h-8 w-8 text-accent" />
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>
         </div>
 
