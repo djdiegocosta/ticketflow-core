@@ -1,10 +1,12 @@
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
-import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2, Ticket } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTicketByCode, ticketStatusMeta } from '@/lib/customer-queries';
 import { StatusPill } from '@/components/admin/DataTable';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function TicketDetailPage() {
   const { ticket_code } = useParams({ from: '/ingresso/$ticket_code' });
@@ -55,62 +57,93 @@ export default function TicketDetailPage() {
     >
       <div className="flex flex-col gap-6 px-5 py-8 animate-in fade-in duration-500">
         
-        {/* Ticket Branding Header */}
-        <div className="flex flex-col items-center gap-2 text-center mb-2">
-          <h1 className="text-display font-bold leading-tight text-[var(--text-primary)] text-center">
-            {eventData?.title || "Evento"}
-          </h1>
-          <StatusPill tone={ticketStatusMeta(ticket.status).tone} className="mt-1">
-            {ticketStatusMeta(ticket.status).label}
-          </StatusPill>
-        </div>
-
-        {/* QR Code Container */}
-        <div className="flex flex-col items-center gap-6 rounded-[var(--radius-xl)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-8 shadow-xl">
-          <div className="bg-white p-5 rounded-2xl shadow-sm ring-8 ring-[var(--bg-primary)]">
-            <QRCodeSVG value={ticket.ticket_code} size={220} />
+        {/* Ticket Boarding Pass Card */}
+        <div className="rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-xl overflow-hidden relative">
+          {/* Status Pill */}
+          <div className="absolute top-4 right-4">
+            <StatusPill tone={ticketStatusMeta(ticket.status).tone}>
+              {ticketStatusMeta(ticket.status).label}
+            </StatusPill>
           </div>
-          
-          <div className="flex flex-col items-center gap-1 text-center">
-            <span className="text-small font-mono font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-3 py-1 rounded">
-              {ticket.ticket_code}
-            </span>
-            <span className="text-xs text-[var(--text-secondary)] mt-1">Apresente este código na entrada</span>
-          </div>
-        </div>
 
-        {/* Info Card */}
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-5">
-          <div className="flex flex-col gap-5">
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-[var(--accent-muted)] text-[var(--accent-text)]">
-                <User className="h-5 w-5" />
+          {/* Top of Card */}
+          <div className="pt-6 px-6 pb-10">
+            <div className="text-xs uppercase tracking-wider text-center text-[var(--text-secondary)] mb-4">
+              {eventData?.organizations?.name || "Produtora"}
+            </div>
+
+            {/* Grid Date and Time */}
+            <div className="grid grid-cols-2 border-y border-[var(--border-subtle)] py-4 my-4">
+              <div className="border-r border-[var(--border-subtle)] px-2 text-center">
+                <div className="text-[10px] uppercase text-[var(--text-secondary)] font-semibold tracking-wide">Data</div>
+                <div className="font-bold text-body">
+                  {eventData?.event_date ? format(new Date(eventData.event_date), 'dd/MM/yyyy') : '—'}
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-[var(--text-secondary)] uppercase font-semibold tracking-wider">Participante</span>
-                <span className="text-body font-bold text-[var(--text-primary)]">{ticket.participant_name}</span>
+              <div className="px-2 text-center">
+                <div className="text-[10px] uppercase text-[var(--text-secondary)] font-semibold tracking-wide">Horário</div>
+                <div className="font-bold text-body">
+                  {eventData?.event_date ? format(new Date(eventData.event_date), 'HH:mm') : '—'}
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-[var(--text-secondary)] uppercase font-semibold tracking-wider">Data do Evento</span>
-                <span className="text-body font-bold text-[var(--text-primary)]">
-                  {eventData?.event_date ? new Date(eventData.event_date).toLocaleString('pt-BR') : '—'}
-                </span>
+            <h1 className="text-heading-1 font-bold text-center mt-4 text-[var(--text-primary)] leading-tight">
+              {eventData?.title || "Evento"}
+            </h1>
+            
+            <div className="text-small text-[var(--text-secondary)] text-center mt-2 flex items-center justify-center gap-1">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{eventData?.location || "Local não informado"}</span>
+            </div>
+          </div>
+
+          {/* Perforation Line */}
+          <div className="border-t-2 border-dashed border-[var(--border-default)] -mx-6 relative">
+            {/* Outline Balls */}
+            <div className="w-6 h-6 rounded-full bg-[var(--bg-primary)] absolute left-[-12px] top-[-12px]" />
+            <div className="w-6 h-6 rounded-full bg-[var(--bg-primary)] absolute right-[-12px] top-[-12px]" />
+            
+            {/* Circular Seal */}
+            <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center shadow-md absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              <Ticket className="h-4 w-4 text-[#111111]" />
+            </div>
+          </div>
+
+          {/* QR Code Section */}
+          <div className="pt-8 px-6 pb-1">
+            <div className="text-center uppercase text-[10px] font-semibold tracking-widest text-[var(--text-secondary)] mb-4">
+              Apresente este código na entrada do evento
+            </div>
+            
+            <div className="flex justify-center pt-4 relative z-0">
+              <div className="p-5 rounded-2xl ring-8 ring-[var(--bg-primary)] bg-white">
+                <QRCodeSVG value={ticket.ticket_code} size={220} />
               </div>
             </div>
+          </div>
 
-            <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
-                <MapPin className="h-5 w-5" />
+          {/* Colored Bottom Strip */}
+          <div className="bg-[var(--accent)] px-6 pb-5 -mt-16 pt-24 text-[#111111]">
+            <div className="flex justify-center mb-4">
+              <span className="font-mono bg-black/10 text-[#111111] rounded px-2.5 py-1 text-small font-bold">
+                {ticket.ticket_code}
+              </span>
+            </div>
+
+            <div className="text-[10px] text-[#111111]/65 text-center font-medium">
+              Comprado em {ticket.sales?.created_at ? format(new Date(ticket.sales.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : '—'}
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 mt-4 border-t border-black/5 pt-4">
+              <div>
+                <div className="text-[10px] uppercase text-[#111111]/60 font-bold tracking-tighter">Participante</div>
+                <div className="font-bold text-xs truncate">{ticket.participant_name}</div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-[var(--text-secondary)] uppercase font-semibold tracking-wider">Local</span>
-                <span className="text-body font-bold text-[var(--text-primary)]">{eventData?.location || "Local não informado"}</span>
+              <div className="text-right">
+                <div className="text-[10px] uppercase text-[#111111]/60 font-bold tracking-tighter">Lote</div>
+                <div className="font-bold text-xs truncate">{(ticket.ticket_batches as any)?.name || "Geral"}</div>
               </div>
             </div>
           </div>
