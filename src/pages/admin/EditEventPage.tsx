@@ -640,7 +640,7 @@ export function EditEventPage() {
                 </div>
                 <div className="text-small text-text-secondary">
                   {batches.length} lote(s) •{" "}
-                  {batches.reduce((acc, b) => acc + b.quantity, 0)} ingressos
+                  {batches.reduce((acc, b) => acc + (b.quantity ?? 0), 0)} ingressos
                 </div>
               </div>
             </div>
