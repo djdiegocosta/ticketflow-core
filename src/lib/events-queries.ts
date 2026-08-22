@@ -141,6 +141,7 @@ export async function upsertBatch(
         quantity: batch.quantity,
         starts_at: batch.starts_at,
         ends_at: batch.ends_at,
+        is_courtesy: batch.is_courtesy,
       })
       .eq("id", batch.id);
     if (error) throw error;
@@ -153,6 +154,7 @@ export async function upsertBatch(
     quantity: batch.quantity,
     starts_at: batch.starts_at,
     ends_at: batch.ends_at,
+    is_courtesy: batch.is_courtesy,
     event_id: eventId,
     organization_id: organizationId,
   });
