@@ -110,7 +110,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 -z-10 bg-[var(--bg-primary)]/85" />
         <div className="mb-8 flex items-center gap-2">
           <Ticket className="h-8 w-8 text-[var(--accent-text)]" />
-          <h1 className="text-display text-white font-bold">TicketFlow</h1>
+          <h1 className="text-display text-white dark:text-white font-bold">TicketFlow</h1>
         </div>
 
         <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
