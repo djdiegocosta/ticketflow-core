@@ -16,13 +16,13 @@ import {
 } from "@/lib/settings-queries";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit2, Image as ImageIcon, ExternalLink } from "lucide-react";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetFooter 
-} from "@/components/ui/sheet";
+import {
+  SidePanel,
+  PanelCancelButton,
+  PanelPrimaryButton,
+  panelInputClass,
+  panelLabelClass,
+} from "@/components/admin/SidePanel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/lib/settings-queries";
+import { cn } from "@/lib/utils";
 
 export default function VitrinePage() {
   const { data: banners, isLoading } = useBanners();
@@ -73,8 +74,8 @@ export default function VitrinePage() {
     setIsPanelOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!formData.title) {
       toast.error("O título é obrigatório");
       return;
@@ -321,90 +322,90 @@ export default function VitrinePage() {
       </DataTableShell>
 
 
-      <Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
-        <SheetContent className="sm:max-w-[500px]">
-          <SheetHeader>
-            <SheetTitle>{editingBanner ? "Editar Banner" : "Novo Banner"}</SheetTitle>
-          </SheetHeader>
-          
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6 py-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título do Banner</Label>
-              <Input
-                id="title"
-                placeholder="Ex: Promoção de Verão"
-                value={formData.title}
-                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                required
-              />
-            </div>
+      <SidePanel
+        open={isPanelOpen}
+        onClose={() => setIsPanelOpen(false)}
+        title={editingBanner ? "Editar Banner" : "Novo Banner"}
+        footer={
+          <>
+            <PanelCancelButton onClick={() => setIsPanelOpen(false)} />
+            <PanelPrimaryButton onClick={() => handleSubmit()} disabled={isUploading}>
+              {editingBanner ? "Salvar Alterações" : "Criar Banner"}
+            </PanelPrimaryButton>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="title" className={panelLabelClass}>Título do Banner</Label>
+            <Input
+              id="title"
+              placeholder="Ex: Promoção de Verão"
+              value={formData.title}
+              onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              required
+              className={panelInputClass}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="text_content">Texto Auxiliar (Opcional)</Label>
-              <Textarea
-                id="text_content"
-                placeholder="Descreva brevemente a promoção ou aviso"
-                value={formData.text_content}
-                onChange={e => setFormData(prev => ({ ...prev, text_content: e.target.value }))}
-                rows={3}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="text_content" className={panelLabelClass}>Texto Auxiliar (Opcional)</Label>
+            <Textarea
+              id="text_content"
+              placeholder="Descreva brevemente a promoção ou aviso"
+              value={formData.text_content}
+              onChange={e => setFormData(prev => ({ ...prev, text_content: e.target.value }))}
+              rows={3}
+              className={panelInputClass}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label>Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)</Label>
-              <div className="flex items-start gap-4">
-                <div className="w-24 h-30 bg-muted border flex items-center justify-center overflow-hidden">
-                  {formData.image_url ? (
-                    <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    disabled={isUploading}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-[10px] text-muted-foreground">
-                    Formatos: JPG, PNG, WebP. Máximo 3MB.
-                  </p>
-                </div>
+          <div className="space-y-2">
+            <Label className={panelLabelClass}>Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)</Label>
+            <div className="flex items-start gap-4">
+              <div className="w-24 h-30 bg-muted border flex items-center justify-center overflow-hidden">
+                {formData.image_url ? (
+                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                  className={cn("cursor-pointer", panelInputClass)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Formatos: JPG, PNG, WebP. Máximo 3MB.
+                </p>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="link_url">Link de Destino (Opcional)</Label>
-              <Input
-                id="link_url"
-                placeholder="https://exemplo.com"
-                value={formData.link_url}
-                onChange={e => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="link_url" className={panelLabelClass}>Link de Destino (Opcional)</Label>
+            <Input
+              id="link_url"
+              placeholder="https://exemplo.com"
+              value={formData.link_url}
+              onChange={e => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
+              className={panelInputClass}
+            />
+          </div>
 
-            <div className="flex items-center gap-2 pt-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={checked => setFormData(prev => ({ ...prev, is_active: checked }))}
-              />
-              <Label htmlFor="is_active" className="cursor-pointer">Ativar este banner imediatamente</Label>
-            </div>
-
-            <SheetFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setIsPanelOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isUploading}>
-                {editingBanner ? "Salvar Alterações" : "Criar Banner"}
-              </Button>
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+          <div className="flex items-center gap-2 pt-2">
+            <Switch
+              id="is_active"
+              checked={formData.is_active}
+              onCheckedChange={checked => setFormData(prev => ({ ...prev, is_active: checked }))}
+            />
+            <Label htmlFor="is_active" className="cursor-pointer">Ativar este banner imediatamente</Label>
+          </div>
+        </div>
+      </SidePanel>
     </div>
   );
 }
