@@ -52,11 +52,23 @@ export function CreateCourtesyPanel({
 
   React.useEffect(() => {
     if (selectedEvent) {
-      supabase.from("ticket_batches").select("*").eq("event_id", selectedEvent).order("created_at")
+      supabase
+        .from("ticket_batches")
+        .select("*")
+        .eq("event_id", selectedEvent)
+        .eq("is_courtesy", true)
+        .order("created_at")
         .then(({ data }) => {
           setBatches(data || []);
-          if (data && data.length > 0) setSelectedBatch(data[0]?.id || "");
+          if (data && data.length > 0) {
+            setSelectedBatch(data[0].id as string);
+          } else {
+            setSelectedBatch("");
+          }
         });
+    } else {
+      setBatches([]);
+      setSelectedBatch("");
     }
   }, [selectedEvent]);
 
@@ -229,16 +241,22 @@ export function CreateCourtesyPanel({
                 <label className="text-small font-medium text-[var(--text-secondary)]">
                   Lote da Cortesia
                 </label>
-                <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione o lote" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {batches.map((b: any) => (
-                      <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {batches.length === 0 ? (
+                  <p className="text-small text-warning bg-warning-muted p-3 rounded-[var(--radius-sm)] border border-warning/20">
+                    Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia na edição do evento primeiro.
+                  </p>
+                ) : (
+                  <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione o lote" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {batches.map((b: any) => (
+                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
 

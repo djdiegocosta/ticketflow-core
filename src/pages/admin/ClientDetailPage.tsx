@@ -1,9 +1,11 @@
+import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User } from "lucide-react";
+import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User, Gift } from "lucide-react";
 import { getInitials, whatsappLink } from "@/lib/clients-data";
-import { formatCurrency } from "@/lib/sales-queries";
+import { formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { useCustomerDetail } from "@/lib/customers-queries";
 import { StatusPill } from "@/components/admin/DataTable";
+import { QuickCourtesyPanel } from "@/components/admin/clients/QuickCourtesyPanel";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -35,7 +37,8 @@ function StatCard({
 }
 
 export function ClientDetailPage({ id }: { id: string }) {
-  const { data: client, isLoading } = useCustomerDetail(id);
+  const { data: client, isLoading, refetch } = useCustomerDetail(id);
+  const [courtesyPanelOpen, setCourtesyPanelOpen] = React.useState(false);
 
   if (isLoading) {
     return <div className="p-8 text-center text-body text-text-secondary">Carregando dados do cliente...</div>;
@@ -61,7 +64,7 @@ export function ClientDetailPage({ id }: { id: string }) {
       lotName: s.ticket_batches?.name || "Lote removido",
       quantity: s.quantity,
       amount: Number(s.total_amount),
-      status: s.status === "pago" ? "Pago" : s.status === "cancelado" ? "Cancelado" : "Pendente",
+      status: s.is_courtesy ? "Cortesia" : s.status === "pago" ? "Pago" : s.status === "cancelado" ? "Cancelado" : "Pendente",
       createdAt: new Date(s.created_at).toLocaleDateString("pt-BR"),
     };
   });
@@ -181,6 +184,7 @@ export function ClientDetailPage({ id }: { id: string }) {
                   <StatusPill 
                     tone={
                       sale.status === "Pago" ? "accent" : 
+                      sale.status === "Cortesia" ? "warning" :
                       sale.status === "Cancelado" ? "error" : "warning"
                     }
                   >
@@ -200,6 +204,14 @@ export function ClientDetailPage({ id }: { id: string }) {
           </tbody>
         </table>
       </div>
+
+      <QuickCourtesyPanel
+        open={courtesyPanelOpen}
+        onOpenChange={setCourtesyPanelOpen}
+        customerId={id}
+        customerName={client.full_name}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }
