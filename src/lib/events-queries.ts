@@ -72,9 +72,10 @@ export function slugify(value: string) {
 export interface BatchInput {
   name: string;
   price: number;
-  quantity: number;
+  quantity: number | null;
   starts_at: string | null;
   ends_at: string | null;
+  is_courtesy?: boolean;
 }
 
 export interface EventInput {

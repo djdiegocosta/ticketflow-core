@@ -10,7 +10,14 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ sale }: { sale: any }) {
+  if (sale.is_courtesy) {
+    return (
+      <span className="inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium bg-warning-muted text-warning-text border border-warning/20">
+        Cortesia
+      </span>
+    );
+  }
   const statusLabels: Record<string, string> = {
     pago: "Pago",
     pendente: "Pendente",
@@ -22,13 +29,13 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={cn(
         "inline-block rounded-[var(--radius-full)] px-2.5 py-0.5 text-micro font-medium capitalize",
-        status === "pago" && "bg-accent-muted text-accent-text",
-        status === "pendente" && "bg-warning-muted text-warning-text",
-        status === "cancelado" && "bg-error-muted text-error-text",
-        status === "reembolsado" && "bg-bg-tertiary text-text-secondary border border-border-subtle",
+        sale.status === "pago" && "bg-accent-muted text-accent-text",
+        sale.status === "pendente" && "bg-warning-muted text-warning-text",
+        sale.status === "cancelado" && "bg-error-muted text-error-text",
+        sale.status === "reembolsado" && "bg-bg-tertiary text-text-secondary border border-border-subtle",
       )}
     >
-      {statusLabels[status] || status}
+      {statusLabels[sale.status] || sale.status}
     </span>
   );
 }
@@ -117,7 +124,7 @@ export function SaleDetailPage({ id }: { id: string }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-heading-1 text-text-primary">{eventTitle}</h1>
-          <StatusBadge status={sale.status} />
+          <StatusBadge sale={sale} />
         </div>
         <div className="flex items-center gap-3">
           {!isColab && (

@@ -196,7 +196,7 @@ export function useSalesStats(eventId?: string) {
         if (!saleIds.has(s.id)) {
           saleIds.add(s.id);
           stats.totalSales++;
-          if (s.status === "pago") {
+          if (s.status === "pago" && !s.is_courtesy) {
             stats.totalRevenue += Number(s.total_amount);
             stats.paidSales++;
           } else if (s.status === "pendente") {

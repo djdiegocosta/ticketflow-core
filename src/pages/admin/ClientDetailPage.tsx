@@ -1,9 +1,11 @@
+import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User } from "lucide-react";
+import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User, Gift } from "lucide-react";
 import { getInitials, whatsappLink } from "@/lib/clients-data";
-import { formatCurrency } from "@/lib/sales-queries";
+import { formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { useCustomerDetail } from "@/lib/customers-queries";
 import { StatusPill } from "@/components/admin/DataTable";
+import { QuickCourtesyPanel } from "@/components/admin/clients/QuickCourtesyPanel";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -35,7 +37,8 @@ function StatCard({
 }
 
 export function ClientDetailPage({ id }: { id: string }) {
-  const { data: client, isLoading } = useCustomerDetail(id);
+  const { data: client, isLoading, refetch } = useCustomerDetail(id);
+  const [courtesyPanelOpen, setCourtesyPanelOpen] = React.useState(false);
 
   if (isLoading) {
     return <div className="p-8 text-center text-body text-text-secondary">Carregando dados do cliente...</div>;
@@ -61,7 +64,7 @@ export function ClientDetailPage({ id }: { id: string }) {
       lotName: s.ticket_batches?.name || "Lote removido",
       quantity: s.quantity,
       amount: Number(s.total_amount),
-      status: s.status === "pago" ? "Pago" : s.status === "cancelado" ? "Cancelado" : "Pendente",
+      status: s.is_courtesy ? "Cortesia" : s.status === "pago" ? "Pago" : s.status === "cancelado" ? "Cancelado" : "Pendente",
       createdAt: new Date(s.created_at).toLocaleDateString("pt-BR"),
     };
   });
@@ -117,15 +120,25 @@ export function ClientDetailPage({ id }: { id: string }) {
             </p>
           </div>
         </div>
-        <a
-          href={whatsappLink(client.whatsapp)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <MessageCircle className="h-4 w-4" />
-          Enviar WhatsApp
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={whatsappLink(client.whatsapp)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Enviar WhatsApp
+          </a>
+          <button
+            type="button"
+            onClick={() => setCourtesyPanelOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent"
+          >
+            <Gift className="h-4 w-4" />
+            + Nova Cortesia
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -181,6 +194,7 @@ export function ClientDetailPage({ id }: { id: string }) {
                   <StatusPill 
                     tone={
                       sale.status === "Pago" ? "accent" : 
+                      sale.status === "Cortesia" ? "warning" :
                       sale.status === "Cancelado" ? "error" : "warning"
                     }
                   >
@@ -200,6 +214,14 @@ export function ClientDetailPage({ id }: { id: string }) {
           </tbody>
         </table>
       </div>
+
+      <QuickCourtesyPanel
+        open={courtesyPanelOpen}
+        onOpenChange={setCourtesyPanelOpen}
+        customerId={id}
+        customerName={client.full_name}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

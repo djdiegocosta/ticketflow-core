@@ -22,17 +22,23 @@ import { useAuth } from "@/lib/auth-context";
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ sale }: { sale: any }) {
+  if (sale.is_courtesy) {
+    return (
+      <StatusPill tone="warning">
+        Cortesia
+      </StatusPill>
+    );
+  }
   return (
     <StatusPill
       tone={
-        status === "pago" ? "accent" : 
-        status === "pendente" ? "warning" : 
-        status === "expirado" ? "neutral" : "error"
+        sale.status === "pago" ? "accent" : 
+        sale.status === "pendente" ? "warning" : 
+        sale.status === "expirado" ? "neutral" : "error"
       }
     >
-      {status === "pago" ? "Pago" : status === "pendente" ? "Pendente" : status === "expirado" ? "Expirado" : "Cancelado"}
-
+      {sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : "Cancelado"}
     </StatusPill>
   );
 }
@@ -84,7 +90,7 @@ export function SalesListPage() {
   const pageRows = filtered.slice(start, start + pageSize);
 
   const metrics = useMemo(() => {
-    const paid = filtered.filter((s) => s.status === "pago");
+    const paid = filtered.filter((s) => s.status === "pago" && !s.is_courtesy);
     const pending = filtered.filter((s) => s.status === "pendente");
     const revenue = paid.reduce((acc, s) => acc + s.total_amount, 0);
     const ticketsSold = stats?.totalTickets || 0;
@@ -159,7 +165,7 @@ export function SalesListPage() {
         <MiniMetricCard
           title="Total vendido no período"
           value={formatCurrency(metrics.revenue)}
-          subtext={`${filtered.filter((s) => s.status === "pago").length} vendas pagas`}
+          subtext={`${filtered.filter((s) => s.status === "pago" && !s.is_courtesy).length} vendas pagas`}
           icon={DollarSign}
           iconColor="text-accent-text"
         />
@@ -302,7 +308,7 @@ export function SalesListPage() {
                 <DataTableCell>{sale.quantity}x</DataTableCell>
                 <DataTableCell variant="strong">{formatCurrency(sale.total_amount)}</DataTableCell>
                 <DataTableCell>
-                  <StatusBadge status={sale.status} />
+                  <StatusBadge sale={sale} />
                 </DataTableCell>
                 <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
               </DataTableRow>
