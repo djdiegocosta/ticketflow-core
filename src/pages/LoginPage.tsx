@@ -21,6 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+const LOGIN_BACKGROUND_URL = "/images/background_login.png";
+
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
   password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
@@ -100,7 +102,12 @@ export default function LoginPage() {
         />
       )}
       <MobileLayout showFooter={false}>
-      <div className="flex flex-col items-center justify-center p-4 py-12">
+      <div className="relative flex flex-col items-center justify-center p-4 py-12 min-h-screen">
+        <div 
+          className="absolute inset-0 -z-10 bg-cover bg-center grayscale" 
+          style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
+        />
+        <div className="absolute inset-0 -z-10 bg-[var(--bg-primary)]/85" />
         <div className="mb-8">
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>
         </div>
