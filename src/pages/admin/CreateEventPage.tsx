@@ -379,7 +379,8 @@ export function CreateEventPage() {
                         <div className="min-w-0">
                           <div className="text-body font-semibold text-text-primary truncate">{l.nome}</div>
                           <div className="text-small text-text-secondary">
-                            R$ {l.preco || "0,00"} · {l.quantidade || 0} ingressos
+                            R$ {l.preco || "0,00"} · {l.quantidade !== "" ? `${l.quantidade} ingressos` : "Sem limite"}
+                            {l.is_courtesy && " · Cortesia"}
                             {l.inicio || l.fim ? ` · ${l.inicio || "—"} → ${l.fim || "—"}` : ""}
                           </div>
                         </div>
@@ -418,16 +419,34 @@ export function CreateEventPage() {
                           className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
                         />
                       </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={draft.is_courtesy}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              updateDraft({
+                                is_courtesy: isChecked,
+                                preco: isChecked ? "0.00" : draft.preco
+                              });
+                            }}
+                            className="w-4 h-4 text-accent border-border-default rounded focus:ring-accent"
+                          />
+                          <span className="text-small font-medium text-text-secondary">Este lote é de Cortesias</span>
+                        </label>
+                      </div>
                       <div className="space-y-2">
                         <label className="text-small font-medium text-text-secondary">Preço (R$)</label>
                         <input
                           type="number"
                           min="0"
                           step="0.01"
-                          value={draft.preco}
+                          value={draft.is_courtesy ? "0.00" : draft.preco}
                           onChange={(e) => updateDraft({ preco: e.target.value })}
+                          disabled={draft.is_courtesy}
                           placeholder="0,00"
-                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                          className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent disabled:opacity-50"
                         />
                       </div>
                       <div className="space-y-2">
@@ -437,7 +456,7 @@ export function CreateEventPage() {
                           min="0"
                           value={draft.quantidade}
                           onChange={(e) => updateDraft({ quantidade: e.target.value })}
-                          placeholder="0"
+                          placeholder={draft.is_courtesy ? "Deixe em branco para sem limite" : "0"}
                           className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
                         />
                       </div>

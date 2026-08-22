@@ -130,9 +130,9 @@ export function EditEventPage() {
         name: draft.nome.trim(),
         price: draft.is_courtesy ? 0 : Number(draft.preco || 0),
         quantity: draft.quantidade ? Number(draft.quantidade) : null,
-        is_courtesy: draft.is_courtesy,
         starts_at: draft.inicio ? new Date(draft.inicio).toISOString() : null,
         ends_at: draft.fim ? new Date(draft.fim).toISOString() : null,
+        is_courtesy: !!draft.is_courtesy,
       });
       setDraft(null);
       await refresh();
