@@ -5,7 +5,7 @@ import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -108,7 +108,8 @@ export default function SignupPage() {
   return (
     <MobileLayout showFooter={false}>
       <div className="flex flex-col items-center justify-center p-4 py-8">
-        <div className="mb-8">
+        <div className="mb-8 flex items-center gap-2">
+          <Ticket className="h-8 w-8 text-accent" />
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>
         </div>
 
