@@ -60,7 +60,7 @@ export function QuickCourtesyPanel({
         .order("created_at")
         .then(({ data }) => {
           setBatches(data || []);
-          if (data && data.length > 0) {
+          if (data && data.length > 0 && data[0]) {
             setSelectedBatch(data[0].id as string);
           } else {
             setSelectedBatch("");

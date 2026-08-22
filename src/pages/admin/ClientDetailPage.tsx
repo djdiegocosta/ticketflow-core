@@ -120,15 +120,25 @@ export function ClientDetailPage({ id }: { id: string }) {
             </p>
           </div>
         </div>
-        <a
-          href={whatsappLink(client.whatsapp)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
-        >
-          <MessageCircle className="h-4 w-4" />
-          Enviar WhatsApp
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={whatsappLink(client.whatsapp)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Enviar WhatsApp
+          </a>
+          <button
+            type="button"
+            onClick={() => setCourtesyPanelOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent"
+          >
+            <Gift className="h-4 w-4" />
+            + Nova Cortesia
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
