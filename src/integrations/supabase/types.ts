@@ -857,10 +857,11 @@ export type Database = {
           ends_at: string | null
           event_id: string
           id: string
+          is_courtesy: boolean
           name: string
           organization_id: string
           price: number
-          quantity: number
+          quantity: number | null
           starts_at: string | null
           updated_at: string
         }
@@ -869,10 +870,11 @@ export type Database = {
           ends_at?: string | null
           event_id: string
           id?: string
+          is_courtesy?: boolean
           name: string
           organization_id: string
           price?: number
-          quantity: number
+          quantity?: number | null
           starts_at?: string | null
           updated_at?: string
         }
@@ -881,10 +883,11 @@ export type Database = {
           ends_at?: string | null
           event_id?: string
           id?: string
+          is_courtesy?: boolean
           name?: string
           organization_id?: string
           price?: number
-          quantity?: number
+          quantity?: number | null
           starts_at?: string | null
           updated_at?: string
         }
@@ -1069,16 +1072,28 @@ export type Database = {
         Args: { _mp_payment_id: string; _sale_id: string }
         Returns: undefined
       }
-      create_courtesy: {
-        Args: {
-          _batch_id: string
-          _event_id: string
-          _participant_names: string[]
-        }
-        Returns: {
-          sale_id: string
-        }[]
-      }
+      create_courtesy:
+        | {
+            Args: {
+              _batch_id: string
+              _event_id: string
+              _participant_names: string[]
+            }
+            Returns: {
+              sale_id: string
+            }[]
+          }
+        | {
+            Args: {
+              _batch_id: string
+              _customer_id?: string
+              _event_id: string
+              _participant_names: string[]
+            }
+            Returns: {
+              sale_id: string
+            }[]
+          }
       create_locked_tickets:
         | {
             Args: { _participant_names: Json; _sale_id: string }
