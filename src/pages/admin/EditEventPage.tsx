@@ -418,7 +418,7 @@ export function EditEventPage() {
               <div className="space-y-2">
                 <label className="text-small font-medium text-text-secondary">Data</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
+                  <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
                   <input
                     type="date"
                     value={date}
@@ -430,7 +430,7 @@ export function EditEventPage() {
               <div className="space-y-2">
                 <label className="text-small font-medium text-text-secondary">Horário</label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
+                  <Clock className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
                   <input
                     type="time"
                     value={time}
@@ -442,7 +442,7 @@ export function EditEventPage() {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Local / Endereço</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled" />
+                  <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
                   <input
                     type="text"
                     value={location}
