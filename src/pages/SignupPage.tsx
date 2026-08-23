@@ -37,6 +37,7 @@ const signupSchema = z
       ),
     email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
     city: z.string().min(1, "Cidade obrigatória"),
+    sexo: z.enum(["masculino", "feminino", "prefiro_nao_informar"]).optional(),
     password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirmação de senha obrigatória"),
   })
@@ -61,6 +62,7 @@ export default function SignupPage() {
       whatsapp: whatsapp || "",
       email: "",
       city: "",
+      sexo: undefined,
       password: "",
       confirmPassword: "",
     },
@@ -78,6 +80,7 @@ export default function SignupPage() {
           full_name: formatName(data.name),
           whatsapp: data.whatsapp,
           cidade: data.city,
+          sexo: data.sexo || null,
         },
       },
     });
@@ -212,6 +215,28 @@ export default function SignupPage() {
                     </FormItem>
                   );
                 }}
+              />
+
+              <FormField
+                control={form.control}
+                name="sexo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sexo (opcional)</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="w-full h-10 bg-bg-secondary border border-border-default rounded-md px-3 text-small outline-none focus:ring-1 focus:ring-accent"
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                        <option value="prefiro_nao_informar">Prefiro não informar</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage className="text-small text-error" />
+                  </FormItem>
+                )}
               />
 
 

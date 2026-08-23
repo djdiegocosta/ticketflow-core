@@ -268,7 +268,7 @@ export function useUpdateProfile() {
         _data_nascimento: vars.data_nascimento || null,
         _cidade: vars.cidade,
         _instagram: vars.instagram || null,
-        _sexo: vars.sexo || null
+        _sexo: vars.sexo as any || null
       });
 
       if (error) throw error;
