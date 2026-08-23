@@ -32,14 +32,14 @@ export function Page_cliente_index() {
   }
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col h-full min-h-0">
       <WelcomeSplash userName={userName || ""} onComplete={() => setShowWelcome(true)} />
-      
-      <div className="p-4 space-y-6">
-        <h1 className="text-heading-2 font-bold truncate">
-          Seja Bem Vindo!
-        </h1>
 
+      <div className="px-4 pt-4 pb-2 shrink-0">
+        <h1 className="text-heading-2 font-bold truncate">Seja Bem Vindo!</h1>
+      </div>
+
+      <div className="flex-1 min-h-0 px-4 pb-4">
         <ClientVitrine />
       </div>
     </div>
