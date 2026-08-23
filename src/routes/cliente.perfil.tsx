@@ -20,6 +20,7 @@ const profileSchema = z.object({
   cidade: z.string().min(1, "Cidade obrigatória"),
   data_nascimento: z.string().nullable().optional(),
   instagram: z.string().nullable().optional(),
+  sexo: z.string().nullable().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -36,7 +37,8 @@ export function Page_cliente_perfil() {
       email: "",
       cidade: "",
       data_nascimento: "",
-      instagram: ""
+      instagram: "",
+      sexo: ""
     }
   });
 
@@ -48,7 +50,8 @@ export function Page_cliente_perfil() {
         email: customer.email || "",
         cidade: customer.cidade || "",
         data_nascimento: customer.data_nascimento || "",
-        instagram: customer.instagram || ""
+        instagram: customer.instagram || "",
+        sexo: customer.sexo || ""
       });
     }
   }, [customer, form]);
@@ -152,6 +155,19 @@ export function Page_cliente_perfil() {
             {...form.register("instagram")}
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-micro font-bold uppercase">Sexo</label>
+          <select
+            {...form.register("sexo")}
+            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
+          >
+            <option value="">Selecione...</option>
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+            <option value="prefiro_nao_informar">Prefiro não informar</option>
+          </select>
         </div>
 
         <button 

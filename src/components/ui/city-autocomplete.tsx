@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,7 +15,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getAllCities } from "@/lib/ibge-data";
+import { getCitiesByUF } from "@/lib/ibge-data";
+import { Input } from "@/components/ui/input";
 
 interface CityAutocompleteProps {
   value: string;
@@ -37,51 +36,96 @@ export function CityAutocomplete({
   disabled
 }: CityAutocompleteProps) {
   const [open, setOpen] = React.useState(false);
-  
-  const cities = React.useMemo(() => getAllCities(), []);
+  const [isCustom, setIsCustom] = React.useState(false);
+  const [customValue, setCustomValue] = React.useState("");
+
+  const cities = React.useMemo(() => getCitiesByUF("RJ"), []);
+
+  // Sync state if value is external
+  React.useEffect(() => {
+    if (value && !cities.includes(value) && value !== "Outra (fora do RJ)") {
+      setIsCustom(true);
+      setCustomValue(value);
+    }
+  }, [value, cities]);
+
+  const handleSelect = (city: string) => {
+    if (city === "Outra (fora do RJ)") {
+      setIsCustom(true);
+      setCustomValue("");
+      onChange("");
+    } else {
+      setIsCustom(false);
+      onChange(city === value ? "" : city);
+    }
+    setOpen(false);
+  };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          disabled={disabled}
-          className={cn("w-full justify-between font-normal bg-bg-secondary border-border-default h-10 px-3 hover:bg-bg-tertiary", !value && "text-text-disabled", className)}
-        >
-          {value || placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0 z-[60]" align="start">
-        <Command className="w-full">
-          <CommandInput placeholder="Buscar cidade..." />
-          <CommandList>
-            <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
-            <CommandGroup>
-              {cities.map((city) => (
+    <div className="w-full space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            disabled={disabled}
+            className={cn("w-full justify-between font-normal bg-bg-secondary border-border-default h-10 px-3 hover:bg-bg-tertiary", !value && !isCustom && "text-text-disabled", className)}
+          >
+            {isCustom ? customValue || "Digite a cidade..." : (value || placeholder)}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0 z-[60]" align="start">
+          <Command className="w-full">
+            <CommandInput placeholder="Buscar cidade..." />
+            <CommandList>
+              <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+              <CommandGroup>
+                {cities.map((city) => (
+                  <CommandItem
+                    key={city}
+                    value={city}
+                    onSelect={() => handleSelect(city)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city}
+                  </CommandItem>
+                ))}
                 <CommandItem
-                  key={city}
-                  value={city}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
+                  key="outra"
+                  value="Outra (fora do RJ)"
+                  onSelect={() => handleSelect("Outra (fora do RJ)")}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === city ? "opacity-100" : "opacity-0"
+                      isCustom ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {city}
+                  Outra (fora do RJ)
                 </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {isCustom && (
+        <Input
+          placeholder="Digite o nome da cidade..."
+          value={customValue}
+          onChange={(e) => {
+            setCustomValue(e.target.value);
+            onChange(e.target.value);
+          }}
+          className="h-10"
+        />
+      )}
+    </div>
   );
 }

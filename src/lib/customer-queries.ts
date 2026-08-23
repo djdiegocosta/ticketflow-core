@@ -29,6 +29,7 @@ export interface Customer {
   updated_at: string;
   instagram: string | null;
   data_nascimento: string | null;
+  sexo: string | null;
   points_ledger?: any[];
 }
 
@@ -172,6 +173,23 @@ export function usePublicEvent(slug: string) {
 }
 
 /**
+ * Hook para buscar lotes disponíveis para compra
+ */
+export function useAvailableBatches(eventId: string | undefined) {
+  return useQuery({
+    queryKey: ["available-batches", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_available_batches", { 
+        _event_id: eventId as any 
+      });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!eventId
+  });
+}
+
+/**
  * Hook para buscar uma venda pelo código (Confirmação/Detalhe)
  */
 export function useSaleByCode(code: string) {
@@ -238,8 +256,7 @@ export function useUpdateProfile() {
       cidade: string; 
       data_nascimento?: string | null | undefined; 
       instagram?: string | null | undefined; 
-
-
+      sexo?: string | null | undefined;
     }) => {
       if (!customer?.id) throw new Error("Cliente não identificado");
 
@@ -248,9 +265,10 @@ export function useUpdateProfile() {
         _full_name: vars.full_name,
         _email: vars.email,
         _whatsapp: vars.whatsapp,
-        _data_nascimento: vars.data_nascimento || "",
+        _data_nascimento: (vars.data_nascimento || null) as any,
         _cidade: vars.cidade,
-        _instagram: vars.instagram || ""
+        _instagram: (vars.instagram || null) as any,
+        _sexo: vars.sexo as any || null
       });
 
       if (error) throw error;
