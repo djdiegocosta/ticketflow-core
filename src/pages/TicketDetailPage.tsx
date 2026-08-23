@@ -67,13 +67,13 @@ export default function TicketDetailPage() {
           </div>
 
           {/* Top of Card */}
-          <div className="pt-6 px-6 pb-10">
-            <div className="text-xs uppercase tracking-wider text-center text-[var(--text-secondary)] mb-4">
+          <div className="pt-5 px-6 pb-6">
+            <div className="text-xs uppercase tracking-wider text-center text-[var(--text-secondary)] mb-2">
               {eventData?.organizations?.name || "Produtora"}
             </div>
 
             {/* Grid Date and Time */}
-            <div className="grid grid-cols-2 border-y border-[var(--border-subtle)] py-4 my-4">
+            <div className="grid grid-cols-2 border-y border-[var(--border-subtle)] py-4 my-3">
               <div className="border-r border-[var(--border-subtle)] px-2 text-center">
                 <div className="text-[10px] uppercase text-[var(--text-secondary)] font-semibold tracking-wide">Data</div>
                 <div className="font-bold text-body">
@@ -88,7 +88,7 @@ export default function TicketDetailPage() {
               </div>
             </div>
 
-            <h1 className="text-heading-1 font-bold text-center mt-4 text-[var(--text-primary)] leading-tight">
+            <h1 className="text-heading-1 font-bold text-center mt-3 text-[var(--text-primary)] leading-tight">
               {eventData?.title || "Evento"}
             </h1>
             
@@ -111,14 +111,14 @@ export default function TicketDetailPage() {
           </div>
 
           {/* QR Code Section */}
-          <div className="pt-8 px-6 pb-1">
+          <div className="pt-5 px-6 pb-0">
             <div className="text-center uppercase text-[10px] font-semibold tracking-widest text-[var(--text-secondary)] mb-4">
               Apresente este código na entrada do evento
             </div>
             
-            <div className="flex justify-center pt-4 relative z-0">
-              <div className="p-5 rounded-2xl ring-8 ring-[var(--bg-primary)] bg-white">
-                <QRCodeSVG value={ticket.ticket_code} size={220} />
+            <div className="flex justify-center pt-2 relative z-0">
+              <div className="p-4 rounded-2xl ring-4 ring-[var(--bg-primary)] bg-white">
+                <QRCodeSVG value={ticket.ticket_code} size={200} />
               </div>
             </div>
           </div>
