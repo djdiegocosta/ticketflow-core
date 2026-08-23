@@ -124,7 +124,7 @@ export default function TicketDetailPage() {
           </div>
 
           {/* Colored Bottom Strip */}
-          <div className="bg-[var(--accent)] px-6 pb-5 -mt-16 pt-24 text-[#111111]">
+          <div className="bg-[var(--accent)] px-6 pb-5 -mt-12 pt-20 text-[#111111]">
             <div className="flex justify-center mb-4">
               <span className="font-mono bg-black/10 text-[#111111] rounded px-2.5 py-1 text-small font-bold">
                 {ticket.ticket_code}
