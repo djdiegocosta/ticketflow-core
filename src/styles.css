@@ -39,7 +39,11 @@
   --warning-muted: #FFF3E0;
   --warning-text: #E65100;
   --success: #00e676;
+  --success-muted: #e8fff4;
+  --success-text: #00a844;
   --info: #0a84ff;
+  --info-muted: #e6f2ff;
+  --info-text: #0066cc;
 
   /* Sombras */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -113,7 +117,11 @@
   --warning-muted: #3D2A0A;
   --warning-text: #FFB74D;
   --success: #00e676;
+  --success-muted: #0d2a1a;
+  --success-text: #00e676;
   --info: #0a84ff;
+  --info-muted: #0d203d;
+  --info-text: #5ea9ff;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -141,7 +149,11 @@
   --color-warning-muted: var(--warning-muted);
   --color-warning-text: var(--warning-text);
   --color-success: var(--success);
+  --color-success-muted: var(--success-muted);
+  --color-success-text: var(--success-text);
   --color-info: var(--info);
+  --color-info-muted: var(--info-muted);
+  --color-info-text: var(--info-text);
 
   /* Tokens shadcn */
   --color-background: var(--background);
