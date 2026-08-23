@@ -1168,6 +1168,22 @@ export type Database = {
       }
       expire_pending_sales: { Args: never; Returns: undefined }
       generate_short_code: { Args: never; Returns: string }
+      get_available_batches: {
+        Args: { _event_id: string }
+        Returns: {
+          created_at: string
+          ends_at: string
+          event_id: string
+          id: string
+          is_courtesy: boolean
+          name: string
+          organization_id: string
+          price: number
+          quantity: number
+          starts_at: string
+          updated_at: string
+        }[]
+      }
       get_customer_organization_design: {
         Args: never
         Returns: {
@@ -1259,18 +1275,32 @@ export type Database = {
         Args: { _name: string; _ticket_id: string }
         Returns: undefined
       }
-      update_customer: {
-        Args: {
-          _cidade: string
-          _customer_id: string
-          _data_nascimento: string
-          _email: string
-          _full_name: string
-          _instagram: string
-          _whatsapp: string
-        }
-        Returns: undefined
-      }
+      update_customer:
+        | {
+            Args: {
+              _cidade?: string
+              _customer_id: string
+              _data_nascimento?: string
+              _email: string
+              _full_name: string
+              _instagram?: string
+              _sexo?: Database["public"]["Enums"]["customer_gender"]
+              _whatsapp: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _cidade: string
+              _customer_id: string
+              _data_nascimento: string
+              _email: string
+              _full_name: string
+              _instagram: string
+              _whatsapp: string
+            }
+            Returns: undefined
+          }
       update_organization_profile: {
         Args: {
           _contact_email: string
