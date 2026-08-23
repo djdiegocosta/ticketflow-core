@@ -3,12 +3,13 @@ import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { setLastVisitedOrg } from '@/lib/org-context';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
   const { data: event, isLoading, error } = usePublicEvent(slug);
+  const { data: availableBatches } = useAvailableBatches(event?.id);
   useApplyPublicDesign(slug);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -16,10 +17,10 @@ export default function EventPage() {
 
   // Seleciona o primeiro lote por padrão quando carregar
   useMemo(() => {
-    if (event?.ticket_batches && event.ticket_batches.length > 0 && !selectedBatchId) {
-      setSelectedBatchId(event.ticket_batches[0]?.id || null);
+    if (availableBatches && availableBatches.length > 0 && !selectedBatchId) {
+      setSelectedBatchId(availableBatches[0]?.id || null);
     }
-  }, [event, selectedBatchId]);
+  }, [availableBatches, selectedBatchId]);
 
   useEffect(() => {
     if (event?.organization_id) {
@@ -51,7 +52,7 @@ export default function EventPage() {
     );
   }
 
-  const selectedBatch = event.ticket_batches.find(b => b.id === selectedBatchId) || event.ticket_batches[0];
+  const selectedBatch = availableBatches?.find(b => b.id === selectedBatchId) || availableBatches?.[0];
   const totalPrice = (selectedBatch?.price || 0) * quantity;
 
   const handleBuy = () => {
@@ -109,7 +110,7 @@ export default function EventPage() {
           <div className="flex flex-col gap-4">
             <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Selecione o ingresso</h3>
             <div className="flex flex-col gap-3">
-              {event.ticket_batches.map((batch) => (
+              {availableBatches?.map((batch) => (
                 <button
                   key={batch.id}
                   onClick={() => setSelectedBatchId(batch.id)}

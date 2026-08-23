@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { Copy, CheckCircle2, Clock, ArrowRight, Loader2 } from 'lucide-react';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
-import { usePublicEvent, useApplyPublicDesign } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { supabase } from '@/integrations/supabase/client';
 import { setLastVisitedOrg } from '@/lib/org-context';
@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
+  const { data: availableBatches } = useAvailableBatches(event?.id);
   useApplyPublicDesign(slug);
   const createPendingSale = useCreatePendingSale();
   const generateSalePix = useGenerateSalePix();
@@ -57,7 +58,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
 
-  const batch = event?.ticket_batches?.find(b => b.id === search.batchId) || event?.ticket_batches?.[0];
+  const batch = availableBatches?.find(b => b.id === search.batchId) || availableBatches?.[0];
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
