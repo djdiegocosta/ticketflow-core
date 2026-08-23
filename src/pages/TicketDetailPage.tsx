@@ -29,7 +29,7 @@ export default function TicketDetailPage() {
         <div className="flex flex-col items-center justify-center gap-4 px-5 py-20 text-center">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Ingresso não encontrado</h2>
           <p className="text-small text-[var(--text-secondary)]">O código do ingresso é inválido.</p>
-          <Button onClick={() => navigate({ to: '/meus-ingressos' })} className="bg-[var(--accent)] text-[#111111]">
+          <Button onClick={() => navigate({ to: '/cliente/ingressos' })} className="bg-[var(--accent)] text-[#111111]">
             Buscar outro
           </Button>
         </div>
@@ -45,7 +45,7 @@ export default function TicketDetailPage() {
       showFooter={false}
       headerContent={
         <div className="flex items-center justify-between w-full">
-          <Link to="/meus-ingressos" className="p-2 -ml-2 text-[var(--text-secondary)]">
+          <Link to="/cliente/ingressos" className="p-2 -ml-2 text-[var(--text-secondary)]">
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <div className="text-center font-semibold text-small">Visualizar Ingresso</div>

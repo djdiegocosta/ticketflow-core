@@ -6,7 +6,7 @@ export function ClientVitrine() {
   const { data: banner, isLoading } = useActiveBanner();
 
   if (isLoading) {
-    return <Skeleton className="w-full aspect-[4/5] rounded-[var(--radius-md)]" />;
+    return <Skeleton className="h-[38vh] w-auto aspect-[4/5] mx-auto rounded-[var(--radius-md)]" />;
   }
 
   // Só renderizar se banner.image_url existir E banner.link_url existir
@@ -15,7 +15,7 @@ export function ClientVitrine() {
   return (
     <div className="border border-[var(--border-subtle)] rounded-[var(--radius-md)] bg-[var(--bg-secondary)] overflow-hidden">
       {/* Container da imagem */}
-      <div className="w-full aspect-[4/5] bg-[var(--bg-tertiary)] flex items-center justify-center">
+      <div className="h-[38vh] w-auto aspect-[4/5] mx-auto bg-[var(--bg-tertiary)] flex items-center justify-center">
         <img 
           src={banner.image_url} 
           alt={banner.title || "Banner"} 
