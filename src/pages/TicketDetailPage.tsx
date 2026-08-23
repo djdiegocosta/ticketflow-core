@@ -60,7 +60,7 @@ export default function TicketDetailPage() {
         {/* Ticket Boarding Pass Card */}
         <div className="rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-xl overflow-hidden relative">
           {/* Status Pill */}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 z-20">
             <StatusPill tone={ticketStatusMeta(ticket.status).tone}>
               {ticketStatusMeta(ticket.status).label}
             </StatusPill>
