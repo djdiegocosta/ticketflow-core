@@ -265,9 +265,9 @@ export function useUpdateProfile() {
         _full_name: vars.full_name,
         _email: vars.email,
         _whatsapp: vars.whatsapp,
-        _data_nascimento: vars.data_nascimento || null,
+        _data_nascimento: (vars.data_nascimento || null) as any,
         _cidade: vars.cidade,
-        _instagram: vars.instagram || null,
+        _instagram: (vars.instagram || null) as any,
         _sexo: vars.sexo as any || null
       });
 
