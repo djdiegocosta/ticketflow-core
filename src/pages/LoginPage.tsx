@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const LOGIN_BACKGROUND_URL = "/background_login.png";
+const LOGIN_BACKGROUND_URL = "src/assets/background_login.png";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
