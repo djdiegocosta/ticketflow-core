@@ -32,7 +32,7 @@ export function ClientVitrine() {
       </a>
 
       {banner.text_content ? (
-        <div className="min-h-0 max-h-32 shrink-0 overflow-y-auto p-4">
+        <div className="min-h-0 max-h-32 shrink-0 overflow-y-auto p-5">
           <p className="text-body text-[var(--text-secondary)]">{banner.text_content}</p>
         </div>
       ) : null}
