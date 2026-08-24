@@ -40,7 +40,7 @@ export function WelcomeSplash({ userName, onComplete }: WelcomeSplashProps) {
       <div className="flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-700">
         <div className="flex items-center gap-3">
           <Ticket className="h-12 w-12 text-[var(--accent)]" />
-          <h1 className="text-[40px] font-bold tracking-tight text-[var(--text-primary)]">
+          <h1 className="text-[25px] font-bold tracking-tight text-[var(--text-primary)]">
             TicketFlow
           </h1>
         </div>
