@@ -1,5 +1,5 @@
 # TicketFlow — Design System
-**Versão:** 1.0 — Julho/2026
+**Versão:** 1.1 — Agosto/2026
 **Status:** Documento oficial. Todo desenvolvimento no Lovable deve seguir este sistema.
 
 ---
@@ -198,6 +198,13 @@ Sistema baseado em múltiplos de 4px. Usar sempre valores desta escala — nunca
 - Texto: 14px, `--text-primary`
 - Placeholder: `--text-disabled`
 
+### Campo Inteligente (Smart Field) — implementado
+Usado em formulários de dado pessoal (Checkout, Cadastro, Perfil): mesma base do Input acima, com dois complementos:
+- **Ícone identificador**, à esquerda, sempre discreto: `--text-disabled`, nunca `--accent` nem outra cor de destaque — o ícone identifica o campo (telefone, e-mail, calendário etc.), não chama atenção.
+- **Confirmação de preenchimento válido**, à direita: ícone de check (`CheckCircle2`), `--accent`, aparece com transição suave (nunca abrupta) assim que o valor digitado passa a ser válido — calculado em tempo real a cada tecla, não só ao sair do campo ou submeter.
+- Entrada de dados sempre tolerante (Lei de Postel — ver TPS seção 1): campos com máscara (telefone, data) aceitam o usuário digitando só números, sem exigir barra/traço/espaço na posição certa — a formatação e validação são responsabilidade do sistema.
+- Nunca usar seletor nativo do navegador (`<input type="date">` / `type="time">` / `type="datetime-local">`) para data ou hora — comportamento inconsistente entre navegadores mobile, historicamente causou bug de campo não abrindo. Usar sempre entrada manual com máscara (texto formatado enquanto digita), convertida para o formato ISO que o sistema já espera.
+
 ### Card
 - Fundo: `--bg-secondary`
 - Borda: `1px solid var(--border-subtle)`
@@ -337,9 +344,15 @@ Estes padrões devem ser reaproveitados como componentes compartilhados — nunc
 
 ### Vitrine (banner da tela inicial do cliente)
 - Imagem em proporção fixa 4:5 (1080×1350px, mesmo padrão de post do Instagram), até 3MB.
-- Exibição sempre em card (borda, fundo, cantos conforme `--radius-md`), imagem **nunca cortada** — encaixe por conter (object-contain), com fundo neutro preenchendo qualquer sobra quando a imagem enviada não for exatamente 4:5.
+- **Preenchimento do espaço disponível (implementado):** a área da imagem ocupa exatamente o espaço vertical que sobra entre o cabeçalho e o menu inferior (`flex-1` sobre a altura real da tela, nunca um valor fixo em `vh` "chutado") — nunca sobra vazio, nunca precisa de rolagem para ver banner + botão juntos. Rolagem só existe a partir do texto auxiliar do banner (quando cadastrado), que fica abaixo do botão.
+- Imagem **nunca cortada** — encaixe por conter (object-contain). A imagem ocupa 100% da largura do card, encostando nas bordas — sem respiro/moldura artificial ao redor. Quando a imagem enviada não for exatamente 4:5, o espaço sobrando é preenchido com `--bg-tertiary` (nunca `--bg-secondary` do card, para a sobra parecer intencional, não um erro de layout).
+- Cartão inteiro (imagem + botão) dentro de um único container com `overflow-hidden` e `--radius-md` — o botão "Acessar" nunca tem raio próprio; herda o arredondamento do container pai, garantindo que o canto inferior do card sempre acompanhe o canto superior (bug já corrigido: botão quadrado destoando do resto do card arredondado).
 - Botão de ação abaixo da imagem (nunca sobreposto a ela), rótulo "Acessar", mesmo tratamento visual do botão principal do Checkout.
 - Regra "um banner ativo por vez" garantida por trigger no banco, não por lógica de tela.
+- Banner sem link de destino cadastrado nunca é exibido (mesmo com imagem e ativo) — comportamento intencional, não bug: sem link não haveria para onde o botão "Acessar" levaria.
+
+### Skeleton Screen (carregamento pós-login) — implementado
+Substituiu o modelo anterior de splash em tela cheia com logo. Ver TPS seção 13.3 para o comportamento completo — resumo aqui: blocos cinza pulsantes no formato aproximado da tela de destino, exibidos por no máximo 400ms (Limiar de Doherty), nunca controlados pelo tempo real de carregamento dos dados.
 
 ### Legenda de status por cor (bolinha)
 - Usada quando o status é representado só por cor (sem texto na célula, como em Remarketing).

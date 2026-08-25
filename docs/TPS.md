@@ -1,5 +1,5 @@
 # TicketFlow — TPS (Technical Product Specification)
-**Versão:** 2.0 — Julho/2026
+**Versão:** 2.1 — Agosto/2026
 **Status:** Documento oficial. Toda implementação no Lovable deve respeitar este documento.
 **Idioma:** Português (pt-BR)
 
@@ -11,6 +11,12 @@ O TicketFlow é uma plataforma SaaS de gestão de eventos e venda de ingressos. 
 
 **Pergunta que filtra toda decisão de produto:**
 > "Isso torna a vida do produtor mais simples, rápida e eficiente?"
+
+**Princípio de erros — obrigatório em toda a aplicação:**
+> Toda mensagem de erro exibida a qualquer usuário (Admin, Colaborador, Operador, Cliente) deve indicar a causa provável ou o que verificar/corrigir — nunca um erro genérico ("Algo deu errado", "Erro desconhecido"). Se o sistema apresenta um erro, ele sabe o motivo, e esse motivo deve chegar até quem está usando a tela, em linguagem que a pessoa entenda (não a mensagem técnica crua do banco). Aplica-se a toda tela nova e a toda correção feita a partir de Agosto/2026.
+
+**Princípio de entrada de dados — Lei de Postel:**
+> Campos com formato esperado (telefone, data, valores) devem aceitar digitação frouxa do usuário (sem exigir barras, traços ou espaços na posição certa) — a formatação e a validação são responsabilidade do sistema, aplicadas em tempo real, nunca do usuário. Ver componente "Campo Inteligente" no Design System, seção de Componentes.
 
 ---
 
@@ -187,10 +193,10 @@ Regras:
 - **Vínculo automático com a organização (implementado):** como `/login` e `/cadastro` são rotas genéricas (sem contexto de organização na URL), o sistema guarda em `localStorage` a última organização visitada (ao abrir a página pública de um evento) e usa isso para vincular a conta de cliente à organização certa ao entrar em `/cliente` — funciona tanto para cadastro novo quanto para login em conta já existente. Se não houver essa pista (ex.: acesso direto a `/login`), cai de volta para a única organização do sistema, quando houver exatamente uma. Essa é a lógica que garante que toda conta de cliente tenha um registro correspondente na organização certa (ver seção 11, tabela `customers`).
 - **Pendente:** o vínculo automático por WhatsApp com compras anteriores feitas como visitante (sem conta) ainda não existe — hoje o vínculo só acontece daqui para frente (compra estando logado, ou cadastro feito a partir do link "Criar minha conta" na confirmação de uma compra).
 
-**Campo Cidade — autocomplete simples (Opção A — decisão revisada):**
-- Tentativa anterior (filtro automático por DDD/estado) descartada — falhou porque a base de cidades usada estava incompleta (trouxe só as maiores cidades do estado, não a lista oficial completa). Causa raiz foi qualidade da base de dados, não a lógica de filtro em si.
-- Solução simplificada: campo de autocomplete único, sem filtro por DDD/estado — sugere cidades conforme o cliente digita, usando a lista completa e oficial de municípios do Brasil (IBGE, ~5.570 cidades — garantir que a base usada é a completa, não uma amostra/subconjunto).
-- Não permite texto livre fora da lista — só é possível selecionar uma cidade existente na base.
+**Campo Cidade — restrito ao Rio de Janeiro + "Outra" (decisão final, substitui versões anteriores):**
+- A tentativa de listar todos os ~5.570 municípios do Brasil causou lentidão perceptível no campo (toda a base carregada de uma vez, sem filtro por estado). Decisão final: campo de autocomplete lista **apenas os municípios do estado do Rio de Janeiro** (~92 cidades), refletindo o perfil real de uso do sistema hoje.
+- Último item da lista, sempre visível: **"Outra (fora do RJ)"** — ao selecionar, libera um campo de texto livre para digitar a cidade manualmente. O valor salvo é o texto digitado, nunca o rótulo "Outra".
+- Válido para todo campo de cidade do sistema (Cadastro, Perfil, Cadastro de Cliente pelo admin).
 - Recuperar senha: e-mail → link de redefinição.
 - Redefinir senha: nova senha + confirmação.
 
@@ -347,9 +353,10 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
 **Editar evento:** mesmo formato de Steps, reaproveitando os dados já preenchidos. Header da tela (fora dos steps): link "Abrir página pública" (ExternalLink, `/e/:slug` em nova aba) — visível quando o evento está Publicado. Agora funcional, já que a página pública existe.
 
 **Virada de lote:**
-- **Automática por data/horário** — consequência natural de cada lote ter início/fim; ao expirar, o próximo lote (ordem cronológica) assume.
-- **Automática por esgotamento** — se o lote atual esgotar o estoque antes da data programada, o sistema avança automaticamente para o próximo lote (evita perda de venda).
-- **Virada Expressa (manual)** — botão na tela de detalhe do evento (não no wizard de criação — é ação operacional, sempre visível enquanto o evento está ativo/publicado). Produtor clica, sistema pede confirmação ("Tem certeza que deseja virar para o próximo lote agora?"), e antecipa a virada manualmente.
+- **Automática por data/horário** — consequência natural de cada lote ter início/fim; ao expirar, o próximo lote (ordem cronológica) assume. **Implementado:** função `get_available_batches` no banco calcula isso em cascata (lote N só aparece quando todos os anteriores esgotaram OU passaram da data) — a página pública e o checkout consultam essa função, nunca a lista bruta de lotes.
+- **Automática por esgotamento** — se o lote atual esgotar o estoque antes da data programada, o sistema avança automaticamente para o próximo lote (evita perda de venda). Implementado junto com o item acima.
+- Lotes marcados como **Cortesia** (ver 8.6) nunca aparecem nessa lista — excluídos por padrão na função de disponibilidade.
+- **Virada Expressa (manual)** — botão na tela de detalhe do evento para antecipar a virada manualmente. **Pendente** — ainda não implementado.
 
 ---
 
@@ -529,14 +536,14 @@ Decisão registrada a partir do briefing técnico do produtor. Aplica-se antes d
 
 ---
 
-## 13.3 Splash de boas-vindas pós-login
+## 13.3 Transição pós-login — Skeleton Screen (revisado)
 
-Aplica-se a TODOS os papéis (Admin, Colaborador, Operador de Check-in, Cliente) — comportamento universal, não específico de um módulo.
+Aplica-se a TODOS os papéis (Admin, Colaborador, Operador de Check-in, Cliente) — comportamento universal, não específico de um módulo. **Substitui o modelo anterior de tela cheia com logo** (fade-out de 2-3s), trocado por um padrão de Skeleton Screen alinhado ao Limiar de Doherty.
 
-- Imediatamente após login bem-sucedido, antes de renderizar a tela de destino (Dashboard, /checkin, /cliente, etc.), exibir uma tela cheia com: logotipo do TicketFlow (centralizado) + mensagem de boas-vindas menor abaixo (ex: "Bem-vindo(a), [nome]").
-- Duração: 2 a 3 segundos, com transição de fade-out suave ao final — nunca um corte abrupto.
-- Aproveitar essa janela para carregar dados iniciais da tela de destino em paralelo (quando houver backend real; por enquanto, com dados mockados, apenas simular o tempo de carregamento).
-- Não bloqueável/pulável nesta etapa — é rápido o suficiente para não incomodar, e a simplicidade de não ter botão de "pular" é intencional.
+- Imediatamente após login bem-sucedido, antes de renderizar a tela de destino (Dashboard, `/checkin`, `/cliente`, etc.), exibir blocos "esqueleto" (cinza, pulsantes) no formato aproximado do conteúdo real que está carregando — não mais logotipo em tela cheia.
+- Duração: **no máximo 400ms**, controlada por temporizador (não pelo tempo real de carregamento dos dados) — se os dados chegarem antes, a transição para o conteúdo real acontece antes dos 400ms; se demorar mais que isso, o skeleton some de qualquer forma e a tela assume seu próprio indicador de carregamento individual (spinner já usado em cada tela).
+- Esse gatilho acontece **uma única vez por sessão, logo após o login** — nunca deve repetir ao simplesmente navegar entre abas ou voltar para a tela inicial de uma área já carregada.
+- Não bloqueável/pulável — a curta duração torna isso desnecessário.
 
 ## 13.4 Armazenamento offline (dados essenciais)
 
@@ -1048,6 +1055,10 @@ Decisão registrada para quando o schema real for construído — não depende d
 - Limite de tentativas no checkout público (rate limiting) para evitar geração em massa de vendas pendentes por script/bot.
 - **`confirm_sale_paid` e `create_locked_tickets` são executáveis apenas por `service_role`** (revogado de `anon`/`authenticated`/`PUBLIC`) — só o webhook do Mercado Pago, rodando com a chave de serviço, pode confirmar uma venda como paga. O checkout público nunca chama essas funções diretamente.
 - `get_or_create_customer(organization_id)`: função que garante (criando se necessário) o registro de `customers` do usuário logado para uma organização específica — chamada ao entrar na Área do Cliente (ver seção 6.6) e ao comprar/receber cortesia estando logado.
+- `update_customer`: cliente edita o próprio registro (`user_id = auth.uid()`), ou admin edita cliente da própria organização — nunca exclusivo de admin (bug corrigido; a função exigia papel de admin até mesmo para o cliente editar o próprio perfil). Campos não enviados na chamada preservam o valor atual (nunca apagam Cidade/Instagram/Sexo por omissão).
+- RLS de leitura para o cliente logado (`authenticated`), completada nas tabelas `events`, `ticket_batches` (antes só liberadas para `anon`, nunca para quem estava logado — bug real, bloqueava a própria Área do Cliente), `sales` e `tickets` (antes sem nenhuma política para o cliente ver o que é seu) e `customers` (UPDATE, antes inexistente).
+- Bucket `event-images`: política de upload/atualização/remoção agora valida que a pasta do arquivo corresponde à `organization_id` do admin autenticado — antes qualquer admin de qualquer organização podia sobrescrever imagem de evento de outra organização.
+- Tabela `checkout_rate_limits` (WhatsApp e IP de tentativas de checkout): RLS habilitada com acesso restrito à equipe da organização dona do evento — antes estava sem nenhuma política de segurança, totalmente exposta via API para qualquer visitante não autenticado.
 
 ## 14. Backlog (documentado, não implementado)
 
@@ -1057,7 +1068,9 @@ Decisão registrada para quando o schema real for construído — não depende d
 - Notificações (e-mail / WhatsApp) para compradores.
 - App mobile nativo Android para o módulo de Check-in — substituiria oficialmente a versão web do Check-in, sem desativá-la. Arquitetura já favorável: check-in inteiro passa pela função `checkin_ticket` no banco (não por lógica no frontend), reaproveitável por um app nativo sem reescrever regra de negócio.
 - Exclusão de conta de cliente pela própria interface — hoje só é possível remover uma conta diretamente pelo banco de dados; nem cliente nem admin têm essa opção na tela.
-- Refinamento visual do ingresso individual (`/ingresso/:ticket_code` e tela de detalhe) — sair do visual genérico atual para algo mais personalizado (tratamento de cor, acabamento tipo "ticket físico"). Em andamento, aguardando referências visuais do usuário.
 - Configuração da imagem de fundo do Login pelo Super Admin (hoje é um arquivo estático do projeto).
 - Retroalimentação por WhatsApp: vincular automaticamente compras feitas como visitante (sem conta) a uma conta criada depois — hoje o vínculo só existe daqui para frente, não retroativo (ver 6.6).
+- "Virada Expressa" manual de lote (botão para antecipar virada na tela de detalhe do evento) — a virada automática (data/esgotamento) já está implementada; a manual ainda não.
+- Foto de perfil do cliente — sem campo no banco, sem upload implementado.
+- Preferência de tema (claro/escuro) do cliente salva na conta — hoje só persiste localmente no navegador.
 - Módulo de billing / assinaturas automatizado.

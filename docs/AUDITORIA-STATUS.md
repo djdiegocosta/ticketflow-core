@@ -1,5 +1,5 @@
 # TicketFlow — Status de Auditoria e Refinamentos
-**Última atualização:** 22/08/2026
+**Última atualização:** 23/08/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
@@ -51,7 +51,51 @@ Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴
 - ✅ Fundo discreto e monocromático na tela de Login (imagem gerada pelo próprio usuário, sem risco de direitos autorais).
 - 🔴 Refinamento visual do ingresso individual — em andamento, aguardando referências visuais do usuário.
 
+---
+
+## Rodada — Cidades, permissões do cliente, lotes e datas (22-23/08/2026)
+
+### Confirmado por SQL/teste
+- ✅ Causa raiz do bug de permissão do cliente identificada e corrigida: `events` e `ticket_batches` tinham política de leitura só para `anon`, nunca para `authenticated` — cliente logado nunca conseguia ver eventos/lotes. `sales` e `tickets` não tinham política nenhuma para o cliente ver o que é seu. `customers` não tinha política de UPDATE. As quatro corrigidas via SQL, confirmado por consulta de diagnóstico antes e depois.
+- ✅ `update_customer` corrigida: exigia papel de admin até para o cliente editar o próprio perfil (bug confirmado via `pg_get_functiondef`) — agora aceita o dono do registro OU admin da organização. Parâmetros de Cidade/Instagram/Sexo passam a preservar valor atual quando não enviados (antes o painel admin apagava esses campos ao editar só nome/e-mail/WhatsApp).
+- ✅ Bug "Data de Nascimento obrigatória mesmo sendo opcional" — causa raiz confirmada: campo vazio enviava texto vazio para um parâmetro do tipo `date` no banco, que rejeita a conversão. Corrigido enviando nulo.
+- ✅ Banner da Vitrine não aparecendo — investigado e não era bug: banner ativo sem link de destino cadastrado (comportamento intencional do sistema).
+- ✅ Função `get_available_batches` criada — lotes liberados em cascata (esgotamento ou data), cortesia sempre excluída.
+- ✅ Segurança (achados apontados pelo linter do Lovable, resolvidos via SQL direto em vez de correção automática): bucket `event-images` sem validação de organização (corrigido); tabela `checkout_rate_limits` com RLS desabilitada, expondo WhatsApp/IP publicamente (corrigido); confirmado que não há outras tabelas sem RLS nem views com SECURITY DEFINER problemáticas.
+
+### Entregue (prompt fornecido), aguardando confirmação de teste
+- ⏳ Cidade restrita a municípios do RJ + opção "Outra" com texto livre.
+- ⏳ Seletores nativos de data/hora substituídos por entrada manual com máscara, em todos os pontos do sistema (Criar/Editar Evento, Cadastro de Cliente, Perfil).
+- ⏳ Conexão da tela pública/checkout com `get_available_batches` (a função já existe e funciona; falta confirmar que a tela para de listar todos os lotes juntos).
+- ⏳ Bug do logo "TicketFlow" invisível no tema claro do Login — causa raiz encontrada (cor fixa em branco) e correção repassada.
+- ⏳ Campo Sexo adicionado às telas de Cadastro e Perfil (coluna e função já prontas no banco desde rodada anterior).
+
+## Rodada — Splash, Vitrine (2ª correção) e ícone do ingresso
+
+- ✅ Causa raiz da splash reaparecendo a cada visita à aba Início: dois mecanismos de splash distintos no código, um correto (controlado por sessão) e um solto em `cliente.index.tsx`, sempre disparando. **Superado** pela mudança de abordagem — ver Skeleton Screen abaixo.
+- ✅ Confirmado por print enviado pelo usuário: ajuste de altura flexível da Vitrine (preenchimento por espaço real disponível, não `vh` fixo) está funcionando em tela — usado como base para o refinamento seguinte.
+- ⏳ Ajuste fino de espaçamento da Vitrine (moldura ao redor da imagem, botão com cantos quadrados) — prompt entregue nesta mesma rodada, incorporado à seção seguinte.
+- ⏳ Link de "voltar" do ingresso apontando para página antiga (`/meus-ingressos`, sem menu) em vez de `/cliente/ingressos` — causa raiz confirmada, correção repassada.
+- ⏳ Selo de status do ingresso sem texto visível (fundo sólido sem contraste) e espaçamento do cartão do ingresso empurrando o QR Code para fora da tela — causas confirmadas por print, correções repassadas.
+
+## Rodada — Revisão de UX (5 Leis) + Pacote de refinamento visual
+
+Baseado em revisão estruturada (Fitts, Hick, Miller, Doherty, Postel) sobre o código real do projeto.
+
+### Entregue nesta rodada (3 prompts separados, aguardando teste)
+- ⏳ **Skeleton Screen (Doherty):** troca da splash de tela cheia por blocos "esqueleto" no formato da tela real, limitados a 400ms via temporizador — não mais duração fixa de 2-3s nem dependente do tempo de carregamento real.
+- ⏳ **Campo Inteligente (Postel/Fitts):** componente novo (`SmartField`) com ícone identificador discreto + confirmação visual (check verde) em tempo real, aplicado em Checkout, Cadastro e Perfil — inclui trim automático de e-mail e validação calculada a cada tecla, não só no envio.
+- ⏳ **Ajuste fino de espaçamento + Vitrine (2ª correção):** card da Vitrine com imagem encostando nas bordas (sem moldura), botão herdando o arredondamento do card via `overflow-hidden` no container pai, revisão geral de paddings fora da escala de 4px.
+
+### Achados da revisão, não endereçados ainda (registrados para priorização futura)
+- 🔴 Sem feedback visual imediato ao clicar "Gerar Pix" no Checkout — gap perceptível (1-2s) entre o clique e o spinner aparecer.
+- 🔴 Cabeçalho da Área do Cliente com 3 elementos comprimidos (logo clicável + tema + sair) — candidato a simplificação.
+- 🔴 Código do ingresso sem agrupamento visual (ex: `TCK-8F3A2C` → `TCK-8F3A-2C`), QR Code sem instrução textual de "escaneie aqui".
+- 🔴 Hit area de links de "voltar" pequena (ícone de 18px sem padding extra).
+- 🔴 Busca de cliente por WhatsApp sem debounce — risco de excesso de requisições.
+
 ## Pendências conhecidas, não priorizadas ainda
+
 - 🔴 Função `checkin_ticket` existe apenas no banco ao vivo, fora de controle de versão (mesmo padrão do bucket `event-images`, criado fora de migration).
 - 🔴 Botão "Baixar todos os ingressos (PDF)" na tela de confirmação de compra não tem ação implementada.
 - 🔴 Preferência de tema do cliente (claro/escuro) ainda salva só localmente no navegador, não na conta.
