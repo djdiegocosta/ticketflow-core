@@ -1,8 +1,27 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SkeletonScreenProps {
-  /** Layout específico: 'admin' mostra cards, 'cliente' mostra saudação + espaço de banner */
   variant?: "admin" | "cliente";
+}
+
+interface WelcomeSplashProps {
+  userName?: string | null;
+  onComplete: () => void;
+}
+
+export function WelcomeSplash({ userName, onComplete }: WelcomeSplashProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-primary)] animate-in fade-in duration-300">
+      <div className="text-center space-y-2">
+        <div className="text-heading-1 font-bold text-[var(--text-primary)]">
+          {userName ? `Olá, ${userName}!` : "Olá!"}
+        </div>
+        <div className="text-body text-[var(--text-secondary)]">
+          Carregando sua conta...
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function SkeletonScreen({ variant = "cliente" }: SkeletonScreenProps) {
