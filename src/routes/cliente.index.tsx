@@ -4,7 +4,6 @@ import { useCustomerSales } from "@/lib/customer-queries";
 import { Loader2 } from "lucide-react";
 import { ClientVitrine } from "@/components/cliente/ClientVitrine";
 import { SkeletonScreen } from "@/components/WelcomeSplash";
-import { SkeletonScreen } from "@/components/WelcomeSplash";
 import { useMinimalDelay } from "@/hooks/use-minimal-delay";
 import { useEffect } from "react";
 
