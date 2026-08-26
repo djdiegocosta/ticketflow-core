@@ -256,7 +256,7 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {/* Last Sales Table-like List */}
+      {/* Last Sales - simplified */}
       <div className="bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -276,44 +276,18 @@ export function AdminDashboard() {
 
         <div className="divide-y divide-border-subtle">
           {lastSales.map((sale: Sale) => {
-            const timeStr = new Date(sale.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-            const eventTitle = (sale.events as any)?.title || "—";
+            const quantity = Number(sale.quantity) || 0;
+            const ticketLabel = quantity === 1 ? "ingresso" : "ingressos";
             
             return (
-              <div key={sale.id} className="py-4 flex items-center gap-4 group">
-                <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-text-primary text-small font-semibold">
+              <div key={sale.id} className="py-3 flex items-center gap-4 group">
+                <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-text-primary text-small font-semibold shrink-0">
                   {sale.buyer_name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 items-center">
-                  <div>
-                    <div className="text-body text-text-primary font-medium">{sale.buyer_name}</div>
-                    <div className="text-small text-text-secondary">{eventTitle}</div>
-                  </div>
-                  
-                  <div className="hidden md:block text-small text-text-secondary">
-                    {sale.quantity}x
-                  </div>
-                  
-                  <div className="text-body font-semibold text-text-primary">
-                    {formatCurrency(sale.total_amount)}
-                  </div>
-                  
-                  <div className="flex items-center justify-between gap-4">
-                    <StatusPill 
-                      tone={
-                        sale.status === "pago" ? "accent" : 
-                        sale.status === "expirado" ? "neutral" :
-                        sale.status === "cancelado" ? "error" : "warning"
-                      }
-                    >
-                      {sale.status}
-
-                    </StatusPill>
-                    <div className="text-small text-text-disabled whitespace-nowrap">
-                      {timeStr}
-                    </div>
-                  </div>
+                <div className="text-body text-text-primary">
+                  <span className="font-medium">{sale.buyer_name}</span>{" "}
+                  <span className="text-text-secondary">comprou {quantity} {ticketLabel}</span>
                 </div>
               </div>
             );
