@@ -175,7 +175,8 @@ const isActive = (to: string, exact?: boolean) =>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-end border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6">
+          <span className="text-heading-2 text-[var(--text-primary)]">{getPageTitle()}</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="text-[var(--text-secondary)]">
