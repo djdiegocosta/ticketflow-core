@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState, useNavigate, useLocation } from "@tanstack/react-router";
 import {
   BarChart3,
   CalendarDays,
@@ -36,6 +36,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const pageTitles: Record<string, string> = {
+  "/admin": "Dashboard",
+  "/admin/eventos": "Eventos",
+  "/admin/vendas": "Vendas",
+  "/admin/cortesias": "Cortesias",
+  "/admin/clientes": "Clientes",
+  "/checkin": "Check-in",
+  "/admin/financeiro": "Financeiro",
+  "/admin/importacao": "Importação",
+  "/admin/relatorios": "Relatórios",
+  "/admin/ferramentas": "Ferramentas",
+  "/admin/usuarios": "Usuários",
+  "/admin/configuracoes": "Configurações",
+};
+
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/eventos", label: "Eventos", icon: CalendarDays },
@@ -53,6 +68,7 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useLocation();
   const { logout, userRole } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -89,7 +105,16 @@ export function AdminLayout() {
     }
   }, [pathname, isMobile]);
 
-  const isActive = (to: string, exact?: boolean) =>
+  const getPageTitle = () => {
+  for (const [path, title] of Object.entries(pageTitles)) {
+    if (location.pathname === path || location.pathname.startsWith(path + "/")) {
+      return title;
+    }
+  }
+  return "";
+};
+
+const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -113,6 +138,8 @@ export function AdminLayout() {
             <Ticket className="h-5 w-5 text-[var(--accent-text)] animate-pulse" />
             <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
           </div>
+          <span className="text-body text-[var(--text-secondary)] mx-4 hidden sm:inline">|</span>
+          <span className="text-body text-[var(--text-secondary)] hidden sm:inline">{getPageTitle()}</span>
           {isMobile && (
             <Button
               variant="ghost"
