@@ -16,18 +16,25 @@ import {
   UsersRound,
   Wallet,
   Calculator,
-  LogOut,
   Wrench,
   Target,
   Menu,
   X,
+  LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
-
-
+import { useTheme } from "@/lib/theme";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -46,7 +53,8 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { logout, userName, userRole } = useAuth();
+  const { logout, userRole } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -65,17 +73,16 @@ export function AdminLayout() {
     }
 
     if (userRole === "colaborador") {
-      const isPermitted = filteredMenu.some((item) => 
+      const isPermitted = filteredMenu.some((item) =>
         item.exact ? pathname === item.to : pathname.startsWith(item.to)
       );
-      
+
       if (!isPermitted && pathname.startsWith("/admin")) {
         navigate({ to: "/admin/vendas", replace: true });
       }
     }
   }, [userRole, pathname, filteredMenu, navigate]);
 
-  // Close sidebar on navigation (mobile)
   useEffect(() => {
     if (isMobile) {
       setIsSidebarOpen(false);
@@ -87,22 +94,18 @@ export function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-primary)]">
-      {/* Overlay for mobile sidebar */}
       {isMobile && isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar - Fixed Height and Independent Scroll */}
-      <aside 
+      <aside
         className={[
           "flex h-full w-60 shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-secondary)] transition-transform duration-300",
-          isMobile 
-            ? "fixed left-0 top-0 z-50 transform" 
-            : "relative translate-x-0",
-          isMobile && !isSidebarOpen ? "-translate-x-full" : "translate-x-0"
+          isMobile ? "fixed left-0 top-0 z-50 transform" : "relative translate-x-0",
+          isMobile && !isSidebarOpen ? "-translate-x-full" : "translate-x-0",
         ].join(" ")}
       >
         <div className="flex h-16 shrink-0 items-center justify-between px-6">
@@ -145,51 +148,26 @@ export function AdminLayout() {
         </nav>
       </aside>
 
-      {/* Main Container */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Header - Fixed at top */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-8">
-          <div className="flex items-center gap-4">
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSidebarOpen(true)}
-                className="text-[var(--text-primary)]"
-              >
+        <header className="flex h-16 shrink-0 items-center justify-end border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-[var(--text-secondary)]">
                 <Menu className="h-6 w-6" />
               </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="hidden items-center gap-4 sm:flex">
-              <span className="text-body text-[var(--text-secondary)]">{userName}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="flex items-center gap-2 text-text-secondary hover:text-error"
-              >
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer gap-2">
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="cursor-pointer gap-2 text-[var(--error)]">
                 <LogOut className="h-4 w-4" />
-                <span>Sair</span>
-              </Button>
-            </div>
-            {/* Simple logout for mobile if needed, or just theme toggle */}
-            {!isMobile && <ThemeToggle />}
-            {isMobile && (
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={logout}
-                  className="text-text-secondary hover:text-error"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin">
@@ -199,4 +177,3 @@ export function AdminLayout() {
     </div>
   );
 }
-
