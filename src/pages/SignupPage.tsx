@@ -5,7 +5,7 @@ import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff, Ticket } from "lucide-react";
+import { Eye, EyeOff, Ticket, User, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
+import { SmartField } from "@/components/ui/smart-field";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
 import { getUFByDDD } from "@/lib/ibge-data";
 
@@ -128,22 +129,15 @@ export default function SignupPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome completo</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nome Sobrenome"
-                        value={field.value}
-                        onInput={(e) => {
-                          const target = e.target as HTMLInputElement;
-                          target.value = formatName(target.value);
-                          field.onChange(target.value);
-                        }}
-
-
-                        className="bg-bg-secondary border-border-default focus-visible:ring-accent"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
+                    <SmartField
+                      label="Nome completo"
+                      icon={User}
+                      value={field.value}
+                      onChange={(v) => field.onChange(formatName(v))}
+                      isValid={isFullName(field.value)}
+                      placeholder="Nome Sobrenome"
+                      error={form.formState.errors.name?.message as string}
+                    />
                   </FormItem>
                 )}
               />
@@ -153,22 +147,16 @@ export default function SignupPage() {
                 name="whatsapp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>WhatsApp</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="(00) 00000-0000"
-                        value={field.value}
-                        onInput={(e) => {
-                          const target = e.target as HTMLInputElement;
-                          target.value = maskWhatsApp(target.value);
-                          field.onChange(target.value);
-                        }}
-
-
-                        className="bg-bg-secondary border-border-default focus-visible:ring-accent"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
+                    <SmartField
+                      label="WhatsApp"
+                      icon={Phone}
+                      value={field.value}
+                      onChange={(v) => field.onChange(maskWhatsApp(v))}
+                      isValid={onlyDigits(field.value).length === 11}
+                      placeholder="(00) 00000-0000"
+                      inputMode="tel"
+                      error={form.formState.errors.whatsapp?.message as string}
+                    />
                   </FormItem>
                 )}
               />
@@ -178,16 +166,17 @@ export default function SignupPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="seu@email.com"
-                        type="email"
-                        {...field}
-                        className="bg-bg-secondary border-border-default focus-visible:ring-accent"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
+                    <SmartField
+                      label="E-mail"
+                      icon={Mail}
+                      value={field.value}
+                      onChange={(v) => field.onChange(v.trim())}
+                      isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)}
+                      placeholder="seu@email.com"
+                      type="email"
+                      inputMode="email"
+                      error={form.formState.errors.email?.message as string}
+                    />
                   </FormItem>
                 )}
               />
