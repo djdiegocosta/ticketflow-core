@@ -80,12 +80,14 @@ export function EditEventPage() {
   useEffect(() => {
     if (!event) return;
     const d = new Date(event.event_date);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const localDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     setTitle(event.title);
     setSlug(event.slug);
     setDescription(event.description ?? "");
     setImageUrl(event.image_url ?? "");
-    setDate(d.toISOString().slice(0, 10));
-    setTime(d.toTimeString().slice(0, 5));
+    setDate(localDate);
+    setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
     setLocation(event.location);
     setStatus(event.status);
   }, [event]);
