@@ -111,7 +111,7 @@ export function AdminLayout() {
         <div className="flex h-16 shrink-0 items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Ticket className="h-5 w-5 text-[var(--accent-text)]" />
-            <span className="text-heading-2 text-white">TicketFlow</span>
+            <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
           </div>
           {isMobile && (
             <Button
