@@ -11,7 +11,8 @@ import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-for
 import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { Copy, CheckCircle2, Clock, ArrowRight, Loader2 } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, ArrowRight, Loader2, User, Phone } from 'lucide-react';
+import { SmartField } from '@/components/ui/smart-field';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { getUFByDDD } from '@/lib/ibge-data';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
@@ -248,32 +249,8 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-4">
               <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Nome completo</Label>
-                  <Input 
-                    placeholder="Seu nome"
-                    {...form.register('buyerName')}
-                    onInput={(e) => {
-                      const t = e.target as HTMLInputElement;
-                      t.value = formatName(t.value);
-                      form.setValue('buyerName', t.value, { shouldValidate: true });
-                    }}
-                  />
-                  {form.formState.errors.buyerName && <p className="text-xs text-error">{form.formState.errors.buyerName.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label>WhatsApp</Label>
-                  <Input 
-                    placeholder="(00) 00000-0000"
-                    {...form.register('buyerWhatsApp')}
-                    onInput={(e) => {
-                      const t = e.target as HTMLInputElement;
-                      t.value = maskWhatsApp(t.value);
-                      form.setValue('buyerWhatsApp', t.value, { shouldValidate: true });
-                    }}
-                  />
-                  {form.formState.errors.buyerWhatsApp && <p className="text-xs text-error">{form.formState.errors.buyerWhatsApp.message}</p>}
-                </div>
+                <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
+                <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
                 <div className="space-y-2">
                   <Label>E-mail (opcional)</Label>
                   <Input placeholder="seu@email.com" {...form.register('buyerEmail')} />
