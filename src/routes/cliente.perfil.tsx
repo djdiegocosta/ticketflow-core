@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm, Controller } from "react-hook-form";
-import { formatName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
+import { formatName, maskWhatsApp, onlyDigits, isFullName } from "@/lib/form-format";
+import { SmartField } from "@/components/ui/smart-field";
+import { User, Phone, Mail } from "lucide-react";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -87,41 +89,11 @@ export function Page_cliente_perfil() {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-20">
-        <div className="space-y-1">
-          <label className="text-micro font-bold uppercase">Nome completo</label>
-          <input 
-            {...form.register("full_name")}
-            onInput={(e) => {
-              const target = e.target as HTMLInputElement;
-              target.value = formatName(target.value);
-            }}
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
-          />
-          {form.formState.errors.full_name && <p className="text-micro text-error">{form.formState.errors.full_name.message}</p>}
-        </div>
+        <SmartField label="Nome completo" icon={User} value={form.watch("full_name")} onChange={(v) => form.setValue("full_name", formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch("full_name"))} placeholder="Nome Sobrenome" error={form.formState.errors.full_name?.message as string} />
 
-        <div className="space-y-1">
-          <label className="text-micro font-bold uppercase">WhatsApp</label>
-          <input 
-            {...form.register("whatsapp")}
-            onInput={(e) => {
-              const target = e.target as HTMLInputElement;
-              target.value = maskWhatsApp(target.value);
-            }}
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
-          />
-          {form.formState.errors.whatsapp && <p className="text-micro text-error">{form.formState.errors.whatsapp.message}</p>}
-        </div>
+        <SmartField label="WhatsApp" icon={Phone} value={form.watch("whatsapp")} onChange={(v) => form.setValue("whatsapp", maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch("whatsapp")).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.whatsapp?.message as string} />
 
-        <div className="space-y-1">
-          <label className="text-micro font-bold uppercase">E-mail</label>
-          <input 
-            {...form.register("email")}
-            type="email"
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
-          />
-          {form.formState.errors.email && <p className="text-micro text-error">{form.formState.errors.email.message}</p>}
-        </div>
+        <SmartField label="E-mail" icon={Mail} value={form.watch("email")} onChange={(v) => form.setValue("email", v.trim(), { shouldValidate: true })} isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch("email"))} placeholder="exemplo@email.com" type="email" inputMode="email" error={form.formState.errors.email?.message as string} />
 
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Cidade</label>
