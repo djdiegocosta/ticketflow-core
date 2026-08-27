@@ -138,8 +138,7 @@ const isActive = (to: string, exact?: boolean) =>
             <Ticket className="h-5 w-5 text-[var(--accent-text)] animate-pulse" />
             <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
           </div>
-          <span className="text-body text-[var(--text-secondary)] mx-4 hidden sm:inline">|</span>
-          <span className="text-body text-[var(--text-secondary)] hidden sm:inline">{getPageTitle()}</span>
+          
           {isMobile && (
             <Button
               variant="ghost"
