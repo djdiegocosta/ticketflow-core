@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useCurrentCustomer } from "@/lib/customer-queries";
-import { Loader2 } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 
 export const Route = createFileRoute('/cliente/pontos')({
   component: Page_cliente_pontos,
@@ -49,6 +49,21 @@ export function Page_cliente_pontos() {
             <p className="text-small text-[var(--text-secondary)]">Nenhum histórico de pontos encontrado.</p>
           </div>
         )}
+
+        <div className="space-y-1 pt-4 border-t border-[var(--border-subtle)]">
+          <label className="text-micro font-bold uppercase">Sexo</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-disabled)] pointer-events-none" />
+            <select
+              className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] h-12 pl-10 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
+            >
+              <option value="">Selecione...</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+              <option value="prefiro_nao_informar">Prefiro não informar</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );
