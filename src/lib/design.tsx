@@ -14,20 +14,20 @@ interface ColorSet {
 
 export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSet }> = {
   green: {
-    light: { accent: "#00e676", hover: "#00c853", muted: "#e8fff4", text: "#00a844" },
-    dark: { accent: "#00e676", hover: "#00c853", muted: "#0d2a1a", text: "#00e676" },
+    light: { accent: "#008a50", hover: "#007045", muted: "#e8f5ef", text: "#006641" },
+    dark: { accent: "#4ade80", hover: "#22c55e", muted: "#0d2a1a", text: "#4ade80" },
   },
   blue: {
-    light: { accent: "#00B0FF", hover: "#0091EA", muted: "#e1f5fe", text: "#01579B" },
-    dark: { accent: "#4FC3F7", hover: "#00B0FF", muted: "#0a2540", text: "#4FC3F7" },
+    light: { accent: "#3b82f6", hover: "#2563eb", muted: "#eff6ff", text: "#1d4ed8" },
+    dark: { accent: "#60a5fa", hover: "#3b82f6", muted: "#0d203d", text: "#60a5fa" },
   },
   purple: {
-    light: { accent: "#D500F9", hover: "#AA00FF", muted: "#f3e5f5", text: "#4A148C" },
-    dark: { accent: "#E040FB", hover: "#D500F9", muted: "#2a0a3d", text: "#E040FB" },
+    light: { accent: "#8b5cf6", hover: "#7c3aed", muted: "#f5f3ff", text: "#6d28d9" },
+    dark: { accent: "#a78bfa", hover: "#8b5cf6", muted: "#2e1065", text: "#a78bfa" },
   },
   red: {
-    light: { accent: "#FF1744", hover: "#D50000", muted: "#ffebee", text: "#B71C1C" },
-    dark: { accent: "#FF5252", hover: "#FF1744", muted: "#3d0a0a", text: "#FF5252" },
+    light: { accent: "#ef4444", hover: "#dc2626", muted: "#fef2f2", text: "#b91c1c" },
+    dark: { accent: "#f87171", hover: "#ef4444", muted: "#3d0a0a", text: "#f87171" },
   },
 };
 
