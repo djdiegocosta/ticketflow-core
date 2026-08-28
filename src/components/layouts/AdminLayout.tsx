@@ -10,7 +10,6 @@ import {
   Settings,
   ShieldCheck,
   Ticket,
-  Trophy,
   Upload,
   Users,
   UsersRound,
@@ -52,7 +51,6 @@ const pageTitles: Record<string, string> = {
   "/admin/configuracoes": "Configurações",
   "/admin/checklist": "Checklist",
   "/admin/remarketing": "Remarketing",
-  "/admin/sorteios": "Sorteios",
   "/admin/simulador": "Simulador",
 };
 
