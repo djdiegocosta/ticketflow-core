@@ -47,8 +47,13 @@ const pageTitles: Record<string, string> = {
   "/admin/importacao": "Importação",
   "/admin/relatorios": "Relatórios",
   "/admin/ferramentas": "Ferramentas",
+  "/admin/ferramentas/vitrine": "Vitrine",
   "/admin/usuarios": "Usuários",
   "/admin/configuracoes": "Configurações",
+  "/admin/checklist": "Checklist",
+  "/admin/remarketing": "Remarketing",
+  "/admin/sorteios": "Sorteios",
+  "/admin/simulador": "Simulador",
 };
 
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
