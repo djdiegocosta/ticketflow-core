@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useTheme } from "./theme";
 import { useOrganization, useUpdateDesignSettings } from "./settings-queries";
 
-export type AccentColor = "green" | "blue" | "nubank" | "red";
+export type AccentColor = "green" | "blue" | "purple" | "red";
 export type CornerStyle = "straight" | "rounded";
 
 interface ColorSet {
@@ -21,7 +21,7 @@ export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSe
     light: { accent: "#3b82f6", hover: "#2563eb", muted: "#eff6ff", text: "#1d4ed8" },
     dark: { accent: "#60a5fa", hover: "#3b82f6", muted: "#0d203d", text: "#60a5fa" },
   },
-  nubank: {
+  purple: {
     light: { accent: "hsl(270, 60%, 50%)", hover: "hsl(270, 60%, 45%)", muted: "hsl(270, 30%, 92%)", text: "hsl(270, 60%, 40%)" },
     dark: { accent: "hsl(270, 70%, 60%)", hover: "hsl(270, 70%, 55%)", muted: "hsl(270, 40%, 18%)", text: "hsl(270, 20%, 98%)" },
   },
