@@ -47,6 +47,7 @@ const pageTitles: Record<string, string> = {
   "/admin/relatorios": "Relatórios",
   "/admin/ferramentas": "Ferramentas",
   "/admin/ferramentas/vitrine": "Vitrine",
+  "/admin/historico": "Histórico de Eventos",
   "/admin/usuarios": "Usuários",
   "/admin/configuracoes": "Configurações",
   "/admin/checklist": "Checklist",

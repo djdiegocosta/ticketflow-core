@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { Calculator, Target, Gift, Wrench, CheckSquare, ImageIcon } from 'lucide-react'
+import { Calculator, Target, Gift, Wrench, CheckSquare, ImageIcon, History } from 'lucide-react'
 
 export const Route = createFileRoute('/admin/ferramentas/')({
   beforeLoad: ({ context }) => {
@@ -12,6 +12,12 @@ export const Route = createFileRoute('/admin/ferramentas/')({
 })
 
 const tools = [
+  {
+    name: "Histórico de Eventos",
+    description: "Consulte o histórico de check-ins de todos os eventos.",
+    icon: History,
+    href: "/admin/historico",
+  },
   {
     name: "Vitrine",
     description: "Gerencie banners e comunicados na área do cliente.",
