@@ -42,14 +42,16 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
       </header>
 
       {/* Área de conteúdo */}
-      <main className={cn("flex-1", showFooter ? "pb-20" : "")}>
-        {children || <Outlet />}
+      <main className={cn("flex-1", showFooter ? "pb-20 md:pb-6" : "")}>
+        <div className="mx-auto h-full max-w-md md:max-w-2xl lg:max-w-4xl">
+          {children || <Outlet />}
+        </div>
       </main>
 
       {/* Footer */}
       {showFooter && (
-        <footer className="fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-2 py-2">
-          <div className="flex h-full items-center justify-around text-[var(--text-secondary)]">
+        <footer className="fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-2 py-2 md:left-60 md:rounded-tl-xl">
+          <div className="mx-auto flex h-full max-w-md items-center justify-around text-[var(--text-secondary)] lg:max-w-4xl">
             <Link 
               to="/cliente" 
               className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
