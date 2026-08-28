@@ -1173,6 +1173,28 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_available_batches_active: {
+        Args: { _event_id: string }
+        Returns: {
+          created_at: string
+          ends_at: string | null
+          event_id: string
+          id: string
+          is_courtesy: boolean
+          name: string
+          organization_id: string
+          price: number
+          quantity: number | null
+          starts_at: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ticket_batches"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_customer_organization_design: {
         Args: never
         Returns: {
