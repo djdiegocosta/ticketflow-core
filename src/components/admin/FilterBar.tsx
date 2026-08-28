@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const filterFieldClass =
-  "border border-border-default bg-bg-secondary px-3 py-2 text-small text-text-primary outline-none transition-colors focus:border-accent";
+  "border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-small text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)]";
 
 export interface FilterBarProps {
   children?: React.ReactNode;
@@ -48,7 +48,7 @@ export interface FilterSearchProps {
 export function FilterSearch({ value, onChange, placeholder = "Buscar..." }: FilterSearchProps) {
   return (
     <div className="relative flex flex-1 min-w-0">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-secondary)] pointer-events-none" />
       <Input
         type="search"
         value={value}
@@ -68,15 +68,15 @@ export interface FilterTabsProps {
 
 export function FilterTabs({ tabs, value, onChange }: FilterTabsProps) {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto rounded-lg bg-muted/60 p-1">
+    <div className="flex items-center gap-1 overflow-x-auto rounded-lg bg-[var(--bg-tertiary)] p-1">
       {tabs.map((tab) => (
         <button
           key={tab}
           onClick={() => onChange(tab)}
           className={`flex-shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
             value === tab
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           }`}
         >
           {tab}
@@ -94,7 +94,7 @@ export function FilterSelect({ children, className = "", ...props }: FilterSelec
   return (
     <select
       {...props}
-      className={`h-9 rounded-lg border border-input bg-background px-3 pr-8 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23525566%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer ${className}`}
+      className={`h-9 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 pr-8 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23525566%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer ${className}`}
     >
       {children}
     </select>
