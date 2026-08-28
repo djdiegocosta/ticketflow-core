@@ -94,7 +94,7 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-heading-1 text-text-primary mb-6">Dashboard</h1>
+        <h1 className="text-heading-1 text-text-primary mb-6"></h1>
         
         {/* Context Selector */}
         <div className="flex border-b border-border-subtle gap-1 overflow-x-auto pb-px">
