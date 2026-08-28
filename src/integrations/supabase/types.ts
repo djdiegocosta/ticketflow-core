@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -1072,28 +1072,17 @@ export type Database = {
         Args: { _mp_payment_id: string; _sale_id: string }
         Returns: undefined
       }
-      create_courtesy:
-        | {
-            Args: {
-              _batch_id: string
-              _event_id: string
-              _participant_names: string[]
-            }
-            Returns: {
-              sale_id: string
-            }[]
-          }
-        | {
-            Args: {
-              _batch_id: string
-              _customer_id?: string
-              _event_id: string
-              _participant_names: string[]
-            }
-            Returns: {
-              sale_id: string
-            }[]
-          }
+      create_courtesy: {
+        Args: {
+          _batch_id: string
+          _customer_id?: string
+          _event_id: string
+          _participant_names: string[]
+        }
+        Returns: {
+          sale_id: string
+        }[]
+      }
       create_locked_tickets:
         | {
             Args: { _participant_names: Json; _sale_id: string }
