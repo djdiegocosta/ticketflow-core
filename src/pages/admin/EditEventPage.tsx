@@ -243,7 +243,7 @@ export function EditEventPage() {
 
         <button
           onClick={handleExpressTurn}
-          className="inline-flex items-center gap-2 bg-bg-secondary border border-accent text-accent px-4 py-2 rounded-radius-md font-semibold hover:bg-accent-muted transition-colors"
+          className="inline-flex items-center gap-2 bg-bg-secondary border border-accent text-accent px-4 py-2 rounded-md font-semibold hover:bg-accent-muted transition-colors"
         >
           <FastForward className="w-4 h-4" />
           Virada Expressa de Lote
@@ -261,7 +261,7 @@ export function EditEventPage() {
                 toast.error("Erro ao cancelar evento: " + (err.message || "Tente novamente."));
               }
             }}
-            className="inline-flex items-center gap-2 bg-bg-secondary border border-error/40 text-error px-4 py-2 rounded-radius-md font-semibold hover:bg-error/10 transition-colors"
+            className="inline-flex items-center gap-2 bg-bg-secondary border border-error/40 text-error px-4 py-2 rounded-md font-semibold hover:bg-error/10 transition-colors"
           >
             Cancelar Evento
           </button>
@@ -277,7 +277,7 @@ export function EditEventPage() {
                 toast.error("Erro ao excluir evento: " + (err.message || "Verifique se há vendas pagas vinculadas."));
               }
             }}
-            className="inline-flex items-center gap-2 bg-error text-white px-4 py-2 rounded-radius-md font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-error text-white px-4 py-2 rounded-md font-semibold hover:opacity-90 transition-opacity"
           >
             <Trash2 className="w-4 h-4" />
             Excluir
@@ -285,7 +285,7 @@ export function EditEventPage() {
         </div>
       </div>
 
-      <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-radius-lg border border-border-subtle shadow-sm">
+      <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-lg border border-border-subtle shadow-sm">
         {[
           { n: 1, l: "Básico" },
           { n: 2, l: "Modelo" },
@@ -296,7 +296,7 @@ export function EditEventPage() {
         ))}
       </div>
 
-      <div className="bg-bg-secondary border border-border-default rounded-radius-lg p-8 shadow-sm min-h-[400px]">
+      <div className="bg-bg-secondary border border-border-default rounded-lg p-8 shadow-sm min-h-[400px]">
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-heading-2">Informações básicas</h2>
@@ -307,7 +307,7 @@ export function EditEventPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                  className="w-full bg-bg-primary border border-border-default rounded-sm p-2 outline-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -318,7 +318,7 @@ export function EditEventPage() {
                     type="text"
                     value={slug}
                     onChange={(e) => setSlug(slugify(e.target.value))}
-                    className="flex-1 bg-bg-primary border border-border-default rounded-radius-sm p-1 outline-none focus:border-accent"
+                    className="flex-1 bg-bg-primary border border-border-default rounded-sm p-1 outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -328,14 +328,14 @@ export function EditEventPage() {
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                  className="w-full bg-bg-primary border border-border-default rounded-sm p-2 outline-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Imagem de capa</label>
                 <div 
                   className={cn(
-                    "relative border-2 border-dashed border-border-default rounded-radius-md p-8 text-center hover:border-accent transition-all cursor-pointer group overflow-hidden min-h-[160px] flex flex-col items-center justify-center",
+                    "relative border-2 border-dashed border-border-default rounded-md p-8 text-center hover:border-accent transition-all cursor-pointer group overflow-hidden min-h-[160px] flex flex-col items-center justify-center",
                     imageUrl && "border-solid border-accent/20"
                   )}
                   onClick={() => document.getElementById("event-image-upload-edit")?.click()}
@@ -414,7 +414,7 @@ export function EditEventPage() {
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 text-small outline-none focus:border-accent"
+                  className="w-full bg-bg-primary border border-border-default rounded-sm p-2 text-small outline-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2">
@@ -425,7 +425,7 @@ export function EditEventPage() {
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent"
+                    className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -437,7 +437,7 @@ export function EditEventPage() {
                     type="time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full bg-bg-primary border border-border-default rounded-radius-sm p-2 pl-10 outline-none focus:border-accent"
+                    className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -464,7 +464,7 @@ export function EditEventPage() {
               <button
                 onClick={() => setStatus("publicado")}
                 className={cn(
-                  "border-2 rounded-radius-lg p-8 text-left space-y-3 transition-all",
+                  "border-2 rounded-lg p-8 text-left space-y-3 transition-all",
                   status === "publicado"
                     ? "border-accent bg-accent-muted"
                     : "border-border-default hover:border-accent bg-bg-primary",
@@ -484,7 +484,7 @@ export function EditEventPage() {
               <button
                 onClick={() => setStatus("rascunho")}
                 className={cn(
-                  "border-2 rounded-radius-lg p-8 text-left space-y-3 transition-all",
+                  "border-2 rounded-lg p-8 text-left space-y-3 transition-all",
                   status === "rascunho"
                     ? "border-accent bg-accent-muted"
                     : "border-border-default hover:border-accent bg-bg-primary",
@@ -520,7 +520,7 @@ export function EditEventPage() {
             </div>
 
             {batches.length === 0 && !draft && (
-              <div className="text-center py-8 border border-dashed border-border-subtle rounded-radius-md text-text-disabled text-small">
+              <div className="text-center py-8 border border-dashed border-border-subtle rounded-md text-text-disabled text-small">
                 Nenhum lote configurado.
               </div>
             )}
@@ -529,7 +529,7 @@ export function EditEventPage() {
               {batches.map((b) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between p-4 bg-bg-primary border border-border-subtle rounded-radius-md"
+                  className="flex items-center justify-between p-4 bg-bg-primary border border-border-subtle rounded-md"
                 >
                   <div className="min-w-0">
                     <div className="text-body font-bold truncate">{b.name}</div>
@@ -557,7 +557,7 @@ export function EditEventPage() {
             </div>
 
             {draft && (
-              <div className="p-4 bg-bg-primary border border-border-default rounded-radius-md space-y-4">
+              <div className="p-4 bg-bg-primary border border-border-default rounded-md space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-small font-medium text-text-secondary">Nome do lote</label>
@@ -565,7 +565,7 @@ export function EditEventPage() {
                       type="text"
                       value={draft.nome}
                       onChange={(e) => setDraft({ ...draft, nome: e.target.value })}
-                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                      className="w-full bg-bg-secondary border border-border-default rounded-sm p-2 outline-none focus:border-accent"
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -595,7 +595,7 @@ export function EditEventPage() {
                       value={draft.is_courtesy ? "0.00" : draft.preco}
                       onChange={(e) => setDraft({ ...draft, preco: e.target.value })}
                       disabled={draft.is_courtesy}
-                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent disabled:opacity-50"
+                      className="w-full bg-bg-secondary border border-border-default rounded-sm p-2 outline-none focus:border-accent disabled:opacity-50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -606,7 +606,7 @@ export function EditEventPage() {
                       value={draft.quantidade}
                       onChange={(e) => setDraft({ ...draft, quantidade: e.target.value })}
                       placeholder={draft.is_courtesy ? "Deixe em branco para sem limite" : ""}
-                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                      className="w-full bg-bg-secondary border border-border-default rounded-sm p-2 outline-none focus:border-accent"
                     />
                   </div>
                   <div className="space-y-2">
@@ -624,20 +624,20 @@ export function EditEventPage() {
                       type="datetime-local"
                       value={draft.fim}
                       onChange={(e) => setDraft({ ...draft, fim: e.target.value })}
-                      className="w-full bg-bg-secondary border border-border-default rounded-radius-sm p-2 outline-none focus:border-accent"
+                      className="w-full bg-bg-secondary border border-border-default rounded-sm p-2 outline-none focus:border-accent"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setDraft(null)}
-                    className="px-4 py-2 border border-border-default rounded-radius-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
+                    className="px-4 py-2 border border-border-default rounded-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSaveBatch}
-                    className="px-4 py-2 bg-accent text-[#111111] rounded-radius-md font-semibold hover:bg-accent-hover transition-colors"
+                    className="px-4 py-2 bg-accent text-[#111111] rounded-md font-semibold hover:bg-accent-hover transition-colors"
                   >
                     Salvar lote
                   </button>
@@ -651,14 +651,14 @@ export function EditEventPage() {
           <div className="space-y-8">
             <h2 className="text-heading-2">Resumo do evento</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-bg-primary border border-border-subtle rounded-radius-md space-y-2">
+              <div className="p-4 bg-bg-primary border border-border-subtle rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                 <div className="text-body font-bold">{title}</div>
                 <div className="text-small text-text-secondary">
                   {location} • {date && time ? new Date(`${date}T${time}`).toLocaleString("pt-BR") : "—"}
                 </div>
               </div>
-              <div className="p-4 bg-bg-primary border border-border-subtle rounded-radius-md space-y-2">
+              <div className="p-4 bg-bg-primary border border-border-subtle rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Vendas</div>
                 <div className="text-body font-bold">
                   {model === "lotes" ? "Modelo por lotes" : "Preço único"}
@@ -678,14 +678,14 @@ export function EditEventPage() {
           <button
             onClick={() => setStep((s) => Math.max(s - 1, 1))}
             disabled={step === 1}
-            className="px-6 py-2 border border-border-default rounded-radius-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
+            className="px-6 py-2 border border-border-default rounded-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
           >
             Voltar
           </button>
           <button
             onClick={step === 4 ? handleSave : () => setStep((s) => Math.min(s + 1, 4))}
             disabled={saving}
-            className="px-8 py-2 bg-accent text-[#111111] rounded-radius-md font-semibold hover:bg-accent-hover transition-colors shadow-sm"
+            className="px-8 py-2 bg-accent text-[#111111] rounded-md font-semibold hover:bg-accent-hover transition-colors shadow-sm"
           >
             {saving ? "Salvando..." : step === 4 ? "Salvar alterações" : "Continuar"}
           </button>
