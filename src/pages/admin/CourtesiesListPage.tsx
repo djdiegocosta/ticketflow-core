@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Download, Gift, CheckCircle, Loader2, Edit2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DataTable,
   DataTableHeadRow,
@@ -122,42 +124,44 @@ export function CourtesiesListPage() {
         />
       </MiniMetricGrid>
 
-      <FilterBar
-        actions={
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            className="inline-flex h-10 w-full items-center justify-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent md:w-auto"
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-1 items-center gap-2 min-w-0">
+          <FilterSearch
+            value={search}
+            onChange={(v) => {
+              setSearch(v);
+              setCurrentPage(1);
+            }}
+            placeholder="Buscar convidado..."
+          />
+          <select
+            aria-label="Filtrar por evento"
+            className={`${filterFieldClass} shrink-0`}
+            value={eventFilter}
+            onChange={(e) => {
+              setEventFilter(e.target.value);
+              setCurrentPage(1);
+            }}
           >
-            <Download className="h-4 w-4" />
-            Gerar lista PDF
-          </button>
-        }
-      >
-        <select
-          aria-label="Filtrar por evento"
-          className={filterFieldClass}
-          value={eventFilter}
-          onChange={(e) => {
-            setEventFilter(e.target.value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value="todos">Todos os eventos</option>
-          {events.map((e: any) => (
-            <option key={e.id} value={e.title}>{e.title}</option>
-          ))}
-        </select>
-
-        <FilterSearch
-          value={search}
-          onChange={(v) => {
-            setSearch(v);
-            setCurrentPage(1);
-          }}
-          placeholder="Buscar convidado..."
-        />
-      </FilterBar>
+            <option value="todos">Todos os eventos</option>
+            {events.map((e: any) => (
+              <option key={e.id} value={e.title}>{e.title}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Gerar lista PDF</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
 
       <DataTableShell>
         <DataTable className={isMobile ? "min-w-full" : "min-w-[720px]"}>
