@@ -209,7 +209,7 @@ export function ClientsListPage() {
         />
         <div className="flex items-center md:items-end">
           <span className="text-small text-text-secondary">
-            Clique no título da coluna para ordenar
+            Cl
           </span>
         </div>
       </FilterBar>
