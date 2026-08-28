@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useTheme } from "./theme";
 import { useOrganization, useUpdateDesignSettings } from "./settings-queries";
 
-export type AccentColor = "green" | "blue" | "purple" | "red";
+export type AccentColor = "green" | "blue" | "nubank" | "red";
 export type CornerStyle = "straight" | "rounded";
 
 interface ColorSet {
@@ -21,9 +21,9 @@ export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSe
     light: { accent: "#3b82f6", hover: "#2563eb", muted: "#eff6ff", text: "#1d4ed8" },
     dark: { accent: "#60a5fa", hover: "#3b82f6", muted: "#0d203d", text: "#60a5fa" },
   },
-  purple: {
-    light: { accent: "#8b5cf6", hover: "#7c3aed", muted: "#f5f3ff", text: "#6d28d9" },
-    dark: { accent: "#a78bfa", hover: "#8b5cf6", muted: "#2e1065", text: "#a78bfa" },
+  nubank: {
+    light: { accent: "hsl(270, 60%, 50%)", hover: "hsl(270, 60%, 45%)", muted: "hsl(270, 30%, 92%)", text: "hsl(270, 60%, 40%)" },
+    dark: { accent: "hsl(270, 70%, 60%)", hover: "hsl(270, 70%, 55%)", muted: "hsl(270, 40%, 18%)", text: "hsl(270, 20%, 98%)" },
   },
   red: {
     light: { accent: "#ef4444", hover: "#dc2626", muted: "#fef2f2", text: "#b91c1c" },
@@ -33,7 +33,7 @@ export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSe
 
 export const CORNER_STYLES = {
   straight: { sm: "0px", md: "0px", lg: "0px", xl: "0px" },
-  rounded: { sm: "6px", md: "10px", lg: "14px", xl: "20px" },
+  rounded: { sm: "0.25rem", md: "0.5rem", lg: "0.75rem", xl: "1rem" },
 };
 
 const STORAGE_COLOR_KEY = "ticketflow-accent";

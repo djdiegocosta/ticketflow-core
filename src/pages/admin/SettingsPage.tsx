@@ -302,10 +302,10 @@ export function SettingsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {[
-                      { id: "green", label: "Verde neon", color: "#00e676" },
-                      { id: "blue", label: "Azul neon", color: "#00B0FF" },
-                      { id: "purple", label: "Roxo neon", color: "#D500F9" },
-                      { id: "red", label: "Vermelho neon", color: "#FF1744" },
+                      { id: "green", label: "Verde", color: "#008a50" },
+                      { id: "blue", label: "Azul", color: "#3b82f6" },
+                      { id: "nubank", label: "Nubank", color: "hsl(270, 60%, 50%)" },
+                      { id: "red", label: "Vermelho", color: "#ef4444" },
                     ].map((opt) => {
                       const isSelected = design.accent === opt.id;
                       return (
@@ -345,7 +345,7 @@ export function SettingsPage() {
                   <div className="grid grid-cols-2 gap-4 max-w-sm">
                     {[
                       { id: "straight", label: "Retos", radius: "0px" },
-                      { id: "rounded", label: "Arredondados", radius: "10px" },
+                      { id: "rounded", label: "Arredondados", radius: "0.5rem" },
                     ].map((opt) => {
                       const isSelected = design.radius === opt.id;
                       return (
