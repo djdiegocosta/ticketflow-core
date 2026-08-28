@@ -62,17 +62,16 @@ export function PrimaryActionLink({
   );
 }
 
-/** Cabeçalho de listagem: título à esquerda, ação principal à direita. */
+/** Cabeçalho de listagem: ação principal à direita. Título movido para a TopBar. */
 export function ListPageHeader({
-  title,
+  title: _title,
   action,
 }: {
-  title: string;
+  title?: string;
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <h1 className="text-heading-1 text-text-primary">{title}</h1>
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
       {action}
     </div>
   );
