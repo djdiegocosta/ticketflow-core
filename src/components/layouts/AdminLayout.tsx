@@ -111,13 +111,18 @@ export function AdminLayout() {
   }, [pathname, isMobile]);
 
   const getPageTitle = () => {
-  for (const [path, title] of Object.entries(pageTitles)) {
-    if (location.pathname === path || location.pathname.startsWith(path + "/")) {
-      return title;
-    }
-  }
-  return "";
-};
+    const current = location.pathname;
+
+    // Primeiro: match exato
+    if (pageTitles[current]) return pageTitles[current];
+
+    // Segundo: match de prefixo — mais específico primeiro (ordem decrescente de tamanho)
+    const matches = Object.entries(pageTitles)
+      .filter(([path]) => path !== current && current.startsWith(path + "/"))
+      .sort(([a], [b]) => b.length - a.length);
+
+    return matches[0]?.[1] ?? "";
+  };
 
 const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
