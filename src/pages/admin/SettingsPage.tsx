@@ -139,7 +139,7 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-heading-1 text-[var(--text-primary)]">Configurações</h1>
+      <h1 className="text-heading-1 text-[var(--text-primary)]">{"\n"}</h1>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Menu lateral secundário */}
