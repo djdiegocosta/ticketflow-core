@@ -167,9 +167,9 @@ export default function VitrinePage() {
             checked={row.is_active} 
             onCheckedChange={() => handleToggleActive(row)}
           />
-          <span className={row.is_active ? "text-green-600 font-medium" : "text-muted-foreground"}>
-            {row.is_active ? "Ativo" : "Inativo"}
-          </span>
+          <span className={row.is_active ? "text-[var(--accent-text)] font-medium" : "text-muted-foreground"}>
+                      {row.is_active ? "Ativo" : "Inativo"}
+                    </span>
         </div>
       )
     },
@@ -253,7 +253,7 @@ export default function VitrinePage() {
                       checked={row.is_active} 
                       onCheckedChange={() => handleToggleActive(row)}
                     />
-                    <span className={row.is_active ? "text-green-600 font-medium" : "text-muted-foreground"}>
+                    <span className={row.is_active ? "text-[var(--accent-text)] font-medium" : "text-muted-foreground"}>
                       {row.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
