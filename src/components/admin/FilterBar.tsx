@@ -13,6 +13,12 @@ import {
   FileText as FileTextIcon,
 } from "lucide-react";
 
+// Estilo consistente para selects e inputs de filtro no admin
+import { cn } from "@/lib/utils";
+
+export const filterFieldClass =
+  "border border-border-default bg-bg-secondary px-3 py-2 text-small text-text-primary outline-none transition-colors focus:border-accent";
+
 export interface FilterBarProps {
   children?: React.ReactNode;
   actions?: React.ReactNode;
