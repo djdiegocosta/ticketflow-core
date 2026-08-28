@@ -1,44 +1,31 @@
-import * as React from "react";
-import { Search, Download } from "lucide-react";
+import { Download } from "lucide-react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import {
+  Search,
+  FileText as FileTextIcon,
+} from "lucide-react";
 
-/**
- * Barra de filtros padrão do admin (seção 11 do Design System):
- * abas/dropdowns/busca à esquerda, ações à direita, mesma linha e mesmo gap.
- */
-export const filterFieldClass =
-  "h-10 w-full border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent rounded-[var(--radius-sm)] flex-shrink-0";
-
-export const filterFieldCompactClass =
-  "h-10 border border-border-default bg-bg-secondary px-3 text-body text-text-primary outline-none transition-colors focus:border-accent rounded-[var(--radius-sm)] flex-shrink-0";
-
-export function FilterBar({
-  children,
-  actions,
-  className,
-}: {
-  children: React.ReactNode;
+export interface FilterBarProps {
+  children?: React.ReactNode;
   actions?: React.ReactNode;
-  className?: string;
-}) {
+}
+
+export function FilterBar({ children, actions }: FilterBarProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 md:flex-row md:items-center md:justify-between",
-        className,
-      )}
-    >
-      <div className="grid w-full grid-cols-1 gap-3 min-[480px]:grid-cols-[1fr_auto_auto] md:flex md:w-auto md:flex-wrap md:items-center">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-1 items-center gap-2 min-w-0">
         {children}
       </div>
       {actions && (
-        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+        <div className="flex items-center gap-2 shrink-0">
           {actions}
         </div>
       )}
@@ -46,117 +33,92 @@ export function FilterBar({
   );
 }
 
-export function FilterSearch({
-  value,
-  onChange,
-  placeholder,
-  label,
-  className,
-}: {
+export interface FilterSearchProps {
   value: string;
   onChange: (value: string) => void;
-  placeholder: string;
-  label?: string;
-  className?: string;
-}) {
+  placeholder?: string;
+}
+
+export function FilterSearch({ value, onChange, placeholder = "Buscar..." }: FilterSearchProps) {
   return (
-    <div className={cn("relative w-full md:min-w-[260px] md:flex-1 md:max-w-[400px]", className)}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
-      <input
-        aria-label={label ?? placeholder}
-        placeholder={placeholder}
+    <div className="relative flex flex-1 min-w-0">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <Input
+        type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "h-10 w-full border-2 border-accent bg-bg-secondary pl-9 pr-3 text-body text-text-primary outline-none transition-colors placeholder:text-text-disabled focus:border-accent focus:ring-2 focus:ring-accent/20",
-        )}
+        placeholder={placeholder}
+        className="pl-9 rounded-full w-full min-w-0"
       />
     </div>
   );
 }
 
-export function FilterSelect({
-  value,
-  onChange,
-  children,
-  className,
-  "aria-label": ariaLabel,
-}: {
+export interface FilterTabsProps {
+  tabs: readonly string[];
   value: string;
-  onChange: (value: string) => void;
+  onChange: (tab: string) => void;
+}
+
+export function FilterTabs({ tabs, value, onChange }: FilterTabsProps) {
+  return (
+    <div className="flex items-center gap-1 overflow-x-auto rounded-lg bg-muted/60 p-1">
+      {tabs.map((tab) => (
+        <button
+          key={tab}
+          onClick={() => onChange(tab)}
+          className={`flex-shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            value === tab
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export interface FilterSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   children: React.ReactNode;
-  className?: string;
-  "aria-label": string;
-}) {
+}
+
+export function FilterSelect({ children, className = "", ...props }: FilterSelectProps) {
   return (
     <select
-      aria-label={ariaLabel}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cn(filterFieldCompactClass, "w-auto min-w-[120px] cursor-pointer", className)}
+      {...props}
+      className={`h-9 rounded-lg border border-input bg-background px-3 pr-8 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23525566%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_0.5rem_center] cursor-pointer ${className}`}
     >
       {children}
     </select>
   );
 }
 
-export function FilterExportButton({
-  onExportCsv,
-  onGeneratePdf,
-}: {
+export interface FilterExportButtonProps {
   onExportCsv: () => void;
   onGeneratePdf: () => void;
-}) {
+}
+
+export function FilterExportButton({ onExportCsv, onGeneratePdf }: FilterExportButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          title="Exportar vendas"
-          aria-label="Exportar vendas"
-          className="inline-flex h-10 w-10 items-center justify-center border border-border-default bg-bg-tertiary text-text-secondary transition-colors hover:border-accent hover:text-accent rounded-[var(--radius-sm)]"
-        >
+        <Button variant="outline" size="sm" className="gap-2 shrink-0">
           <Download className="h-4 w-4" />
-        </button>
+          <span>Exportar</span>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[160px]">
-        <DropdownMenuItem onClick={onExportCsv} className="cursor-pointer">
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onExportCsv}>
+          <FileTextIcon className="mr-2 h-4 w-4" />
           Exportar CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onGeneratePdf} className="cursor-pointer">
+        <DropdownMenuItem onClick={onGeneratePdf}>
+          <Download className="mr-2 h-4 w-4" />
           Gerar lista PDF
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-export function FilterTabs({
-  tabs,
-  value,
-  onChange,
-}: {
-  tabs: string[];
-  value: string;
-  onChange: (tab: string) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1 border-b border-border-subtle">
-      {tabs.map((tab) => (
-        <button
-          key={tab}
-          type="button"
-          onClick={() => onChange(tab)}
-          className={cn(
-            "border-b-2 px-4 py-2 text-body transition-colors",
-            value === tab
-              ? "border-accent bg-accent-muted text-accent-text rounded-t-[var(--radius-sm)] dark:border-b-2"
-              : "border-transparent text-text-secondary hover:bg-bg-tertiary rounded-t-[var(--radius-sm)]",
-          )}
-        >
-          {tab}
-        </button>
-      ))}
-    </div>
   );
 }
