@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, DollarSign, Download, FileText, Receipt, Ticket } from "lucide-react";
+import { Clock, DollarSign, Receipt, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { useSales, formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
@@ -16,7 +16,13 @@ import {
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
-import { FilterBar, FilterSearch, FilterTabs, filterFieldClass } from "@/components/admin/FilterBar";
+import {
+  FilterBar,
+  FilterSearch,
+  FilterTabs,
+  FilterSelect,
+  FilterExportButton,
+} from "@/components/admin/FilterBar";
 import { useAuth } from "@/lib/auth-context";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
@@ -33,8 +39,8 @@ function StatusBadge({ sale }: { sale: any }) {
   return (
     <StatusPill
       tone={
-        sale.status === "pago" ? "accent" : 
-        sale.status === "pendente" ? "warning" : 
+        sale.status === "pago" ? "accent" :
+        sale.status === "pendente" ? "warning" :
         sale.status === "expirado" ? "neutral" : "error"
       }
     >
@@ -56,8 +62,8 @@ export function SalesListPage() {
   const [originTab, setOriginTab] = useState<string>("Todas");
   const [eventFilter, setEventFilter] = useState("Todos");
   const { data: stats } = useSalesStats(
-    eventFilter === "Todos" 
-      ? "overview" 
+    eventFilter === "Todos"
+      ? "overview"
       : sales.find(s => (s.events as any)?.title === eventFilter)?.event_id
   );
 
@@ -100,8 +106,6 @@ export function SalesListPage() {
     return { revenue, ticketsSold, avgTicket, pendingCount: pending.length, pendingRate };
   }, [filtered]);
 
-
-
   const exportCsv = () => {
     const header = [
       "Comprador",
@@ -137,8 +141,6 @@ export function SalesListPage() {
 
   const generatePdf = () => {
     const scope = filtered.filter((s) => s.status !== "cancelado");
-    // Em um sistema real, precisaríamos buscar os nomes dos participantes de cada ingresso da venda
-    // Por enquanto, usaremos o nome do comprador se não tivermos os participantes
     const names = scope.map((s) => s.buyer_name);
     if (names.length === 0) {
       toast.error("Nenhum participante para gerar a lista");
@@ -203,34 +205,25 @@ export function SalesListPage() {
         }}
       />
 
-      {/* Filtros */}
+      {/* Barra de filtros */}
       <FilterBar
         actions={
           !isColab && (
-            <>
-              <button
-                type="button"
-                onClick={exportCsv}
-                className="inline-flex h-10 w-full items-center justify-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent rounded-[var(--radius-sm)] md:w-auto"
-              >
-                <Download className="h-4 w-4" />
-                Exportar CSV
-              </button>
-              <button
-                type="button"
-                onClick={generatePdf}
-                className="inline-flex h-10 w-full items-center justify-center gap-2 border border-border-default bg-bg-tertiary px-4 text-body text-text-primary transition-colors hover:border-accent rounded-[var(--radius-sm)] md:w-auto"
-              >
-                <FileText className="h-4 w-4" />
-                Gerar lista PDF
-              </button>
-            </>
+            <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} />
           )
         }
       >
-        <select
+        <FilterSearch
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Buscar vendas..."
+        />
+
+        <FilterSelect
           aria-label="Filtrar por evento"
-          className={filterFieldClass}
           value={eventFilter}
           onChange={(e) => {
             setEventFilter(e.target.value);
@@ -243,11 +236,10 @@ export function SalesListPage() {
               {name}
             </option>
           ))}
-        </select>
+        </FilterSelect>
 
-        <select
+        <FilterSelect
           aria-label="Filtrar por status"
-          className={filterFieldClass}
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -259,16 +251,7 @@ export function SalesListPage() {
               {st === "Todos" ? "Todos os status" : st}
             </option>
           ))}
-        </select>
-
-        <FilterSearch
-          value={search}
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-          placeholder="Buscar por nome ou WhatsApp"
-        />
+        </FilterSelect>
       </FilterBar>
 
       {/* Tabela */}
