@@ -391,24 +391,32 @@ export function useApplyCustomerDesign() {
  * Hook para buscar o banner ativo da organização do cliente
  */
 export function useActiveBanner() {
-  const { organizationId } = useAuth();
+  const { organizationId: orgIdFromContext } = useAuth();
   
   return useQuery({
-    queryKey: ["active-banner", organizationId],
+    queryKey: ["active-banner", orgIdFromContext],
     queryFn: async () => {
-      if (!organizationId) return null;
+      let orgId = orgIdFromContext;
+
+      // Se organizationId não está no contexto, buscar diretamente
+      if (!orgId) {
+        const { data } = await supabase.rpc("get_single_organization_id");
+        orgId = data as string | null;
+      }
+
+      if (!orgId) return null;
       
       const { data, error } = await supabase
         .from("client_banners")
         .select("*")
-        .eq("organization_id", organizationId)
+        .eq("organization_id", orgId)
         .eq("is_active", true)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!organizationId
+    enabled: true
   });
 }
 
