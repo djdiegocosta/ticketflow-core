@@ -1,29 +1,20 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
-import { requireSession } from "@/lib/auth-guard";
 
+// Rota pai /admin — montagem direta do layout.
+// Validação de sessão e papel fica por conta do AuthContext:
+// se não estiver logado, onAuthStateChange cuida do redirect.
+// Este beforeLoad só trata redirecionamentos internos ao papel.
 export const Route = createFileRoute("/admin")({
   ssr: false,
-  beforeLoad: async () => {
-    const ctx = await requireSession();
-
-    if (ctx.role === "operador_checkin") {
+  beforeLoad: async ({ context }) => {
+    const role = (context as any).auth?.role;
+    if (role === "operador_checkin") {
       throw redirect({ to: "/checkin" });
     }
-
-    if (!ctx.organizationId) {
-      throw redirect({ to: "/primeiro-acesso" });
-    }
-
-    if (ctx.organizationStatus === "pending" || ctx.organizationStatus === "suspended") {
-      throw redirect({ to: "/organizacao-pendente" });
-    }
-
-    if (ctx.role !== "admin" && ctx.role !== "colaborador") {
+    if (role === "cliente") {
       throw redirect({ to: "/cliente" });
     }
-
-    return { auth: ctx };
   },
   component: AdminLayout,
 });
