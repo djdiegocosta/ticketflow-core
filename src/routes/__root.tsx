@@ -60,20 +60,28 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
   const router = useRouter();
+
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+
+    // Log completo para diagnóstico
+    console.error("[TicketFlow Error]", {
+      message: error.message,
+      stack: error.stack,
+      pathname: window.location.pathname,
+      routerState: router.state,
+    });
+  }, [error, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Esta página não carregou
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Ocorreu um erro interno. Tente atualizar ou voltar ao início.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -83,13 +91,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Tentar novamente
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Voltar ao início
           </a>
         </div>
       </div>
@@ -152,17 +160,30 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // Limpeza única de Service Workers e caches antigos no carregamento
   useEffect(() => {
-    if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((registration) => {
-        console.log('SW registered: ', registration);
-      }).catch((registrationError) => {
-        console.error('SW registration failed: ', registrationError);
-      });
-    }
+    (async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) {
+            await reg.unregister();
+          }
+        }
+      } catch (_) {
+        // Silencioso — SW pode não estar disponível em alguns contextos
+      }
+
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+      } catch (_) {
+        // Silencioso — Cache Storage pode não estar disponível
+      }
+    })();
   }, []);
-
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -179,4 +200,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
