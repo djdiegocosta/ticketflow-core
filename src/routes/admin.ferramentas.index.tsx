@@ -1,15 +1,5 @@
-import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { Calculator, Target, Gift, Wrench, CheckSquare, ImageIcon, History } from 'lucide-react'
-
-export const Route = createFileRoute('/admin/ferramentas/')({
-  beforeLoad: ({ context }) => {
-    const ctx = (context as any).auth;
-    if (ctx?.role === 'colaborador') {
-      throw redirect({ to: '/admin/vendas' });
-    }
-  },
-  component: ToolsHubPage,
-})
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Calculator, Target, Gift, Wrench, CheckSquare, ImageIcon, History, Terminal } from 'lucide-react'
 
 const tools = [
   {
@@ -30,7 +20,7 @@ const tools = [
     icon: Calculator,
     href: "/admin/simulador",
   },
-      {
+  {
     name: "Remarketing",
     description: "Recupere compradores que quase finalizaram uma compra",
     icon: Target,
@@ -41,7 +31,13 @@ const tools = [
     description: "Organize as tarefas do dia do evento para não esquecer nada",
     icon: CheckSquare,
     href: "/admin/checklist",
-  }
+  },
+  {
+    name: "Log de Diagnóstico",
+    description: "Visualize erros capturados e traduza para português.",
+    icon: Terminal,
+    href: "/admin/ferramentas/diagnostic",
+  },
 ]
 
 function ToolsHubPage() {
@@ -73,3 +69,7 @@ function ToolsHubPage() {
     </div>
   )
 }
+
+export const Route = createFileRoute('/admin/ferramentas/')({
+  component: ToolsHubPage,
+})
