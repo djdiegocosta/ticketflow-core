@@ -23,7 +23,7 @@ export interface Sale {
   tickets?: { ticket_code: string; participant_name: string; checked_in_at: string | null }[];
 }
 
-export async function fetchSales(): Promise<Sale[]> {
+export async function fetchSales(organizationId: string): Promise<Sale[]> {
   const { data, error } = await supabase
     .from("sales")
     .select(`
@@ -43,6 +43,7 @@ export async function fetchSales(): Promise<Sale[]> {
       events (title),
       ticket_batches (name)
     `)
+    .eq("organization_id", organizationId)
     .eq("is_courtesy", false)
     .order("created_at", { ascending: false });
 
@@ -53,7 +54,12 @@ export async function fetchSales(): Promise<Sale[]> {
 export function useSales() {
   return useQuery<Sale[]>({
     queryKey: ["sales"],
-    queryFn: fetchSales,
+    queryFn: async () => {
+      const { data: orgData } = await supabase.rpc("get_single_organization_id");
+      const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
+      if (!orgId) throw new Error("Organização não encontrada");
+      return fetchSales(orgId as string);
+    },
   });
 }
 
@@ -143,12 +149,17 @@ export function useSalesStats(eventId?: string) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
+      // Buscar organizationId primeiro
+      const { data: orgData } = await supabase.rpc("get_single_organization_id");
+      const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
+      if (!orgId) throw new Error("Organização não encontrada");
+
       // 1. Buscar estatísticas reais da VIEW para Ingressos e Cortesias
-      let statsQuery = supabase.from("event_ticket_stats").select("*");
+      let statsQuery = supabase.from("event_ticket_stats").select("*").eq("organization_id", orgId);
       if (eventId && eventId !== "overview") {
         statsQuery = statsQuery.eq("event_id", eventId);
       }
-      
+
       const { data: viewData, error: viewError } = await statsQuery;
       if (viewError) throw viewError;
 
@@ -160,9 +171,10 @@ export function useSalesStats(eventId?: string) {
           total_amount,
           status,
           is_courtesy,
-          event_id
+          event_id,
+          organization_id
         )
-      `);
+      `).eq("sales.organization_id", orgId);
 
       if (eventId && eventId !== "overview") {
         ticketsQuery = ticketsQuery.eq("sales.event_id", eventId);
