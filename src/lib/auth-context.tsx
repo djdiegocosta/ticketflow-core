@@ -77,8 +77,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true;
+  let loadContextLock = false;
 
-    const initializeAuth = async () => {
+  const guardedLoadContext = async (currentUser: User | null) => {
+    if (loadContextLock) return;
+    loadContextLock = true;
+    try {
+      await loadContext(currentUser);
+    } finally {
+      loadContextLock = false;
+    }
+  };
+
+  const initializeAuth = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!active) return;
@@ -87,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(currentSession);
         
         if (currentSession?.user) {
-          await loadContext(currentSession.user);
+          await guardedLoadContext(currentSession.user);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
@@ -103,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         setSession(newSession);
-        await loadContext(newSession?.user ?? null);
+        await guardedLoadContext(newSession?.user ?? null);
       } else if (event === 'SIGNED_OUT') {
         setSession(null);
         setUserRole(null);
@@ -126,9 +137,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       return { error: error.message };
     }
-    setSession(data.session);
-    await loadContext(data.user);
-
     return { error: null };
   };
 
