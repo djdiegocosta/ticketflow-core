@@ -110,6 +110,29 @@ export function useCustomerDetail(id: string) {
   });
 }
 
+export function useCreateCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { full_name: string; email: string; whatsapp: string; cidade: string }) => {
+      const { data, error } = await supabase.rpc("signup_customer", {
+        _full_name: vars.full_name,
+        _whatsapp: vars.whatsapp,
+        _email: vars.email || "",
+        _cidade: vars.cidade || "",
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      toast.success("Cliente criado com sucesso");
+    },
+    onError: (error) => {
+      toast.error("Erro ao criar cliente: " + error.message);
+    },
+  });
+}
+
 export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   return useMutation({

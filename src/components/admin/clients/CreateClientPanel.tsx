@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { toast } from "sonner";
-import { useUpdateCustomer } from "@/lib/customers-queries";
+import { useCreateCustomer } from "@/lib/customers-queries";
 import {
   PanelCancelButton,
   PanelPrimaryButton,
@@ -31,8 +31,8 @@ export function CreateClientPanel({
   const [birthDate, setBirthDate] = useState("");
   const [instagram, setInstagram] = useState("");
   const [errors, setErrors] = useState<Errors>({});
-  
-  const updateMutation = useUpdateCustomer();
+
+  const createMutation = useCreateCustomer();
 
   const handleClose = () => {
     const hasData = name || whatsapp || email || city || birthDate || instagram;
@@ -78,23 +78,17 @@ export function CreateClientPanel({
   const handleSubmit = () => {
     if (!validate()) return;
 
-    // Criar um novo cliente usa a mesma RPC de update, 
-    // mas o backend lida com upsert se o ID for vazio ou novo.
-    // Como a RPC update_customer exige _customer_id, passamos uma string vazia para novo.
-    // NOTA: Se a RPC exigir um UUID, precisamos de outra RPC create_customer.
-    // Assumindo que update_customer faz upsert ou lidamos com o erro.
-    updateMutation.mutate({
-      id: "", 
+    createMutation.mutate({
       full_name: formatName(name),
       whatsapp: onlyDigits(whatsapp),
       email: email || "",
-      birth_date: birthDate || "",
+      cidade: city || "",
     }, {
       onSuccess: () => {
         onSave();
         reset();
         onClose();
-      }
+      },
     });
   };
 
@@ -106,85 +100,85 @@ export function CreateClientPanel({
       footer={
         <>
           <PanelCancelButton onClick={handleClose} />
-          <PanelPrimaryButton 
+          <PanelPrimaryButton
             onClick={handleSubmit}
-            disabled={updateMutation.isPending}
+            disabled={createMutation.isPending}
           >
-            {updateMutation.isPending ? "Salvando..." : "Salvar cliente"}
+            {createMutation.isPending ? "Salvando..." : "Salvar cliente"}
           </PanelPrimaryButton>
         </>
       }
     >
       <div className="space-y-5">
-          <div>
-            <label className={labelClass}>Nome completo</label>
-            <input
-              className={inputClass}
-              placeholder="Nome Sobrenome"
-              value={name}
-              onInput={(e) => {
-                const target = e.target as HTMLInputElement;
-                target.value = formatName(target.value);
-                setName(target.value);
-              }}
-            />
-            {errors["name"] && <p className={errorClass}>{errors["name"]}</p>}
-          </div>
+        <div>
+          <label className={labelClass}>Nome completo</label>
+          <input
+            className={inputClass}
+            placeholder="Nome Sobrenome"
+            value={name}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              target.value = formatName(target.value);
+              setName(target.value);
+            }}
+          />
+          {errors["name"] && <p className={errorClass}>{errors["name"]}</p>}
+        </div>
 
-          <div>
-            <label className={labelClass}>WhatsApp</label>
-            <input
-              className={inputClass}
-              placeholder="(00) 00000-0000"
-              value={whatsapp}
-              onInput={(e) => {
-                const target = e.target as HTMLInputElement;
-                target.value = maskWhatsApp(target.value);
-                setWhatsapp(target.value);
-              }}
-            />
-            {errors["whatsapp"] && <p className={errorClass}>{errors["whatsapp"]}</p>}
-          </div>
+        <div>
+          <label className={labelClass}>WhatsApp</label>
+          <input
+            className={inputClass}
+            placeholder="(00) 00000-0000"
+            value={whatsapp}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              target.value = maskWhatsApp(target.value);
+              setWhatsapp(target.value);
+            }}
+          />
+          {errors["whatsapp"] && <p className={errorClass}>{errors["whatsapp"]}</p>}
+        </div>
 
-          <div>
-            <label className={labelClass}>E-mail (opcional)</label>
-            <input
-              type="email"
-              className={inputClass}
-              placeholder="exemplo@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+        <div>
+          <label className={labelClass}>E-mail (opcional)</label>
+          <input
+            type="email"
+            className={inputClass}
+            placeholder="exemplo@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
 
-          <div>
-            <label className={labelClass}>Cidade (opcional)</label>
-            <CityAutocomplete
-              value={city}
-              onChange={setCity}
-              uf={getUFByDDD(onlyDigits(whatsapp).slice(0, 2))}
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Cidade (opcional)</label>
+          <CityAutocomplete
+            value={city}
+            onChange={setCity}
+            uf={getUFByDDD(onlyDigits(whatsapp).slice(0, 2))}
+          />
+        </div>
 
-          <div>
-            <label className={labelClass}>Data de nascimento (opcional)</label>
-            <input
-              type="date"
-              className={inputClass}
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Data de nascimento (opcional)</label>
+          <input
+            type="date"
+            className={inputClass}
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+          />
+        </div>
 
-          <div>
-            <label className={labelClass}>Instagram (opcional)</label>
-            <input
-              className={inputClass}
-              placeholder="@usuario"
-              value={instagram}
-              onChange={(e) => setInstagram(e.target.value)}
-            />
-          </div>
+        <div>
+          <label className={labelClass}>Instagram (opcional)</label>
+          <input
+            className={inputClass}
+            placeholder="@usuario"
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+          />
+        </div>
       </div>
     </SidePanel>
   );
