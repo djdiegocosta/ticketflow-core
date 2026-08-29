@@ -19,19 +19,39 @@ import { ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+        <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[var(--bg-tertiary)]">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent-default)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
+        </div>
+        <h1 className="text-6xl font-bold text-[var(--text-primary)]">404</h1>
+        <h2 className="mt-3 text-xl font-semibold text-[var(--text-primary)]">
+          Página não encontrada
+        </h2>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          A página que você está procurando não existe ou foi movida.
         </p>
-        <div className="mt-6">
+        <div className="mt-8">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md px-6 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent-default)' }}
           >
-            Go home
+            Voltar ao início
           </Link>
         </div>
       </div>
