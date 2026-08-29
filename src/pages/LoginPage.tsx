@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { WelcomeSplash } from "@/components/WelcomeSplash";
 import {
   Form,
   FormControl,
@@ -28,11 +27,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, userRole, userName, isSplashComplete, setSplashComplete, isLoading } = useAuth();
+  const { login, isAuthenticated, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isSplashComplete) {
+    if (!isLoading && isAuthenticated) {
       if (userRole === 'admin' || userRole === 'colaborador') {
         navigate({ to: '/admin', replace: true });
       } else if (userRole === 'cliente') {
@@ -41,7 +40,7 @@ export default function LoginPage() {
         navigate({ to: '/checkin', replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, userRole, isSplashComplete, navigate]);
+  }, [isLoading, isAuthenticated, userRole, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -68,12 +67,6 @@ export default function LoginPage() {
 
   return (
     <>
-      {isAuthenticated && !isSplashComplete && (
-        <WelcomeSplash 
-          userName={userName} 
-          onComplete={() => setSplashComplete(true)} 
-        />
-      )}
       <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
         {/* Background decorativo */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--bg-secondary)] via-[var(--bg-primary)] to-[var(--bg-secondary)]" />

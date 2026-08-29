@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [organizationStatus, setOrganizationStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSplashComplete, setIsSplashComplete] = useState<boolean>(true); // Por padrão, splash já completo para evitar bloqueio visual se não necessário
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -129,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setSession(data.session);
     await loadContext(data.user);
-    setIsSplashComplete(false);
+
     return { error: null };
   };
 
@@ -161,8 +160,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userName,
         organizationId,
         organizationStatus,
-        isSplashComplete,
-        setSplashComplete: setIsSplashComplete,
+        isSplashComplete: true,
+        setSplashComplete: () => {},
         login,
         logout,
         refreshProfile,
