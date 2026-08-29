@@ -8,13 +8,8 @@ import {
   PanelPrimaryButton,
   SidePanel,
 } from "@/components/admin/SidePanel";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectContent, SelectItem } from "@/components/ui/select";
+import { FilterSelect } from "@/components/admin/FilterBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatName, isFullName } from "@/lib/form-format";
 import { toast } from "sonner";
@@ -224,16 +219,15 @@ export function CreateCourtesyPanel({
               <label className="text-small font-medium text-[var(--text-secondary)]">
                 Evento
               </label>
-              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione o evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {events.map((e: any) => (
-                    <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FilterSelect
+                value={selectedEvent}
+                onChange={setSelectedEvent}
+                className="w-full"
+              >
+                {events.map((e: any) => (
+                  <option key={e.id} value={e.id}>{e.title}</option>
+                ))}
+              </FilterSelect>
             </div>
 
             {selectedEvent && (
@@ -246,16 +240,15 @@ export function CreateCourtesyPanel({
                     Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia na edição do evento primeiro.
                   </p>
                 ) : (
-                  <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o lote" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {batches.map((b: any) => (
-                        <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FilterSelect
+                    value={selectedBatch}
+                    onChange={setSelectedBatch}
+                    className="w-full"
+                  >
+                    {batches.map((b: any) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </FilterSelect>
                 )}
               </div>
             )}
