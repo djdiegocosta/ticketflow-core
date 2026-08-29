@@ -48,11 +48,6 @@ import { Route as ClientePontosRoute } from './routes/cliente.pontos';
 import { Route as CheckinIndexRoute } from './routes/checkin.index';
 import { Route as CheckinHistoricoRoute } from './routes/checkin.historico';
 
-const AdminFerramentasIndexRouteWithChildren = AdminFerramentasIndexRoute.addChildren([
-  AdminFerramentasVitrineRoute,
-  AdminFerramentasDiagnosticRoute,
-]);
-
 const AdminFerramentasRouteWithChildren = AdminRoute.addChildren([
   AdminIndexRoute,
   AdminCheckinRoute,
@@ -66,7 +61,9 @@ const AdminFerramentasRouteWithChildren = AdminRoute.addChildren([
   AdminEventosIndexRoute,
   AdminEventosNovoRoute,
   AdminEventosIdRoute,
-  AdminFerramentasIndexRouteWithChildren,
+  AdminFerramentasIndexRoute,
+  AdminFerramentasVitrineRoute,
+  AdminFerramentasDiagnosticRoute,
   AdminRelatoriosRoute,
   AdminSimuladorRoute,
   AdminUsuariosRoute,
@@ -104,7 +101,6 @@ const rootRouteWithChildren = rootRoute.addChildren([
   ESlugRouteWithChildren,
   OrganizacaoPendenteRoute,
   PrimeiroAcessoRoute,
-  AdminFerramentasRouteWithChildren,
   SuperadminRouteWithChildren,
   ClienteRouteWithChildren,
   CheckinIndexRoute,

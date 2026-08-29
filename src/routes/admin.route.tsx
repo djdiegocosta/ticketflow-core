@@ -28,18 +28,11 @@ function AdminRouteGuard({ children }: { children: React.ReactNode }) {
 export const Route = createFileRoute("/admin")({
   ssr: false,
   component: function AdminRoute() {
-    const matchRoute = useMatchRoute();
-    const isThisRoute = matchRoute({ to: "/admin" });
-
-    // Apenas o segmento /admin exato monta o layout completo.
-    // Sub-rotas (filhas) são renderizadas dentro do Outlet do AdminLayout.
-    if (!isThisRoute) {
-      return <Outlet />;
-    }
-
     return (
       <AdminRouteGuard>
-        <AdminLayout />
+        <AdminLayout>
+          <Outlet />
+        </AdminLayout>
       </AdminRouteGuard>
     );
   },
