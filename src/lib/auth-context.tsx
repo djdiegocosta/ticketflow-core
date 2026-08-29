@@ -43,22 +43,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserName(null);
         setOrganizationId(null);
         setOrganizationStatus(null);
+        setSession(null);
         setLoading(false);
         return;
       }
 
       const userId = currentSession.user.id;
 
+      // Busca papel do usuário em user_roles (tabela de permissão)
       const { data: roleData } = await supabase
         .from("user_roles")
-        .select("role, organization_id, organizations(status)")
+        .select("role")
         .eq("user_id", userId)
         .maybeSingle();
 
       const role: AppRole = roleData?.role ?? "cliente";
-      const orgId: string | null = roleData?.organization_id ?? null;
-      const orgStatus: string | null =
-        (roleData?.organizations as any)?.status ?? null;
+
+      // ORGANIZAÇÃO ÚNICA: busca sempre pela mesma org, via RPC
+      // Não usa mais organization_id de user_roles — funciona para todos os papéis
+      const { data: orgData } = await supabase.rpc("get_single_organization_id");
+      const orgId: string | null = (orgData as string) || null;
+
+      // Busca status da organização
+      let orgStatus: string | null = null;
+      if (orgId) {
+        const { data: orgRow } = await supabase
+          .from("organizations")
+          .select("status")
+          .eq("id", orgId)
+          .maybeSingle();
+        orgStatus = (orgRow as any)?.status ?? null;
+      }
 
       const profile = currentSession.user.user_metadata;
       const name: string | null = profile?.full_name ?? null;
@@ -95,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      // Só reagenda se já não estiver rodando
       if (loadingRef.current) return;
       clearTimeout(loadingTimeoutRef.current);
       loadingTimeoutRef.current = setTimeout(() => {
@@ -109,8 +123,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [loadContext]);
 
-  // login() NÃO executa mais loadContext nem setSession —
-  // o onAuthStateChange é quem dispara tudo após a autenticação
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
