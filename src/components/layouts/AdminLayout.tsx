@@ -69,7 +69,16 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const location = useLocation();
-  const { logout, userRole } = useAuth();
+  // useAuth com fallback seguro — nunca joga exceção fora do provider
+let userRole: string | null = null;
+let logout: () => Promise<void> = async () => {};
+try {
+  const auth = useAuth();
+  userRole = auth.userRole;
+  logout = auth.logout;
+} catch {
+  // AuthProvider não disponível — redirect will happen via route guard
+}
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 1024px)");
