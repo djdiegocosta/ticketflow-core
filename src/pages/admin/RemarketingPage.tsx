@@ -41,10 +41,8 @@ import {
   AbandonStatus,
   AbandonType,
   DEFAULT_TEMPLATES,
-  MOCK_ABANDONS,
   PERIOD_LABELS,
   PERIOD_METRICS,
-  REMARKETING_EVENTS,
   RemarketingPeriod,
   buildMessage,
 } from "@/lib/remarketing-data";
