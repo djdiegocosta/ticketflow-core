@@ -335,8 +335,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
  * Hook para buscar o design da organização vinculada ao cliente logado
  */
 export function useCustomerOrgDesign() {
-  const { userRole } = useAuth();
-
   return useQuery({
     queryKey: ["customer_org_design"],
     queryFn: async () => {
@@ -345,7 +343,7 @@ export function useCustomerOrgDesign() {
       if (error) throw error;
       return (data as any)?.[0] as { accent_color: string; corner_style: string };
     },
-    enabled: userRole === "cliente",
+    enabled: true,
   });
 }
 
@@ -391,21 +389,21 @@ export function useApplyCustomerDesign() {
  * Hook para buscar o banner ativo da organização do cliente
  */
 export function useActiveBanner() {
-  const { organizationId: orgIdFromContext } = useAuth();
-  
   return useQuery({
-    queryKey: ["active-banner", orgIdFromContext],
+    queryKey: ["active-banner"],
     queryFn: async () => {
-      let orgId = orgIdFromContext;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-      // Se organizationId não está no contexto, buscar diretamente
-      if (!orgId) {
-        const { data } = await supabase.rpc("get_single_organization_id");
-        orgId = data as string | null;
-      }
+      const { data: customerData } = await supabase
+        .from("customers")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
+      const orgId = customerData?.organization_id;
       if (!orgId) return null;
-      
+
       const { data, error } = await supabase
         .from("client_banners")
         .select("*")
@@ -424,18 +422,25 @@ export function useActiveBanner() {
  * Hook para buscar eventos ativos da organização do cliente
  */
 export function useOrgActiveEvents() {
-  const { data: customer } = useCurrentCustomer();
-  const organizationId = customer?.organization_id;
-
   return useQuery({
-    queryKey: ["org-active-events", organizationId],
+    queryKey: ["org-active-events"],
     queryFn: async () => {
-      if (!organizationId) return [];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: customerData } = await supabase
+        .from("customers")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const orgId = customerData?.organization_id;
+      if (!orgId) return [];
 
       const { data, error } = await supabase
         .from("events")
         .select("id, title, slug, event_date, location, image_url")
-        .eq("organization_id", organizationId)
+        .eq("organization_id", orgId)
         .eq("status", "publicado")
         .eq("is_closed", false)
         .gte("event_date", new Date().toISOString())
@@ -444,7 +449,7 @@ export function useOrgActiveEvents() {
       if (error) throw error;
       return data;
     },
-    enabled: !!organizationId,
+    enabled: true,
   });
 }
 
