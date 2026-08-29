@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import type { Session, User } from "@supabase/supabase-js";
 import type { AppRole } from "@/integrations/supabase/types";
-
-const supabase = createClient();
 
 type AuthContextValue = {
   session: Session | null;
