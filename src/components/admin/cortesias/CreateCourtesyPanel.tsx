@@ -36,6 +36,19 @@ export function CreateCourtesyPanel({
 }: CreateCourtesyPanelProps) {
   const { user } = useAuth();
   const { data: events = [] } = useEvents();
+
+  // Resolve customer_id do usuário logado
+  const [customerId, setCustomerId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("customers")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setCustomerId(data?.id ?? null));
+  }, [user]);
   const [selectedEvent, setSelectedEvent] = React.useState<string>("");
   const [selectedBatch, setSelectedBatch] = React.useState<string>("");
   const [batches, setBatches] = React.useState<any[]>([]);
