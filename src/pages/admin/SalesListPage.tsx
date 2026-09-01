@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useSales, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DataTable,
   DataTableCell,
@@ -35,25 +36,12 @@ const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
 function StatusBadge({ sale }: { sale: any }) {
-  if (sale.is_courtesy) {
-    return <StatusPill tone="warning">Cortesia</StatusPill>;
-  }
-
+  if (sale.is_courtesy) return <StatusPill tone="warning">Cortesia</StatusPill>;
   return (
     <StatusPill
-      tone={
-        sale.status === "pago" ? "accent" :
-        sale.status === "pendente" ? "warning" :
-        sale.status === "expirado" ? "neutral" : "error"
-      }
+      tone={sale.status === "pago" ? "accent" : sale.status === "pendente" ? "warning" : sale.status === "expirado" ? "neutral" : "error"}
     >
-      {sale.status === "pago"
-        ? "Pago"
-        : sale.status === "pendente"
-          ? "Pendente"
-          : sale.status === "expirado"
-            ? "Expirado"
-            : "Cancelado"}
+      {sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : "Cancelado"}
     </StatusPill>
   );
 }
@@ -64,7 +52,7 @@ function OriginBadge({ origin }: { origin: string }) {
 }
 
 export function SalesListPage() {
-  const { data: sales = [], isLoading, refetch } = useSales();
+  const { data: sales = [], refetch } = useSales();
   const { userRole } = useAuth();
   const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
@@ -79,16 +67,11 @@ export function SalesListPage() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return sales.filter((sale) => {
-      const originMatch =
-        originTab === "Todas" ||
-        (originTab === "Importadas" ? sale.origin === "importado" : sale.origin === originTab.toLowerCase());
+      const originMatch = originTab === "Todas" || (originTab === "Importadas" ? sale.origin === "importado" : sale.origin === originTab.toLowerCase());
       const eventName = (sale.events as any)?.title || "";
       const eventMatch = eventFilter === "Todos" || eventName === eventFilter;
       const statusMatch = statusFilter === "Todos" || sale.status === statusFilter.toLowerCase();
-      const searchMatch =
-        !term ||
-        sale.buyer_name.toLowerCase().includes(term) ||
-        sale.buyer_whatsapp.replace(/\D/g, "").includes(term.replace(/\D/g, "") || "\u0000");
+      const searchMatch = !term || sale.buyer_name.toLowerCase().includes(term) || sale.buyer_whatsapp.replace(/\D/g, "").includes(term.replace(/\D/g, "") || "\u0000");
       return originMatch && eventMatch && statusMatch && searchMatch;
     });
   }, [sales, originTab, eventFilter, statusFilter, search]);
@@ -100,17 +83,7 @@ export function SalesListPage() {
 
   const exportCsv = () => {
     const header = ["Comprador", "WhatsApp", "Evento", "Lote", "Origem", "Quantidade", "Valor", "Status", "Data"];
-    const rows = filtered.map((s) => [
-      s.buyer_name,
-      s.buyer_whatsapp,
-      (s.events as any)?.title || "",
-      (s.ticket_batches as any)?.name || "",
-      s.origin,
-      s.quantity,
-      s.total_amount.toFixed(2).replace(".", ","),
-      s.status,
-      new Date(s.created_at).toLocaleString("pt-BR"),
-    ]);
+    const rows = filtered.map((s) => [s.buyer_name, s.buyer_whatsapp, (s.events as any)?.title || "", (s.ticket_batches as any)?.name || "", s.origin, s.quantity, s.total_amount.toFixed(2).replace(".", ","), s.status, new Date(s.created_at).toLocaleString("pt-BR")]);
     const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -128,8 +101,7 @@ export function SalesListPage() {
       toast.error("Nenhum participante para gerar a lista");
       return;
     }
-    const eventName = eventFilter === "Todos" ? "Todos os eventos" : eventFilter;
-    generateCheckinListPdf(eventName, names);
+    generateCheckinListPdf(eventFilter === "Todos" ? "Todos os eventos" : eventFilter, names);
     toast.success("Lista PDF gerada");
   };
 
@@ -137,9 +109,7 @@ export function SalesListPage() {
     if (!window.confirm(`Cancelar a venda de "${sale.buyer_name}"?`)) return;
     setCancellingSale(sale.id);
     try {
-      const { error } = await (await import("@/integrations/supabase/client")).supabase.rpc("cancel_sale", {
-        _sale_id: sale.id,
-      });
+      const { error } = await supabase.rpc("cancel_sale", { _sale_id: sale.id });
       if (error) throw error;
       toast.success("Venda cancelada com sucesso");
       await refetch();
@@ -156,20 +126,13 @@ export function SalesListPage() {
         actions={
           <div className="flex items-center gap-2">
             {!isColab && <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} />}
-            {!isColab && (
-              <PrimaryActionButton onClick={() => setModalOpen(true)}>
-                Nova Venda
-              </PrimaryActionButton>
-            )}
+            {!isColab && <PrimaryActionButton onClick={() => setModalOpen(true)}>Nova Venda</PrimaryActionButton>}
           </div>
         }
       >
         <FilterSearch
           value={search}
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
+          onChange={(v) => { setSearch(v); setPage(1); }}
           placeholder="Buscar por cliente ou código da venda"
         />
       </FilterBar>
@@ -178,59 +141,28 @@ export function SalesListPage() {
         <FilterTabs
           tabs={[...ORIGIN_TABS]}
           value={originTab}
-          onChange={(tab) => {
-            setOriginTab(tab);
-            setPage(1);
-          }}
+          onChange={(tab) => { setOriginTab(tab); setPage(1); }}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <FilterSelect
-            aria-label="Filtrar por evento"
-            value={eventFilter}
-            onChange={(e) => {
-              setEventFilter(e.target.value);
-              setPage(1);
-            }}
-          >
+          <FilterSelect aria-label="Filtrar por evento" value={eventFilter} onChange={(e) => { setEventFilter(e.target.value); setPage(1); }}>
             <option value="Todos">Todos os eventos</option>
-            {Array.from(new Set(sales.map((s) => (s.events as any)?.title).filter(Boolean))).map((name: any) => (
-              <option key={name} value={name}>{name}</option>
-            ))}
+            {Array.from(new Set(sales.map((s) => (s.events as any)?.title).filter(Boolean))).map((name: any) => <option key={name} value={name}>{name}</option>)}
           </FilterSelect>
-          <FilterSelect
-            aria-label="Filtrar por status"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            {STATUS_OPTIONS.map((st) => (
-              <option key={st} value={st}>{st === "Todos" ? "Todos os status" : st}</option>
-            ))}
+          <FilterSelect aria-label="Filtrar por status" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+            {STATUS_OPTIONS.map((st) => <option key={st} value={st}>{st === "Todos" ? "Todos os status" : st}</option>)}
           </FilterSelect>
         </div>
       </div>
 
       <DataTableShell>
         <DataTable className="min-w-[1080px]">
-          <DataTableHeadRow
-            columns={["Cliente", "WhatsApp", "Evento", "Lote", "Origem", "Ingressos", "Valor", "Status", "Data", "Ações"]}
-          />
+          <DataTableHeadRow columns={["Cliente", "WhatsApp", "Evento", "Lote", "Origem", "Ingressos", "Valor", "Status", "Data", "Ações"]} />
           <tbody>
             {pageRows.map((sale) => {
               const canCancel = sale.status !== "cancelado" && sale.status !== "reembolsado" && !sale.is_courtesy;
               return (
                 <DataTableRow key={sale.id}>
-                  <DataTableCell variant="primary">
-                    <Link
-                      to="/admin/vendas/$id"
-                      params={{ id: sale.id }}
-                      className="hover:text-accent-text"
-                    >
-                      {sale.buyer_name}
-                    </Link>
-                  </DataTableCell>
+                  <DataTableCell variant="primary"><Link to="/admin/vendas/$id" params={{ id: sale.id }} className="hover:text-accent-text">{sale.buyer_name}</Link></DataTableCell>
                   <DataTableCell>{sale.buyer_whatsapp}</DataTableCell>
                   <DataTableCell>{(sale.events as any)?.title || "—"}</DataTableCell>
                   <DataTableCell>{(sale.ticket_batches as any)?.name || "—"}</DataTableCell>
@@ -242,33 +174,17 @@ export function SalesListPage() {
                   <DataTableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          aria-label={`Ações da venda de ${sale.buyer_name}`}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-                        >
-                          {cancellingSale === sale.id ? (
-                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          ) : (
-                            <MoreHorizontal className="h-4 w-4" />
-                          )}
+                        <button type="button" aria-label={`Ações da venda de ${sale.buyer_name}`} className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary">
+                          {cancellingSale === sale.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <MoreHorizontal className="h-4 w-4" />}
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem asChild>
-                          <Link to="/admin/vendas/$id" params={{ id: sale.id }}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Visualizar
-                          </Link>
+                          <Link to="/admin/vendas/$id" params={{ id: sale.id }}><Eye className="mr-2 h-4 w-4" />Visualizar</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          disabled={!canCancel || cancellingSale === sale.id}
-                          onClick={() => handleCancelSale(sale)}
-                          className="text-error focus:text-error"
-                        >
-                          <Ban className="mr-2 h-4 w-4" />
-                          {sale.status === "cancelado" ? "Venda cancelada" : "Cancelar venda"}
+                        <DropdownMenuItem disabled={!canCancel || cancellingSale === sale.id} onClick={() => handleCancelSale(sale)} className="text-error focus:text-error">
+                          <Ban className="mr-2 h-4 w-4" />{sale.status === "cancelado" ? "Venda cancelada" : "Cancelar venda"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -276,23 +192,14 @@ export function SalesListPage() {
                 </DataTableRow>
               );
             })}
-            {pageRows.length === 0 && (
-              <tr>
-                <DataTableCell colSpan={10} className="py-10 text-center text-body">
-                  Nenhuma venda encontrada com os filtros atuais.
-                </DataTableCell>
-              </tr>
-            )}
+            {pageRows.length === 0 && <tr><DataTableCell colSpan={10} className="py-10 text-center text-body">Nenhuma venda encontrada com os filtros atuais.</DataTableCell></tr>}
           </tbody>
         </DataTable>
       </DataTableShell>
 
       <DataTablePagination
         pageSize={pageSize}
-        onPageSizeChange={(n) => {
-          setPageSize(n);
-          setPage(1);
-        }}
+        onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={filtered.length}
@@ -300,11 +207,7 @@ export function SalesListPage() {
         onPageChange={setPage}
       />
 
-      <ManualSaleModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreate={() => refetch()}
-      />
+      <ManualSaleModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={() => refetch()} />
     </div>
   );
 }
