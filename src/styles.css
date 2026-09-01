@@ -5,67 +5,72 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * TicketFlow — Design System (v1.0)
- * Clean, moderno. Cor primária: verde esmeralda (#008a50).
+ * TicketFlow — Design System v1.2
+ * Visual direction: clean, compact and premium, inspired by Gain Flow.
+ * Business logic and semantic states remain unchanged.
  */
 
 :root {
   /* Fundos */
   --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f7;
-  --bg-tertiary: #e8e8ed;
+  --bg-secondary: #f8f7fb;
+  --bg-tertiary: #efedf5;
 
   /* Texto */
-  --text-primary: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --text-disabled: #aeaeb2;
+  --text-primary: #1d1b22;
+  --text-secondary: #716d7c;
+  --text-disabled: #aaa6b2;
 
   /* Bordas */
-  --border-default: #d2d2d7;
-  --border-subtle: #e8e8ed;
+  --border-default: #dedbe5;
+  --border-subtle: #ebe9f0;
 
   /* Destaque */
-  --accent: #00e676;
-  --accent-hover: #00c853;
-  --accent-muted: #e8fff4;
-  --accent-text: #00a844;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-muted: #f0eafa;
+  --accent-text: #6d28d9;
+
+  /* Ícones de métricas — roxo claro, independente do significado semântico */
+  --icon-brand: #a78bfa;
+  --icon-brand-muted: #f0eafa;
 
   /* Feedback */
   --error: #ff3b30;
-  --error-muted: #FFEBEE;
-  --error-text: #C62828;
+  --error-muted: #ffebee;
+  --error-text: #c62828;
   --warning: #ff9500;
-  --warning-muted: #FFF3E0;
-  --warning-text: #E65100;
-  --success: #00e676;
-  --success-muted: #e8fff4;
-  --success-text: #00a844;
+  --warning-muted: #fff3e0;
+  --warning-text: #e65100;
+  --success: #22a06b;
+  --success-muted: #eaf8f1;
+  --success-text: #197a50;
   --info: #0a84ff;
   --info-muted: #e6f2ff;
   --info-text: #0066cc;
 
   /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 3px rgba(24, 20, 35, 0.06);
+  --shadow-md: 0 4px 12px rgba(24, 20, 35, 0.08);
+  --shadow-lg: 0 10px 28px rgba(24, 20, 35, 0.12);
 
-  /* Raios */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  /* Raios — conjunto arredondado */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
   --radius: var(--radius-md);
 
   /* Ponte para os componentes shadcn/ui */
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
-  --card: var(--bg-primary);
+  --card: var(--bg-secondary);
   --card-foreground: var(--text-primary);
   --popover: var(--bg-primary);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent);
-  --primary-foreground: #04180d;
+  --primary-foreground: #ffffff;
   --secondary: var(--bg-secondary);
   --secondary-foreground: var(--text-primary);
   --muted: var(--bg-secondary);
@@ -80,9 +85,9 @@
   --sidebar: var(--bg-secondary);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--accent);
-  --sidebar-primary-foreground: #04180d;
-  --sidebar-accent: var(--bg-tertiary);
-  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--accent-muted);
+  --sidebar-accent-foreground: var(--accent-text);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: var(--accent);
   --chart-1: var(--accent);
@@ -93,42 +98,77 @@
 }
 
 .dark {
-  --bg-primary: #111111;
-  --bg-secondary: #1c1c1e;
-  --bg-tertiary: #2c2c2e;
+  --bg-primary: #111014;
+  --bg-secondary: #1b1920;
+  --bg-tertiary: #2a2731;
 
-  --text-primary: #f5f5f7;
-  --text-secondary: #8e8e93;
-  --text-disabled: #48484a;
+  --text-primary: #f5f3f7;
+  --text-secondary: #9994a3;
+  --text-disabled: #5f5a67;
 
-  --border-default: #3a3a3c;
-  --border-subtle: #2c2c2e;
+  --border-default: #39353f;
+  --border-subtle: #2a2731;
 
-  --accent: #00e676;
-  --accent-hover: #00c853;
-  --accent-muted: #0d2a1a;
-  --accent-text: #00e676;
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-muted: #302344;
+  --accent-text: #c4b5fd;
+
+  --icon-brand: #c4b5fd;
+  --icon-brand-muted: #302344;
 
   --error: #ff453a;
-  --error-muted: #3D0A0A;
-  --error-text: #FF6B6B;
+  --error-muted: #3d0a0a;
+  --error-text: #ff6b6b;
   --warning: #ff9f0a;
-  --warning-muted: #3D2A0A;
-  --warning-text: #FFB74D;
-  --success: #00e676;
-  --success-muted: #0d2a1a;
-  --success-text: #00e676;
+  --warning-muted: #3d2a0a;
+  --warning-text: #ffb74d;
+  --success: #34c78a;
+  --success-muted: #0d2a1f;
+  --success-text: #69d8a8;
   --info: #0a84ff;
   --info-muted: #0d203d;
   --info-text: #5ea9ff;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.36);
+  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.48);
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: var(--bg-secondary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-secondary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-secondary);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-secondary);
+  --muted-foreground: var(--text-secondary);
+  --accent-bg: var(--bg-tertiary);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--error);
+  --destructive-foreground: #ffffff;
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--accent);
+  --sidebar: var(--bg-secondary);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--accent-muted);
+  --sidebar-accent-foreground: var(--accent-text);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--accent);
+  --chart-1: var(--accent);
+  --chart-2: var(--info);
+  --chart-3: var(--warning);
+  --chart-4: var(--error);
+  --chart-5: var(--text-secondary);
 }
 
 @theme inline {
-  /* Cores semânticas */
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
@@ -141,6 +181,8 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-muted: var(--accent-muted);
   --color-accent-text: var(--accent-text);
+  --color-icon-brand: var(--icon-brand);
+  --color-icon-brand-muted: var(--icon-brand-muted);
   --color-error: var(--error);
   --color-error-muted: var(--error-muted);
   --color-error-text: var(--error-text);
@@ -154,7 +196,6 @@
   --color-info-muted: var(--info-muted);
   --color-info-text: var(--info-text);
 
-  /* Tokens shadcn */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -189,7 +230,6 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Tipografia */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
@@ -197,46 +237,34 @@
   --text-display--line-height: 1.15;
   --text-display--font-weight: 700;
   --text-display--letter-spacing: -0.02em;
-
   --text-heading-1: 24px;
   --text-heading-1--line-height: 1.25;
   --text-heading-1--font-weight: 600;
   --text-heading-1--letter-spacing: -0.01em;
-
   --text-heading-2: 18px;
   --text-heading-2--line-height: 1.35;
   --text-heading-2--font-weight: 600;
-
   --text-body: 14px;
   --text-body--line-height: 1.5;
   --text-body--font-weight: 400;
-
   --text-small: 12px;
   --text-small--line-height: 1.5;
   --text-small--font-weight: 400;
-
   --text-micro: 11px;
   --text-micro--line-height: 1.45;
   --text-micro--font-weight: 500;
-
   --text-mono: 13px;
   --text-mono--line-height: 1.5;
   --text-mono--font-weight: 400;
-
-  /* Raios baseados nas variáveis mutáveis */
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
   --radius: var(--radius-md);
   --radius-full: 9999px;
-
-  /* Sombras */
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
-
-  /* Espaçamento — múltiplos de 4px */
   --spacing: 4px;
 }
 
@@ -282,9 +310,6 @@
 }
 
 /* NEXUS-PRO:WATERMARK-HIDE:START */
-/* Overlay do badge oficial ocultado por conflito com UI custom.
-   Bloco idempotente gerenciado pela extensão Nexus Pro.
-   NÃO EDITAR manualmente — para reverter, remova o bloco inteiro. */
 #lovable-badge,
 #lovable-badge-v2,
 [id^="lovable-badge"],
