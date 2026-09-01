@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, DollarSign, Receipt, Ticket } from "lucide-react";
+import { Ban, Eye, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import { useSales, formatCurrency, useSalesStats } from "@/lib/sales-queries";
+import { useSales, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import {
@@ -14,8 +14,6 @@ import {
   DataTableShell,
   StatusPill,
 } from "@/components/admin/DataTable";
-import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
-import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import {
   FilterBar,
   FilterSearch,
@@ -23,19 +21,24 @@ import {
   FilterSelect,
   FilterExportButton,
 } from "@/components/admin/FilterBar";
+import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { useAuth } from "@/lib/auth-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
 const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
 function StatusBadge({ sale }: { sale: any }) {
   if (sale.is_courtesy) {
-    return (
-      <StatusPill tone="warning">
-        Cortesia
-      </StatusPill>
-    );
+    return <StatusPill tone="warning">Cortesia</StatusPill>;
   }
+
   return (
     <StatusPill
       tone={
@@ -44,7 +47,13 @@ function StatusBadge({ sale }: { sale: any }) {
         sale.status === "expirado" ? "neutral" : "error"
       }
     >
-      {sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : "Cancelado"}
+      {sale.status === "pago"
+        ? "Pago"
+        : sale.status === "pendente"
+          ? "Pendente"
+          : sale.status === "expirado"
+            ? "Expirado"
+            : "Cancelado"}
     </StatusPill>
   );
 }
@@ -54,24 +63,18 @@ function OriginBadge({ origin }: { origin: string }) {
   return <StatusPill tone="neutral">{label}</StatusPill>;
 }
 
-
 export function SalesListPage() {
   const { data: sales = [], isLoading, refetch } = useSales();
   const { userRole } = useAuth();
   const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
   const [eventFilter, setEventFilter] = useState("Todos");
-  const { data: stats } = useSalesStats(
-    eventFilter === "Todos"
-      ? "overview"
-      : sales.find(s => (s.events as any)?.title === eventFilter)?.event_id
-  );
-
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
+  const [cancellingSale, setCancellingSale] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -95,29 +98,8 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
-  const metrics = useMemo(() => {
-    const paid = filtered.filter((s) => s.status === "pago" && !s.is_courtesy);
-    const pending = filtered.filter((s) => s.status === "pendente");
-    const revenue = paid.reduce((acc, s) => acc + s.total_amount, 0);
-    const ticketsSold = stats?.totalTickets || 0;
-    const avgTicket = paid.length === 0 ? 0 : revenue / paid.length;
-    const considered = paid.length + pending.length;
-    const pendingRate = considered === 0 ? 0 : Math.round((pending.length / considered) * 100);
-    return { revenue, ticketsSold, avgTicket, pendingCount: pending.length, pendingRate };
-  }, [filtered]);
-
   const exportCsv = () => {
-    const header = [
-      "Comprador",
-      "WhatsApp",
-      "Evento",
-      "Lote",
-      "Origem",
-      "Quantidade",
-      "Valor",
-      "Status",
-      "Data",
-    ];
+    const header = ["Comprador", "WhatsApp", "Evento", "Lote", "Origem", "Quantidade", "Valor", "Status", "Data"];
     const rows = filtered.map((s) => [
       s.buyer_name,
       s.buyer_whatsapp,
@@ -151,66 +133,35 @@ export function SalesListPage() {
     toast.success("Lista PDF gerada");
   };
 
+  const handleCancelSale = async (sale: any) => {
+    if (!window.confirm(`Cancelar a venda de "${sale.buyer_name}"?`)) return;
+    setCancellingSale(sale.id);
+    try {
+      const { error } = await (await import("@/integrations/supabase/client")).supabase.rpc("cancel_sale", {
+        _sale_id: sale.id,
+      });
+      if (error) throw error;
+      toast.success("Venda cancelada com sucesso");
+      await refetch();
+    } catch (err: any) {
+      toast.error("Erro ao cancelar venda: " + (err.message || "Tente novamente."));
+    } finally {
+      setCancellingSale(null);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <ListPageHeader
-        title="Vendas"
-        action={
-          !isColab && (
-            <PrimaryActionButton onClick={() => setModalOpen(true)}>Nova Venda</PrimaryActionButton>
-          )
-        }
-      />
-
-      {/* Mini dashboard */}
-      <MiniMetricGrid>
-        <MiniMetricCard
-          title="Total vendido no período"
-          value={formatCurrency(metrics.revenue)}
-          subtext={`${filtered.filter((s) => s.status === "pago" && !s.is_courtesy).length} vendas pagas`}
-          icon={DollarSign}
-          iconColor="text-accent-text"
-        />
-        <MiniMetricCard
-          title="Ingressos vendidos"
-          value={String(metrics.ticketsSold)}
-          subtext="ingressos confirmados"
-          icon={Ticket}
-          iconColor="text-info"
-        />
-        <MiniMetricCard
-          title="Ticket médio"
-          value={formatCurrency(metrics.avgTicket)}
-          subtext="por venda paga"
-          icon={Receipt}
-          iconColor="text-success"
-        />
-        <MiniMetricCard
-          title="Aguardando Pagamento"
-          gaugeValue={metrics.pendingRate}
-          subtext={`${metrics.pendingCount} pedidos pendentes`}
-          icon={Clock}
-          iconColor="text-warning"
-        />
-      </MiniMetricGrid>
-
-
-      {/* Abas de origem */}
-      <FilterTabs
-        tabs={[...ORIGIN_TABS]}
-        value={originTab}
-        onChange={(tab) => {
-          setOriginTab(tab);
-          setPage(1);
-        }}
-      />
-
-      {/* Barra de filtros */}
+    <div className="space-y-5">
       <FilterBar
         actions={
-          !isColab && (
-            <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} />
-          )
+          <div className="flex items-center gap-2">
+            {!isColab && <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} />}
+            {!isColab && (
+              <PrimaryActionButton onClick={() => setModalOpen(true)}>
+                Nova Venda
+              </PrimaryActionButton>
+            )}
+          </div>
         }
       >
         <FilterSearch
@@ -219,86 +170,115 @@ export function SalesListPage() {
             setSearch(v);
             setPage(1);
           }}
-          placeholder="Buscar vendas..."
+          placeholder="Buscar por cliente ou código da venda"
         />
-
-        <FilterSelect
-          aria-label="Filtrar por evento"
-          value={eventFilter}
-          onChange={(e) => {
-            setEventFilter(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="Todos">Todos os eventos</option>
-          {Array.from(new Set(sales.map(s => (s.events as any)?.title).filter(Boolean))).map((name: any) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </FilterSelect>
-
-        <FilterSelect
-          aria-label="Filtrar por status"
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-        >
-          {STATUS_OPTIONS.map((st) => (
-            <option key={st} value={st}>
-              {st === "Todos" ? "Todos os status" : st}
-            </option>
-          ))}
-        </FilterSelect>
       </FilterBar>
 
-      {/* Tabela */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <FilterTabs
+          tabs={[...ORIGIN_TABS]}
+          value={originTab}
+          onChange={(tab) => {
+            setOriginTab(tab);
+            setPage(1);
+          }}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterSelect
+            aria-label="Filtrar por evento"
+            value={eventFilter}
+            onChange={(e) => {
+              setEventFilter(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="Todos">Todos os eventos</option>
+            {Array.from(new Set(sales.map((s) => (s.events as any)?.title).filter(Boolean))).map((name: any) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            aria-label="Filtrar por status"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+          >
+            {STATUS_OPTIONS.map((st) => (
+              <option key={st} value={st}>{st === "Todos" ? "Todos os status" : st}</option>
+            ))}
+          </FilterSelect>
+        </div>
+      </div>
+
       <DataTableShell>
-        <DataTable className="min-w-[980px]">
+        <DataTable className="min-w-[1080px]">
           <DataTableHeadRow
-            columns={[
-              "Comprador",
-              "WhatsApp",
-              "Evento",
-              "Lote",
-              "Origem",
-              "Qtd.",
-              "Valor",
-              "Status",
-              "Data",
-            ]}
+            columns={["Cliente", "WhatsApp", "Evento", "Lote", "Origem", "Ingressos", "Valor", "Status", "Data", "Ações"]}
           />
           <tbody>
-            {pageRows.map((sale) => (
-              <DataTableRow key={sale.id}>
-                <DataTableCell variant="primary">
-                  <Link
-                    to="/admin/vendas/$id"
-                    params={{ id: sale.id }}
-                    className="hover:text-accent-text"
-                  >
-                    {sale.buyer_name}
-                  </Link>
-                </DataTableCell>
-                <DataTableCell>{sale.buyer_whatsapp}</DataTableCell>
-                <DataTableCell>{(sale.events as any)?.title}</DataTableCell>
-                <DataTableCell>{(sale.ticket_batches as any)?.name}</DataTableCell>
-                <DataTableCell>
-                  <OriginBadge origin={sale.origin} />
-                </DataTableCell>
-                <DataTableCell>{sale.quantity}x</DataTableCell>
-                <DataTableCell variant="strong">{formatCurrency(sale.total_amount)}</DataTableCell>
-                <DataTableCell>
-                  <StatusBadge sale={sale} />
-                </DataTableCell>
-                <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
-              </DataTableRow>
-            ))}
+            {pageRows.map((sale) => {
+              const canCancel = sale.status !== "cancelado" && sale.status !== "reembolsado" && !sale.is_courtesy;
+              return (
+                <DataTableRow key={sale.id}>
+                  <DataTableCell variant="primary">
+                    <Link
+                      to="/admin/vendas/$id"
+                      params={{ id: sale.id }}
+                      className="hover:text-accent-text"
+                    >
+                      {sale.buyer_name}
+                    </Link>
+                  </DataTableCell>
+                  <DataTableCell>{sale.buyer_whatsapp}</DataTableCell>
+                  <DataTableCell>{(sale.events as any)?.title || "—"}</DataTableCell>
+                  <DataTableCell>{(sale.ticket_batches as any)?.name || "—"}</DataTableCell>
+                  <DataTableCell><OriginBadge origin={sale.origin} /></DataTableCell>
+                  <DataTableCell>{sale.quantity}x</DataTableCell>
+                  <DataTableCell variant="strong">{formatCurrency(sale.total_amount)}</DataTableCell>
+                  <DataTableCell><StatusBadge sale={sale} /></DataTableCell>
+                  <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
+                  <DataTableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={`Ações da venda de ${sale.buyer_name}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                        >
+                          {cancellingSale === sale.id ? (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          ) : (
+                            <MoreHorizontal className="h-4 w-4" />
+                          )}
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin/vendas/$id" params={{ id: sale.id }}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Visualizar
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          disabled={!canCancel || cancellingSale === sale.id}
+                          onClick={() => handleCancelSale(sale)}
+                          className="text-error focus:text-error"
+                        >
+                          <Ban className="mr-2 h-4 w-4" />
+                          {sale.status === "cancelado" ? "Venda cancelada" : "Cancelar venda"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </DataTableCell>
+                </DataTableRow>
+              );
+            })}
             {pageRows.length === 0 && (
               <tr>
-                <DataTableCell colSpan={9} className="py-10 text-center text-body">
+                <DataTableCell colSpan={10} className="py-10 text-center text-body">
                   Nenhuma venda encontrada com os filtros atuais.
                 </DataTableCell>
               </tr>
@@ -307,7 +287,6 @@ export function SalesListPage() {
         </DataTable>
       </DataTableShell>
 
-      {/* Paginação */}
       <DataTablePagination
         pageSize={pageSize}
         onPageSizeChange={(n) => {
