@@ -15,32 +15,18 @@ import {
   DataTableShell,
   StatusPill,
 } from "@/components/admin/DataTable";
-import {
-  FilterBar,
-  FilterSearch,
-  FilterTabs,
-  FilterSelect,
-  FilterExportButton,
-} from "@/components/admin/FilterBar";
+import { FilterBar, FilterSearch, FilterTabs, FilterSelect, FilterExportButton } from "@/components/admin/FilterBar";
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { useAuth } from "@/lib/auth-context";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ORIGIN_TABS = ["Todas", "TicketFlow", "Manual", "Importadas"] as const;
-const STATUS_OPTIONS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
+const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
 function StatusBadge({ sale }: { sale: any }) {
   if (sale.is_courtesy) return <StatusPill tone="warning">Cortesia</StatusPill>;
   return (
-    <StatusPill
-      tone={sale.status === "pago" ? "accent" : sale.status === "pendente" ? "warning" : sale.status === "expirado" ? "neutral" : "error"}
-    >
+    <StatusPill tone={sale.status === "pago" ? "accent" : sale.status === "pendente" ? "warning" : sale.status === "expirado" ? "neutral" : "error"}>
       {sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : "Cancelado"}
     </StatusPill>
   );
@@ -52,12 +38,12 @@ function OriginBadge({ origin }: { origin: string }) {
 }
 
 export function SalesListPage() {
-  const { data: sales = [], refetch } = useSales();
+  const { data: sales = [], isLoading, refetch } = useSales();
   const { userRole } = useAuth();
   const isColab = userRole === "colaborador";
   const [originTab, setOriginTab] = useState<string>("Todas");
-  const [eventFilter, setEventFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
+  const [eventFilter, setEventFilter] = useState("Todos");
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(1);
@@ -71,7 +57,8 @@ export function SalesListPage() {
       const eventName = (sale.events as any)?.title || "";
       const eventMatch = eventFilter === "Todos" || eventName === eventFilter;
       const statusMatch = statusFilter === "Todos" || sale.status === statusFilter.toLowerCase();
-      const searchMatch = !term || sale.buyer_name.toLowerCase().includes(term) || sale.buyer_whatsapp.replace(/\D/g, "").includes(term.replace(/\D/g, "") || "\u0000");
+      const normalizedPhone = sale.buyer_whatsapp.replace(/\D/g, "");
+      const searchMatch = !term || sale.buyer_name.toLowerCase().includes(term) || normalizedPhone.includes(term.replace(/\D/g, "")) || (sale.sale_code || "").toLowerCase().includes(term);
       return originMatch && eventMatch && statusMatch && searchMatch;
     });
   }, [sales, originTab, eventFilter, statusFilter, search]);
@@ -95,8 +82,7 @@ export function SalesListPage() {
   };
 
   const generatePdf = () => {
-    const scope = filtered.filter((s) => s.status !== "cancelado");
-    const names = scope.map((s) => s.buyer_name);
+    const names = filtered.filter((s) => s.status !== "cancelado").map((s) => s.buyer_name);
     if (names.length === 0) {
       toast.error("Nenhum participante para gerar a lista");
       return;
@@ -130,26 +116,25 @@ export function SalesListPage() {
           </div>
         }
       >
-        <FilterSearch
-          value={search}
-          onChange={(v) => { setSearch(v); setPage(1); }}
-          placeholder="Buscar por cliente ou código da venda"
-        />
+        <FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por cliente ou código da venda" />
+        <div className="hidden lg:block shrink-0">
+          <FilterTabs
+            tabs={[...STATUS_TABS]}
+            value={statusFilter}
+            onChange={(tab) => { setStatusFilter(tab); setPage(1); }}
+          />
+        </div>
       </FilterBar>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <FilterTabs
-          tabs={[...ORIGIN_TABS]}
-          value={originTab}
-          onChange={(tab) => { setOriginTab(tab); setPage(1); }}
-        />
+        <FilterTabs tabs={[...ORIGIN_TABS]} value={originTab} onChange={(tab) => { setOriginTab(tab); setPage(1); }} />
         <div className="flex flex-wrap items-center gap-2">
+          <div className="lg:hidden">
+            <FilterTabs tabs={[...STATUS_TABS]} value={statusFilter} onChange={(tab) => { setStatusFilter(tab); setPage(1); }} />
+          </div>
           <FilterSelect aria-label="Filtrar por evento" value={eventFilter} onChange={(e) => { setEventFilter(e.target.value); setPage(1); }}>
             <option value="Todos">Todos os eventos</option>
             {Array.from(new Set(sales.map((s) => (s.events as any)?.title).filter(Boolean))).map((name: any) => <option key={name} value={name}>{name}</option>)}
-          </FilterSelect>
-          <FilterSelect aria-label="Filtrar por status" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
-            {STATUS_OPTIONS.map((st) => <option key={st} value={st}>{st === "Todos" ? "Todos os status" : st}</option>)}
           </FilterSelect>
         </div>
       </div>
@@ -162,7 +147,12 @@ export function SalesListPage() {
               const canCancel = sale.status !== "cancelado" && sale.status !== "reembolsado" && !sale.is_courtesy;
               return (
                 <DataTableRow key={sale.id}>
-                  <DataTableCell variant="primary"><Link to="/admin/vendas/$id" params={{ id: sale.id }} className="hover:text-accent-text">{sale.buyer_name}</Link></DataTableCell>
+                  <DataTableCell variant="primary">
+                    <div className="min-w-0">
+                      <Link to="/admin/vendas/$id" params={{ id: sale.id }} className="block truncate hover:text-accent-text">{sale.buyer_name}</Link>
+                      {sale.sale_code && <span className="font-mono-token text-text-disabled">{sale.sale_code}</span>}
+                    </div>
+                  </DataTableCell>
                   <DataTableCell>{sale.buyer_whatsapp}</DataTableCell>
                   <DataTableCell>{(sale.events as any)?.title || "—"}</DataTableCell>
                   <DataTableCell>{(sale.ticket_batches as any)?.name || "—"}</DataTableCell>
@@ -170,7 +160,7 @@ export function SalesListPage() {
                   <DataTableCell>{sale.quantity}x</DataTableCell>
                   <DataTableCell variant="strong">{formatCurrency(sale.total_amount)}</DataTableCell>
                   <DataTableCell><StatusBadge sale={sale} /></DataTableCell>
-                  <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
+                  <DataTableCell variant="muted">{new Date(sale.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</DataTableCell>
                   <DataTableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -192,21 +182,12 @@ export function SalesListPage() {
                 </DataTableRow>
               );
             })}
-            {pageRows.length === 0 && <tr><DataTableCell colSpan={10} className="py-10 text-center text-body">Nenhuma venda encontrada com os filtros atuais.</DataTableCell></tr>}
+            {pageRows.length === 0 && <tr><DataTableCell colSpan={10} className="py-10 text-center text-body">{isLoading ? "Carregando vendas..." : "Nenhuma venda encontrada com os filtros atuais."}</DataTableCell></tr>}
           </tbody>
         </DataTable>
       </DataTableShell>
 
-      <DataTablePagination
-        pageSize={pageSize}
-        onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={filtered.length}
-        startIndex={start}
-        onPageChange={setPage}
-      />
-
+      <DataTablePagination pageSize={pageSize} onPageSizeChange={(n) => { setPageSize(n); setPage(1); }} currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} startIndex={start} onPageChange={setPage} />
       <ManualSaleModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={() => refetch()} />
     </div>
   );
