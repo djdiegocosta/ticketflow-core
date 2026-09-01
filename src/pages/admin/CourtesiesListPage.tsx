@@ -12,8 +12,8 @@ import {
   StatusPill,
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
-import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
-import { FilterBar, FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
+import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { FilterSearch, filterFieldClass } from "@/components/admin/FilterBar";
 import { formatName, isFullName } from "@/lib/form-format";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
@@ -23,7 +23,7 @@ import { useEvents } from "@/lib/events-queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const CreateCourtesyPanelLazy = lazy(() => 
+const CreateCourtesyPanelLazy = lazy(() =>
   import("@/components/admin/cortesias/CreateCourtesyPanel").then(m => ({ default: m.CreateCourtesyPanel }))
 );
 
@@ -44,12 +44,10 @@ export function CourtesiesListPage() {
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const filteredData = React.useMemo(() => {
@@ -81,7 +79,7 @@ export function CourtesiesListPage() {
 
   const handleCreateSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });
-    toast.success(`Cortesias emitidas com sucesso!`);
+    toast.success("Cortesias emitidas com sucesso!");
     setIsPanelOpen(false);
   };
 
@@ -97,16 +95,7 @@ export function CourtesiesListPage() {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-full overflow-hidden">
-      <ListPageHeader
-        title="Cortesias"
-        action={
-          <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
-            Nova Cortesia
-          </PrimaryActionButton>
-        }
-      />
-
+    <div className="w-full max-w-full space-y-6 overflow-hidden">
       <MiniMetricGrid className="xl:grid-cols-2">
         <MiniMetricCard
           icon={Gift}
@@ -125,7 +114,7 @@ export function CourtesiesListPage() {
       </MiniMetricGrid>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2 min-w-0">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <FilterSearch
             value={search}
             onChange={(v) => {
@@ -149,12 +138,16 @@ export function CourtesiesListPage() {
             ))}
           </select>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
+          <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
+            Nova Cortesia
+          </PrimaryActionButton>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2">
                   <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">PDF</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Gerar lista PDF</TooltipContent>
@@ -175,7 +168,7 @@ export function CourtesiesListPage() {
               </tr>
             ) : (
               paginatedData.map((item: any) => {
-                const isCheckedIn = !!item.checked_in_at || item.status === 'utilizado';
+                const isCheckedIn = !!item.checked_in_at || item.status === "utilizado";
                 const checkinStatusLabel = isCheckedIn ? "Utilizado" : "Não utilizado";
                 const eventTitle = item.sales?.events?.title || "—";
 
@@ -200,7 +193,7 @@ export function CourtesiesListPage() {
                               setEditingTicket(item);
                               setNewName(item.participant_name);
                             }}
-                            className="p-1 text-text-secondary hover:text-accent transition-colors"
+                            className="p-1 text-text-secondary transition-colors hover:text-accent"
                             title="Editar nome"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -213,7 +206,7 @@ export function CourtesiesListPage() {
                               setIsDeleting(true);
                               try {
                                 const { error } = await supabase.rpc("delete_courtesy_ticket", {
-                                  _ticket_id: item.id
+                                  _ticket_id: item.id,
                                 });
                                 if (error) throw error;
                                 toast.success("Cortesia excluída");
@@ -224,7 +217,7 @@ export function CourtesiesListPage() {
                                 setIsDeleting(false);
                               }
                             }}
-                            className="p-1 text-text-secondary hover:text-error transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-1 text-text-secondary transition-colors hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
                             title={isCheckedIn ? "Não é possível excluir cortesia já utilizada" : "Excluir cortesia"}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -273,7 +266,7 @@ export function CourtesiesListPage() {
                   try {
                     const { error } = await supabase.rpc("update_courtesy_participant", {
                       _ticket_id: editingTicket.id,
-                      _name: newName
+                      _name: newName,
                     });
                     if (error) throw error;
                     toast.success("Nome atualizado");
