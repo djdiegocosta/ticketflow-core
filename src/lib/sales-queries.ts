@@ -271,7 +271,7 @@ export function useCreatePendingSale() {
       _buyer_email: vars.buyer_email || "",
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
-      _customer_id: vars.customer_id,
+      ...(vars.customer_id ? { _customer_id: vars.customer_id } : {}),
     });
 
     if (error) {
