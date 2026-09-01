@@ -78,7 +78,7 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 // navegável mesmo se a página atual falhar (ex.: dado inesperado vindo do
 // banco). Sem isso, o erro sobe até o errorComponent da rota raiz, que
 // substitui a tela inteira e derruba o menu lateral junto.
-class AdminContentErrorBoundary extends Component
+class AdminContentErrorBoundary extends Component<
   { children: ReactNode; onRetry: () => void },
   { error: Error | null }
 > {
