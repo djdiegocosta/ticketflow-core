@@ -1,22 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowDown,
-  ArrowUp,
-  CalendarDays,
-  Check,
-  Copy,
-  Eye,
-  MessageCircle,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Copy, Eye, MessageCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  getInitials,
-  whatsappLink,
-} from "@/lib/clients-data";
+import { whatsappLink } from "@/lib/clients-data";
 import { useCustomers, useDeleteCustomer } from "@/lib/customers-queries";
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
 import {
@@ -26,44 +13,10 @@ import {
   DataTableRow,
   DataTableShell,
 } from "@/components/admin/DataTable";
-import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 
 type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
-
-const parseDate = (value: string) => {
-  const [d, m, y] = value.split("/");
-  return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
-};
-
-import { useNewCustomersCount } from "@/lib/dashboard-queries";
-
-function NewClientsCard() {
-  const [period, setPeriod] = useState("30");
-  const { data: count = 0 } = useNewCustomersCount(Number(period));
-
-  return (
-    <MiniMetricCard
-      title="Novos Clientes"
-      value={count}
-      subtext="novos cadastros"
-      headerRight={
-        <select
-          aria-label="Período"
-          value={period}
-          onChange={(e) => setPeriod(e.target.value)}
-          className="cursor-pointer border-none bg-transparent text-micro font-medium text-accent-text outline-none"
-        >
-          <option value="7">Últimos 7 dias</option>
-          <option value="15">Últimos 15 dias</option>
-          <option value="30">Últimos 30 dias</option>
-        </select>
-      }
-    />
-  );
-}
-
 
 function CopyWhatsapp({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -85,11 +38,7 @@ function CopyWhatsapp({ value }: { value: string }) {
       }}
       className="rounded-[var(--radius-sm)] p-1 text-text-disabled transition-colors hover:bg-bg-tertiary hover:text-text-primary"
     >
-      {copied ? (
-        <Check className="h-3.5 w-3.5 text-accent-text" />
-      ) : (
-        <Copy className="h-3.5 w-3.5" />
-      )}
+      {copied ? <Check className="h-3.5 w-3.5 text-accent-text" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
 }
@@ -105,12 +54,6 @@ export function ClientsListPage() {
   const [page, setPage] = useState(1);
   const [toDelete, setToDelete] = useState<any | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  const totalClients = clients.length;
-  const averageAge =
-    totalClients === 0
-      ? 0
-      : Math.round(clients.reduce((sum, c) => sum + (c.age || 0), 0) / totalClients);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -151,11 +94,11 @@ export function ClientsListPage() {
   const confirmDelete = () => {
     if (!toDelete) return;
     deleteMutation.mutate(toDelete.id, {
-      onSuccess: () => setToDelete(null)
+      onSuccess: () => setToDelete(null),
     });
   };
 
-  const columns: { key: SortKey | null; label: string; className?: string }[] = [
+  const columns: { key: SortKey | null; label: string }[] = [
     { key: "name", label: "Nome" },
     { key: null, label: "WhatsApp" },
     { key: "age", label: "Idade" },
@@ -167,37 +110,12 @@ export function ClientsListPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <ListPageHeader
         title="Clientes"
-        action={
-          <PrimaryActionButton onClick={() => {
-            setIsPanelOpen(true);
-          }}>
-
-            Novo Cliente
-          </PrimaryActionButton>
-        }
+        action={<PrimaryActionButton onClick={() => setIsPanelOpen(true)}>Novo Cliente</PrimaryActionButton>}
       />
 
-      {/* Dashboard */}
-      <MiniMetricGrid className="xl:grid-cols-3">
-        <MiniMetricCard title="Clientes" icon={Users} iconColor="text-accent-text">
-          <div className="text-heading-1 text-text-primary">{totalClients}</div>
-          <div className="mt-0.5 text-small text-text-secondary">cadastrados na base</div>
-        </MiniMetricCard>
-
-        <MiniMetricCard title="Idade média" icon={CalendarDays}>
-          <div className="text-heading-1 text-text-primary">{averageAge} anos</div>
-          <div className="mt-0.5 text-small text-text-secondary">
-            média de idade dos clientes
-          </div>
-        </MiniMetricCard>
-
-        <NewClientsCard />
-      </MiniMetricGrid>
-
-      {/* Filtros */}
       <FilterBar>
         <FilterSearch
           value={search}
@@ -207,22 +125,14 @@ export function ClientsListPage() {
           }}
           placeholder="Buscar por nome ou WhatsApp"
         />
-        <div className="flex items-center md:items-end">
-          <span className="text-small text-text-secondary">
-            {"\n"}
-          </span>
-        </div>
       </FilterBar>
 
-      <DataTableShell>
+      <DataTableShell className="overflow-hidden rounded-[var(--radius-lg)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
         <DataTable className="min-w-[980px]">
           <thead>
-            <tr className="border-b border-border-subtle text-left bg-bg-tertiary transition-colors">
+            <tr className="border-b border-border-subtle bg-bg-tertiary text-left">
               {columns.map((col) => (
-                <th
-                  key={col.label}
-                  className="px-4 py-3 text-small font-medium text-text-secondary"
-                >
+                <th key={col.label} className="px-4 py-3 text-small font-medium text-text-secondary">
                   {col.key ? (
                     <button
                       type="button"
@@ -234,11 +144,7 @@ export function ClientsListPage() {
                     >
                       {col.label}
                       {sortKey === col.key &&
-                        (sortDir === "asc" ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : (
-                          <ArrowDown className="h-3 w-3" />
-                        ))}
+                        (sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                     </button>
                   ) : (
                     col.label
@@ -252,15 +158,13 @@ export function ClientsListPage() {
               <DataTableRow
                 key={client.id}
                 className={cn(
-                  "cursor-pointer",
+                  "cursor-pointer transition-colors hover:bg-bg-tertiary/60",
                   client.total_tickets >= 10 && "border-l-2 border-l-accent",
                 )}
               >
                 <DataTableCell
                   variant="primary"
-                  onClick={() =>
-                    navigate({ to: "/admin/clientes/$id", params: { id: client.id } })
-                  }
+                  onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}
                 >
                   {client.full_name}
                 </DataTableCell>
@@ -273,7 +177,7 @@ export function ClientsListPage() {
                 <DataTableCell>{client.age} anos</DataTableCell>
                 <DataTableCell>{client.total_events}</DataTableCell>
                 <DataTableCell variant="strong">{client.total_tickets}</DataTableCell>
-                <DataTableCell>{new Date(client.created_at).toLocaleDateString('pt-BR')}</DataTableCell>
+                <DataTableCell>{new Date(client.created_at).toLocaleDateString("pt-BR")}</DataTableCell>
                 <DataTableCell>{client.last_event_name || "—"}</DataTableCell>
                 <DataTableCell>
                   <div className="flex items-center gap-1">
@@ -282,7 +186,7 @@ export function ClientsListPage() {
                       params={{ id: client.id }}
                       aria-label={`Visualizar ${client.full_name}`}
                       title="Visualizar / editar"
-                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
@@ -292,7 +196,7 @@ export function ClientsListPage() {
                       rel="noreferrer"
                       aria-label={`WhatsApp de ${client.full_name}`}
                       title="WhatsApp"
-                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
+                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-accent-text"
                     >
                       <MessageCircle className="h-4 w-4" />
                     </a>
@@ -301,7 +205,7 @@ export function ClientsListPage() {
                       onClick={() => setToDelete(client)}
                       aria-label={`Excluir ${client.full_name}`}
                       title="Excluir"
-                      className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
+                      className="rounded-[var(--radius-sm)] p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -320,7 +224,6 @@ export function ClientsListPage() {
         </DataTable>
       </DataTableShell>
 
-      {/* Paginação */}
       <DataTablePagination
         pageSize={pageSize}
         onPageSizeChange={(n) => {
@@ -334,7 +237,6 @@ export function ClientsListPage() {
         onPageChange={setPage}
       />
 
-      {/* Confirmação de exclusão */}
       {toDelete && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -344,7 +246,7 @@ export function ClientsListPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[420px] rounded-[var(--radius-md)] border border-border-default bg-bg-primary p-5 shadow-[var(--shadow-lg)]"
+            className="w-full max-w-[420px] rounded-[var(--radius-lg)] border border-border-default bg-bg-primary p-5 shadow-[var(--shadow-lg)]"
           >
             <h2 className="text-heading-2 text-text-primary">Excluir cliente</h2>
             <p className="mt-2 text-body text-text-secondary">
@@ -375,10 +277,7 @@ export function ClientsListPage() {
       <CreateClientPanel
         open={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
-        onSave={() => {
-          // A lista será atualizada automaticamente pelo React Query devido à invalidação no onSuccess
-          setIsPanelOpen(false);
-        }}
+        onSave={() => setIsPanelOpen(false)}
       />
     </div>
   );
