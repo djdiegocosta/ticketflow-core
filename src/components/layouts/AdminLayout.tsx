@@ -82,24 +82,24 @@ class AdminContentErrorBoundary extends Component<
   { children: ReactNode; onRetry: () => void },
   { error: Error | null }
 > {
-  state: { error: Error | null } = { error: null };
+  override state: { error: Error | null } = { error: null };
 
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
-  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+  override componentDidCatch(error: Error, info: { componentStack?: string | null }) {
     console.error("[TicketFlow] Erro ao renderizar página admin:", error, info.componentStack);
   }
 
-  componentDidUpdate(prevProps: { children: ReactNode }) {
+  override componentDidUpdate(prevProps: { children: ReactNode }) {
     if (this.state.error && prevProps.children !== this.props.children) {
       // Rota mudou (usuário navegou) — limpa o erro para tentar renderizar a nova página.
       this.setState({ error: null });
     }
   }
 
-  render() {
+  override render() { 
     if (this.state.error) {
       return (
         <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">

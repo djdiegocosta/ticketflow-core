@@ -178,15 +178,12 @@ export function CreateCourtesyPanel({
     try {
       const names = participants.filter((p) => p.isValid).map((p) => p.name);
 
-      const payload: Record<string, unknown> = {
+      const payload = {
         _event_id: selectedEvent,
         _batch_id: selectedBatch,
         _participant_names: names,
+        ...(customerId ? { _customer_id: customerId } : {}),
       };
-
-      if (customerId) {
-        payload._customer_id = customerId;
-      }
 
       const { error } = await supabase.rpc("create_courtesy", payload);
 
@@ -254,7 +251,7 @@ export function CreateCourtesyPanel({
           </label>
           <FilterSelect
             value={selectedEvent}
-            onChange={setSelectedEvent}
+            onChange={(e) => setSelectedEvent(e.target.value)}
             className="w-full"
           >
             {events.map((e: any) => (
@@ -278,7 +275,7 @@ export function CreateCourtesyPanel({
             ) : (
               <FilterSelect
                 value={selectedBatch}
-                onChange={setSelectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
                 className="w-full"
               >
                 {batches.map((b: any) => (

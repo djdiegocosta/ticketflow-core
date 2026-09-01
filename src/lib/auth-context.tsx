@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import type { Session, User } from "@supabase/supabase-js";
-import type { AppRole } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database["public"]["Enums"]["app_role"] | "cliente";
 
 type AuthContextValue = {
   session: Session | null;
@@ -12,6 +14,9 @@ type AuthContextValue = {
   organizationId: string | null;
   organizationStatus: string | null;
   loading: boolean;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  refreshProfile: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
 };
@@ -30,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Evita execução concorrente de loadContext
   const loadingRef = useRef(false);
-  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const loadContext = useCallback(async (currentSession: Session | null) => {
     if (loadingRef.current) return;
@@ -76,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const profile = currentSession.user.user_metadata;
-      const name: string | null = profile?.full_name ?? null;
+      const name: string | null = (profile as Record<string, unknown> | undefined)?.["full_name"] as string | undefined ?? null;
 
       setUser(currentSession.user);
       setUserRole(role);
@@ -137,6 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshProfile = async () => {
+    const { data } = await supabase.auth.getSession();
+    await loadContext(data.session);
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -158,6 +168,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         organizationId,
         organizationStatus,
         loading,
+        isLoading: loading,
+        isAuthenticated: !!session?.user,
+        refreshProfile,
         login,
         logout,
       }}
