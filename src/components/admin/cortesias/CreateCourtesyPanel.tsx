@@ -59,20 +59,7 @@ export function CreateCourtesyPanel({
   const [isDirty, setIsDirty] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
-  // Resolve customer_id do usuário logado
-  const [customerId, setCustomerId] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("customers")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setCustomerId(data?.id ?? null));
-  }, [user]);
-
-  React.useEffect(() => {
+   React.useEffect(() => {
     if (selectedEvent) {
       supabase
         .from("ticket_batches")
