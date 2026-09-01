@@ -1,5 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, Outlet, useRouterState, useNavigate, useLocation } from "@tanstack/react-router";
+import { Component, useEffect, useState, type ReactNode } from "react";
+import {
+  Link,
+  Outlet,
+  useRouterState,
+  useNavigate,
+  useLocation,
+  useRouter,
+} from "@tanstack/react-router";
 import {
   BarChart3,
   CalendarDays,
@@ -66,21 +73,72 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
+// Isola erros de renderização de uma página filha para que apenas a área de
+// conteúdo quebre — o AdminLayout (sidebar + header) continua visível e
+// navegável mesmo se a página atual falhar (ex.: dado inesperado vindo do
+// banco). Sem isso, o erro sobe até o errorComponent da rota raiz, que
+// substitui a tela inteira e derruba o menu lateral junto.
+class AdminContentErrorBoundary extends Component
+  { children: ReactNode; onRetry: () => void },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+    console.error("[TicketFlow] Erro ao renderizar página admin:", error, info.componentStack);
+  }
+
+  componentDidUpdate(prevProps: { children: ReactNode }) {
+    if (this.state.error && prevProps.children !== this.props.children) {
+      // Rota mudou (usuário navegou) — limpa o erro para tentar renderizar a nova página.
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+          <h2 className="text-heading-2 text-[var(--text-primary)]">Esta página não carregou</h2>
+          <p className="max-w-md text-body text-[var(--text-secondary)]">
+            Ocorreu um erro ao exibir esta seção. Você pode tentar novamente ou navegar para outra
+            página pelo menu.
+          </p>
+          <Button
+            onClick={() => {
+              this.setState({ error: null });
+              this.props.onRetry();
+            }}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const location = useLocation();
   // useAuth com fallback seguro — nunca joga exceção fora do provider
-let userRole: string | null = null;
-let logout: () => Promise<void> = async () => {};
-try {
-  const auth = useAuth();
-  userRole = auth.userRole;
-  logout = auth.logout;
-} catch {
-  // AuthProvider não disponível — redirect will happen via route guard
-}
+  let userRole: string | null = null;
+  let logout: () => Promise<void> = async () => {};
+  try {
+    const auth = useAuth();
+    userRole = auth.userRole;
+    logout = auth.logout;
+  } catch {
+    // AuthProvider não disponível — redirect will happen via route guard
+  }
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -99,7 +157,7 @@ try {
 
     if (userRole === "colaborador") {
       const isPermitted = filteredMenu.some((item) =>
-        item.exact ? pathname === item.to : pathname.startsWith(item.to)
+        item.exact ? pathname === item.to : pathname.startsWith(item.to),
       );
 
       if (!isPermitted && pathname.startsWith("/admin")) {
@@ -128,7 +186,7 @@ try {
     return matches[0]?.[1] ?? "";
   };
 
-const isActive = (to: string, exact?: boolean) =>
+  const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -152,7 +210,7 @@ const isActive = (to: string, exact?: boolean) =>
             <Ticket className="h-5 w-5 text-[var(--accent-text)] animate-pulse" />
             <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
           </div>
-          
+
           {isMobile && (
             <Button
               variant="ghost"
@@ -203,7 +261,10 @@ const isActive = (to: string, exact?: boolean) =>
                 {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer gap-2 text-[var(--error)]">
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer gap-2 text-[var(--error)]"
+              >
                 <LogOut className="h-4 w-4" />
                 Sair
               </DropdownMenuItem>
@@ -212,7 +273,9 @@ const isActive = (to: string, exact?: boolean) =>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin">
-          <Outlet />
+          <AdminContentErrorBoundary key={pathname} onRetry={() => router.invalidate()}>
+            <Outlet />
+          </AdminContentErrorBoundary>
         </main>
       </div>
     </div>
