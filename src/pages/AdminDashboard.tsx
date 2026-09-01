@@ -1,5 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
-import { DollarSign, Ticket, Clock, Eye, Loader2 } from "lucide-react";
+import { DollarSign, Ticket, Clock, Flame, Thermometer, QrCode, Users } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
@@ -8,7 +8,23 @@ import { useEvents } from "@/lib/events-queries";
 import { useSales, useSalesStats, type Sale } from "@/lib/sales-queries";
 import { formatCurrency } from "@/lib/sales-queries";
 
-import { useHourlySalesStats } from "@/lib/dashboard-queries";
+import {
+  useHourlySalesStats,
+  useAudienceStats,
+  classifyTemperature,
+  salesVelocity,
+  type TemperatureLevel,
+} from "@/lib/dashboard-queries";
+
+const TEMPERATURE_META: Record<
+  TemperatureLevel,
+  { label: string; icon: any; color: string }
+> = {
+  normal: { label: "Normal", icon: Thermometer, color: "text-success" },
+  aquecendo: { label: "Aquecendo", icon: Thermometer, color: "text-warning" },
+  quente: { label: "Quente", icon: Thermometer, color: "text-error" },
+  explodindo: { label: "Explodindo", icon: Flame, color: "text-error" },
+};
 
 
 // --- Components ---
@@ -76,11 +92,26 @@ export function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useSalesStats(currentEvent);
   const { data: sales = [], isLoading: salesLoading } = useSales();
   const { data: hourlyData = [], isLoading: hourlyLoading } = useHourlySalesStats(currentEvent);
+  const { data: audience } = useAudienceStats();
 
 
   const isOverview = currentEvent === "overview";
 
   const lastSales = sales.filter((s: any) => !s.is_courtesy).slice(0, 8);
+
+  // Card 3 dinâmico: Pendentes antes do início do evento, Check-in a partir dele.
+  const now = Date.now();
+  const eventStarted = isOverview
+    ? events.some((e) => !e.is_closed && new Date(e.event_date).getTime() <= now)
+    : (() => {
+        const ev = events.find((e) => e.id === currentEvent);
+        return !!ev && new Date(ev.event_date).getTime() <= now;
+      })();
+
+  const velocity = salesVelocity(
+    (isOverview ? sales : sales.filter((s: any) => s.event_id === currentEvent)) as any,
+  );
+  const temperatureMeta = TEMPERATURE_META[classifyTemperature(velocity)];
 
   if (statsLoading || salesLoading || hourlyLoading) {
     return (
@@ -129,32 +160,54 @@ export function AdminDashboard() {
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
         <MetricCard
-          title="Receita Total"
+          title="Receita"
           value={formatCurrency(stats?.totalRevenue || 0)}
           icon={DollarSign}
           trend={stats?.paidSales ? `Baseado em ${stats.paidSales} vendas` : "Nenhuma venda paga"}
           iconColor="text-accent"
         />
         <MetricCard
-          title="Ingressos Vendidos"
+          title="Ingressos"
           value={stats?.totalTickets || 0}
           secondary="ingressos confirmados"
           icon={Ticket}
           iconColor="text-accent"
         />
+        {eventStarted ? (
+          <MetricCard
+            title="Check-in"
+            value={stats?.checkins || 0}
+            icon={QrCode}
+            secondary={
+              stats?.validTickets
+                ? `de ${stats.validTickets} ingressos válidos`
+                : "nenhum ingresso válido"
+            }
+            gaugeValue={
+              stats?.validTickets
+                ? Math.round(((stats.checkins || 0) / stats.validTickets) * 100)
+                : 0
+            }
+            iconColor="text-accent"
+          />
+        ) : (
+          <MetricCard
+            title="Pendentes"
+            value={stats?.pendingSales || 0}
+            icon={Clock}
+            secondary={`${formatCurrency(stats?.pendingAmount || 0)} aguardando pagamento`}
+            gaugeValue={
+              stats?.totalSales ? Math.round((stats.pendingSales / stats.totalSales) * 100) : 0
+            }
+            iconColor="text-warning"
+          />
+        )}
         <MetricCard
-          title="Aguardando Pagamento"
-          icon={Clock}
-          gaugeValue={stats?.totalSales ? Math.round((stats.pendingSales / stats.totalSales) * 100) : 0}
-          subtext={`${stats?.pendingSales || 0} pedidos pendentes`}
-          iconColor="text-warning"
-        />
-        <MetricCard
-          title="Cortesias Emitidas"
-          value={stats?.courtesies || 0}
-          secondary="ingressos gratuitos"
-          icon={Eye}
-          iconColor="text-info"
+          title="Temperatura"
+          value={temperatureMeta.label}
+          icon={temperatureMeta.icon}
+          iconColor={temperatureMeta.color}
+          secondary={`${velocity.toFixed(1)} vendas/hora (24h)`}
         />
       </div>
 
@@ -321,6 +374,50 @@ export function AdminDashboard() {
           {lastSales.length === 0 && (
             <div className="py-8 text-center text-text-secondary">Nenhuma venda registrada.</div>
           )}
+        </div>
+      </div>
+
+      {/* Dados do Público */}
+      <div className="bg-bg-secondary border border-border-subtle p-6 rounded-[var(--radius-md)]">
+        <div className="flex items-center gap-2 mb-6">
+          <Users className="h-5 w-5 text-accent" />
+          <h2 className="text-heading-2 text-text-primary">Dados do público</h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <div className="text-small text-text-secondary">Idade média</div>
+            <div className="text-heading-2 text-text-primary">
+              {audience?.averageAge ? `${audience.averageAge} anos` : "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-small text-text-secondary">Faixa predominante</div>
+            <div className="text-heading-2 text-text-primary">{audience?.topBracket ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-small text-text-secondary">Novos clientes (30d)</div>
+            <div className="text-heading-2 text-text-primary">{audience?.newCustomers ?? "—"}</div>
+          </div>
+          <div>
+            <div className="text-small text-text-secondary">Clientes recorrentes</div>
+            <div className="text-heading-2 text-text-primary">
+              {audience?.recurringCustomers ?? "—"}
+            </div>
+          </div>
+          <div className="col-span-2 lg:col-span-1">
+            <div className="text-small text-text-secondary">Principais cidades</div>
+            {audience?.topCities?.length ? (
+              <ul className="mt-1 space-y-0.5">
+                {audience.topCities.map((c) => (
+                  <li key={c.city} className="text-body text-text-primary">
+                    {c.city} <span className="text-small text-text-secondary">({c.count})</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-heading-2 text-text-primary">—</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
