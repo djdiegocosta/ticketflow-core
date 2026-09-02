@@ -155,32 +155,39 @@ export function CheckinPage() {
   }, []);
 
   const processCheckin = useCallback(async (code: string) => {
-    if (pausedRef.current || !code.trim() || !selectedEvent) return;
+    const currentEvent = eventRef.current;
+    if (pausedRef.current || !code.trim() || !currentEvent) return;
     pausedRef.current = true;
 
-    const result = await resolveCheckin(code, selectedEvent.id, selectedEvent.title);
-    
-    // addCheckinAttempt é apenas para o listener do useCheckinAttempts,
-    // o histórico real agora vem do Supabase via CheckinHistoryPage
-    addCheckinAttempt({
-      name: result.name,
-      eventName: result.eventName,
-      time: result.time,
-      status: result.status,
-      isOffline: result.isOffline,
-    });
-    setOverlay({ status: result.status, name: result.name, visible: true });
+    try {
+      const result = await resolveCheckin(code, currentEvent.id, currentEvent.title);
 
-    // Atualiza contagem de pendentes se necessário
-    const queue = await offlineDB.getSyncQueue();
-    setPendingSyncCount(queue.length);
+      // addCheckinAttempt é apenas para o listener do useCheckinAttempts,
+      // o histórico real agora vem do Supabase via CheckinHistoryPage
+      addCheckinAttempt({
+        name: result.name,
+        eventName: result.eventName,
+        time: result.time,
+        status: result.status,
+        isOffline: result.isOffline,
+      });
+      setOverlay({ status: result.status, name: result.name, visible: true });
 
-    const duration = result.status === "valid" ? 1000 : 2500;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setOverlay(null);
+      // Atualiza contagem de pendentes se necessário
+      const queue = await offlineDB.getSyncQueue();
+      setPendingSyncCount(queue.length);
+
+      const duration = result.status === "valid" ? 1000 : 2500;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setOverlay(null);
+        pausedRef.current = false;
+      }, duration);
+    } catch (e) {
+      console.error("[Checkin] Erro inesperado ao processar check-in:", e);
+      toast.error("Erro ao processar check-in. Tente novamente.");
       pausedRef.current = false;
-    }, duration);
+    }
   }, []);
 
   // Câmera
