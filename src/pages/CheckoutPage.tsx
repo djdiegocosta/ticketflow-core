@@ -4,17 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
 import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { Copy, CheckCircle2, Clock, ArrowRight, Loader2, User, Phone } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, Loader2, User, Phone } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
-import { CityAutocomplete } from '@/components/ui/city-autocomplete';
-import { getUFByDDD } from '@/lib/ibge-data';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,8 +21,6 @@ import { setLastVisitedOrg } from '@/lib/org-context';
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
   buyerWhatsApp: z.string().min(1, "WhatsApp obrigatório").refine(val => val.replace(/\D/g, "").length >= 11, "WhatsApp inválido"),
-  buyerEmail: z.string().email("E-mail inválido").optional().or(z.literal('')),
-  buyerCity: z.string().optional(),
   participants: z.array(z.object({
     name: z.string().min(1, "Nome do participante obrigatório").refine(isFullName, "Nome completo obrigatório")
   }))
@@ -49,7 +45,6 @@ export default function CheckoutPage() {
   const [countdown, setCountdown] = useState(1800);
   const [pixCopied, setPixCopied] = useState(false);
   const [isCreatingSale, setIsCreatingSale] = useState(false);
-  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
   const [currentSaleCode, setCurrentSaleCode] = useState<string | null>(null);
   const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string } | null>(null);
@@ -66,8 +61,6 @@ export default function CheckoutPage() {
     defaultValues: {
       buyerName: '',
       buyerWhatsApp: '',
-      buyerEmail: '',
-      buyerCity: '',
       participants: Array(qty).fill({ name: '' })
     }
   });
@@ -77,7 +70,6 @@ export default function CheckoutPage() {
     name: "participants"
   });
 
-  // Tracking de abandono ao desmontar se preencheu algo mas não gerou venda
   useEffect(() => {
     return () => {
       const data = form.getValues();
@@ -141,7 +133,7 @@ export default function CheckoutPage() {
     if (!event || !batch || isCreatingSale) return;
     
     setIsCreatingSale(true);
-    setPixData(null); // Reset pix data for new submission
+    setPixData(null);
     try {
       let customerId: string | undefined;
       
@@ -160,7 +152,7 @@ export default function CheckoutPage() {
         batch_id: batch.id,
         buyer_name: values.buyerName,
         buyer_whatsapp: values.buyerWhatsApp,
-        buyer_email: values.buyerEmail || "",
+        buyer_email: "",
         quantity: qty,
         participant_names: values.participants.map(p => p.name),
         customer_id: customerId as any
@@ -171,7 +163,6 @@ export default function CheckoutPage() {
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
 
-      // Gerar Pix Real
       try {
         const pixResult = await generateSalePix({ sale_id: id });
         setPixData({
@@ -181,10 +172,9 @@ export default function CheckoutPage() {
       } catch (pixErr: any) {
         toast.error("Erro ao gerar o Pix. Por favor, tente novamente.");
         setIsCreatingSale(false);
-        return; // Não avança o step
+        return;
       }
       
-      // Reset countdown to 30 minutes (1800 seconds)
       setCountdown(1800);
       setStep('payment');
       window.scrollTo(0, 0);
@@ -208,8 +198,6 @@ export default function CheckoutPage() {
     }
   };
 
-  
-
   const copyPix = () => {
     if (!pixData) return;
     navigator.clipboard.writeText(pixData.qr_code);
@@ -231,8 +219,6 @@ export default function CheckoutPage() {
   return (
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
-        
-        {/* Resumo do Pedido */}
         <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
           <div className="flex flex-col gap-1">
             <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
@@ -251,24 +237,6 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
                 <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
-                <div className="space-y-2">
-                  <Label>E-mail (opcional)</Label>
-                  <Input placeholder="seu@email.com" {...form.register('buyerEmail')} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Cidade (opcional)</Label>
-                  <Controller
-                    name="buyerCity"
-                    control={form.control}
-                    render={({ field }) => (
-                      <CityAutocomplete
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        uf={getUFByDDD(onlyDigits(form.watch("buyerWhatsApp")))}
-                      />
-                    )}
-                  />
-                </div>
               </div>
             </div>
 
