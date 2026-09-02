@@ -1,14 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useCustomerSales } from "@/lib/customer-queries";
 import { ClientVitrine } from "@/components/cliente/ClientVitrine";
 import { SkeletonScreen } from "@/components/WelcomeSplash";
+import { useCustomerSales } from "@/lib/customer-queries";
 
 export const Route = createFileRoute('/cliente/')({
   component: Page_cliente_index,
 });
 
 export function Page_cliente_index() {
-  const { data: sales = [], isLoading } = useCustomerSales();
+  const { isLoading } = useCustomerSales();
 
   if (isLoading) {
     return <SkeletonScreen variant="cliente" />;
