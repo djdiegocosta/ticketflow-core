@@ -753,6 +753,7 @@ export type Database = {
           refunded_amount: number | null
           refunded_at: string | null
           sale_code: string
+          sales_link_id: string | null
           status: Database["public"]["Enums"]["sale_status"]
           total_amount: number
           unit_price: number
@@ -787,6 +788,7 @@ export type Database = {
           refunded_amount?: number | null
           refunded_at?: string | null
           sale_code: string
+          sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount: number
           unit_price: number
@@ -821,6 +823,7 @@ export type Database = {
           refunded_amount?: number | null
           refunded_at?: string | null
           sale_code?: string
+          sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount?: number
           unit_price?: number
@@ -853,6 +856,64 @@ export type Database = {
           },
           {
             foreignKeyName: "sales_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_sales_link_id_fkey"
+            columns: ["sales_link_id"]
+            isOneToOne: false
+            referencedRelation: "sales_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_links: {
+        Row: {
+          channel: string
+          code: string
+          created_at: string
+          event_id: string
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          code: string
+          created_at?: string
+          event_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          code?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_links_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1144,6 +1205,7 @@ export type Database = {
           _participant_names: string[]
           _payment_method: Database["public"]["Enums"]["payment_method"]
           _quantity: number
+          _sales_link_id?: string
           _total_amount: number
         }
         Returns: {
@@ -1160,6 +1222,7 @@ export type Database = {
           _event_id: string
           _participant_names: string[]
           _quantity: number
+          _ref_code?: string
         }
         Returns: {
           sale_code: string
@@ -1229,6 +1292,13 @@ export type Database = {
         }[]
       }
       get_default_organization: { Args: never; Returns: string }
+      get_direct_sales_stats: {
+        Args: { _event_id: string }
+        Returns: {
+          revenue: number
+          sales_count: number
+        }[]
+      }
       get_hourly_sales_stats: {
         Args: { _event_id?: string }
         Returns: {
@@ -1259,6 +1329,18 @@ export type Database = {
           sale_id: string
           status: Database["public"]["Enums"]["sale_status"]
           total_amount: number
+        }[]
+      }
+      get_sales_link_stats: {
+        Args: { _event_id: string }
+        Returns: {
+          channel: string
+          code: string
+          is_active: boolean
+          name: string
+          revenue: number
+          sales_count: number
+          sales_link_id: string
         }[]
       }
       get_single_organization_id: { Args: never; Returns: string }
