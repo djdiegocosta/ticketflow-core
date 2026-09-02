@@ -1,21 +1,10 @@
 import { Download } from "lucide-react";
-import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Search,
-  FileText as FileTextIcon,
-} from "lucide-react";
-
-// Estilo consistente para selects e inputs de filtro no admin
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Estilo consistente para selects e inputs de filtro no admin
 export const filterFieldClass =
   "border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-small text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)]";
 
@@ -105,29 +94,22 @@ export function FilterSelect({ children, className = "", ...props }: FilterSelec
 }
 
 export interface FilterExportButtonProps {
-  onExportCsv: () => void;
   onGeneratePdf: () => void;
 }
 
-export function FilterExportButton({ onExportCsv, onGeneratePdf }: FilterExportButtonProps) {
+export function FilterExportButton({ onGeneratePdf }: FilterExportButtonProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 shrink-0">
-          <Download className="h-4 w-4" />
-          <span>Exportar</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onExportCsv}>
-          <FileTextIcon className="mr-2 h-4 w-4" />
-          Exportar CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onGeneratePdf}>
-          <Download className="mr-2 h-4 w-4" />
-          Gerar lista PDF
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      type="button"
+      onClick={onGeneratePdf}
+      className={cn(
+        "h-10 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover",
+      )}
+      title="Gerar lista PDF"
+      aria-label="Gerar lista PDF"
+    >
+      <Download className="h-4 w-4" />
+      <span className="hidden sm:inline">PDF</span>
+    </Button>
   );
 }
