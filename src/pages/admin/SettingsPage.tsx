@@ -304,7 +304,7 @@ export function SettingsPage() {
                     {[
                       { id: "green", label: "Verde", color: "#008a50" },
                       { id: "blue", label: "Azul", color: "#3b82f6" },
-                      { id: "purple", label: "Nubank", color: "hsl(270, 60%, 50%)" },
+                      { id: "nubank", label: "Nubank", color: "hsl(270, 60%, 50%)" },
                       { id: "red", label: "Vermelho", color: "#ef4444" },
                     ].map((opt) => {
                       const isSelected = design.accent === opt.id;
