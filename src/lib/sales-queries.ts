@@ -6,6 +6,7 @@ import { createMpPix } from "./mp/mercado-pago.functions";
 
 export interface Sale {
   id: string;
+  sale_code?: string | null;
   buyer_name: string;
   buyer_whatsapp: string;
   buyer_email: string | null;
@@ -28,6 +29,7 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
     .from("sales")
     .select(`
       id,
+      sale_code,
       buyer_name,
       buyer_whatsapp,
       buyer_email,
@@ -80,6 +82,7 @@ export function useCourtesies() {
             id,
             is_courtesy,
             created_at,
+            event_id,
             events (title)
           )
         `)
@@ -118,6 +121,7 @@ export function useSale(id: string) {
         .from("sales")
         .select(`
           id,
+          sale_code,
           buyer_name,
           buyer_whatsapp,
           buyer_email,
@@ -149,21 +153,16 @@ export function useSalesStats(eventId?: string) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
-      // Buscar organizationId primeiro
       const { data: orgData } = await supabase.rpc("get_single_organization_id");
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
       if (!orgId) throw new Error("Organização não encontrada");
 
-      // 1. Buscar estatísticas reais da VIEW para Ingressos e Cortesias
       let statsQuery = supabase.from("event_ticket_stats").select("*").eq("organization_id", orgId);
-      if (eventId && eventId !== "overview") {
-        statsQuery = statsQuery.eq("event_id", eventId);
-      }
+      if (eventId && eventId !== "overview") statsQuery = statsQuery.eq("event_id", eventId);
 
       const { data: viewData, error: viewError } = await statsQuery;
       if (viewError) throw viewError;
 
-      // 2. Buscar outros dados (financeiro e histórico) da tabela de tickets/sales
       let ticketsQuery = supabase.from("tickets").select(`
         created_at,
         sales!inner (
@@ -176,9 +175,7 @@ export function useSalesStats(eventId?: string) {
         )
       `).eq("sales.organization_id", orgId);
 
-      if (eventId && eventId !== "overview") {
-        ticketsQuery = ticketsQuery.eq("sales.event_id", eventId);
-      }
+      if (eventId && eventId !== "overview") ticketsQuery = ticketsQuery.eq("sales.event_id", eventId);
 
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) throw ticketsError;
@@ -189,15 +186,8 @@ export function useSalesStats(eventId?: string) {
         totalTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0), 0),
         pendingSales: 0,
         pendingAmount: 0,
-        checkins: (viewData || []).reduce(
-          (acc, v) => acc + (v.checkins_vendidos || 0) + (v.checkins_cortesias || 0),
-          0,
-        ),
-        validTickets:
-          (viewData || []).reduce(
-            (acc, v) => acc + (v.ingressos_vendidos || 0) + (v.cortesias_emitidas || 0),
-            0,
-          ),
+        checkins: (viewData || []).reduce((acc, v) => acc + (v.checkins_vendidos || 0) + (v.checkins_cortesias || 0), 0),
+        validTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0) + (v.cortesias_emitidas || 0), 0),
         cancelledSales: 0,
         paidSales: 0,
         courtesies: (viewData || []).reduce((acc, v) => acc + (v.cortesias_emitidas || 0), 0),
@@ -229,51 +219,30 @@ export function useSalesStats(eventId?: string) {
           }
         }
 
-        // Gráfico histórico apenas para ingressos pagos (não cortesia)
         if (!s.is_courtesy && s.status === "pago") {
           const dateStr = new Date(t.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-          if (dailyMap.has(dateStr)) {
-            dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
-          }
+          if (dailyMap.has(dateStr)) dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
         }
       });
 
-      stats.last14Days = Array.from(dailyMap.entries())
-        .map(([date, value]) => ({ date, value }))
-        .reverse();
-
+      stats.last14Days = Array.from(dailyMap.entries()).map(([date, value]) => ({ date, value })).reverse();
       return stats;
     },
   });
 }
 
-export const formatCurrency = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const formatCurrency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export function useConfirmSalePaid() {
   return async (saleId: string, mpPaymentId: string = "SIMULADO") => {
-    const { error } = await supabase.rpc("confirm_sale_paid", {
-      _sale_id: saleId,
-      _mp_payment_id: mpPaymentId,
-    });
+    const { error } = await supabase.rpc("confirm_sale_paid", { _sale_id: saleId, _mp_payment_id: mpPaymentId });
     if (error) throw error;
   };
 }
 
 export function useCreatePendingSale() {
-  return async (vars: {
-    event_id: string;
-    batch_id: string;
-    buyer_name: string;
-    buyer_whatsapp: string;
-    buyer_email?: string;
-    quantity: number;
-    participant_names: string[];
-    customer_id?: string;
-  }) => {
-    // Normalizar WhatsApp
+  return async (vars: { event_id: string; batch_id: string; buyer_name: string; buyer_whatsapp: string; buyer_email?: string; quantity: number; participant_names: string[]; customer_id?: string }) => {
     const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
-
     const { data, error } = await supabase.rpc("create_pending_sale", {
       _event_id: vars.event_id,
       _batch_id: vars.batch_id,
@@ -284,59 +253,36 @@ export function useCreatePendingSale() {
       _participant_names: vars.participant_names,
       ...(vars.customer_id ? { _customer_id: vars.customer_id } : {}),
     });
-
     if (error) {
-      if (error.message.includes("Estoque insuficiente")) {
-        throw new Error("Desculpe, o estoque para este lote acabou de esgotar.");
-      }
+      if (error.message.includes("Estoque insuficiente")) throw new Error("Desculpe, o estoque para este lote acabou de esgotar.");
       throw error;
     }
-    return data; // Retorna o ID da venda
+    return data;
   };
 }
 
 export function useTrackAbandonment() {
-  return async (vars: {
-    event_id: string;
-    buyer_name: string;
-    buyer_whatsapp: string;
-  }) => {
-    // Normalizar WhatsApp para 11 dígitos antes de enviar para garantir consistência no rate limiting/on conflict
+  return async (vars: { event_id: string; buyer_name: string; buyer_whatsapp: string }) => {
     const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
-    
-    const { error } = await supabase.rpc("track_checkout_abandonment", {
-      _event_id: vars.event_id,
-      _buyer_name: vars.buyer_name,
-      _buyer_whatsapp: cleanWhatsapp,
-    });
+    const { error } = await supabase.rpc("track_checkout_abandonment", { _event_id: vars.event_id, _buyer_name: vars.buyer_name, _buyer_whatsapp: cleanWhatsapp });
     if (error) console.error("Erro ao registrar abandono:", error);
   };
 }
 
 export function useGenerateSalePix() {
   const createFn = useServerFn(createMpPix);
-  return async (vars: { sale_id: string }) => {
-    return await createFn({ data: vars });
-  };
+  return async (vars: { sale_id: string }) => await createFn({ data: vars });
 }
 
 export function useSaleStatus(saleId: string | null) {
   return useQuery({
     queryKey: ["sales", "status", saleId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sales")
-        .select("status")
-        .eq("id", saleId!)
-        .single();
-
+      const { data, error } = await supabase.from("sales").select("status").eq("id", saleId!).single();
       if (error) throw error;
       return data.status;
     },
     enabled: !!saleId,
-    refetchInterval: (query) => {
-      if (query.state.data === "pago") return false;
-      return 4000;
-    },
+    refetchInterval: (query) => query.state.data === "pago" ? false : 4000,
   });
 }

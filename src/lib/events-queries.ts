@@ -34,7 +34,7 @@ export function getOperationalEvent(events: EventRow[], now = Date.now()): Event
     .filter((event) => new Date(event.event_date).getTime() <= now)
     .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
 
-  if (inProgress.length > 0) return inProgress[0];
+  if (inProgress.length > 0) return inProgress[0] ?? null;
 
   return candidates
     .filter((event) => new Date(event.event_date).getTime() > now)

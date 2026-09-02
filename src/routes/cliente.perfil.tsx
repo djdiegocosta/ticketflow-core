@@ -14,7 +14,6 @@ export const Route = createFileRoute('/cliente/perfil')({
   component: Page_cliente_perfil,
 });
 
-
 const profileSchema = z.object({
   full_name: z.string().min(1, "Nome obrigatório"),
   whatsapp: z.string().min(1, "WhatsApp obrigatório"),
@@ -70,23 +69,9 @@ export function Page_cliente_perfil() {
     );
   }
 
-  // Cálculo de completude simples
-  const fields = ['full_name', 'whatsapp', 'email', 'cidade', 'data_nascimento', 'instagram'];
-  const completedFields = fields.filter(f => !!form.watch(f as any)).length;
-  const completude = Math.round((completedFields / fields.length) * 100);
-
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-heading-1">Perfil</h1>
-      
-      <div className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)]">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-small font-bold">Perfil {completude}% completo</span>
-          <div className="w-24 h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-            <div className="h-full bg-[var(--accent)]" style={{ width: `${completude}%` }} />
-          </div>
-        </div>
-      </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-20">
         <SmartField label="Nome completo" icon={User} value={form.watch("full_name")} onChange={(v) => form.setValue("full_name", formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch("full_name"))} placeholder="Nome Sobrenome" error={form.formState.errors.full_name?.message as string} />
@@ -114,17 +99,9 @@ export function Page_cliente_perfil() {
 
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Data de Nascimento</label>
-          <input 
+          <input
             {...form.register("data_nascimento")}
             type="date"
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-micro font-bold uppercase">Instagram</label>
-          <input 
-            {...form.register("instagram")}
             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
           />
         </div>
@@ -142,8 +119,8 @@ export function Page_cliente_perfil() {
           </select>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={updateProfile.isPending}
           className="w-full bg-[var(--accent)] text-[#111111] font-bold py-3 rounded-[var(--radius-md)] flex items-center justify-center gap-2"
         >

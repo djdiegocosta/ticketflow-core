@@ -40,7 +40,7 @@ export function EventsListPage() {
             const status = eventStatusLabel(event);
             const capacity = event.capacity || 0;
             const progress = capacity > 0 ? Math.round((event.sold / capacity) * 100) : 0;
-            const statusStyle = statusStyles[status] ?? statusStyles.Encerrado;
+            const statusStyle = statusStyles[status] ?? { bg: "", text: "", dot: "" };
             const isPublished = status === "Publicado";
             const isClosed = status === "Encerrado";
             return <div key={event.id} className="group flex flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border-subtle bg-[var(--bg-primary)] shadow-sm transition-all duration-300 hover:shadow-lg">
