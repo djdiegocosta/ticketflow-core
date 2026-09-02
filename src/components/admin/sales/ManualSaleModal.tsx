@@ -339,7 +339,7 @@ export function ManualSaleModal({
             <div className="space-y-6">
               <section className="space-y-4">
                 <p className={blockTitle}>Resumo da Venda</p>
-                <div className="space-y-2 rounded-none border border-border-subtle bg-bg-secondary p-4 text-small">
+                <div className="space-y-2 rounded-[var(--radius-sm)] border border-border-subtle bg-bg-secondary p-4 text-small">
                   <div className="flex justify-between">
                     <span className="text-text-secondary">Evento:</span>
                     <span className="font-medium text-text-primary">{(event as any)?.title || "—"}</span>

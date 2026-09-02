@@ -166,7 +166,7 @@ export function ChecklistPage() {
           gaugeValue={progress}
         >
           <div className="text-heading-1 text-text-primary">{completedCount} de {tasks.length}</div>
-          <div className="mt-2 h-1 w-full bg-bg-tertiary overflow-hidden rounded-none">
+          <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-bg-tertiary">
             <div 
               className="h-full bg-success transition-all duration-500" 
               style={{ width: `${progress}%` }} 
@@ -287,7 +287,7 @@ export function ChecklistPage() {
               value={newTaskText}
               onChange={(e) => setNewTaskText(e.target.value)}
               placeholder="Ex: Checar iluminação do palco"
-              className="rounded-none border-border-default focus-visible:ring-accent"
+              className="rounded-[var(--radius-sm)] border-border-default focus-visible:ring-accent"
               autoFocus
               ref={inputRef}
             />
@@ -297,7 +297,7 @@ export function ChecklistPage() {
             <button
               type="button"
               onClick={() => setIsPanelOpen(false)}
-              className="flex-1 px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors border border-border-subtle rounded-none"
+              className="flex-1 rounded-[var(--radius-sm)] border border-border-subtle px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
             >
               Cancelar
             </button>

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { ACCENT_COLORS, CORNER_STYLES, AccentColor, CornerStyle } from "./design";
+import { ACCENT_COLORS, AccentColor } from "./design";
 
 export interface Customer {
   id: string;
@@ -203,7 +203,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
 
     const root = document.documentElement;
     const accent = design.accent_color as AccentColor;
-    const radius = design.corner_style as CornerStyle;
 
     // Apply Colors
     if (ACCENT_COLORS[accent]) {
@@ -214,16 +213,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
       root.style.setProperty("--accent-text", colorSet.text);
       root.style.setProperty("--primary", colorSet.accent);
       root.style.setProperty("--ring", colorSet.accent);
-    }
-
-    // Apply Radius
-    if (CORNER_STYLES[radius]) {
-      const style = CORNER_STYLES[radius];
-      root.style.setProperty("--radius-sm", style.sm);
-      root.style.setProperty("--radius-md", style.md);
-      root.style.setProperty("--radius-lg", style.lg);
-      root.style.setProperty("--radius-xl", style.xl);
-      root.style.setProperty("--radius", style.md);
     }
   }, [design]);
 }

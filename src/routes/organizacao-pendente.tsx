@@ -21,7 +21,7 @@ function OrganizationPendingPage() {
           <h1 className="text-display text-accent font-bold">TicketFlow</h1>
         </div>
 
-        <Card className="w-full max-w-[420px] bg-bg-secondary border-border-default shadow-md rounded-none">
+        <Card className="w-full max-w-[420px] rounded-[var(--radius-md)] bg-bg-secondary border-border-default shadow-md">
           <CardHeader className="pb-2 text-center flex flex-col items-center gap-4">
             <div className="h-16 w-16 bg-accent/10 flex items-center justify-center rounded-full">
               <Clock className="h-8 w-8 text-accent animate-pulse" />

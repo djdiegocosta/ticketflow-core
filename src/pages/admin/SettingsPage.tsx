@@ -175,7 +175,7 @@ export function SettingsPage() {
                 <Input
                   value={orgForm.name}
                   onChange={(e) => setOrgForm({ ...orgForm, name: e.target.value })}
-                  className="rounded-none"
+                  className="rounded-[var(--radius-sm)]"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export function SettingsPage() {
                     type="email"
                     value={orgForm.email}
                     onChange={(e) => setOrgForm({ ...orgForm, email: e.target.value })}
-                    className="rounded-none"
+                    className="rounded-[var(--radius-sm)]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -255,7 +255,7 @@ export function SettingsPage() {
                   <Input
                     value={orgForm.phone}
                     onChange={(e) => setOrgForm({ ...orgForm, phone: e.target.value })}
-                    className="rounded-none"
+                    className="rounded-[var(--radius-sm)]"
                   />
                 </div>
               </div>
@@ -324,45 +324,6 @@ export function SettingsPage() {
                           <div 
                             className="h-8 w-8 rounded-full shadow-sm" 
                             style={{ backgroundColor: opt.color }}
-                          />
-                          <span className={cn(
-                            "text-micro font-medium uppercase tracking-wider",
-                            isSelected ? "text-[var(--accent-text)]" : "text-[var(--text-secondary)]"
-                          )}>
-                            {opt.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-4 border-t border-[var(--border-subtle)] pt-6">
-                  <div>
-                    <h3 className="text-heading-3 text-[var(--text-primary)]">Estilo de Cantos</h3>
-                    <p className="text-small text-[var(--text-secondary)]">Escolha o estilo visual dos cantos do sistema.</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 max-w-sm">
-                    {[
-                      { id: "straight", label: "Retos", radius: "0px" },
-                      { id: "rounded", label: "Arredondados", radius: "0.5rem" },
-                    ].map((opt) => {
-                      const isSelected = design.radius === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => design.setRadius(opt.id as any)}
-                          className={cn(
-                            "flex flex-col items-center gap-3 border p-4 transition-all",
-                            isSelected 
-                              ? "border-[var(--accent)] bg-[var(--accent-muted)]" 
-                              : "border-[var(--border-subtle)] bg-[var(--bg-tertiary)] hover:border-[var(--border-default)]"
-                          )}
-                        >
-                          <div 
-                            className="h-12 w-12 border-2 border-[var(--text-primary)]" 
-                            style={{ borderRadius: opt.radius }}
                           />
                           <span className={cn(
                             "text-micro font-medium uppercase tracking-wider",

@@ -31,7 +31,7 @@ export function Page_cliente_eventos() {
               key={event.id} 
               to="/e/$slug" 
               params={{ slug: event.slug }}
-              className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] overflow-hidden rounded-none flex flex-col active:scale-[0.98] transition-transform"
+              className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] overflow-hidden flex flex-col active:scale-[0.98] transition-transform"
             >
               <div className="aspect-video w-full bg-[var(--bg-tertiary)] overflow-hidden">
                 {event.image_url ? (
@@ -64,7 +64,7 @@ export function Page_cliente_eventos() {
             </Link>
           ))
         ) : (
-          <div className="bg-[var(--bg-tertiary)]/30 border border-dashed border-[var(--border-subtle)] p-12 rounded-none text-center">
+          <div className="rounded-[var(--radius-md)] bg-[var(--bg-tertiary)]/30 border border-dashed border-[var(--border-subtle)] p-12 text-center">
             <p className="text-small text-[var(--text-secondary)]">Nenhum evento ativo no momento.</p>
           </div>
         )}

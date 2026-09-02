@@ -48,7 +48,7 @@ function ToolsHubPage() {
           <Link
             key={tool.href}
             to={tool.href}
-            className="group block bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-6 transition-all hover:border-[var(--accent)] hover:shadow-lg rounded-none"
+            className="group block rounded-[var(--radius-md)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-6 transition-all hover:border-[var(--accent)] hover:shadow-lg"
           >
             <div className="flex flex-col items-start gap-4">
               <div className="p-3 bg-[var(--bg-tertiary)] group-hover:bg-[var(--accent-muted)] transition-colors">

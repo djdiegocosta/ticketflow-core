@@ -384,7 +384,7 @@ export function MercadoPagoWizardPage() {
                     value={publicKey[env]}
                     onChange={(e) => setPublicKey({ ...publicKey, [env]: e.target.value })}
                     placeholder={env === "sandbox" ? "TEST-..." : "APP_USR-..."}
-                    className="rounded-none"
+                    className="rounded-[var(--radius-sm)]"
                   />
                   <Button
                     variant="secondary"
@@ -418,7 +418,7 @@ export function MercadoPagoWizardPage() {
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
                     placeholder={tokenTail[env] ? "Substituir token" : env === "sandbox" ? "TEST-..." : "APP_USR-..."}
-                    className="rounded-none"
+                    className="rounded-[var(--radius-sm)]"
                   />
                   <Button
                     variant="secondary"
@@ -525,7 +525,7 @@ export function MercadoPagoWizardPage() {
                     value={secretInput}
                     onChange={(e) => setSecretInput(e.target.value)}
                     placeholder={secretTail ? "Substituir chave secreta" : "Chave secreta do webhook"}
-                    className="rounded-none"
+                    className="rounded-[var(--radius-sm)]"
                   />
                   <Button
                     variant="secondary"
