@@ -1,5 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Outlet, useMatchRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { useAuth } from "@/lib/auth-context";
@@ -30,9 +29,7 @@ export const Route = createFileRoute("/admin")({
   component: function AdminRoute() {
     return (
       <AdminRouteGuard>
-        <AdminLayout>
-          <Outlet />
-        </AdminLayout>
+        <AdminLayout />
       </AdminRouteGuard>
     );
   },

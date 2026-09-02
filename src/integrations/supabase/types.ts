@@ -251,6 +251,53 @@ export type Database = {
           },
         ]
       }
+      diagnostic_logs: {
+        Row: {
+          context: Json | null
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: string
+          likely_cause: string | null
+          operation: string | null
+          organization_id: string | null
+          route: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          likely_cause?: string | null
+          operation?: string | null
+          organization_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          likely_cause?: string | null
+          operation?: string | null
+          organization_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_checklist_items: {
         Row: {
           completed_at: string | null
@@ -1083,15 +1130,10 @@ export type Database = {
           sale_id: string
         }[]
       }
-      create_locked_tickets:
-        | {
-            Args: { _participant_names: Json; _sale_id: string }
-            Returns: undefined
-          }
-        | {
-            Args: { _participant_names: string[]; _sale_id: string }
-            Returns: undefined
-          }
+      create_locked_tickets: {
+        Args: { _participant_names: Json; _sale_id: string }
+        Returns: undefined
+      }
       create_manual_sale: {
         Args: {
           _batch_id: string
@@ -1108,40 +1150,23 @@ export type Database = {
           sale_id: string
         }[]
       }
-      create_pending_sale:
-        | {
-            Args: {
-              _batch_id: string
-              _buyer_email: string
-              _buyer_name: string
-              _buyer_whatsapp: string
-              _event_id: string
-              _participant_names: string[]
-              _quantity: number
-            }
-            Returns: {
-              sale_code: string
-              sale_id: string
-              total_amount: number
-            }[]
-          }
-        | {
-            Args: {
-              _batch_id: string
-              _buyer_email: string
-              _buyer_name: string
-              _buyer_whatsapp: string
-              _customer_id?: string
-              _event_id: string
-              _participant_names: string[]
-              _quantity: number
-            }
-            Returns: {
-              sale_code: string
-              sale_id: string
-              total_amount: number
-            }[]
-          }
+      create_pending_sale: {
+        Args: {
+          _batch_id: string
+          _buyer_email: string
+          _buyer_name: string
+          _buyer_whatsapp: string
+          _customer_id?: string
+          _event_id: string
+          _participant_names: string[]
+          _quantity: number
+        }
+        Returns: {
+          sale_code: string
+          sale_id: string
+          total_amount: number
+        }[]
+      }
       delete_courtesy_ticket: {
         Args: { _ticket_id: string }
         Returns: undefined
@@ -1156,6 +1181,7 @@ export type Database = {
         }[]
       }
       expire_pending_sales: { Args: never; Returns: undefined }
+      expire_pending_sales_job: { Args: never; Returns: undefined }
       generate_short_code: { Args: never; Returns: string }
       get_available_batches: {
         Args: { _event_id: string }
@@ -1286,32 +1312,19 @@ export type Database = {
         Args: { _name: string; _ticket_id: string }
         Returns: undefined
       }
-      update_customer:
-        | {
-            Args: {
-              _cidade?: string
-              _customer_id: string
-              _data_nascimento?: string
-              _email: string
-              _full_name: string
-              _instagram?: string
-              _sexo?: Database["public"]["Enums"]["customer_gender"]
-              _whatsapp: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _cidade: string
-              _customer_id: string
-              _data_nascimento: string
-              _email: string
-              _full_name: string
-              _instagram: string
-              _whatsapp: string
-            }
-            Returns: undefined
-          }
+      update_customer: {
+        Args: {
+          _cidade?: string
+          _customer_id: string
+          _data_nascimento?: string
+          _email: string
+          _full_name: string
+          _instagram?: string
+          _sexo?: Database["public"]["Enums"]["customer_gender"]
+          _whatsapp: string
+        }
+        Returns: undefined
+      }
       update_organization_profile: {
         Args: {
           _contact_email: string

@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Calculator, Target, Gift, Wrench, CheckSquare, ImageIcon, History, Terminal } from 'lucide-react'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, BarChart3 } from "lucide-react";
 
 const tools = [
   {
@@ -7,6 +7,12 @@ const tools = [
     description: "Consulte o histórico de check-ins de todos os eventos.",
     icon: History,
     href: "/admin/historico",
+  },
+  {
+    name: "Relatórios",
+    description: "Acesse relatórios e análises detalhadas dos eventos.",
+    icon: BarChart3,
+    href: "/admin/relatorios",
   },
   {
     name: "Vitrine",
@@ -32,13 +38,7 @@ const tools = [
     icon: CheckSquare,
     href: "/admin/checklist",
   },
-  {
-    name: "Log de Diagnóstico",
-    description: "Visualize erros capturados e traduza para português.",
-    icon: Terminal,
-    href: "/admin/ferramentas/diagnostic",
-  },
-]
+];
 
 function ToolsHubPage() {
   return (
@@ -58,18 +58,16 @@ function ToolsHubPage() {
                 <h3 className="text-heading-2 text-[var(--text-primary)] group-hover:text-[var(--accent-text)] transition-colors">
                   {tool.name}
                 </h3>
-                <p className="text-body text-[var(--text-secondary)] mt-1">
-                  {tool.description}
-                </p>
+                <p className="text-body text-[var(--text-secondary)] mt-1">{tool.description}</p>
               </div>
             </div>
           </Link>
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export const Route = createFileRoute('/admin/ferramentas/')({
+export const Route = createFileRoute("/admin/ferramentas/")({
   component: ToolsHubPage,
-})
+});

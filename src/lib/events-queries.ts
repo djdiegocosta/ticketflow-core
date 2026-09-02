@@ -21,6 +21,32 @@ export function formatEventDate(iso: string) {
   };
 }
 
+/**
+ * Define automaticamente o evento operacional da organização.
+ * Prioridade: evento em andamento > próximo evento publicado e não encerrado.
+ * Retorna null quando não existe evento operacional.
+ */
+export function getOperationalEvent(events: EventRow[], now = Date.now()): EventRow | null {
+  const candidates = events.filter((event) => event.status === "publicado" && !event.is_closed);
+  if (candidates.length === 0) return null;
+
+  const inProgress = candidates
+    .filter((event) => new Date(event.event_date).getTime() <= now)
+    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+
+  if (inProgress.length > 0) return inProgress[0];
+
+  return candidates
+    .filter((event) => new Date(event.event_date).getTime() > now)
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())[0] ?? null;
+}
+
+export function useOperationalEvent() {
+  const query = useEvents();
+  const event = getOperationalEvent(query.data ?? []);
+  return { ...query, event, hasMultipleCandidates: (query.data ?? []).filter((e) => e.status === "publicado" && !e.is_closed).length > 1 };
+}
+
 export async function fetchEventsWithStats(): Promise<EventWithStats[]> {
   const [{ data: events, error }, { data: batches }, { data: stats }] = await Promise.all([
     supabase.from("events").select("*").order("event_date", { ascending: false }),

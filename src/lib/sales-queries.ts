@@ -188,6 +188,16 @@ export function useSalesStats(eventId?: string) {
         totalSales: 0,
         totalTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0), 0),
         pendingSales: 0,
+        pendingAmount: 0,
+        checkins: (viewData || []).reduce(
+          (acc, v) => acc + (v.checkins_vendidos || 0) + (v.checkins_cortesias || 0),
+          0,
+        ),
+        validTickets:
+          (viewData || []).reduce(
+            (acc, v) => acc + (v.ingressos_vendidos || 0) + (v.cortesias_emitidas || 0),
+            0,
+          ),
         cancelledSales: 0,
         paidSales: 0,
         courtesies: (viewData || []).reduce((acc, v) => acc + (v.cortesias_emitidas || 0), 0),
@@ -213,6 +223,7 @@ export function useSalesStats(eventId?: string) {
             stats.paidSales++;
           } else if (s.status === "pendente") {
             stats.pendingSales++;
+            stats.pendingAmount += Number(s.total_amount);
           } else if (s.status === "cancelado") {
             stats.cancelledSales++;
           }
@@ -271,7 +282,7 @@ export function useCreatePendingSale() {
       _buyer_email: vars.buyer_email || "",
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
-      _customer_id: vars.customer_id,
+      ...(vars.customer_id ? { _customer_id: vars.customer_id } : {}),
     });
 
     if (error) {
