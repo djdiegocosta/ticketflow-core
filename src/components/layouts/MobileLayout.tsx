@@ -1,11 +1,11 @@
-import { ReactNode } from "react";
-import { Link, Outlet } from "@tanstack/react-router";
+import { ReactNode, useEffect, useState } from "react";
+import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { LogOut } from "lucide-react";
+import { CalendarDays, Check, Home, LogOut, Menu, Moon, Sun, Ticket, User, X } from "lucide-react";
 import { Brandmark } from "@/components/Brandmark";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApplyCustomerDesign } from "@/lib/customer-queries";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
 
 interface MobileLayoutProps {
@@ -14,153 +14,147 @@ interface MobileLayoutProps {
   showFooter?: boolean;
 }
 
+const menuItems = [
+  { to: "/cliente", label: "Início", icon: Home, exact: true },
+  { to: "/cliente/eventos", label: "Eventos", icon: CalendarDays },
+  { to: "/cliente/ingressos", label: "Ingressos", icon: Ticket },
+  { to: "/cliente/pontos", label: "Pontos", icon: Check },
+  { to: "/cliente/perfil", label: "Perfil", icon: User },
+] as const;
+
 export function MobileLayout({ children, headerContent, showFooter = true }: MobileLayoutProps) {
   useApplyCustomerDesign();
   const { logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  const isActive = (to: string, exact?: boolean) =>
+    exact ? location.pathname === to : location.pathname === to || location.pathname.startsWith(`${to}/`);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-primary)] overflow-x-hidden">
-      {/* Header simples mobile */}
-      <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[var(--bg-primary)]">
+      {isMenuOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          className="fixed inset-0 z-40 bg-black/50"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 flex h-full w-60 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-secondary)] transition-transform duration-300",
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-16 shrink-0 items-center justify-between px-6">
+          <Brandmark size="sm" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(false)}
+            className="text-[var(--text-secondary)]"
+            aria-label="Fechar menu"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <nav className="min-h-0 flex-1 overflow-hidden px-3 py-2">
+          <div className="flex flex-col gap-0.5">
+            {menuItems.map((item) => {
+              const active = isActive(item.to, item.exact);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to as any}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-none border-l-[3px] px-3 py-2 text-body transition-colors",
+                    active
+                      ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)]"
+                      : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        <div className="shrink-0 border-t border-[var(--border-subtle)] px-3 pb-5 pt-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span>{theme === "dark" ? "Tema claro" : "Tema escuro"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="mt-0.5 flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--error)]"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sair</span>
+          </button>
+        </div>
+      </aside>
+
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4">
         <div className="flex w-full items-center justify-between gap-4">
           <Link to="/cliente" className="flex items-center gap-2">
             <Brandmark size="sm" />
           </Link>
-          <div className="flex items-center gap-2">
-            {headerContent && <div className="flex-1">{headerContent}</div>}
-            <ThemeToggle />
+          <div className="flex min-w-0 items-center gap-2">
+            {headerContent && <div className="min-w-0">{headerContent}</div>}
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => logout()}
-              className="h-9 w-9 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              onClick={() => setIsMenuOpen(true)}
+              className="h-9 w-9 shrink-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              aria-label="Abrir menu"
             >
-              <LogOut className="h-5 w-5" />
+              <Menu className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Área de conteúdo */}
       <main className={cn("flex-1", showFooter ? "pb-20 md:pb-6" : "")}>
         <div className="mx-auto h-full max-w-md md:max-w-2xl lg:max-w-4xl">
           {children || <Outlet />}
         </div>
       </main>
 
-      {/* Footer */}
       {showFooter && (
-        <footer className="fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-2 py-2 md:left-60 md:rounded-tl-xl">
+        <footer className="fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-2 py-2 md:left-60 md:rounded-tl-xl">
           <div className="mx-auto flex h-full max-w-md items-center justify-around text-[var(--text-secondary)] lg:max-w-4xl">
-            <Link
-              to="/cliente"
-              className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
-              activeProps={{ className: "text-[var(--accent)]" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              <span className="text-[10px]">Início</span>
-            </Link>
-            <Link
-              to="/cliente/eventos"
-              className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
-              activeProps={{ className: "text-[var(--accent)]" }}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
-                <line x1="16" x2="16" y1="2" y2="6"></line>
-                <line x1="8" x2="8" y1="2" y2="6"></line>
-                <line x1="3" x2="21" y1="10" y2="10"></line>
-              </svg>
-              <span className="text-[10px]">Eventos</span>
-            </Link>
-            <Link
-              to={"/cliente/ingressos" as any}
-
-              className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
-              activeProps={{ className: "text-[var(--accent)]" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-                <path d="M13 5v2" />
-                <path d="M13 17v2" />
-                <path d="M13 11v2" />
-              </svg>
-              <span className="text-[10px]">Ingressos</span>
-            </Link>
-            <Link
-              to={"/cliente/pontos" as any}
-              className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
-              activeProps={{ className: "text-[var(--accent)]" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="m9 12 2 2 4-4" />
-              </svg>
-              <span className="text-[10px]">Pontos</span>
-            </Link>
-            <Link
-              to={"/cliente/perfil" as any}
-              className="flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]"
-              activeProps={{ className: "text-[var(--accent)]" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className="text-[10px]">Perfil</span>
-            </Link>
+            {menuItems.map((item) => {
+              const active = isActive(item.to, item.exact);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to as any}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 px-3 text-small hover:text-[var(--accent)]",
+                    active && "text-[var(--accent)]"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-[10px]">{item.label}</span>
+                </Link>
+              );
+            })}
           </div>
         </footer>
       )}
