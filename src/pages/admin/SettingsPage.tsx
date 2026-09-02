@@ -302,10 +302,10 @@ export function SettingsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {[
-                      { id: "green", label: "Verde", color: "#008a50" },
-                      { id: "blue", label: "Azul", color: "#3b82f6" },
-                      { id: "nubank", label: "Nubank", color: "hsl(270, 60%, 50%)" },
-                      { id: "red", label: "Vermelho", color: "#ef4444" },
+                      { id: "green", label: "Verde", color: "#16a34a" },
+                      { id: "blue", label: "Azul", color: "#2563eb" },
+                      { id: "roxo", label: "Roxo", color: "#7c3aed" },
+                      { id: "red", label: "Vermelho", color: "#dc2626" },
                     ].map((opt) => {
                       const isSelected = design.accent === opt.id;
                       return (

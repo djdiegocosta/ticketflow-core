@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useTheme } from "./theme";
 import { useOrganization, useUpdateDesignSettings } from "./settings-queries";
 
-export type AccentColor = "green" | "blue" | "nubank" | "red";
+export type AccentColor = "green" | "blue" | "roxo" | "red";
 
 interface ColorSet {
   accent: string;
@@ -14,20 +14,20 @@ interface ColorSet {
 
 export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSet }> = {
   green: {
-    light: { accent: "#008a50", hover: "#007045", muted: "#e8f5ef", text: "#006641", icon: "#00e676" },
+    light: { accent: "#16a34a", hover: "#15803d", muted: "#dcfce7", text: "#15803d", icon: "#00e676" },
     dark: { accent: "#4ade80", hover: "#22c55e", muted: "#0d2a1a", text: "#4ade80", icon: "#39ff8a" },
   },
   blue: {
-    light: { accent: "#3b82f6", hover: "#2563eb", muted: "#eff6ff", text: "#1d4ed8", icon: "#00b0ff" },
+    light: { accent: "#2563eb", hover: "#1d4ed8", muted: "#dbeafe", text: "#1d4ed8", icon: "#00b0ff" },
     dark: { accent: "#60a5fa", hover: "#3b82f6", muted: "#0d203d", text: "#60a5fa", icon: "#40c4ff" },
   },
-  nubank: {
-    light: { accent: "hsl(270, 60%, 50%)", hover: "hsl(270, 60%, 45%)", muted: "hsl(270, 30%, 92%)", text: "hsl(270, 60%, 40%)", icon: "#d500f9" },
-    dark: { accent: "hsl(270, 70%, 60%)", hover: "hsl(270, 70%, 55%)", muted: "hsl(270, 40%, 18%)", text: "hsl(270, 20%, 98%)", icon: "#e040fb" },
+  roxo: {
+    light: { accent: "#7c3aed", hover: "#6d28d9", muted: "#ede9fe", text: "#6d28d9", icon: "#d500f9" },
+    dark: { accent: "#a78bfa", hover: "#8b5cf6", muted: "#2e1065", text: "#c4b5fd", icon: "#e040fb" },
   },
   red: {
-    light: { accent: "#ef4444", hover: "#dc2626", muted: "#fef2f2", text: "#b91c1c", icon: "#ff1744" },
-    dark: { accent: "#f87171", hover: "#ef4444", muted: "#3d0a0a", text: "#f87171", icon: "#ff5252" },
+    light: { accent: "#dc2626", hover: "#b91c1c", muted: "#fee2e2", text: "#b91c1c", icon: "#ff1744" },
+    dark: { accent: "#f87171", hover: "#ef4444", muted: "#450a0a", text: "#fca5a5", icon: "#ff5252" },
   },
 };
 
