@@ -7,9 +7,7 @@ export function useOrganizationUsers() {
     queryKey: ["org_users"],
     queryFn: async () => {
       // 1. Obter membros atuais (incluindo o usuário logado)
-      const { data: members, error: memError } = await supabase
-        .from("user_roles")
-        .select(`
+      const { data: members, error: memError } = await supabase.from("user_roles").select(`
           user_id,
           role,
           created_at,
@@ -22,9 +20,7 @@ export function useOrganizationUsers() {
       if (memError) throw memError;
 
       // 2. Obter convites pendentes
-      const { data: invites, error: invError } = await supabase
-        .from("pending_invites")
-        .select("*");
+      const { data: invites, error: invError } = await supabase.from("pending_invites").select("*");
 
       if (invError) throw invError;
 
@@ -76,10 +72,9 @@ export function useRemoveUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: { user_id: string }) => {
-      const { error } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", vars.user_id);
+      const { error } = await supabase.rpc("remove_user_or_invite", {
+        _id: vars.user_id,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

@@ -753,6 +753,7 @@ export type Database = {
           refunded_amount: number | null
           refunded_at: string | null
           sale_code: string
+          sales_link_id: string | null
           status: Database["public"]["Enums"]["sale_status"]
           total_amount: number
           unit_price: number
@@ -787,6 +788,7 @@ export type Database = {
           refunded_amount?: number | null
           refunded_at?: string | null
           sale_code: string
+          sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount: number
           unit_price: number
@@ -821,6 +823,7 @@ export type Database = {
           refunded_amount?: number | null
           refunded_at?: string | null
           sale_code?: string
+          sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]
           total_amount?: number
           unit_price?: number
@@ -853,6 +856,64 @@ export type Database = {
           },
           {
             foreignKeyName: "sales_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_sales_link_id_fkey"
+            columns: ["sales_link_id"]
+            isOneToOne: false
+            referencedRelation: "sales_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_links: {
+        Row: {
+          channel: string
+          code: string
+          created_at: string
+          event_id: string
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          code: string
+          created_at?: string
+          event_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          code?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_links_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1144,6 +1205,7 @@ export type Database = {
           _participant_names: string[]
           _payment_method: Database["public"]["Enums"]["payment_method"]
           _quantity: number
+          _sales_link_id?: string
           _total_amount: number
         }
         Returns: {
@@ -1160,6 +1222,7 @@ export type Database = {
           _event_id: string
           _participant_names: string[]
           _quantity: number
+          _ref_code?: string
         }
         Returns: {
           sale_code: string
@@ -1229,6 +1292,13 @@ export type Database = {
         }[]
       }
       get_default_organization: { Args: never; Returns: string }
+      get_direct_sales_stats: {
+        Args: { _event_id: string }
+        Returns: {
+          revenue: number
+          sales_count: number
+        }[]
+      }
       get_hourly_sales_stats: {
         Args: { _event_id?: string }
         Returns: {
@@ -1261,6 +1331,18 @@ export type Database = {
           total_amount: number
         }[]
       }
+      get_sales_link_stats: {
+        Args: { _event_id: string }
+        Returns: {
+          channel: string
+          code: string
+          is_active: boolean
+          name: string
+          revenue: number
+          sales_count: number
+          sales_link_id: string
+        }[]
+      }
       get_single_organization_id: { Args: never; Returns: string }
       get_tickets_by_sale_code: {
         Args: { _code: string }
@@ -1288,6 +1370,7 @@ export type Database = {
         Args: { _reason: string; _refund_amount: number; _sale_id: string }
         Returns: undefined
       }
+      remove_user_or_invite: { Args: { _id: string }; Returns: undefined }
       signup_customer: {
         Args: {
           _cidade: string
@@ -1375,12 +1458,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1404,11 +1487,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1429,11 +1512,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1454,11 +1537,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1471,11 +1554,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
