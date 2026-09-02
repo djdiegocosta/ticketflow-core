@@ -15,7 +15,9 @@ export function useAdminPageAction(action: ReactNode) {
   useEffect(() => {
     setAction(action);
     return () => setAction(null);
-  }, [action, setAction]);
+    // A ação é registrada ao montar a página; seus callbacks usam setters estáveis.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setAction]);
 }
 
 export function useAdminPageActionValue() {
