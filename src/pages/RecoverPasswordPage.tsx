@@ -49,10 +49,6 @@ export default function RecoverPasswordPage() {
   return (
     <MobileLayout showFooter={false}>
       <div className="flex flex-col items-center justify-center p-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-display text-accent font-bold">TicketFlow</h1>
-        </div>
-
         <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
           <CardHeader className="pb-2 text-center">
             <h2 className="text-heading-1">Recuperar senha</h2>

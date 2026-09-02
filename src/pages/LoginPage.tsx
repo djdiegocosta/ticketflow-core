@@ -3,7 +3,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff, Ticket } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { Brandmark } from "@/components/Brandmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,12 +33,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      if (userRole === 'admin' || userRole === 'colaborador') {
-        navigate({ to: '/admin', replace: true });
-      } else if (userRole === 'cliente') {
-        navigate({ to: '/cliente', replace: true });
-      } else if (userRole === 'operador_checkin') {
-        navigate({ to: '/checkin', replace: true });
+      if (userRole === "admin" || userRole === "colaborador") {
+        navigate({ to: "/admin", replace: true });
+      } else if (userRole === "cliente") {
+        navigate({ to: "/cliente", replace: true });
+      } else if (userRole === "operador_checkin") {
+        navigate({ to: "/checkin", replace: true });
       }
     }
   }, [isLoading, isAuthenticated, userRole, navigate]);
@@ -57,10 +58,7 @@ export default function LoginPage() {
       toast.success("Login realizado com sucesso!");
     } else {
       form.setError("password", {
-        message:
-          error.toLowerCase().includes("invalid")
-            ? "E-mail ou senha incorretos"
-            : error,
+        message: error.toLowerCase().includes("invalid") ? "E-mail ou senha incorretos" : error,
       });
     }
   };
@@ -76,20 +74,17 @@ export default function LoginPage() {
         </div>
 
         {/* Logo */}
-        <div className="mb-8 flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-            <Ticket className="h-5 w-5 text-[var(--accent-text)]" />
-          </div>
-          <div>
-            <h1 className="text-[28px] font-bold leading-tight text-[var(--text-primary)]">TicketFlow</h1>
-            <p className="text-small text-[var(--text-secondary)]">Gestão de eventos e ingressos</p>
-          </div>
+        <div className="mb-8 flex flex-col items-center gap-1.5">
+          <Brandmark size="lg" />
+          <p className="text-small text-[var(--text-secondary)]">Gestão de eventos e ingressos</p>
         </div>
 
         {/* Card de login */}
         <Card className="w-full max-w-[400px] border border-[var(--border-default)] bg-[var(--bg-primary)] shadow-lg shadow-black/5 rounded-xl">
           <CardContent className="p-6">
-            <h2 className="mb-5 text-center text-xl font-semibold text-[var(--text-primary)]">Entrar na sua conta</h2>
+            <h2 className="mb-5 text-center text-xl font-semibold text-[var(--text-primary)]">
+              Entrar na sua conta
+            </h2>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -167,9 +162,7 @@ export default function LoginPage() {
 
             {/* Link de cadastro destacado */}
             <div className="mt-5 p-4 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-default)] text-center">
-              <p className="text-small text-[var(--text-secondary)] mb-1.5">
-                Não tem uma conta?
-              </p>
+              <p className="text-small text-[var(--text-secondary)] mb-1.5">Não tem uma conta?</p>
               <Link
                 to="/cadastro"
                 className="text-body font-semibold text-[var(--accent-text)] hover:text-[var(--accent)] hover:underline transition-colors"

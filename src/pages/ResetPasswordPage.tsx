@@ -60,94 +60,90 @@ export default function ResetPasswordPage() {
   return (
     <MobileLayout showFooter={false}>
       <div className="flex flex-col items-center justify-center p-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-display text-accent font-bold">TicketFlow</h1>
-        </div>
-
         <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
-        <CardHeader className="pb-2 text-center">
-          <h2 className="text-heading-1">Redefinir senha</h2>
-          <p className="text-small text-text-secondary mt-2">
-            Crie uma nova senha para sua conta.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nova senha</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="••••••••"
-                          type={showPassword ? "text" : "password"}
-                          {...field}
-                          className="bg-bg-secondary border-border-default focus-visible:ring-accent pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
-                  </FormItem>
-                )}
-              />
+          <CardHeader className="pb-2 text-center">
+            <h2 className="text-heading-1">Redefinir senha</h2>
+            <p className="text-small text-text-secondary mt-2">
+              Crie uma nova senha para sua conta.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nova senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="••••••••"
+                            type={showPassword ? "text" : "password"}
+                            {...field}
+                            className="bg-bg-secondary border-border-default focus-visible:ring-accent pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-small text-error" />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirmar nova senha</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="••••••••"
-                          type={showConfirmPassword ? "text" : "password"}
-                          {...field}
-                          className="bg-bg-secondary border-border-default focus-visible:ring-accent pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-small text-error" />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmar nova senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="••••••••"
+                            type={showConfirmPassword ? "text" : "password"}
+                            {...field}
+                            className="bg-bg-secondary border-border-default focus-visible:ring-accent pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-small text-error" />
+                    </FormItem>
+                  )}
+                />
 
-              <Button
-                type="submit"
-                className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md mt-2"
-                disabled={!form.formState.isValid}
-              >
-                Redefinir senha
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
+                <Button
+                  type="submit"
+                  className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md mt-2"
+                  disabled={!form.formState.isValid}
+                >
+                  Redefinir senha
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
         </Card>
       </div>
     </MobileLayout>

@@ -24,6 +24,7 @@ import {
   Moon,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { Brandmark } from "@/components/Brandmark";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTheme } from "@/lib/theme";
@@ -70,15 +71,15 @@ export function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const location = useLocation();
   // useAuth com fallback seguro — nunca joga exceção fora do provider
-let userRole: string | null = null;
-let logout: () => Promise<void> = async () => {};
-try {
-  const auth = useAuth();
-  userRole = auth.userRole;
-  logout = auth.logout;
-} catch {
-  // AuthProvider não disponível — redirect will happen via route guard
-}
+  let userRole: string | null = null;
+  let logout: () => Promise<void> = async () => {};
+  try {
+    const auth = useAuth();
+    userRole = auth.userRole;
+    logout = auth.logout;
+  } catch {
+    // AuthProvider não disponível — redirect will happen via route guard
+  }
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 1024px)");
@@ -99,7 +100,7 @@ try {
 
     if (userRole === "colaborador") {
       const isPermitted = filteredMenu.some((item) =>
-        item.exact ? pathname === item.to : pathname.startsWith(item.to)
+        item.exact ? pathname === item.to : pathname.startsWith(item.to),
       );
 
       if (!isPermitted && pathname.startsWith("/admin")) {
@@ -128,7 +129,7 @@ try {
     return matches[0]?.[1] ?? "";
   };
 
-const isActive = (to: string, exact?: boolean) =>
+  const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
 
   return (
@@ -148,11 +149,8 @@ const isActive = (to: string, exact?: boolean) =>
         ].join(" ")}
       >
         <div className="flex h-16 shrink-0 items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-[var(--accent-text)] animate-pulse" />
-            <span className="text-heading-2 text-[var(--text-primary)]">TicketFlow</span>
-          </div>
-          
+          <Brandmark size="sm" pulse />
+
           {isMobile && (
             <Button
               variant="ghost"
@@ -203,7 +201,10 @@ const isActive = (to: string, exact?: boolean) =>
                 {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer gap-2 text-[var(--error)]">
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer gap-2 text-[var(--error)]"
+              >
                 <LogOut className="h-4 w-4" />
                 Sair
               </DropdownMenuItem>
