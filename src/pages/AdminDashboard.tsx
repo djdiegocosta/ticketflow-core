@@ -1,5 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
-import { DollarSign, Ticket, Clock, Flame, Thermometer, QrCode, Users } from "lucide-react";
+import { DollarSign, Ticket, Clock, Flame, Thermometer, QrCode } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
