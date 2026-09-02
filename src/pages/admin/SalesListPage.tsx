@@ -52,18 +52,11 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
-  const exportCsv = () => {
-    const header = ["Comprador", "WhatsApp", "Evento", "Lote", "Quantidade", "Valor", "Status", "Data"];
-    const rows = filtered.map((s) => [s.buyer_name, s.buyer_whatsapp, (s.events as any)?.title || "", (s.ticket_batches as any)?.name || "", s.quantity, s.total_amount.toFixed(2).replace(".", ","), s.status, new Date(s.created_at).toLocaleString("pt-BR")]);
-    const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
-    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a"); a.href = url; a.download = "vendas.csv"; a.click(); URL.revokeObjectURL(url); toast.success("CSV exportado");
-  };
-
   const generatePdf = () => {
     const names = filtered.filter((s) => s.status !== "cancelado").map((s) => s.buyer_name);
     if (names.length === 0) return toast.error("Nenhum participante para gerar a lista");
-    generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names); toast.success("Lista PDF gerada");
+    generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names);
+    toast.success("Lista PDF gerada");
   };
 
   const handleCancelSale = async (sale: any) => {
@@ -75,7 +68,7 @@ export function SalesListPage() {
   };
 
   return <div className="space-y-5">
-    <FilterBar actions={!isColab ? <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} /> : undefined}>
+    <FilterBar actions={!isColab ? <FilterExportButton onGeneratePdf={generatePdf} /> : undefined}>
       <FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por cliente ou código da venda" />
       <div className="hidden lg:block shrink-0"><FilterTabs tabs={[...STATUS_TABS]} value={statusFilter} onChange={(tab) => { setStatusFilter(tab); setPage(1); }} /></div>
     </FilterBar>
