@@ -6,6 +6,7 @@ import { createMpPix } from "./mp/mercado-pago.functions";
 
 export interface Sale {
   id: string;
+  sale_code?: string | null;
   buyer_name: string;
   buyer_whatsapp: string;
   buyer_email: string | null;
@@ -28,6 +29,7 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
     .from("sales")
     .select(`
       id,
+      sale_code,
       buyer_name,
       buyer_whatsapp,
       buyer_email,
@@ -118,6 +120,7 @@ export function useSale(id: string) {
         .from("sales")
         .select(`
           id,
+          sale_code,
           buyer_name,
           buyer_whatsapp,
           buyer_email,
