@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Trash2, UserX } from "lucide-react";
+import { MoreHorizontal, Trash2, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { formatName } from "@/lib/form-format";
 import { useOrganizationUsers, useRemoveUser } from "@/lib/users-queries";
@@ -13,9 +13,11 @@ import {
   DataTableShell,
   StatusPill,
 } from "@/components/admin/DataTable";
-import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
+import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 import { CreateUserPanel } from "@/components/admin/CreateUserPanel";
+import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function UsersListPage() {
   const { data: users = [], isLoading } = useOrganizationUsers();
@@ -25,6 +27,12 @@ export default function UsersListPage() {
   const [page, setPage] = useState(1);
   const [panelOpen, setPanelOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any | null>(null);
+
+  useAdminPageAction(
+    <PrimaryActionButton onClick={() => setPanelOpen(true)}>
+      Convidar Usuário
+    </PrimaryActionButton>
+  );
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -57,15 +65,6 @@ export default function UsersListPage() {
 
   return (
     <div className="space-y-6">
-      <ListPageHeader
-        title="Usuários"
-        action={
-          <PrimaryActionButton onClick={() => setPanelOpen(true)}>
-            Convidar Usuário
-          </PrimaryActionButton>
-        }
-      />
-
       <FilterBar>
         <FilterSearch
           value={search}
@@ -81,7 +80,7 @@ export default function UsersListPage() {
       <DataTableShell>
         <DataTable className="min-w-[800px]">
           <DataTableHeadRow
-            columns={["Nome", "E-mail", "Papel", "Entrada/Convite", "Status", "Ações"]}
+            columns={["Nome", "E-mail", "Papel", "Entrada/Convite", "Status", <span className="block text-right">Ações</span>]}
           />
           <tbody>
             {isLoading ? (
@@ -105,16 +104,24 @@ export default function UsersListPage() {
                     {user.status}
                   </StatusPill>
                 </DataTableCell>
-                <DataTableCell>
-                  <button
-                    type="button"
-                    onClick={() => setUserToDelete(user)}
-                    className="p-1.5 text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-error"
-                    title="Remover usuário"
-                    aria-label={`Remover ${user.full_name || user.email}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                <DataTableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`Ações de ${user.full_name || user.email}`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-error focus:text-error">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remover usuário
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </DataTableCell>
               </DataTableRow>
             ))}
@@ -151,7 +158,7 @@ export default function UsersListPage() {
       {/* Delete Confirmation Modal */}
       {userToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-6">
-          <div className="w-full max-w-[400px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[400px] rounded-[var(--radius-lg)] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-center gap-3 text-error mb-2">
               <UserX className="h-5 w-5" />
               <h3 className="text-heading-2">Remover usuário?</h3>
@@ -163,7 +170,7 @@ export default function UsersListPage() {
               <button
                 type="button"
                 onClick={() => setUserToDelete(null)}
-                className="px-4 py-2 text-body text-text-secondary hover:text-text-primary transition-colors"
+                className="rounded-[var(--radius-sm)] px-4 py-2 text-body text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancelar
               </button>
@@ -171,7 +178,7 @@ export default function UsersListPage() {
                 type="button"
                 disabled={removeMutation.isPending}
                 onClick={handleDelete}
-                className="bg-error px-4 py-2 text-body font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="rounded-[var(--radius-sm)] bg-error px-4 py-2 text-body font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {removeMutation.isPending ? "Removendo..." : "Confirmar remoção"}
               </button>
