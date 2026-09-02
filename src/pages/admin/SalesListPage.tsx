@@ -1,18 +1,20 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Ban, Eye, MoreHorizontal } from "lucide-react";
+import { Ban, Download, Eye, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useSales, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable, DataTableCell, DataTableHeadRow, DataTablePagination, DataTableRow, DataTableShell, StatusPill } from "@/components/admin/DataTable";
-import { FilterBar, FilterSearch, FilterTabs, FilterExportButton } from "@/components/admin/FilterBar";
+import { FilterBar, FilterSearch, FilterTabs } from "@/components/admin/FilterBar";
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { useAuth } from "@/lib/auth-context";
 import { getOperationalEvent, useEvents } from "@/lib/events-queries";
 import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
 
@@ -52,14 +54,6 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
-  const exportCsv = () => {
-    const header = ["Comprador", "WhatsApp", "Evento", "Lote", "Quantidade", "Valor", "Status", "Data"];
-    const rows = filtered.map((s) => [s.buyer_name, s.buyer_whatsapp, (s.events as any)?.title || "", (s.ticket_batches as any)?.name || "", s.quantity, s.total_amount.toFixed(2).replace(".", ","), s.status, new Date(s.created_at).toLocaleString("pt-BR")]);
-    const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
-    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a"); a.href = url; a.download = "vendas.csv"; a.click(); URL.revokeObjectURL(url); toast.success("CSV exportado");
-  };
-
   const generatePdf = () => {
     const names = filtered.filter((s) => s.status !== "cancelado").map((s) => s.buyer_name);
     if (names.length === 0) { toast.error("Nenhum participante para gerar a lista"); return; }
@@ -75,7 +69,23 @@ export function SalesListPage() {
   };
 
   return <div className="space-y-5">
-    <FilterBar actions={!isColab ? <FilterExportButton onExportCsv={exportCsv} onGeneratePdf={generatePdf} /> : undefined}>
+    <FilterBar actions={!isColab ? (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={generatePdf}
+              className="h-9 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-3 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover"
+            >
+              <Download className="h-4 w-4" />
+              <span>PDF</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Gerar lista PDF</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : undefined}>
       <FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por cliente ou código da venda" />
       <div className="hidden lg:block shrink-0"><FilterTabs tabs={[...STATUS_TABS]} value={statusFilter} onChange={(tab) => { setStatusFilter(tab); setPage(1); }} /></div>
     </FilterBar>
