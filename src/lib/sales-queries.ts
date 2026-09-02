@@ -29,6 +29,7 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
     .from("sales")
     .select(`
       id,
+      sale_code,
       buyer_name,
       buyer_whatsapp,
       buyer_email,
@@ -119,6 +120,7 @@ export function useSale(id: string) {
         .from("sales")
         .select(`
           id,
+          sale_code,
           buyer_name,
           buyer_whatsapp,
           buyer_email,
