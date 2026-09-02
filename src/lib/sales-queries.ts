@@ -6,6 +6,7 @@ import { createMpPix } from "./mp/mercado-pago.functions";
 
 export interface Sale {
   id: string;
+  sale_code?: string | null;
   buyer_name: string;
   buyer_whatsapp: string;
   buyer_email: string | null;
