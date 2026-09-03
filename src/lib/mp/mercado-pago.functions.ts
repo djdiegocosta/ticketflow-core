@@ -2,23 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { encrypt, decrypt } from "./utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
-const assertAdminOrganization = async (organizationId: string) => {
-  // These admin-only functions must be called from an authenticated admin UI.
-  // Authorization is enforced by the server-side auth middleware/context.
-  // The organization check is repeated here before any privileged write.
-  const { data: organization, error } = await supabaseAdmin
-    .from("organizations")
-    .select("id")
-    .eq("id", organizationId)
-    .single();
-  if (error || !organization) throw new Error("Organização não encontrada");
-};
+import { requireMpAdmin } from "./admin-middleware";
 
 export const saveMpCredentials = createServerFn({ method: "POST" })
+  .middleware([requireMpAdmin])
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]), public_key: z.string(), access_token: z.string(), webhook_secret: z.string().optional() }).parse)
-  .handler(async ({ data }) => {
-    await assertAdminOrganization(data.organization_id);
+  .handler(async ({ data, context }) => {
+    if (context.mpAdminOrganizationId !== data.organization_id) throw new Error("Acesso negado");
     const encryptedToken = await encrypt(data.access_token);
     const encryptedWebhookSecret = data.webhook_secret ? await encrypt(data.webhook_secret) : null;
     const { error } = await supabaseAdmin.from("mp_config").upsert({ organization_id: data.organization_id, environment: data.environment, public_key: data.public_key, access_token_encrypted: encryptedToken, webhook_secret_encrypted: encryptedWebhookSecret, updated_at: new Date().toISOString() }, { onConflict: "organization_id,environment" });
@@ -27,9 +17,10 @@ export const saveMpCredentials = createServerFn({ method: "POST" })
   });
 
 export const validateMpCredentials = createServerFn({ method: "POST" })
+  .middleware([requireMpAdmin])
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
-  .handler(async ({ data }) => {
-    await assertAdminOrganization(data.organization_id);
+  .handler(async ({ data, context }) => {
+    if (context.mpAdminOrganizationId !== data.organization_id) throw new Error("Acesso negado");
     const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("access_token_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
     if (configError || !config) throw new Error("Configuração não encontrada");
     const accessToken = await decrypt(config.access_token_encrypted!);
@@ -40,9 +31,10 @@ export const validateMpCredentials = createServerFn({ method: "POST" })
   });
 
 export const testMpWebhook = createServerFn({ method: "POST" })
+  .middleware([requireMpAdmin])
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
-  .handler(async ({ data }) => {
-    await assertAdminOrganization(data.organization_id);
+  .handler(async ({ data, context }) => {
+    if (context.mpAdminOrganizationId !== data.organization_id) throw new Error("Acesso negado");
     const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("webhook_secret_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
     if (configError || !config) throw new Error("Configuração não encontrada");
     if (!config.webhook_secret_encrypted) return { status: "Não configurado" };
