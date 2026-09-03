@@ -116,7 +116,7 @@ export function SettingsPage() {
       toast.error("O tempo de expiração deve estar entre 5 minutos e 24 horas.");
       return;
     }
-    if (values.aquecendo <= 0 || values.quente <= values.aquecendo || values.explodindo <= values.quente) {
+    if (values.temperature_aquecendo_sales_per_day <= 0 || values.temperature_quente_sales_per_day <= values.temperature_aquecendo_sales_per_day || values.temperature_explodindo_sales_per_day <= values.temperature_quente_sales_per_day) {
       toast.error("Os limites de temperatura precisam estar em ordem crescente.");
       return;
     }

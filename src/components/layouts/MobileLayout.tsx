@@ -14,13 +14,13 @@ interface MobileLayoutProps {
   showFooter?: boolean;
 }
 
-const menuItems = [
+const menuItems: { to: string; label: string; icon: typeof Home; exact?: boolean }[] = [
   { to: "/cliente", label: "Início", icon: Home, exact: true },
   { to: "/cliente/eventos", label: "Eventos", icon: CalendarDays },
   { to: "/cliente/ingressos", label: "Ingressos", icon: Ticket },
   { to: "/cliente/pontos", label: "Pontos", icon: Check },
   { to: "/cliente/perfil", label: "Perfil", icon: User },
-] as const;
+];
 
 export function MobileLayout({ children, headerContent, showFooter = true }: MobileLayoutProps) {
   useApplyCustomerDesign();

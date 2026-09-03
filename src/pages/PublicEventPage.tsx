@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { setLastVisitedOrg } from '@/lib/org-context';
+import { captureRef } from '@/lib/attribution';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
+  const search = useSearch({ from: '/e/$slug/' }) as { ref?: string };
   const { data: event, isLoading, error } = usePublicEvent(slug);
   const { data: availableBatches } = useAvailableBatches(event?.id);
   useApplyPublicDesign(slug);
@@ -21,6 +23,10 @@ export default function EventPage() {
       setSelectedBatchId(availableBatches[0]?.id || null);
     }
   }, [availableBatches, selectedBatchId]);
+
+  useEffect(() => {
+    if (event?.id) captureRef(event.id, search.ref);
+  }, [event?.id, search.ref]);
 
   useEffect(() => {
     if (event?.organization_id) {

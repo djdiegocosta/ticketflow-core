@@ -242,7 +242,7 @@ export function useConfirmSalePaid() {
 }
 
 export function useCreatePendingSale() {
-  return async (vars: { event_id: string; batch_id: string; buyer_name: string; buyer_whatsapp: string; buyer_email?: string; quantity: number; participant_names: string[]; customer_id?: string }) => {
+  return async (vars: { event_id: string; batch_id: string; buyer_name: string; buyer_whatsapp: string; buyer_email?: string; quantity: number; participant_names: string[]; customer_id?: string; ref_code?: string }) => {
     const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
     const { data, error } = await supabase.rpc("create_pending_sale", {
       _event_id: vars.event_id,
@@ -253,6 +253,7 @@ export function useCreatePendingSale() {
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
       ...(vars.customer_id ? { _customer_id: vars.customer_id } : {}),
+      ...(vars.ref_code ? { _ref_code: vars.ref_code } : {}),
     });
     if (error) {
       if (error.message.includes("Estoque insuficiente")) throw new Error("Desculpe, o estoque para este lote acabou de esgotar.");

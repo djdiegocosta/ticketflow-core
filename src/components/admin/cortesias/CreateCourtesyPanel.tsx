@@ -72,13 +72,11 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         if (error) {
           setBatches([]);
           setBatchError(error.message);
-          return;
+        } else {
+          setBatches(data || []);
+          setSelectedBatch(data?.[0]?.id ?? "");
         }
-        setBatches(data || []);
-        setSelectedBatch(data?.[0]?.id ?? "");
-      })
-      .finally(() => {
-        if (!cancelled) setBatchLoading(false);
+        setBatchLoading(false);
       });
 
     return () => {
