@@ -300,16 +300,18 @@ export function usePublicOrgDesign(slug: string | undefined) {
 
 export function useApplyPublicDesign(slug: string | undefined) {
   const { data: design } = usePublicOrgDesign(slug);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!design) return;
 
     const root = document.documentElement;
     const accent = design.accent_color as AccentColor;
+    const isDark = theme === "dark";
 
     // Apply Colors
     if (ACCENT_COLORS[accent]) {
-      const colorSet = ACCENT_COLORS[accent].light; // Default to light for public pages
+      const colorSet = ACCENT_COLORS[accent][isDark ? "dark" : "light"];
       root.style.setProperty("--accent", colorSet.accent);
       root.style.setProperty("--accent-hover", colorSet.hover);
       root.style.setProperty("--accent-muted", colorSet.muted);
@@ -322,9 +324,10 @@ export function useApplyPublicDesign(slug: string | undefined) {
     // Apply full theme (background/text/border/charts), quando o tema tiver um definido
     const override = FULL_THEME_OVERRIDES[accent];
     if (override) {
-      Object.entries(override.light).forEach(([key, value]) => root.style.setProperty(key, value));
+      const vars = isDark ? override.dark : override.light;
+      Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
     }
-  }, [design]);
+  }, [design, theme]);
 }
 
 /**

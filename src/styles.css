@@ -276,6 +276,44 @@
     line-height: 1.5;
   }
   code, kbd, pre, samp { font-family: var(--font-mono); }
+
+  /* Os campos nativos de data/hora desenham seu próprio ícone e "cápsula" de
+     calendário/relógio por cima do nosso, com tamanho inconsistente entre
+     navegadores (isso é bem visível no Chrome/Android). Como já temos nosso
+     próprio ícone à esquerda do campo, escondemos o indicador nativo e
+     esticamos ele de forma invisível por cima do campo inteiro — assim o
+     campo continua 100% clicável/tocável, mas com o tamanho e aparência
+     padronizados como qualquer outro campo do sistema. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    color-scheme: light;
+  }
+  .dark input[type="date"],
+  .dark input[type="time"],
+  .dark input[type="datetime-local"] {
+    color-scheme: dark;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
+/* input[type=date]/time precisam de position:relative pro truque do
+   indicador acima funcionar (o próprio input vira a referência). */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  position: relative;
 }
 
 /* Standard metric/action icons use the light-purple brand tone.
