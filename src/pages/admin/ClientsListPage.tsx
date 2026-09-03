@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Check, Copy, Download, Eye, MessageCircle, MoreHorizontal, Trash2, UsersRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Copy, Eye, MessageCircle, MoreHorizontal, Trash2, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { whatsappLink } from "@/lib/clients-data";
