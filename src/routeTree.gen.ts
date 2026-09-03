@@ -41,6 +41,7 @@ import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.in
 import { Route as AdminEventosIdRouteImport } from './routes/admin.eventos.$id'
 import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.novo'
 import { Route as AdminFerramentasIndexRouteImport } from './routes/admin.ferramentas.index'
+import { Route as AdminFerramentasLinksDeVendaRouteImport } from './routes/admin.ferramentas.links-de-venda'
 import { Route as AdminFerramentasVitrineRouteImport } from './routes/admin.ferramentas.vitrine'
 import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.index'
 import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
@@ -210,6 +211,12 @@ const AdminFerramentasIndexRoute = AdminFerramentasIndexRouteImport.update({
   path: '/ferramentas/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminFerramentasLinksDeVendaRoute =
+  AdminFerramentasLinksDeVendaRouteImport.update({
+    id: '/ferramentas/links-de-venda',
+    path: '/ferramentas/links-de-venda',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminFerramentasVitrineRoute = AdminFerramentasVitrineRouteImport.update({
   id: '/ferramentas/vitrine',
   path: '/ferramentas/vitrine',
@@ -276,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
@@ -315,6 +323,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
@@ -357,6 +366,7 @@ export interface FileRoutesById {
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
+  '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
@@ -480,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
     | '/admin/eventos/novo'
+    | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
@@ -737,6 +750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFerramentasIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/ferramentas/links-de-venda': {
+      id: '/admin/ferramentas/links-de-venda'
+      path: '/ferramentas/links-de-venda'
+      fullPath: '/admin/ferramentas/links-de-venda'
+      preLoaderRoute: typeof AdminFerramentasLinksDeVendaRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/ferramentas/vitrine': {
       id: '/admin/ferramentas/vitrine'
       path: '/ferramentas/vitrine'
@@ -802,6 +822,7 @@ interface AdminRouteRouteChildren {
   AdminConfiguracoesMercadoPagoRoute: typeof AdminConfiguracoesMercadoPagoRoute
   AdminEventosIdRoute: typeof AdminEventosIdRoute
   AdminEventosNovoRoute: typeof AdminEventosNovoRoute
+  AdminFerramentasLinksDeVendaRoute: typeof AdminFerramentasLinksDeVendaRoute
   AdminFerramentasVitrineRoute: typeof AdminFerramentasVitrineRoute
   AdminVendasIdRoute: typeof AdminVendasIdRoute
   AdminClientesIndexRoute: typeof AdminClientesIndexRoute
@@ -824,6 +845,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminConfiguracoesMercadoPagoRoute: AdminConfiguracoesMercadoPagoRoute,
   AdminEventosIdRoute: AdminEventosIdRoute,
   AdminEventosNovoRoute: AdminEventosNovoRoute,
+  AdminFerramentasLinksDeVendaRoute: AdminFerramentasLinksDeVendaRoute,
   AdminFerramentasVitrineRoute: AdminFerramentasVitrineRoute,
   AdminVendasIdRoute: AdminVendasIdRoute,
   AdminClientesIndexRoute: AdminClientesIndexRoute,
