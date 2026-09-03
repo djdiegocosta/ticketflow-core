@@ -253,6 +253,7 @@ export function useCreatePendingSale() {
       _quantity: vars.quantity,
       _participant_names: vars.participant_names,
       ...(vars.customer_id ? { _customer_id: vars.customer_id } : {}),
+      ...(vars.ref_code ? { _ref_code: vars.ref_code } : {}),
     });
     if (error) {
       if (error.message.includes("Estoque insuficiente")) throw new Error("Desculpe, o estoque para este lote acabou de esgotar.");

@@ -17,6 +17,7 @@ import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { supabase } from '@/integrations/supabase/client';
 import { setLastVisitedOrg } from '@/lib/org-context';
+import { captureRef, getStoredRef } from '@/lib/attribution';
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
@@ -30,7 +31,7 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
   const { slug } = useParams({ from: '/e/$slug/checkout' });
-  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string };
+  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string, ref?: string };
   const qtyInput = parseInt(search.qty || '1');
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   
@@ -155,7 +156,8 @@ export default function CheckoutPage() {
         buyer_email: "",
         quantity: qty,
         participant_names: values.participants.map(p => p.name),
-        customer_id: customerId as any
+        customer_id: customerId as any,
+        ref_code: getStoredRef(event.id) ?? undefined
       });
 
       const resultArr = saleResult as any[];
