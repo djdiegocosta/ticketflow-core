@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Check, Copy, Eye, MessageCircle, MoreHorizontal, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Copy, Eye, MessageCircle, MoreHorizontal, Trash2, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { whatsappLink } from "@/lib/clients-data";
@@ -11,8 +11,75 @@ import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterBar, FilterSearch } from "@/components/admin/FilterBar";
 import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
+
+function normalizeMetaPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.length === 10 || digits.length === 11 ? `55${digits}` : digits;
+}
+
+function escapeCsv(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function exportClientsForMetaAds(clients: any[]) {
+  const headers = [
+    "First Name",
+    "Last Name",
+    "Phone",
+    "Email",
+    "Work Phone",
+    "Work Email",
+    "Company",
+    "Notes",
+    "Additional Info (Duplicate to other columns and rename as needed)",
+  ];
+
+  const rows = clients
+    .map((client) => {
+      const fullName = String(client.full_name || "").trim();
+      const nameParts = fullName.split(/\s+/).filter(Boolean);
+      const firstName = nameParts.shift() || "";
+      const lastName = nameParts.join(" ");
+      const phone = normalizeMetaPhone(String(client.whatsapp || ""));
+      const email = String(client.email || "").trim().toLowerCase();
+
+      return { firstName, lastName, phone, email };
+    })
+    .filter((client) => client.phone || client.email)
+    .map((client) => [
+      client.firstName,
+      client.lastName,
+      client.phone,
+      client.email,
+      "",
+      "",
+      "",
+      "",
+      "",
+    ]);
+
+  if (rows.length === 0) {
+    toast.error("Nenhum cliente possui telefone ou e-mail para exportação");
+    return;
+  }
+
+  const csv = "\uFEFF" + [headers, ...rows].map((row) => row.map((value) => escapeCsv(String(value))).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `ticketflow-clientes-meta-ads-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  toast.success(`${rows.length} clientes exportados para Meta Ads`);
+}
 
 function CopyWhatsapp({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -54,7 +121,24 @@ export function ClientsListPage() {
   const columns: { key: SortKey | null; label: string }[] = [{ key: "name", label: "Nome" }, { key: null, label: "WhatsApp" }, { key: "age", label: "Idade" }, { key: "totalEvents", label: "Eventos" }, { key: "totalTickets", label: "Ingressos" }, { key: "registeredAt", label: "Cadastro" }, { key: null, label: "Último evento" }, { key: null, label: "Ações" }];
 
   return <div className="space-y-5">
-    <FilterBar><FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por nome ou WhatsApp" /></FilterBar>
+    <FilterBar>
+      <FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por nome ou WhatsApp" />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={() => exportClientsForMetaAds(clients)}
+              className="h-9 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-3 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover"
+            >
+              <UsersRound className="h-4 w-4" />
+              <span>CSV</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Exportar clientes para Meta Ads</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </FilterBar>
     <DataTableShell><DataTable className="min-w-[980px]"><DataTableHeadRow columns={columns.map((col) => col.key ? <button type="button" onClick={() => toggleSort(col.key as SortKey)} className={cn("flex items-center gap-1 transition-colors hover:text-text-primary", sortKey === col.key && "text-text-primary")}>{col.label}{sortKey === col.key && (sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}</button> : col.label === "Ações" ? <span className="block text-right">{col.label}</span> : col.label)} /><tbody>
       {pageRows.map((client) => <DataTableRow key={client.id} className={cn("cursor-pointer transition-colors hover:bg-bg-tertiary/60", client.total_tickets >= 10 && "border-l-2 border-l-accent")}><DataTableCell variant="primary" onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}>{client.full_name}</DataTableCell><DataTableCell><span className="flex items-center gap-1">{client.whatsapp}<CopyWhatsapp value={client.whatsapp} /></span></DataTableCell><DataTableCell>{client.age} anos</DataTableCell><DataTableCell>{client.total_events}</DataTableCell><DataTableCell variant="strong">{client.total_tickets}</DataTableCell><DataTableCell>{new Date(client.created_at).toLocaleDateString("pt-BR")}</DataTableCell><DataTableCell>{client.last_event_name || "—"}</DataTableCell><DataTableCell className="text-right"><DropdownMenu><DropdownMenuTrigger asChild><button type="button" aria-label={`Ações de ${client.full_name}`} className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"><MoreHorizontal className="h-4 w-4" /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-44"><DropdownMenuItem asChild><Link to="/admin/clientes/$id" params={{ id: client.id }}><Eye className="mr-2 h-4 w-4" />Visualizar</Link></DropdownMenuItem><DropdownMenuItem asChild><a href={whatsappLink(client.whatsapp)} target="_blank" rel="noreferrer"><MessageCircle className="mr-2 h-4 w-4" />WhatsApp</a></DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setToDelete(client)} className="text-error focus:text-error"><Trash2 className="mr-2 h-4 w-4" />Excluir</DropdownMenuItem></DropdownMenuContent></DropdownMenu></DataTableCell></DataTableRow>)}
       {pageRows.length === 0 && <tr><DataTableCell colSpan={8} className="py-10 text-center text-body">{isLoading ? "Carregando clientes..." : "Nenhum cliente encontrado."}</DataTableCell></tr>}
