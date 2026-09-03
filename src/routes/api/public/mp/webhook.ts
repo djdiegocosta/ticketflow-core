@@ -48,10 +48,9 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
 
           const saleId = mpData.external_reference;
           if (!saleId) return new Response("Invalid payment reference", { status: 400 });
-
           const { data: sale, error: saleError } = await supabaseAdmin
             .from("sales")
-            .select("id, organization_id, total_amount, currency, pending_participant_names")
+            .select("id, organization_id, total_amount, pending_participant_names")
             .eq("id", saleId)
             .single();
           if (saleError || !sale) return new Response("Sale not found", { status: 404 });
@@ -61,9 +60,6 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           const saleAmount = Number(sale.total_amount);
           if (!Number.isFinite(paymentAmount) || !Number.isFinite(saleAmount) || paymentAmount !== saleAmount) {
             return new Response("Payment amount mismatch", { status: 400 });
-          }
-          if (mpData.currency_id && sale.currency && mpData.currency_id !== sale.currency) {
-            return new Response("Payment currency mismatch", { status: 400 });
           }
 
           const { error: confirmError } = await supabaseAdmin.rpc("confirm_sale_paid", {
