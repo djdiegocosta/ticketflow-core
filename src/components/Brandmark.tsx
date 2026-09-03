@@ -25,7 +25,7 @@ export function Brandmark({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Ticket
-        className={cn(s.icon, "shrink-0 text-[var(--accent-text)]", pulse && "animate-pulse")}
+        className={cn(s.icon, "shrink-0 text-[var(--icon-brand)]", pulse && "animate-pulse")}
       />
       <span className={cn(s.text, "font-bold text-[var(--text-primary)]")}>TicketFlow</span>
     </div>
