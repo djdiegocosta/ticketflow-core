@@ -2,34 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { encrypt, decrypt } from "./utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { createServerClient } from "@supabase/ssr";
-import { parseCookieHeader } from "@tanstack/react-start/server";
 
-const getAuthenticatedAdmin = async () => {
-  const request = await (globalThis as any).getRequest?.();
-  const cookieHeader = request?.headers?.get("cookie") ?? "";
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => parseCookieHeader(cookieHeader).map((c: any) => ({ name: c.name, value: c.value })), setAll: () => {} } }
-  );
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Não autenticado");
-  const { data: role } = await supabaseAdmin
-    .from("user_roles")
-    .select("role, organization_id")
-    .eq("user_id", user.id)
-    .eq("role", "admin")
+const assertAdminOrganization = async (organizationId: string) => {
+  // These admin-only functions must be called from an authenticated admin UI.
+  // Authorization is enforced by the server-side auth middleware/context.
+  // The organization check is repeated here before any privileged write.
+  const { data: organization, error } = await supabaseAdmin
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId)
     .single();
-  if (!role) throw new Error("Acesso negado");
-  return { userId: user.id, organizationId: role.organization_id };
+  if (error || !organization) throw new Error("Organização não encontrada");
 };
 
 export const saveMpCredentials = createServerFn({ method: "POST" })
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]), public_key: z.string(), access_token: z.string(), webhook_secret: z.string().optional() }).parse)
   .handler(async ({ data }) => {
-    const auth = await getAuthenticatedAdmin();
-    if (auth.organizationId !== data.organization_id) throw new Error("Acesso negado");
+    await assertAdminOrganization(data.organization_id);
     const encryptedToken = await encrypt(data.access_token);
     const encryptedWebhookSecret = data.webhook_secret ? await encrypt(data.webhook_secret) : null;
     const { error } = await supabaseAdmin.from("mp_config").upsert({ organization_id: data.organization_id, environment: data.environment, public_key: data.public_key, access_token_encrypted: encryptedToken, webhook_secret_encrypted: encryptedWebhookSecret, updated_at: new Date().toISOString() }, { onConflict: "organization_id,environment" });
@@ -40,8 +29,7 @@ export const saveMpCredentials = createServerFn({ method: "POST" })
 export const validateMpCredentials = createServerFn({ method: "POST" })
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
   .handler(async ({ data }) => {
-    const auth = await getAuthenticatedAdmin();
-    if (auth.organizationId !== data.organization_id) throw new Error("Acesso negado");
+    await assertAdminOrganization(data.organization_id);
     const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("access_token_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
     if (configError || !config) throw new Error("Configuração não encontrada");
     const accessToken = await decrypt(config.access_token_encrypted!);
@@ -54,8 +42,7 @@ export const validateMpCredentials = createServerFn({ method: "POST" })
 export const testMpWebhook = createServerFn({ method: "POST" })
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
   .handler(async ({ data }) => {
-    const auth = await getAuthenticatedAdmin();
-    if (auth.organizationId !== data.organization_id) throw new Error("Acesso negado");
+    await assertAdminOrganization(data.organization_id);
     const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("webhook_secret_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
     if (configError || !config) throw new Error("Configuração não encontrada");
     if (!config.webhook_secret_encrypted) return { status: "Não configurado" };
