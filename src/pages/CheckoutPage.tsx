@@ -98,6 +98,10 @@ export default function CheckoutPage() {
   }, [event?.organization_id]);
 
   useEffect(() => {
+    if (event?.id) captureRef(event.id, search.ref);
+  }, [event?.id, search.ref]);
+
+  useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     if (step === 'payment') {
       timer = setInterval(() => {
