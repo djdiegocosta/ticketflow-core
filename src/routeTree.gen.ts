@@ -15,11 +15,8 @@ import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ClienteRouteImport } from './routes/cliente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
-import { Route as OrganizacaoPendenteRouteImport } from './routes/organizacao-pendente'
-import { Route as PrimeiroAcessoRouteImport } from './routes/primeiro-acesso'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
-import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
 import { Route as AdminChecklistRouteImport } from './routes/admin.checklist'
@@ -36,9 +33,6 @@ import { Route as ClienteIngressosRouteImport } from './routes/cliente.ingressos
 import { Route as ClientePerfilRouteImport } from './routes/cliente.perfil'
 import { Route as ClientePontosRouteImport } from './routes/cliente.pontos'
 import { Route as IngressoTicket_codeRouteImport } from './routes/ingresso.$ticket_code'
-import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
-import { Route as SuperadminOrganizacoesRouteImport } from './routes/superadmin.organizacoes'
-import { Route as SuperadminPlanosRouteImport } from './routes/superadmin.planos'
 import { Route as AdminClientesIndexRouteImport } from './routes/admin.clientes.index'
 import { Route as AdminClientesIdRouteImport } from './routes/admin.clientes.$id'
 import { Route as AdminConfiguracoesIndexRouteImport } from './routes/admin.configuracoes.index'
@@ -85,16 +79,6 @@ const MeusIngressosRoute = MeusIngressosRouteImport.update({
   path: '/meus-ingressos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrganizacaoPendenteRoute = OrganizacaoPendenteRouteImport.update({
-  id: '/organizacao-pendente',
-  path: '/organizacao-pendente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrimeiroAcessoRoute = PrimeiroAcessoRouteImport.update({
-  id: '/primeiro-acesso',
-  path: '/primeiro-acesso',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
   id: '/recuperar-senha',
   path: '/recuperar-senha',
@@ -103,11 +87,6 @@ const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
   id: '/redefinir-senha',
   path: '/redefinir-senha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SuperadminRoute = SuperadminRouteImport.update({
-  id: '/superadmin',
-  path: '/superadmin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -189,21 +168,6 @@ const IngressoTicket_codeRoute = IngressoTicket_codeRouteImport.update({
   id: '/ingresso/$ticket_code',
   path: '/ingresso/$ticket_code',
   getParentRoute: () => rootRouteImport,
-} as any)
-const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SuperadminRoute,
-} as any)
-const SuperadminOrganizacoesRoute = SuperadminOrganizacoesRouteImport.update({
-  id: '/organizacoes',
-  path: '/organizacoes',
-  getParentRoute: () => SuperadminRoute,
-} as any)
-const SuperadminPlanosRoute = SuperadminPlanosRouteImport.update({
-  id: '/planos',
-  path: '/planos',
-  getParentRoute: () => SuperadminRoute,
 } as any)
 const AdminClientesIndexRoute = AdminClientesIndexRouteImport.update({
   id: '/clientes/',
@@ -290,11 +254,8 @@ export interface FileRoutesByFullPath {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
-  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
-  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
-  '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
@@ -308,12 +269,9 @@ export interface FileRoutesByFullPath {
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
-  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
-  '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
   '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
-  '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
@@ -335,8 +293,6 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
-  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
-  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/checkin': typeof AdminCheckinRoute
@@ -352,12 +308,9 @@ export interface FileRoutesByTo {
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
-  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
-  '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin': typeof AdminIndexRoute
   '/checkin': typeof CheckinIndexRoute
   '/cliente': typeof ClienteIndexRoute
-  '/superadmin': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
@@ -382,11 +335,8 @@ export interface FileRoutesById {
   '/cliente': typeof ClienteRouteWithChildren
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
-  '/organizacao-pendente': typeof OrganizacaoPendenteRoute
-  '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
-  '/superadmin': typeof SuperadminRouteWithChildren
   '/admin/checkin': typeof AdminCheckinRoute
   '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
@@ -400,12 +350,9 @@ export interface FileRoutesById {
   '/cliente/perfil': typeof ClientePerfilRoute
   '/cliente/pontos': typeof ClientePontosRoute
   '/ingresso/$ticket_code': typeof IngressoTicket_codeRoute
-  '/superadmin/organizacoes': typeof SuperadminOrganizacoesRoute
-  '/superadmin/planos': typeof SuperadminPlanosRoute
   '/admin/': typeof AdminIndexRoute
   '/checkin/': typeof CheckinIndexRoute
   '/cliente/': typeof ClienteIndexRoute
-  '/superadmin/': typeof SuperadminIndexRoute
   '/admin/clientes/$id': typeof AdminClientesIdRoute
   '/admin/configuracoes/mercado-pago': typeof AdminConfiguracoesMercadoPagoRoute
   '/admin/eventos/$id': typeof AdminEventosIdRoute
@@ -431,11 +378,8 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
-    | '/organizacao-pendente'
-    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
-    | '/superadmin'
     | '/admin/checkin'
     | '/admin/checklist'
     | '/admin/cortesias'
@@ -449,12 +393,9 @@ export interface FileRouteTypes {
     | '/cliente/perfil'
     | '/cliente/pontos'
     | '/ingresso/$ticket_code'
-    | '/superadmin/organizacoes'
-    | '/superadmin/planos'
     | '/admin/'
     | '/checkin/'
     | '/cliente/'
-    | '/superadmin/'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
@@ -476,8 +417,6 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/meus-ingressos'
-    | '/organizacao-pendente'
-    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
     | '/admin/checkin'
@@ -493,12 +432,9 @@ export interface FileRouteTypes {
     | '/cliente/perfil'
     | '/cliente/pontos'
     | '/ingresso/$ticket_code'
-    | '/superadmin/organizacoes'
-    | '/superadmin/planos'
     | '/admin'
     | '/checkin'
     | '/cliente'
-    | '/superadmin'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
@@ -522,11 +458,8 @@ export interface FileRouteTypes {
     | '/cliente'
     | '/login'
     | '/meus-ingressos'
-    | '/organizacao-pendente'
-    | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/redefinir-senha'
-    | '/superadmin'
     | '/admin/checkin'
     | '/admin/checklist'
     | '/admin/cortesias'
@@ -540,12 +473,9 @@ export interface FileRouteTypes {
     | '/cliente/perfil'
     | '/cliente/pontos'
     | '/ingresso/$ticket_code'
-    | '/superadmin/organizacoes'
-    | '/superadmin/planos'
     | '/admin/'
     | '/checkin/'
     | '/cliente/'
-    | '/superadmin/'
     | '/admin/clientes/$id'
     | '/admin/configuracoes/mercado-pago'
     | '/admin/eventos/$id'
@@ -570,11 +500,8 @@ export interface RootRouteChildren {
   ClienteRoute: typeof ClienteRouteWithChildren
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
-  OrganizacaoPendenteRoute: typeof OrganizacaoPendenteRoute
-  PrimeiroAcessoRoute: typeof PrimeiroAcessoRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
-  SuperadminRoute: typeof SuperadminRouteWithChildren
   CheckinHistoricoRoute: typeof CheckinHistoricoRoute
   IngressoTicket_codeRoute: typeof IngressoTicket_codeRoute
   CheckinIndexRoute: typeof CheckinIndexRoute
@@ -628,20 +555,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeusIngressosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/organizacao-pendente': {
-      id: '/organizacao-pendente'
-      path: '/organizacao-pendente'
-      fullPath: '/organizacao-pendente'
-      preLoaderRoute: typeof OrganizacaoPendenteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/primeiro-acesso': {
-      id: '/primeiro-acesso'
-      path: '/primeiro-acesso'
-      fullPath: '/primeiro-acesso'
-      preLoaderRoute: typeof PrimeiroAcessoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/recuperar-senha': {
       id: '/recuperar-senha'
       path: '/recuperar-senha'
@@ -654,13 +567,6 @@ declare module '@tanstack/react-router' {
       path: '/redefinir-senha'
       fullPath: '/redefinir-senha'
       preLoaderRoute: typeof RedefinirSenhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/superadmin': {
-      id: '/superadmin'
-      path: '/superadmin'
-      fullPath: '/superadmin'
-      preLoaderRoute: typeof SuperadminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -774,27 +680,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/ingresso/$ticket_code'
       preLoaderRoute: typeof IngressoTicket_codeRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/superadmin/': {
-      id: '/superadmin/'
-      path: '/'
-      fullPath: '/superadmin/'
-      preLoaderRoute: typeof SuperadminIndexRouteImport
-      parentRoute: typeof SuperadminRoute
-    }
-    '/superadmin/organizacoes': {
-      id: '/superadmin/organizacoes'
-      path: '/organizacoes'
-      fullPath: '/superadmin/organizacoes'
-      preLoaderRoute: typeof SuperadminOrganizacoesRouteImport
-      parentRoute: typeof SuperadminRoute
-    }
-    '/superadmin/planos': {
-      id: '/superadmin/planos'
-      path: '/planos'
-      fullPath: '/superadmin/planos'
-      preLoaderRoute: typeof SuperadminPlanosRouteImport
-      parentRoute: typeof SuperadminRoute
     }
     '/admin/clientes/': {
       id: '/admin/clientes/'
@@ -971,22 +856,6 @@ const ClienteRouteChildren: ClienteRouteChildren = {
 const ClienteRouteWithChildren =
   ClienteRoute._addFileChildren(ClienteRouteChildren)
 
-interface SuperadminRouteChildren {
-  SuperadminOrganizacoesRoute: typeof SuperadminOrganizacoesRoute
-  SuperadminPlanosRoute: typeof SuperadminPlanosRoute
-  SuperadminIndexRoute: typeof SuperadminIndexRoute
-}
-
-const SuperadminRouteChildren: SuperadminRouteChildren = {
-  SuperadminOrganizacoesRoute: SuperadminOrganizacoesRoute,
-  SuperadminPlanosRoute: SuperadminPlanosRoute,
-  SuperadminIndexRoute: SuperadminIndexRoute,
-}
-
-const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
-  SuperadminRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
@@ -994,11 +863,8 @@ const rootRouteChildren: RootRouteChildren = {
   ClienteRoute: ClienteRouteWithChildren,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
-  OrganizacaoPendenteRoute: OrganizacaoPendenteRoute,
-  PrimeiroAcessoRoute: PrimeiroAcessoRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
-  SuperadminRoute: SuperadminRouteWithChildren,
   CheckinHistoricoRoute: CheckinHistoricoRoute,
   IngressoTicket_codeRoute: IngressoTicket_codeRoute,
   CheckinIndexRoute: CheckinIndexRoute,

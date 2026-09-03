@@ -459,8 +459,12 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          pending_sale_expiration_minutes: number
           plan: Database["public"]["Enums"]["org_plan"]
           status: Database["public"]["Enums"]["org_status"]
+          temperature_aquecendo_sales_per_day: number
+          temperature_explodindo_sales_per_day: number
+          temperature_quente_sales_per_day: number
           updated_at: string
         }
         Insert: {
@@ -472,8 +476,12 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          pending_sale_expiration_minutes?: number
           plan?: Database["public"]["Enums"]["org_plan"]
           status?: Database["public"]["Enums"]["org_status"]
+          temperature_aquecendo_sales_per_day?: number
+          temperature_explodindo_sales_per_day?: number
+          temperature_quente_sales_per_day?: number
           updated_at?: string
         }
         Update: {
@@ -485,8 +493,12 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          pending_sale_expiration_minutes?: number
           plan?: Database["public"]["Enums"]["org_plan"]
           status?: Database["public"]["Enums"]["org_status"]
+          temperature_aquecendo_sales_per_day?: number
+          temperature_explodindo_sales_per_day?: number
+          temperature_quente_sales_per_day?: number
           updated_at?: string
         }
         Relationships: []
@@ -525,21 +537,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      platform_admins: {
-        Row: {
-          created_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       points_ledger: {
         Row: {
@@ -1152,21 +1149,12 @@ export type Database = {
       }
     }
     Functions: {
-      approve_organization: { Args: { _org_id: string }; Returns: undefined }
       award_points: {
         Args: { _customer_id: string; _points: number; _reason: string }
         Returns: undefined
       }
-      bootstrap_organization: { Args: { _name: string }; Returns: string }
       cancel_event: { Args: { _event_id: string }; Returns: undefined }
       cancel_sale: { Args: { _sale_id: string }; Returns: undefined }
-      change_organization_plan: {
-        Args: {
-          _org_id: string
-          _plan: Database["public"]["Enums"]["org_plan"]
-        }
-        Returns: undefined
-      }
       checkin_ticket: {
         Args: { _ticket_code: string }
         Returns: {
@@ -1365,7 +1353,6 @@ export type Database = {
         Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: string
       }
-      is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
       refund_sale: {
         Args: { _reason: string; _refund_amount: number; _sale_id: string }
         Returns: undefined
@@ -1382,7 +1369,6 @@ export type Database = {
           customer_id: string
         }[]
       }
-      suspend_organization: { Args: { _org_id: string }; Returns: undefined }
       track_checkout_abandonment: {
         Args: {
           _buyer_name: string
