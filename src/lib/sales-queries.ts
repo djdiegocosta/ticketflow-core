@@ -47,6 +47,7 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
     `)
     .eq("organization_id", organizationId)
     .eq("is_courtesy", false)
+    .neq("status", "expirado")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
