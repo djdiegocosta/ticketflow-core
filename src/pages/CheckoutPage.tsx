@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const trackAbandonment = useTrackAbandonment();
   
   const [step, setStep] = useState<'info' | 'payment'>('info');
-  const [countdown, setCountdown] = useState(1800);
+  const [countdown, setCountdown] = useState(0);
   const [pixCopied, setPixCopied] = useState(false);
   const [isCreatingSale, setIsCreatingSale] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
-    if (step === 'payment') {
+    if (step === 'payment' && countdown > 0) {
       timer = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
@@ -117,7 +117,7 @@ export default function CheckoutPage() {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [step]);
+  }, [step, countdown]);
 
   useEffect(() => {
     if (countdown === 0 && step === 'payment') {
@@ -165,9 +165,12 @@ export default function CheckoutPage() {
       });
 
       const resultArr = saleResult as any[];
-      const { sale_id: id, sale_code } = resultArr[0];
+      const { sale_id: id, sale_code, expires_at } = resultArr[0];
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
+
+      const expirationMs = expires_at ? new Date(expires_at).getTime() : Date.now() + 1800 * 1000;
+      setCountdown(Math.max(0, Math.ceil((expirationMs - Date.now()) / 1000)));
 
       try {
         const pixResult = await generateSalePix({ sale_id: id });
@@ -181,7 +184,6 @@ export default function CheckoutPage() {
         return;
       }
       
-      setCountdown(1800);
       setStep('payment');
       window.scrollTo(0, 0);
     } catch (err: any) {
