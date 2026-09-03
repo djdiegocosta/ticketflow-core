@@ -1,11 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useOrgActiveEvents } from "@/lib/customer-queries";
-import { Loader2, Calendar, MapPin } from "lucide-react";
+import { Loader2, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute('/cliente/eventos')({
   component: Page_cliente_eventos,
 });
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function getPriceRange(batches: { price: number; is_courtesy: boolean }[] | null | undefined) {
+  const prices = (batches || [])
+    .filter((b) => !b.is_courtesy && typeof b.price === "number")
+    .map((b) => b.price);
+  if (prices.length === 0) return null;
+  return { min: Math.min(...prices), max: Math.max(...prices) };
+}
 
 export function Page_cliente_eventos() {
   const { data: events = [], isLoading } = useOrgActiveEvents();
@@ -26,7 +37,9 @@ export function Page_cliente_eventos() {
       
       <div className="grid grid-cols-1 gap-4">
         {events.length > 0 ? (
-          events.map((event: any) => (
+          events.map((event: any) => {
+            const range = getPriceRange(event.ticket_batches);
+            return (
             <Link 
               key={event.id} 
               to="/e/$slug" 
@@ -46,7 +59,7 @@ export function Page_cliente_eventos() {
                   </div>
                 )}
               </div>
-              <div className="p-4 space-y-2">
+              <div className="p-4 space-y-3">
                 <h3 className="font-bold text-body line-clamp-2">{event.title}</h3>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-small text-[var(--text-secondary)]">
@@ -60,9 +73,26 @@ export function Page_cliente_eventos() {
                     </div>
                   )}
                 </div>
+
+                <div className="flex items-end justify-between gap-3 pt-1">
+                  {range ? (
+                    <div className="min-w-0">
+                      <p className="text-micro uppercase tracking-wide text-[var(--text-disabled)]">Faixa de Preço</p>
+                      <p className="text-body font-bold text-[var(--text-primary)]">
+                        {range.min === range.max
+                          ? formatCurrency(range.min)
+                          : `${formatCurrency(range.min)} - ${formatCurrency(range.max)}`}
+                      </p>
+                    </div>
+                  ) : <span />}
+
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[#111111]">
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
               </div>
             </Link>
-          ))
+          );})
         ) : (
           <div className="rounded-[var(--radius-md)] bg-[var(--bg-tertiary)]/30 border border-dashed border-[var(--border-subtle)] p-12 text-center">
             <p className="text-small text-[var(--text-secondary)]">Nenhum evento ativo no momento.</p>

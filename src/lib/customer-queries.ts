@@ -435,7 +435,7 @@ export function useOrgActiveEvents() {
 
       const { data, error } = await supabase
         .from("events")
-        .select("id, title, slug, event_date, location, image_url")
+        .select("id, title, slug, event_date, location, image_url, ticket_batches(price, is_courtesy)")
         .eq("organization_id", orgId)
         .eq("status", "publicado")
         .eq("is_closed", false)
