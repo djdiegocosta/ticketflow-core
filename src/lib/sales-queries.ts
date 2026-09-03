@@ -242,7 +242,7 @@ export function useConfirmSalePaid() {
 }
 
 export function useCreatePendingSale() {
-  return async (vars: { event_id: string; batch_id: string; buyer_name: string; buyer_whatsapp: string; buyer_email?: string; quantity: number; participant_names: string[]; customer_id?: string }) => {
+  return async (vars: { event_id: string; batch_id: string; buyer_name: string; buyer_whatsapp: string; buyer_email?: string; quantity: number; participant_names: string[]; customer_id?: string; ref_code?: string }) => {
     const cleanWhatsapp = vars.buyer_whatsapp.replace(/\D/g, "");
     const { data, error } = await supabase.rpc("create_pending_sale", {
       _event_id: vars.event_id,
