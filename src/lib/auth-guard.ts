@@ -22,16 +22,28 @@ export async function requireSession(): Promise<GuardContext> {
 
   const { data: roleRow } = await supabase
     .from('user_roles')
-    .select('role, organization_id, organizations!inner(status)')
+    .select('role')
     .eq('user_id', data.user.id)
     .limit(1)
     .maybeSingle();
 
+  const { data: organizationId } = await supabase.rpc('get_single_organization_id');
+
+  let organizationStatus: string | null = null;
+  if (organizationId) {
+    const { data: organization } = await supabase
+      .from('organizations')
+      .select('status')
+      .eq('id', organizationId)
+      .maybeSingle();
+    organizationStatus = organization?.status ?? null;
+  }
+
   return {
     userId: data.user.id,
     role: (roleRow?.role as GuardRole) ?? 'cliente',
-    organizationId: roleRow?.organization_id ?? null,
-    organizationStatus: (roleRow?.organizations as any)?.status ?? null,
+    organizationId: organizationId ?? null,
+    organizationStatus,
   };
 }
 
