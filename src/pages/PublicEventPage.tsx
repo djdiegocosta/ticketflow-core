@@ -147,7 +147,7 @@ export default function EventPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="h-10 w-10 text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]"
               >
                 <Minus className="h-5 w-5" />
               </Button>
@@ -156,7 +156,7 @@ export default function EventPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                className="h-10 w-10 text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]"
               >
                 <Plus className="h-5 w-5" />
               </Button>
