@@ -26,10 +26,65 @@ export const ACCENT_COLORS: Record<AccentColor, { light: ColorSet; dark: ColorSe
     dark: { accent: "#a78bfa", hover: "#8b5cf6", muted: "#2e1065", text: "#c4b5fd", icon: "#e040fb" },
   },
   red: {
-    light: { accent: "#dc2626", hover: "#b91c1c", muted: "#fee2e2", text: "#b91c1c", icon: "#ff1744" },
-    dark: { accent: "#f87171", hover: "#ef4444", muted: "#450a0a", text: "#fca5a5", icon: "#ff5252" },
+    light: { accent: "hsl(356, 84%, 48%)", hover: "hsl(356, 84%, 42%)", muted: "hsl(356, 84%, 96%)", text: "hsl(356, 84%, 30%)", icon: "#ff1744" },
+    dark: { accent: "hsl(356, 84%, 48%)", hover: "hsl(356, 84%, 54%)", muted: "hsl(356, 84%, 15%)", text: "hsl(356, 84%, 80%)", icon: "#ff5252" },
   },
 };
+
+/**
+ * Tema "Vermelho" completo (fundo, texto, bordas, gráficos), fornecido pelo
+ * cliente. Substitui os tokens nativos de cor quando esse tema está ativo.
+ * Fonte, espaçamento e raio de canto ficam fora — esses são globais do
+ * sistema, não variam por tema de cor.
+ */
+export const FULL_THEME_OVERRIDES: Partial<Record<AccentColor, { light: Record<string, string>; dark: Record<string, string> }>> = {
+  red: {
+    light: {
+      "--bg-primary": "hsl(0, 0%, 100%)",
+      "--bg-secondary": "hsl(210, 10%, 97%)",
+      "--bg-tertiary": "hsl(210, 10%, 94%)",
+      "--text-primary": "hsl(210, 10%, 15%)",
+      "--text-secondary": "hsl(210, 10%, 40%)",
+      "--text-disabled": "hsl(210, 10%, 62%)",
+      "--border-default": "hsl(210, 10%, 90%)",
+      "--border-subtle": "hsl(210, 10%, 92%)",
+      "--error": "hsl(0, 84%, 60%)",
+      "--error-muted": "hsl(0, 84%, 96%)",
+      "--error-text": "hsl(0, 70%, 40%)",
+      "--chart-1": "hsl(356, 84%, 48%)",
+      "--chart-2": "hsl(210, 10%, 20%)",
+      "--chart-3": "hsl(142, 70%, 45%)",
+      "--chart-4": "hsl(47, 95%, 55%)",
+      "--chart-5": "hsl(25, 95%, 55%)",
+    },
+    dark: {
+      "--bg-primary": "hsl(210, 10%, 4%)",
+      "--bg-secondary": "hsl(210, 10%, 7%)",
+      "--bg-tertiary": "hsl(210, 10%, 15%)",
+      "--text-primary": "hsl(0, 0%, 98%)",
+      "--text-secondary": "hsl(210, 10%, 65%)",
+      "--text-disabled": "hsl(210, 10%, 42%)",
+      "--border-default": "hsl(210, 10%, 16%)",
+      "--border-subtle": "hsl(210, 10%, 14%)",
+      "--error": "hsl(0, 62%, 30%)",
+      "--error-muted": "hsl(0, 50%, 15%)",
+      "--error-text": "hsl(0, 70%, 65%)",
+      "--chart-1": "hsl(356, 84%, 48%)",
+      "--chart-2": "hsl(210, 10%, 80%)",
+      "--chart-3": "hsl(142, 70%, 45%)",
+      "--chart-4": "hsl(47, 95%, 55%)",
+      "--chart-5": "hsl(25, 95%, 55%)",
+    },
+  },
+};
+
+const FULL_THEME_KEYS = [
+  "--bg-primary", "--bg-secondary", "--bg-tertiary",
+  "--text-primary", "--text-secondary", "--text-disabled",
+  "--border-default", "--border-subtle",
+  "--error", "--error-muted", "--error-text",
+  "--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5",
+];
 
 const STORAGE_COLOR_KEY = "ticketflow-accent";
 
@@ -73,6 +128,19 @@ export function DesignProvider({ children }: { children: React.ReactNode }) {
     // Sync with shadcn primary tokens
     root.style.setProperty("--primary", colorSet.accent);
     root.style.setProperty("--ring", colorSet.accent);
+  }, [accent, theme]);
+
+  // Tema completo (fundo/texto/bordas/gráficos) — só existe para alguns temas.
+  // Reseta os tokens para o padrão do sistema antes de aplicar (ou não) o tema ativo.
+  useEffect(() => {
+    const root = document.documentElement;
+    const isDark = theme === "dark";
+    FULL_THEME_KEYS.forEach((key) => root.style.removeProperty(key));
+    const override = FULL_THEME_OVERRIDES[accent];
+    if (override) {
+      const vars = isDark ? override.dark : override.light;
+      Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
+    }
   }, [accent, theme]);
 
   const setAccent = useCallback((color: AccentColor) => {

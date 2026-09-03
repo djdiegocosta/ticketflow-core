@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { offlineDB } from "./offline-db";
-import { ACCENT_COLORS, AccentColor } from "./design";
+import { ACCENT_COLORS, AccentColor, FULL_THEME_OVERRIDES } from "./design";
 import { useAuth } from "./auth-context";
 import { useTheme } from "./theme";
 import type { PillTone } from "@/components/admin/DataTable";
@@ -314,8 +314,15 @@ export function useApplyPublicDesign(slug: string | undefined) {
       root.style.setProperty("--accent-hover", colorSet.hover);
       root.style.setProperty("--accent-muted", colorSet.muted);
       root.style.setProperty("--accent-text", colorSet.text);
+      root.style.setProperty("--icon-brand", colorSet.icon);
       root.style.setProperty("--primary", colorSet.accent);
       root.style.setProperty("--ring", colorSet.accent);
+    }
+
+    // Apply full theme (background/text/border/charts), quando o tema tiver um definido
+    const override = FULL_THEME_OVERRIDES[accent];
+    if (override) {
+      Object.entries(override.light).forEach(([key, value]) => root.style.setProperty(key, value));
     }
   }, [design]);
 }
@@ -357,8 +364,16 @@ export function useApplyCustomerDesign() {
       root.style.setProperty("--accent-hover", colorSet.hover);
       root.style.setProperty("--accent-muted", colorSet.muted);
       root.style.setProperty("--accent-text", colorSet.text);
+      root.style.setProperty("--icon-brand", colorSet.icon);
       root.style.setProperty("--primary", colorSet.accent);
       root.style.setProperty("--ring", colorSet.accent);
+    }
+
+    // Aplica tema completo (fundo/texto/bordas/gráficos), quando definido
+    const override = FULL_THEME_OVERRIDES[accent];
+    if (override) {
+      const vars = isDark ? override.dark : override.light;
+      Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
     }
   }, [design, theme]);
 }

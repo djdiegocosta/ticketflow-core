@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { ACCENT_COLORS, AccentColor } from "./design";
+import { ACCENT_COLORS, AccentColor, FULL_THEME_OVERRIDES } from "./design";
 
 export interface Customer {
   id: string;
@@ -211,8 +211,15 @@ export function useApplyPublicDesign(slug: string | undefined) {
       root.style.setProperty("--accent-hover", colorSet.hover);
       root.style.setProperty("--accent-muted", colorSet.muted);
       root.style.setProperty("--accent-text", colorSet.text);
+      root.style.setProperty("--icon-brand", colorSet.icon);
       root.style.setProperty("--primary", colorSet.accent);
       root.style.setProperty("--ring", colorSet.accent);
+    }
+
+    // Apply full theme (background/text/border/charts), quando o tema tiver um definido
+    const override = FULL_THEME_OVERRIDES[accent];
+    if (override) {
+      Object.entries(override.light).forEach(([key, value]) => root.style.setProperty(key, value));
     }
   }, [design]);
 }
