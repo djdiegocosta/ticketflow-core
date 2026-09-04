@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { SalesLinksSection } from "@/components/admin/SalesLinksSection";
 import {
   deleteBatch,
   updateEvent,
@@ -643,6 +644,10 @@ export function EditEventPage() {
                   </button>
                 </div>
               </div>
+            )}
+
+            {event && (
+              <SalesLinksSection eventId={id} organizationId={organizationId} slug={event.slug} />
             )}
           </div>
         )}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, BarChart3 } from "lucide-react";
+import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, BarChart3, Link2 } from "lucide-react";
 
 const tools = [
   {
@@ -19,6 +19,12 @@ const tools = [
     description: "Gerencie banners e comunicados na área do cliente.",
     icon: ImageIcon,
     href: "/admin/ferramentas/vitrine",
+  },
+  {
+    name: "Links de Venda",
+    description: "Veja de onde vêm suas vendas por canal",
+    icon: Link2,
+    href: "/admin/ferramentas/links-de-venda",
   },
   {
     name: "Simulador de Evento",
