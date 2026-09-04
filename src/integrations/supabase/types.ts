@@ -1166,7 +1166,7 @@ export type Database = {
       }
       confirm_sale_paid: {
         Args: { _mp_payment_id: string; _sale_id: string }
-        Returns: undefined
+        Returns: boolean
       }
       create_courtesy: {
         Args: {
@@ -1213,6 +1213,7 @@ export type Database = {
           _ref_code?: string
         }
         Returns: {
+          expires_at: string
           sale_code: string
           sale_id: string
           total_amount: number
