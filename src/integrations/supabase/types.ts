@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -1166,7 +1164,7 @@ export type Database = {
       }
       confirm_sale_paid: {
         Args: { _mp_payment_id: string; _sale_id: string }
-        Returns: undefined
+        Returns: boolean
       }
       create_courtesy: {
         Args: {
@@ -1213,6 +1211,7 @@ export type Database = {
           _ref_code?: string
         }
         Returns: {
+          expires_at: string
           sale_code: string
           sale_id: string
           total_amount: number
