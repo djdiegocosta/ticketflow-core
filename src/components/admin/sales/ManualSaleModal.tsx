@@ -122,6 +122,7 @@ export function ManualSaleModal({
     setSameAsBuyer(false);
     setPaymentMethod("Pix manual");
     setNote("");
+    setSalesLinkId("");
     setErrors({});
   };
 
