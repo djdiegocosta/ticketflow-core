@@ -140,7 +140,7 @@ export function useMpConfig() {
     queryFn: async () => {
       const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
       const organization_id = roleRow?.organization_id || "";
-      const { data, error } = await supabase.from("mp_config").select("*").eq("organization_id", organization_id).maybeSingle();
+      const { data, error } = await supabase.from("mp_config").select("*").eq("organization_id", organization_id).order("updated_at", { ascending: false }).limit(1).maybeSingle();
       if (error) throw error;
       return data || { status: "nao_configurado", sandbox_public_key: "", prod_public_key: "" };
     },
