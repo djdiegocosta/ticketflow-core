@@ -161,7 +161,7 @@ export default function CheckoutPage() {
         quantity: qty,
         participant_names: values.participants.map(p => p.name),
         customer_id: customerId as any,
-        ref_code: getStoredRef(event.id) ?? undefined
+        ...(getStoredRef(event.id) ? { ref_code: getStoredRef(event.id) as string } : {}),
       });
 
       const resultArr = saleResult as any[];

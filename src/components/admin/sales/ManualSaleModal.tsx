@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { channelLabel, useSalesLinks } from "@/lib/sales-links-queries";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
@@ -41,12 +42,15 @@ export function ManualSaleModal({
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Pix manual");
   const [note, setNote] = useState("");
+  const [salesLinkId, setSalesLinkId] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
 
   const event = useMemo(() => eventsQuery.find((e) => e.id === eventId), [eventsQuery, eventId]);
   
   const [eventWithBatches, setEventWithBatches] = useState<any>(null);
+  const { data: salesLinks = [] } = useSalesLinks(eventId || null);
+  const activeSalesLinks = salesLinks.filter((l) => l.is_active);
 
   useEffect(() => {
     if (eventId) {
@@ -118,6 +122,7 @@ export function ManualSaleModal({
     setSameAsBuyer(false);
     setPaymentMethod("Pix manual");
     setNote("");
+    setSalesLinkId("");
     setErrors({});
   };
 
@@ -172,7 +177,8 @@ export function ManualSaleModal({
       _participant_names: participants.slice(0, quantity).map(n => formatName(n)),
       _total_amount: parsedAmount,
       _payment_method: methodMap[paymentMethod] || "outro",
-      _observation: note
+      _observation: note,
+      ...(salesLinkId ? { _sales_link_id: salesLinkId } : {}),
     });
 
     setLoading(false);
@@ -245,6 +251,21 @@ export function ManualSaleModal({
                     {lots.map((l: any) => (
                       <option key={l.id} value={l.id}>
                         {l.name} — {formatCurrency((l as any).price || 0)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Vendido via (opcional)</label>
+                  <select
+                    className={inputClass}
+                    value={salesLinkId}
+                    onChange={(e) => setSalesLinkId(e.target.value)}
+                  >
+                    <option value="">Sem canal informado</option>
+                    {activeSalesLinks.map((link) => (
+                      <option key={link.id} value={link.id}>
+                        {link.name} — {channelLabel(link.channel)}
                       </option>
                     ))}
                   </select>
