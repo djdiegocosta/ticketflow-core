@@ -2,7 +2,7 @@
 
 > **Purpose:** índice operacional de alta densidade para LLMs/agentes de código. Use este arquivo antes de investigar ou alterar o projeto.
 >
-> **Audit basis:** repositório `djdiegocosta/ticketflow-core`, branch `main`, auditoria realizada em 04/09/2026. O mapa privilegia o código/migrations atuais sobre documentação histórica. Alterações existentes apenas em branches/PRs abertos são marcadas como **NÃO MERGED**.
+> **Audit basis:** repositório `djdiegocosta/ticketflow-core`, branch `main`, commit `f97be42e4dbbc530235e1c01a23b46f11b76fecc`, auditoria realizada em 04/09/2026. O mapa privilegia código/migrations atuais sobre documentação histórica. Alterações existentes apenas em branches/PRs abertos são marcadas como **NÃO MERGED**.
 
 ## 0. Regra de uso por LLM
 
@@ -12,10 +12,10 @@
 4. Para fluxo completo, siga **UI → query/mutation → RPC/Edge Function → tabela → RLS**.
 5. Não duplique regras já centralizadas em hooks, queries ou funções SQL.
 6. Não alterar arquitetura por conveniência.
-7. Diferencie sempre: `IMPLEMENTADO`, `PARCIAL`, `PENDENTE`, `LEGADO`, `NÃO CONFIRMADO`.
+7. Diferencie sempre: `IMPLEMENTADO`, `PARCIAL`, `PENDENTE`, `LEGADO`, `NÃO CONFIRMADO` e `NÃO MERGED`.
 8. **Source of truth:** código e banco/migrations > documentação histórica > planos do Lovable > inferência.
 9. Não editar `src/routes/routeTree.gen.ts` manualmente.
-10. Antes de mudar banco, procure a função/RPC, callers, migration e políticas RLS relacionadas.
+10. Antes de mudar banco, procure função/RPC, callers, migration e políticas RLS relacionadas.
 
 ## 1. Stack e estrutura
 
@@ -23,20 +23,23 @@
 |---|---|---|
 | App | `src/` | IMPLEMENTADO |
 | Rotas | `src/routes/` | IMPLEMENTADO — TanStack file-based routing |
-| Páginas/feature UI | `src/pages/` | IMPLEMENTADO |
+| Feature UI existente | `src/pages/` | IMPLEMENTADO; é utilizado pelas rotas atuais, mas não é a convenção para criar novas rotas |
 | Queries/ações | `src/lib/*-queries.ts` | IMPLEMENTADO |
 | Supabase | `src/integrations/supabase/`, `src/lib/` | IMPLEMENTADO |
 | SQL | `supabase/migrations/` | IMPLEMENTADO |
 | Design | `src/styles.css`, `docs/DESIGN-SYSTEM.md` | IMPLEMENTADO |
-| Produto | `docs/TPS.md` | OFICIAL |
+| Produto | `docs/TPS.md` | OFICIAL, mas pode divergir da implementação atual |
 | Auditoria histórica | `docs/AUDITORIA-STATUS.md` | HISTÓRICO; pode estar desatualizado |
+| Changelog | `docs/CHANGELOG.md` | HISTÓRICO |
 | Planos Lovable | `.lovable/plan/` | HISTÓRICO/REFERÊNCIA |
 
 Stack confirmada em `package.json`: React 19, TypeScript, Vite, TanStack Start/Router/Query, Supabase JS, Tailwind CSS, shadcn/Radix, Lucide, Recharts, html5-qrcode, QRCode React, jsPDF, React Hook Form e Zod.
 
+`src/routes/README.md` confirma roteamento baseado em arquivos TanStack e orienta a não criar estruturas de Next.js/Remix nem editar `routeTree.gen.ts` manualmente.
+
 ## 2. Arquitetura de navegação
 
-TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/routes/__root.tsx`. Convenções estão em `src/routes/README.md`.
+TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/routes/__root.tsx`.
 
 ### Público
 - `/` → entrada/redirecionamento
@@ -54,7 +57,7 @@ TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/
 - `/cliente`
 - `/cliente/eventos`
 - `/cliente/ingressos`
-- `/cliente/ingressos/:ticket_code` (detalhe)
+- `/cliente/ingressos/:ticket_code`
 - `/cliente/perfil`
 - `/cliente/pontos`
 
@@ -68,12 +71,17 @@ TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/
 - `/admin/cortesias`
 - `/admin/clientes`
 - `/admin/clientes/:id`
-- `/admin/checkin`
+- `/admin/checkin` → **alias/redirect** para `/checkin`
 - `/admin/ferramentas`
+- `/admin/checklist`
+- `/admin/ferramentas/links-de-venda` (quando presente na árvore atual)
 - `/admin/configuracoes`
 - `/admin/configuracoes/mercado-pago`
 
-> A lista acima é um índice operacional; para rotas adicionais/novas, conferir diretamente `src/routes/`.
+> A lista é um índice operacional, não substitui a árvore real de `src/routes/`. Novas rotas devem ser confirmadas diretamente no código.
+
+### Check-in isolado
+O TPS documenta `/checkin` como módulo isolado. Na implementação atual, `src/routes/admin.checkin.tsx` existe como rota de compatibilidade que redireciona para `/checkin`; portanto, **não trate `/admin/checkin` como a implementação da tela**.
 
 ## 3. Layouts e autenticação
 
@@ -111,7 +119,7 @@ Entidades principais:
 - `checkout_abandonments`
 - `checkout_rate_limits`
 
-Entidades/áreas auxiliares incluem banners/vitrine, pontos, financeiro/importação e outras tabelas presentes nas migrations.
+Entidades/áreas auxiliares incluem banners/vitrine, pontos, financeiro/importação e outras tabelas presentes nas migrations. Para schema exato, consultar as migrations e tipos gerados.
 
 ## 5. Organização / evento operacional
 
@@ -129,22 +137,26 @@ Regras relevantes:
 - publicação/encerramento afetam exposição pública e operação.
 
 ### Evento operacional
-Regra arquitetural:
+Implementação central confirmada em `src/lib/events-queries.ts`:
+- considera eventos `publicado` e não encerrados;
+- se houver evento iniciado, seleciona o iniciado mais recente;
+- caso contrário, seleciona o próximo evento;
+- `useOperationalEvent()` também expõe `hasMultipleCandidates`.
+
+Regra de produto:
 - quando existe um único evento operacional, áreas de vendas, ingressos, cortesias, check-in e indicadores devem resolvê-lo automaticamente;
 - sem evento operacional, usar histórico/consolidado quando a área permitir;
 - Clientes é global e não deve ser filtrado pelo evento;
-- múltiplos candidatos operacionais exigem tratamento explícito.
+- múltiplos candidatos exigem tratamento explícito quando a tela precisar de uma escolha inequívoca.
 
-Implementação central: `src/lib/events-queries.ts` (`getOperationalEvent` / `useOperationalEvent`).
-
-> **ATENÇÃO:** conferir a implementação atual antes de alterar critérios de “operacional”. Não espalhar seleção manual de evento em cada tela.
+Não espalhar seleção manual de evento em cada tela.
 
 ## 6. Lotes e ingressos
 
 Arquivos:
 - `src/lib/ticket-batches-queries.ts`
-- páginas de eventos/gestão de lotes
-- `src/lib/tickets-queries.ts` (quando aplicável)
+- páginas/rotas de eventos e gestão de lotes
+- módulos de tickets quando aplicável.
 
 Banco:
 - `ticket_batches`
@@ -156,7 +168,7 @@ Conceitos:
 - ingressos são criados após confirmação de pagamento ou emissão de cortesia;
 - check-in altera o estado do ingresso de forma controlada.
 
-RPC relevante: `get_available_batches` — exposição pública de lotes disponíveis; tratar como superfície pública e revisar autorização/estado do evento antes de mudar.
+RPC relevante: `get_available_batches` — superfície pública; revisar autorização/estado do evento antes de alterar.
 
 ## 7. Vendas
 
@@ -168,35 +180,35 @@ Arquivos:
 
 Tabela principal: `sales`.
 
-Status relevantes observados no sistema: `pendente`, `pago`, `expirado`, `cancelado`.
+Status observados: `pendente`, `pago`, `expirado`, `cancelado`.
 
 Regras:
-- cortesia é identificada por lote/venda, não deve entrar no faturamento pago;
+- cortesia não entra no faturamento pago;
 - vendas expiradas não devem ser tratadas como pendentes;
 - venda pendente reserva estoque;
 - confirmação de pagamento deve ser idempotente;
 - criação de ingresso depende de pagamento aprovado ou fluxo explícito de cortesia.
 
-RPCs centrais:
+RPCs centrais observados:
 - `create_pending_sale`
 - `confirm_sale_paid`
 - `confirm_sale_manual`
 - `create_locked_tickets`
-- `cancel_sale` / `refund_sale` — revisar autorização antes de alterar.
+- operações de cancelamento/reembolso, que exigem revisão de autorização antes de alteração.
 
 ## 8. Expiração e estoque
 
 Componentes:
 - `src/pages/CheckoutPage.tsx`
 - `src/lib/sales-queries.ts`
-- migrations de expiração/pending sale.
+- migrations de pending sale/expiração.
 
-Regra:
+Regra pretendida:
 - venda pendente possui `expires_at`;
 - expiração deve liberar a reserva de estoque;
 - job periódico do banco executa a limpeza.
 
-**Estado auditado:** existe cron `expire-pending-sales` no Supabase. A implementação de restauração de estoque e o uso de `expires_at` foram desenvolvidos em branch/PR de hardening e precisam ser considerados **NÃO MERGED** até confirmação do merge correspondente.
+**Estado na `main` auditada:** o hardening de restauração de estoque, uso do `expires_at` no timer e correção do cron está em PR #13 e, portanto, é **NÃO MERGED** até confirmação do merge. Não documentar esse comportamento como confirmado na `main`.
 
 ## 9. Checkout público
 
@@ -205,33 +217,33 @@ Arquivos:
 - `src/pages/CheckoutPage.tsx`
 - rotas `e.$slug*`
 
-Fluxo:
+Fluxo esperado:
 
-`evento público → lote disponível → Checkout → create_pending_sale → PIX → Mercado Pago → webhook → confirmação → ingresso`
+`evento público → lote disponível → checkout → create_pending_sale → PIX → Mercado Pago → webhook → confirmação → ingresso`
 
-Campos atualmente priorizados no checkout:
+Campos atuais do checkout:
 - nome;
 - WhatsApp;
 - participantes;
 - lote/quantidade;
 - pagamento PIX.
 
-**Mudanças recentes:** email e cidade foram removidos do checkout. Se documentação histórica disser o contrário, o código atual prevalece.
+Email e cidade foram removidos da UI do checkout atual.
 
-**Pendências conhecidas:**
-- proteção adicional/rate limiting do endpoint de criação do PIX;
+Pendências conhecidas:
+- proteção adicional/rate limiting da criação do PIX;
 - vínculo retroativo de compra guest com conta criada posteriormente;
-- validação final da página de confirmação pelo status real da venda;
-- PDF de “baixar todos os ingressos” ainda pendente;
-- botão de compartilhamento do ingresso ainda pendente.
+- validação final da confirmação pelo status real da venda;
+- PDF de “baixar todos os ingressos”;
+- compartilhamento do ingresso.
 
 ## 10. Mercado Pago
 
-Arquivos:
+Arquivos principais:
 - `src/lib/mp/mercado-pago.functions.ts`
 - `src/routes/api/public/mp/webhook.ts`
 - `src/routes/admin.configuracoes.mercado-pago.tsx`
-- `src/lib/mp/admin-middleware.ts` **(NÃO MERGED se estiver somente no PR de hardening)**
+- `src/lib/mp/admin-middleware.ts` **NÃO MERGED** no estado auditado da `main`.
 
 Funções:
 - administração de credenciais;
@@ -239,31 +251,28 @@ Funções:
 - criação de PIX;
 - webhook de pagamento aprovado.
 
-Segurança esperada:
-- operações administrativas exigem sessão + papel admin + organização correta;
-- criação pública de PIX só pode operar sobre venda válida da própria organização/evento;
-- webhook valida assinatura, organização, venda e valor antes de confirmar;
-- confirmação e geração de ingressos são idempotentes e privilegiadas.
-
-**ATENÇÃO:** o endurecimento do Mercado Pago está em PR aberto e não deve ser considerado parte confirmada de `main` até merge/build.
+**Estado da `main`:** o endurecimento de autenticação administrativa, validação adicional do webhook, bloqueio de PIX expirado e idempotência reforçada está no PR #12 e não deve ser considerado implementado na `main` até merge/build.
 
 ## 11. Confirmação de pagamento e tickets
 
 RPCs críticas:
-- `confirm_sale_paid(sale_id, mp_payment_id)` — transição pendente → pago.
-- `create_locked_tickets(sale_id, participants)` — geração de ingressos.
+- `confirm_sale_paid(sale_id, mp_payment_id)`;
+- `create_locked_tickets(sale_id, participants)`.
 
-Ambas são superfícies de alto risco. Nunca conceder execução a `anon`/`PUBLIC`.
+No desenho de segurança alvo, ambas são privilegiadas e não devem ser executáveis por `anon`/`PUBLIC`.
 
-O webhook é a autoridade para pagamento online. O cliente não deve conseguir “simular” confirmação.
+**Importante:** como o hardening correspondente está fora da `main`, distinguir o desenho desejado do estado efetivamente implantado em cada ambiente.
+
+O webhook deve ser a autoridade para pagamento online; o cliente não deve conseguir simular confirmação.
 
 ## 12. Check-in
 
 Áreas:
-- `src/routes/admin.checkin.tsx`
-- componentes/páginas de check-in
-- `checkin_log`
-- RPC `checkin_ticket`
+- `src/routes/admin.checkin.tsx` — alias que redireciona para `/checkin`;
+- módulo efetivo de check-in em `/checkin`;
+- componentes/páginas de check-in;
+- `checkin_log`;
+- RPC `checkin_ticket`.
 
 Regra:
 - somente papéis operacionais autorizados podem confirmar check-in;
@@ -278,9 +287,9 @@ Offline/PWA:
 
 Arquivos:
 - `src/pages/admin/CourtesiesListPage.tsx`
-- fluxo de criação de cortesia
-- `src/lib/*courtesy*`
-- rotas `admin.cortesias*`
+- fluxo de criação de cortesia;
+- rotas `admin.cortesias*`;
+- módulos de queries relacionados.
 
 Banco:
 - `ticket_batches.is_courtesy`
@@ -290,9 +299,8 @@ Banco:
 Regras:
 - cortesia é R$0;
 - não entra em faturamento;
-- não é elegível a reembolso;
-- emissão pode ser vinculada a cliente;
-- criação em lote respeita estoque/quantidade.
+- não deve ser tratada como venda paga comum;
+- criação em lote deve respeitar estoque/quantidade.
 
 ## 14. Clientes e CRM
 
@@ -308,11 +316,11 @@ Tabela: `customers`.
 Modelo:
 - cliente é associado à organização;
 - usuário autenticado pode possuir registro de cliente na organização;
-- Admin pode gerenciar clientes da própria organização;
-- área de Clientes é global, não deve herdar filtro do evento operacional.
+- Admin gerencia clientes da própria organização;
+- área de Clientes é global e não deve herdar filtro do evento operacional.
 
 Pendência importante:
-- compras guest anteriores à criação da conta ainda não são automaticamente vinculadas por WhatsApp.
+- compras guest anteriores à criação da conta ainda não são automaticamente vinculadas por WhatsApp no fluxo auditado.
 
 ## 15. Área do cliente
 
@@ -325,39 +333,37 @@ Layout: `src/components/layouts/MobileLayout.tsx`.
 - Pontos
 - Perfil
 
-Implementado recentemente:
+Implementado:
 - menu hamburger no topo;
 - remoção da saudação “Seja Bem Vindo!”;
 - remoção do campo Instagram e do indicador de completude;
 - preservação de dados antigos de Instagram no banco.
 
-Documentação histórica que ainda menciona esses elementos deve ser considerada **STALE**.
-
 ## 16. Público / privacidade
 
 Superfícies públicas intencionais:
-- evento publicado;
+- evento público;
 - lotes disponíveis;
 - checkout guest;
-- criação/consulta necessária ao fluxo público.
+- consultas estritamente necessárias ao fluxo público.
 
-Dados que **não devem** ficar expostos publicamente:
+Dados que não devem ficar expostos publicamente:
 - clientes;
 - vendas completas;
 - ingressos de terceiros;
 - credenciais Mercado Pago;
 - dados internos de organização.
 
-Qualquer RPC `SECURITY DEFINER` público exige revisão individual.
+Qualquer RPC `SECURITY DEFINER` público exige revisão individual de dados retornados, grants, RLS e callers.
 
 ## 17. Dashboard e indicadores
 
 Arquivos:
-- `src/pages/admin/DashboardPage.tsx` (ou página correspondente)
-- `src/lib/dashboard-queries.ts`
+- `src/pages/admin/DashboardPage.tsx` ou página correspondente;
+- `src/lib/dashboard-queries.ts`;
 - componentes de gráficos/cards.
 
-Cards principais definidos:
+Cards definidos:
 1. Receita
 2. Ingressos
 3. Pendentes / Check-in conforme contexto operacional
@@ -367,11 +373,11 @@ Temperatura:
 - níveis: Fria, Aquecendo, Quente, Explodindo;
 - baseada em vendas pagas recentes;
 - thresholds configuráveis em preferências da organização;
-- ícone Thermometer/Flame conforme nível;
-- temperatura fria usa azul claro fixo, não configuração de Design.
+- Thermometer/Flame conforme nível;
+- temperatura fria usa azul claro fixo.
 
 Gráficos:
-- vendas diárias últimos 14 dias;
+- vendas diárias dos últimos 14 dias;
 - pico de vendas por horário.
 
 Audience stats:
@@ -387,43 +393,40 @@ Arquivo principal: `src/pages/admin/ClientsListPage.tsx`.
 
 Exportação:
 - clientes carregados independentemente de busca/paginação;
-- nome separado em First/Last Name;
-- WhatsApp normalizado para formato compatível;
+- First Name / Last Name;
+- WhatsApp normalizado;
 - email normalizado;
 - CSV UTF-8 com BOM/CRLF;
-- clientes sem telefone e email são ignorados;
-- finalidade: Customer List/Meta Ads.
+- clientes sem telefone e email são ignorados.
 
-Não confundir exportação com CRM/remarketing automático; são camadas diferentes.
+Não confundir exportação com CRM/remarketing automático.
 
 ## 19. Ferramentas
 
-`src/routes/admin.ferramentas.index.tsx`.
+Rota principal: `src/routes/admin.ferramentas.index.tsx`.
 
-Áreas presentes/planejadas:
+Áreas identificadas na navegação/documentação atual:
 - Histórico de Eventos
 - Relatórios
 - Vitrine
 - Simulador de Evento
 - Remarketing
 - Checklist do Evento
+- Links de venda, quando a rota correspondente estiver ativa.
 
-Sorteios: decisão atual é remover/ não priorizar.
+Sorteios: decisão atual é remover/não priorizar.
 
-Financeiro, Importação e Relatórios podem existir como áreas preparadas/placeholder; não assumir que estão funcionalmente completas.
+Financeiro, Importação e Relatórios podem existir como áreas preparadas/placeholder; não assumir que estão funcionalmente completas sem verificar a implementação.
 
 ## 20. Vitrine
 
-Banco e UI de banners.
+Área de banners/vitrine, com armazenamento próprio e regras de upload.
 
-Regra crítica:
-- somente um banner ativo por vez;
-- garantia idealmente no banco/trigger, não apenas no cliente.
+Buckets identificados no projeto:
+- `event-images` para imagens de eventos;
+- `organization-logos` para logos.
 
-Upload:
-- bucket `event-images` para imagens de eventos;
-- bucket `organization-logos` para logos;
-- Vitrine possui regras próprias de armazenamento.
+Não assumir exclusividade de banner apenas pela UI; a garantia deve ser verificada no banco/trigger/política correspondente.
 
 ## 21. Configurações
 
@@ -433,18 +436,18 @@ Arquivos:
 - `src/pages/admin/SettingsPage.tsx`
 - `src/lib/settings-queries.ts`
 
-Preferências operacionais incluem:
+Preferências operacionais implementadas:
 - minutos de expiração de venda pendente;
 - threshold Aquecendo;
 - threshold Quente;
 - threshold Explodindo.
 
-Tema do cliente ainda é local ao navegador; não tratar como preferência persistida sem implementação específica.
+Tema do cliente não deve ser tratado como preferência persistida sem implementação específica.
 
 ## 22. Design System
 
-Fonte de verdade:
-- `docs/DESIGN-SYSTEM.md`
+Fontes de verdade:
+- `docs/DESIGN-SYSTEM.md`;
 - estilos/componentes atuais.
 
 Princípios relevantes:
@@ -453,11 +456,11 @@ Princípios relevantes:
 - estética minimalista/premium;
 - escala de espaçamento baseada em 4px;
 - componentes compartilhados devem ser preferidos a estilos locais duplicados;
-- mensagens de erro devem explicar causa provável/ação, nunca apenas “Algo deu errado”.
+- mensagens de erro devem explicar causa provável/ação, não apenas “Algo deu errado”.
 
 ## 23. Supabase / segurança
 
-Antes de alterar uma tabela ou RPC:
+Antes de alterar tabela ou RPC:
 1. localizar migration que criou/alterou;
 2. localizar função/RPC;
 3. localizar grants;
@@ -475,7 +478,7 @@ Antes de alterar uma tabela ou RPC:
 - `checkout_rate_limits`
 - funções `SECURITY DEFINER`.
 
-### Padrão de autorização
+Padrão de autorização esperado:
 
 `auth.uid()` → identidade → `user_roles` → papel → organização → recurso.
 
@@ -502,11 +505,11 @@ Getters públicos que exigem revisão individual:
 - `has_role`
 - `is_staff`
 
-Não revogar esses getters em bloco sem analisar seus callers e necessidade no fluxo público.
+Não revogar esses getters em bloco sem analisar callers e necessidade no fluxo público.
 
 ## 25. Search path / views — pendências de segurança
 
-O projeto já apresentou warnings para funções com `search_path` mutável, incluindo:
+Warnings já identificados para funções com `search_path` mutável incluem:
 - `generate_short_code`
 - `get_hourly_sales_stats`
 - `get_new_customers_count`
@@ -521,12 +524,16 @@ Também existe alerta relacionado a `public.event_ticket_stats` como view/SECURI
 
 Esses itens devem ser corrigidos com análise de compatibilidade, não por alteração cega.
 
-## 26. Histórico de documentação vs código atual
+## 26. Documentação vs código atual
 
-Documentos podem descrever versões anteriores. Exemplos já identificados:
-- `README.md` ainda contém instruções de fundação/placeholder que não representam o sistema atual;
-- `docs/AUDITORIA-STATUS.md` tem última atualização anterior a várias mudanças;
-- `docs/TPS.md` contém regras históricas que foram superadas por decisões recentes de implementação, como campos removidos do checkout e mudanças de UX.
+Documentos podem descrever versões anteriores.
+
+Exemplos:
+- `README.md` contém material de fundação que pode não representar o sistema atual;
+- `docs/AUDITORIA-STATUS.md` é histórico e pode estar defasado;
+- `docs/TPS.md` é oficial para intenção de produto, mas há divergências já observadas com a implementação atual, inclusive rotas/UX e fluxos guest.
+
+Exemplo confirmado: o TPS descreve `/checkin` como rota isolada, enquanto `admin.checkin.tsx` na implementação atual é um redirect para `/checkin`.
 
 **Regra:** documentação histórica é evidência de intenção/histórico, não substitui o código atual quando houver conflito.
 
@@ -534,10 +541,10 @@ Documentos podem descrever versões anteriores. Exemplos já identificados:
 
 Repositório oficial: `djdiegocosta/ticketflow-core`.
 
-Branches/PRs de hardening existentes no histórico recente:
-- PR #9 — exportação Meta Ads — MERGED.
-- PR #10 — dashboard/temperatura/preferências — MERGED.
-- PR #12 — hardening Mercado Pago/segurança — ABERTO; NÃO MERGED.
+PRs relevantes conhecidos:
+- PR #9 — exportação Meta Ads — MERGED;
+- PR #10 — dashboard/temperatura/preferências — MERGED;
+- PR #12 — hardening Mercado Pago/segurança — ABERTO; NÃO MERGED;
 - PR #13 — expiração/estoque/checkout expiration — ABERTO; NÃO MERGED.
 
 Não assumir que uma alteração vista em PR aberto já está em `main`.
@@ -550,12 +557,12 @@ Não assumir que uma alteração vista em PR aberto já está em `main`.
 - corrigir `SECURITY DEFINER`/search_path;
 - revisar `event_ticket_stats`;
 - confirmar RLS por tabela;
-- validar configuração de proteção contra senhas vazadas no Supabase Auth;
+- validar proteção contra senhas vazadas no Supabase Auth;
 - eliminar códigos de ingresso previsíveis;
 - limitar abuso de criação de PIX.
 
 ### P1 — fluxo de negócio
-- confirmar página pós-compra pelo status real;
+- confirmação pós-compra baseada no status real;
 - vínculo guest → conta por WhatsApp;
 - PDF de ingressos;
 - compartilhamento de ingresso;
@@ -579,7 +586,7 @@ Não assumir que uma alteração vista em PR aberto já está em `main`.
 `/e/:slug` → lotes → `/checkout` → `create_pending_sale` → `createMpPix` → Mercado Pago → webhook → `confirm_sale_paid` → `create_locked_tickets` → confirmação → `/ingresso/:ticket_code` → check-in.
 
 ### Cortesia
-`Cliente/Admin` → lote de cortesia → emissão → `sales` marcada como cortesia → `tickets` → área do cliente/check-in.
+`Admin` → lote de cortesia → emissão → venda marcada como cortesia → tickets → cliente/check-in.
 
 ### Check-in
 `ticket_code/QR` → validação → `checkin_ticket` → `checkin_log` → ingresso utilizado.
@@ -591,6 +598,7 @@ Não assumir que uma alteração vista em PR aberto já está em `main`.
 
 ```text
 src/routes/__root.tsx
+src/routes/README.md
 src/lib/auth-context.tsx
 src/lib/events-queries.ts
 src/lib/sales-queries.ts
