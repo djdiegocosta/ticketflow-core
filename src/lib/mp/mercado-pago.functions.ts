@@ -100,7 +100,15 @@ export const createMpPix = createServerFn({ method: "POST" })
       }),
     });
     const mpData = await mpRes.json();
-    if (!mpRes.ok) throw new Error(mpData.message || "Erro ao gerar PIX");
+    if (!mpRes.ok) {
+      console.error("[createMpPix] Mercado Pago rejeitou o pagamento", {
+        status: mpRes.status,
+        sale_id: sale.id,
+        environment: config.environment,
+        response: mpData,
+      });
+      throw new Error(mpData.message || "Erro ao gerar PIX");
+    }
     const qrCode = mpData.point_of_interaction.transaction_data.qr_code;
     const qrCodeBase64 = mpData.point_of_interaction.transaction_data.qr_code_base64;
     const mpPaymentId = String(mpData.id);
