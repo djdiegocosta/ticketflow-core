@@ -98,7 +98,7 @@ As funções administrativas continuam disponíveis para `authenticated` e `serv
 ## 2. Segurança crítica — view `event_ticket_stats` com SECURITY DEFINER
 
 **ID:** AUD-002  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** CRÍTICA  
 **Data de descoberta:** 05/09/2026 18:59 BRT  
 **Agente da descoberta:** ChatGPT  
@@ -109,15 +109,30 @@ O Security Advisor detectou a view `public.event_ticket_stats` definida com `SEC
 
 ### Impacto
 
-A view pode aplicar permissões e RLS do proprietário da view, e não necessariamente do usuário que consulta. Isso pode criar exposição indevida de dados se a view estiver acessível a papéis públicos.
+A view podia aplicar permissões e RLS do proprietário da view, e não necessariamente do usuário que consulta. Como a view possui `SELECT` para `anon` e `authenticated`, havia risco de exposição de dados das tabelas subjacentes (`sales` e `tickets`) fora das políticas RLS do chamador.
 
-### Ação necessária
+### Correção aplicada
 
-Inspecionar definição, uso e permissões da view. Corrigir para `SECURITY INVOKER` ou remover/restringir a exposição, conforme o uso real.
+A view foi alterada para `SECURITY INVOKER`. Isso mantém a view disponível para o fluxo existente, mas faz a consulta respeitar as permissões e as políticas RLS do papel que está realizando a chamada.
+
+A definição funcional da view não foi alterada: continuam sendo calculadas as estatísticas de ingressos vendidos, cortesias e check-ins agrupadas por evento e organização.
+
+### Evidência
+
+- Definição anterior confirmada no banco: `public.event_ticket_stats` com `reloptions = null` e proprietário `postgres`.
+- Verificação posterior confirmou `reloptions = {security_invoker=true}`.
+- `anon` e `authenticated` continuam com permissão `SELECT`; a diferença é que a execução agora respeita o contexto do chamador.
+- O Security Advisor deixou de reportar o alerta específico da view `event_ticket_stats`.
+- Migration Supabase: `harden_event_ticket_stats_view_security_invoker`
+- Migration versionada no GitHub: `supabase/migrations/20260905220900_harden_event_ticket_stats_view_security_invoker.sql`
+- Commit GitHub: `cdf25b705083241d166cb3cf1d0128d75df8666d`
 
 ### Registro de resolução
 
-Ainda não resolvido.
+- **Data:** 05/09/2026
+- **Hora:** 19:09 BRT
+- **Agente:** ChatGPT
+- **Ação:** view convertida para `SECURITY INVOKER`, verificada no banco e validada novamente pelo Security Advisor.
 
 ---
 
@@ -462,7 +477,7 @@ Ainda não resolvido.
 
 ### Problema
 
-A documentação histórica contém diversos itens marcados como `⏳`, indicando que uma correção foi entregue, mas ainda depende de teste/confirmacão. Entre eles estão ajustes da Vitrine, Skeleton Screen, SmartField, espaçamentos, link de retorno do ingresso, selo de status, máscara/entrada de datas, cidade, campo sexo, conexão da tela pública com lotes disponíveis e outros refinamentos de UX.
+A documentação histórica contém diversos itens marcados como `⏳`, indicando que uma correção foi entregue, mas ainda depende de teste/confirmação. Entre eles estão ajustes da Vitrine, Skeleton Screen, SmartField, espaçamentos, link de retorno do ingresso, selo de status, máscara/entrada de datas, cidade, campo sexo, conexão da tela pública com lotes disponíveis e outros refinamentos de UX.
 
 ### Impacto
 
@@ -490,7 +505,7 @@ Ainda não resolvido.
 ## Supabase
 
 - Projeto correto: `Ticket Flow`.
-- Project ref: `ywcdopjqfhisopipqxqgq`.
+- Project ref: `ywcdopjqfhisopipqxgq`.
 - Estado observado: `ACTIVE_HEALTHY`.
 - Região: São Paulo (`sa-east-1`).
 - Todas as tabelas públicas verificadas pelo catálogo retornaram RLS habilitado.
@@ -508,17 +523,16 @@ Ainda não resolvido.
 
 # Prioridade de correção
 
-1. **AUD-002 — `event_ticket_stats` com SECURITY DEFINER.**
-2. **AUD-005 — Expiração/liberação de estoque de vendas pendentes.**
-3. **AUD-006 — Versionamento do `checkin_ticket`.**
-4. **AUD-003 — Proteção contra senhas vazadas.**
-5. **AUD-012 — Remoção do `.env` versionado.**
-6. **AUD-004 — `search_path` das funções.**
-7. **AUD-009/AUD-011 — otimização e simplificação das políticas RLS.**
-8. **AUD-007/AUD-008 — pendências funcionais do fluxo do cliente.**
-9. **AUD-010 — índices de chaves estrangeiras.**
-10. **AUD-013/AUD-014 — saneamento da documentação.**
-11. **AUD-015 — QA dos itens ainda não confirmados.**
+1. **AUD-005 — Expiração/liberação de estoque de vendas pendentes.**
+2. **AUD-006 — Versionamento do `checkin_ticket`.**
+3. **AUD-003 — Proteção contra senhas vazadas.**
+4. **AUD-012 — Remoção do `.env` versionado.**
+5. **AUD-004 — `search_path` das funções.**
+6. **AUD-009/AUD-011 — otimização e simplificação das políticas RLS.**
+7. **AUD-007/AUD-008 — pendências funcionais do fluxo do cliente.**
+8. **AUD-010 — índices de chaves estrangeiras.**
+9. **AUD-013/AUD-014 — saneamento da documentação.**
+10. **AUD-015 — QA dos itens ainda não confirmados.**
 
 > **Regra operacional:** nenhum item crítico de segurança ou integridade deve ser tratado como resolvido sem confirmação no banco/código e, quando aplicável, em deployment de produção.
 
@@ -528,6 +542,7 @@ Ainda não resolvido.
 |---|---|---|
 | 05/09/2026 19:00 | ChatGPT | Documento `docs/AUDITORIA.md` criado com os achados da auditoria técnica do GitHub, Supabase e Vercel. |
 | 05/09/2026 19:06 | ChatGPT | AUD-001 corrigido: removida execução `anon` das funções SECURITY DEFINER privilegiadas e registrado o resultado da verificação pós-correção. |
+| 05/09/2026 19:09 | ChatGPT | AUD-002 corrigido: `event_ticket_stats` convertida para `SECURITY INVOKER`, verificada no banco e retirada do Security Advisor. |
 
 ## Como registrar uma resolução
 
