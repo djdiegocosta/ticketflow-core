@@ -174,9 +174,14 @@ export function useTestMpWebhook() {
   const testFn = useServerFn(testMpWebhook);
   return useMutation({
     mutationFn: async (vars: { organization_id: string; environment: "sandbox" | "producao" }) => await testFn({ data: vars }),
-    onError: () => toast.error("Falha ao validar segredo do webhook"),
+    onSuccess: (result) => {
+      if (result?.status === "Configurado") toast.success("Chave secreta do webhook validada com sucesso");
+      else toast.error("Nenhuma chave secreta de webhook salva para este ambiente");
+    },
+    onError: (error) => toast.error(error.message || "Falha ao validar segredo do webhook"),
   });
 }
+
 
 export function useCreateTestPix() {
   const queryClient = useQueryClient();
