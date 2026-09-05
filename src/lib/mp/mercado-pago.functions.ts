@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { encrypt, decrypt } from "./utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -14,43 +15,31 @@ async function assertOrgAdmin(userId: string, organizationId: string) {
   if (error || !data) throw new Error("Sem permissão para configurar esta organização");
 }
 
-async function getMpCredentials(environment: "sandbox" | "producao") {
-  const { data, error } = await supabaseAdmin.rpc("get_mp_credentials", {
-    _environment: environment,
-  });
-  if (error) throw new Error(error.message);
-  const credentials = Array.isArray(data) ? data[0] : data;
-  if (!credentials?.access_token) return null;
-  return credentials as {
-    access_token: string;
-    webhook_secret: string | null;
-    public_key: string | null;
-  };
-}
-
 export const saveMpCredentials = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    z
-      .object({
-        organization_id: z.string().uuid(),
-        environment: z.enum(["sandbox", "producao"]),
-        public_key: z.string(),
-        access_token: z.string(),
-        webhook_secret: z.string().optional(),
-      })
-      .parse,
-  )
+  .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]), public_key: z.string(), access_token: z.string(), webhook_secret: z.string().optional() }).parse)
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.userId, data.organization_id);
-    const accessToken = data.access_token.trim();
-    if (!accessToken) throw new Error("Access Token é obrigatório");
-    const { error } = await supabaseAdmin.rpc("set_mp_credentials", {
-      _environment: data.environment,
-      _access_token: accessToken,
-      _webhook_secret: data.webhook_secret?.trim() || null,
-      _public_key: data.public_key.trim(),
-    });
+    const { data: existing } = await supabaseAdmin
+      .from("mp_config")
+      .select("public_key, access_token_encrypted, webhook_secret_encrypted")
+      .eq("organization_id", data.organization_id)
+      .eq("environment", data.environment)
+      .maybeSingle();
+    const token = data.access_token.trim();
+    const secret = (data.webhook_secret ?? "").trim();
+    const publicKey = data.public_key.trim();
+    const encryptedToken = token ? await encrypt(token) : (existing?.access_token_encrypted ?? null);
+    if (!encryptedToken) throw new Error("Access Token é obrigatório");
+    const encryptedWebhookSecret = secret ? await encrypt(secret) : (existing?.webhook_secret_encrypted ?? null);
+    const { error } = await supabaseAdmin.from("mp_config").upsert({
+      organization_id: data.organization_id,
+      environment: data.environment,
+      public_key: publicKey || existing?.public_key || "",
+      access_token_encrypted: encryptedToken,
+      webhook_secret_encrypted: encryptedWebhookSecret,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "organization_id,environment" });
     if (error) throw new Error(error.message);
     return { success: true };
   });
@@ -60,13 +49,12 @@ export const validateMpCredentials = createServerFn({ method: "POST" })
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.userId, data.organization_id);
-    const config = await getMpCredentials(data.environment);
-    if (!config?.access_token) throw new Error("Configuração não encontrada");
-    const mpRes = await fetch("https://api.mercadopago.com/users/me", {
-      headers: { Authorization: `Bearer ${config.access_token}` },
-    });
+    const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("access_token_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
+    if (configError || !config) throw new Error("Configuração não encontrada");
+    const accessToken = await decrypt(config.access_token_encrypted!);
+    const mpRes = await fetch("https://api.mercadopago.com/users/me", { headers: { Authorization: `Bearer ${accessToken}` } });
     if (!mpRes.ok) throw new Error("Credenciais inválidas ou expiradas");
-    const { error } = await supabaseAdmin.from("mp_config").update({ validated_at: new Date().toISOString() }).eq("environment", data.environment);
+    const { error } = await supabaseAdmin.from("mp_config").update({ validated_at: new Date().toISOString() }).eq("organization_id", data.organization_id).eq("environment", data.environment);
     if (error) throw new Error(error.message);
     return { success: true };
   });
@@ -76,78 +64,34 @@ export const testMpWebhook = createServerFn({ method: "POST" })
   .inputValidator(z.object({ organization_id: z.string().uuid(), environment: z.enum(["sandbox", "producao"]) }).parse)
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.userId, data.organization_id);
-    const config = await getMpCredentials(data.environment);
-    if (!config) return { status: "Não configurado" as const };
-    if (!config.webhook_secret) return { status: "Segredo do webhook não configurado" as const };
-    return { status: "Configurado" as const };
-  });
-
-export const createMpTestSale = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ organization_id: z.string().uuid() }).parse)
-  .handler(async ({ data, context }) => {
-    await assertOrgAdmin(context.userId, data.organization_id);
-    const { data: event, error: eventError } = await supabaseAdmin
-      .from("events")
-      .select("id")
-      .eq("status", "publicado")
-      .eq("is_closed", false)
-      .order("event_date", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (eventError || !event) throw new Error("Nenhum evento publicado disponível para o teste");
-    const { data: batch, error: batchError } = await supabaseAdmin
-      .from("ticket_batches")
-      .select("id")
-      .eq("event_id", event.id)
-      .eq("is_courtesy", false)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (batchError || !batch) throw new Error("Nenhum lote pago disponível para o teste");
-    const saleCode = `MPTEST-${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
-    const { data: sale, error: saleError } = await supabaseAdmin
-      .from("sales")
-      .insert({
-        event_id: event.id,
-        batch_id: batch.id,
-        buyer_name: "Teste Mercado Pago",
-        buyer_whatsapp: "22999999999",
-        buyer_email: "teste@ticketflow.local",
-        quantity: 1,
-        unit_price: 0.01,
-        total_amount: 0.01,
-        status: "pendente",
-        origin: "manual",
-        payment_method: "pix_ticketflow",
-        sale_code: saleCode,
-        pending_participant_names: ["Teste Mercado Pago"],
-      })
-      .select("id, sale_code")
-      .single();
-    if (saleError || !sale) throw new Error(saleError?.message || "Não foi possível criar a venda de teste");
-    return { sale_id: sale.id, sale_code: sale.sale_code };
+    const { data: config, error: configError } = await supabaseAdmin.from("mp_config").select("webhook_secret_encrypted").eq("organization_id", data.organization_id).eq("environment", data.environment).single();
+    if (configError || !config) throw new Error("Configuração não encontrada");
+    if (!config.webhook_secret_encrypted) return { status: "Não configurado" };
+    await decrypt(config.webhook_secret_encrypted);
+    return { status: "Configurado" };
   });
 
 export const createMpPix = createServerFn({ method: "POST" })
   .inputValidator(z.object({ sale_id: z.string().uuid() }).parse)
   .handler(async ({ data }) => {
-    const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*").eq("id", data.sale_id).single();
+    const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*, events!inner(organization_id)").eq("id", data.sale_id).single();
     if (saleError || !sale) throw new Error("Venda não encontrada");
     if (sale.status !== "pendente") throw new Error("A venda já foi processada");
     if (sale.expires_at && new Date(sale.expires_at) <= new Date()) throw new Error("Esta reserva expirou");
-    let config = await getMpCredentials("producao");
-    if (!config) config = await getMpCredentials("sandbox");
-    if (!config?.access_token) throw new Error("Mercado Pago não configurado para esta organização");
+    const orgId = sale.events.organization_id;
+    const { data: configs } = await supabaseAdmin.from("mp_config").select("*").eq("organization_id", orgId);
+    const prodConfig = configs?.find(c => c.environment === "producao" && c.validated_at);
+    const sandboxConfig = configs?.find(c => c.environment === "sandbox");
+    const config = prodConfig || sandboxConfig;
+    if (!config) throw new Error("Mercado Pago não configurado para esta organização");
+    const accessToken = await decrypt(config.access_token_encrypted!);
     const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
-    const { data: orgId, error: orgError } = await supabaseAdmin.rpc("get_single_organization_id");
-    if (orgError || !orgId) throw new Error("Organização não encontrada para o webhook");
     const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
     const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
-      headers: { Authorization: `Bearer ${config.access_token}`, "Content-Type": "application/json", "X-Idempotency-Key": sale.id },
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "X-Idempotency-Key": sale.id },
       body: JSON.stringify({
-        transaction_amount: Number(sale.total_amount),
+        transaction_amount: sale.total_amount,
         description: `Ingresso TicketFlow - Venda ${sale.sale_code}`,
         payment_method_id: "pix",
         external_reference: sale.id,
@@ -157,9 +101,8 @@ export const createMpPix = createServerFn({ method: "POST" })
     });
     const mpData = await mpRes.json();
     if (!mpRes.ok) throw new Error(mpData.message || "Erro ao gerar PIX");
-    const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
-    const qrCodeBase64 = mpData.point_of_interaction?.transaction_data?.qr_code_base64;
-    if (!qrCode || !qrCodeBase64) throw new Error("Mercado Pago não retornou o QR Code PIX");
+    const qrCode = mpData.point_of_interaction.transaction_data.qr_code;
+    const qrCodeBase64 = mpData.point_of_interaction.transaction_data.qr_code_base64;
     const mpPaymentId = String(mpData.id);
     const { error: updateError } = await supabaseAdmin.from("sales").update({ mp_payment_id: mpPaymentId, mp_qr_code: qrCode, mp_qr_code_base64: qrCodeBase64 }).eq("id", sale.id).eq("status", "pendente");
     if (updateError) throw new Error(updateError.message);
