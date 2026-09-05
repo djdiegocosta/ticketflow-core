@@ -101,16 +101,19 @@ export const createMpPix = createServerFn({ method: "POST" })
     });
     const mpData = await mpRes.json();
     if (!mpRes.ok) {
-      console.error("[createMpPix] Mercado Pago rejeitou o pagamento", {
-        status: mpRes.status,
-        sale_id: sale.id,
-        environment: config.environment,
-        response: mpData,
-      });
+      await supabaseAdmin.from("sales").update({
+        mp_debug_response: JSON.stringify({ status: mpRes.status, environment: config.environment, body: mpData }),
+      }).eq("id", sale.id);
       throw new Error(mpData.message || "Erro ao gerar PIX");
     }
-    const qrCode = mpData.point_of_interaction.transaction_data.qr_code;
-    const qrCodeBase64 = mpData.point_of_interaction.transaction_data.qr_code_base64;
+    const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
+    const qrCodeBase64 = mpData.point_of_interaction?.transaction_data?.qr_code_base64;
+    if (!qrCode || !qrCodeBase64) {
+      await supabaseAdmin.from("sales").update({
+        mp_debug_response: JSON.stringify({ status: mpRes.status, environment: config.environment, body: mpData }),
+      }).eq("id", sale.id);
+      throw new Error("O Mercado Pago não retornou o QR Code do Pix");
+    }
     const mpPaymentId = String(mpData.id);
     const { error: updateError } = await supabaseAdmin.from("sales").update({ mp_payment_id: mpPaymentId, mp_qr_code: qrCode, mp_qr_code_base64: qrCodeBase64 }).eq("id", sale.id).eq("status", "pendente");
     if (updateError) throw new Error(updateError.message);
