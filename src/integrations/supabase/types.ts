@@ -736,6 +736,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_courtesy: boolean
+          mp_debug_response: string | null
           mp_payment_id: string | null
           mp_qr_code: string | null
           mp_qr_code_base64: string | null
@@ -771,6 +772,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_courtesy?: boolean
+          mp_debug_response?: string | null
           mp_payment_id?: string | null
           mp_qr_code?: string | null
           mp_qr_code_base64?: string | null
@@ -806,6 +808,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_courtesy?: boolean
+          mp_debug_response?: string | null
           mp_payment_id?: string | null
           mp_qr_code?: string | null
           mp_qr_code_base64?: string | null
