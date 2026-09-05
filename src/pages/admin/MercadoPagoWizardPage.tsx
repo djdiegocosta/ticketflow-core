@@ -19,13 +19,13 @@ import { Input } from "@/components/ui/input";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { environmentLabel, type MpEnvironment } from "@/lib/settings-data";
-import { 
-  useMpConfig, 
-  useUpdateMpConfig, 
+import {
+  useMpConfig,
+  useUpdateMpConfig,
   useValidateMpConfig,
   useTestMpWebhook,
   useCreateTestPix,
-  useOrganization
+  useOrganization,
 } from "@/lib/settings-queries";
 
 const steps = [
@@ -53,7 +53,13 @@ function StepItem({ n, children }: { n: number; children: React.ReactNode }) {
   );
 }
 
-function Notice({ children, tone = "info" }: { children: React.ReactNode; tone?: "info" | "warning" }) {
+function Notice({
+  children,
+  tone = "info",
+}: {
+  children: React.ReactNode;
+  tone?: "info" | "warning";
+}) {
   return (
     <div
       className={[
@@ -76,11 +82,14 @@ export function MercadoPagoWizardPage() {
   const validateMutation = useValidateMpConfig();
   const testWebhookMutation = useTestMpWebhook();
   const createPixMutation = useCreateTestPix();
-  
+
   const [current, setCurrent] = useState(1);
   const [validated, setValidated] = useState<number[]>([]);
   const [environment, setEnvironment] = useState<MpEnvironment | null>(null);
-  const [publicKey, setPublicKey] = useState<Record<MpEnvironment, string>>({ sandbox: "", producao: "" });
+  const [publicKey, setPublicKey] = useState<Record<MpEnvironment, string>>({
+    sandbox: "",
+    producao: "",
+  });
   const [savedPublicKey, setSavedPublicKey] = useState<Record<MpEnvironment, boolean>>({
     sandbox: false,
     producao: false,
@@ -92,29 +101,32 @@ export function MercadoPagoWizardPage() {
   });
   const [secretInput, setSecretInput] = useState("");
   const [secretTail, setSecretTail] = useState<string | null>(null);
-  const [pixResult, setPixResult] = useState<{ qr_code: string, qr_code_base64: string } | null>(null);
+  const [pixResult, setPixResult] = useState<{ qr_code: string; qr_code_base64: string } | null>(
+    null,
+  );
 
   // Preencher dados ao carregar
   useEffect(() => {
     if (currentConfig && (currentConfig as any).environment) {
       const configEnv = (currentConfig as any).environment as MpEnvironment;
       setEnvironment(configEnv);
-      setPublicKey(prev => ({ ...prev, [configEnv]: (currentConfig as any).public_key || "" }));
-      setSavedPublicKey(prev => ({ ...prev, [configEnv]: !!(currentConfig as any).public_key }));
-      setTokenTail(prev => ({ ...prev, [configEnv]: "OK" }));
+      setPublicKey((prev) => ({ ...prev, [configEnv]: (currentConfig as any).public_key || "" }));
+      setSavedPublicKey((prev) => ({ ...prev, [configEnv]: !!(currentConfig as any).public_key }));
+      setTokenTail((prev) => ({ ...prev, [configEnv]: "OK" }));
       setValidated([1, 2, 3]);
     }
   }, [currentConfig]);
 
   const env: MpEnvironment = environment ?? "sandbox";
   const orgId = org?.id;
-  
+
   // URL dinâmica para webhook
-  const siteUrl = import.meta.env['VITE_SITE_URL'] || 'https://ticketflow2.lovable.app';
+  const siteUrl = import.meta.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
   const webhookUrl = orgId ? `${siteUrl}/api/public/mp/webhook?org_id=${orgId}` : "";
 
   const isValidated = (id: number) => validated.includes(id);
-  const canOpen = (id: number) => id === 1 || isValidated(id) || isValidated(id - 1) || id <= current;
+  const canOpen = (id: number) =>
+    id === 1 || isValidated(id) || isValidated(id - 1) || id <= current;
 
   const markValidated = (id: number) =>
     setValidated((prev) => (prev.includes(id) ? prev : [...prev, id]));
@@ -128,43 +140,53 @@ export function MercadoPagoWizardPage() {
       toast.error("Access Token é obrigatório");
       return;
     }
-    
-    upsertMutation.mutate({
-      environment: env,
-      public_key: publicKey[env],
-      access_token: tokenInput || "",
-      webhook_secret: secretInput || ""
-    }, {
-      onSuccess: () => {
-        markValidated(3);
-        if (tokenInput) {
-          setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
-          setTokenInput("");
-        }
-        if (secretInput) {
-          setSecretTail(secretInput.trim().slice(-4));
-          setSecretInput("");
-        }
-      }
-    });
+
+    upsertMutation.mutate(
+      {
+        environment: env,
+        public_key: publicKey[env],
+        access_token: tokenInput || "",
+        webhook_secret: secretInput || "",
+      },
+      {
+        onSuccess: () => {
+          markValidated(3);
+          if (tokenInput) {
+            setTokenTail({ ...tokenTail, [env]: tokenInput.trim().slice(-4) });
+            setTokenInput("");
+          }
+          if (secretInput) {
+            setSecretTail(secretInput.trim().slice(-4));
+            setSecretInput("");
+          }
+        },
+      },
+    );
   };
 
   const testCredentials = () => {
     if (!orgId) return;
-    validateMutation.mutate({
-      organization_id: orgId,
-      environment: env
-    }, {
-      onSuccess: () => {
-        markValidated(3);
-      }
-    });
+    validateMutation.mutate(
+      {
+        organization_id: orgId,
+        environment: env,
+      },
+      {
+        onSuccess: () => {
+          markValidated(3);
+        },
+      },
+    );
   };
 
   const progress = validated.length;
 
   if (isLoading) {
-    return <div className="p-8 text-center text-body text-text-secondary">Carregando configurações...</div>;
+    return (
+      <div className="p-8 text-center text-body text-text-secondary">
+        Carregando configurações...
+      </div>
+    );
   }
 
   return (
@@ -261,20 +283,18 @@ export function MercadoPagoWizardPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {(
-                  [
-                    {
-                      id: "sandbox" as MpEnvironment,
-                      title: "Sandbox (teste)",
-                      text: "Ambiente simulado. Credenciais começam com TEST-. Nenhum dinheiro é movimentado. Ideal para configurar e validar.",
-                    },
-                    {
-                      id: "producao" as MpEnvironment,
-                      title: "Produção",
-                      text: "Ambiente real. Credenciais começam com APP_USR-. Pagamentos reais são processados.",
-                    },
-                  ]
-                ).map((option) => {
+                {[
+                  {
+                    id: "sandbox" as MpEnvironment,
+                    title: "Sandbox (teste)",
+                    text: "Ambiente simulado. Credenciais começam com TEST-. Nenhum dinheiro é movimentado. Ideal para configurar e validar.",
+                  },
+                  {
+                    id: "producao" as MpEnvironment,
+                    title: "Produção",
+                    text: "Ambiente real. Credenciais começam com APP_USR-. Pagamentos reais são processados.",
+                  },
+                ].map((option) => {
                   const selected = environment === option.id;
                   return (
                     <button
@@ -341,8 +361,8 @@ export function MercadoPagoWizardPage() {
               </StepList>
 
               <Notice tone="warning">
-                Já tem uma aplicação? Pode usar a existente. Apenas selecione ela no painel para ver as
-                credenciais.
+                Já tem uma aplicação? Pode usar a existente. Apenas selecione ela no painel para ver
+                as credenciais.
               </Notice>
 
               <div className="flex justify-between">
@@ -373,8 +393,8 @@ export function MercadoPagoWizardPage() {
               </div>
 
               <Notice>
-                Onde encontrar? No painel MP → sua aplicação → menu lateral Credenciais → aba Credenciais de{" "}
-                {environmentLabel(env).toLowerCase()}
+                Onde encontrar? No painel MP → sua aplicação → menu lateral Credenciais → aba
+                Credenciais de {environmentLabel(env).toLowerCase()}
               </Notice>
 
               <div className="space-y-2">
@@ -417,7 +437,13 @@ export function MercadoPagoWizardPage() {
                     type="password"
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
-                    placeholder={tokenTail[env] ? "Substituir token" : env === "sandbox" ? "TEST-..." : "APP_USR-..."}
+                    placeholder={
+                      tokenTail[env]
+                        ? "Substituir token"
+                        : env === "sandbox"
+                          ? "TEST-..."
+                          : "APP_USR-..."
+                    }
                     className="rounded-[var(--radius-sm)]"
                   />
                   <Button
@@ -429,14 +455,14 @@ export function MercadoPagoWizardPage() {
                   </Button>
                 </div>
                 <p className="text-small text-[var(--text-secondary)]">
-                  O token é cifrado antes de ser armazenado e nunca mais volta para o navegador — só o final
-                  aparece para conferência.
+                  O token é cifrado antes de ser armazenado e nunca mais volta para o navegador — só
+                  o final aparece para conferência.
                 </p>
               </div>
 
               <Notice>
-                As credenciais de Sandbox e Produção são independentes: trocar o ambiente na Etapa 1 não apaga a
-                credencial do outro ambiente.
+                As credenciais de Sandbox e Produção são independentes: trocar o ambiente na Etapa 1
+                não apaga a credencial do outro ambiente.
               </Notice>
 
               <Button
@@ -475,8 +501,8 @@ export function MercadoPagoWizardPage() {
               </div>
 
               <p className="text-body text-[var(--text-secondary)]">
-                O Mercado Pago avisa o TicketFlow por essa URL sempre que um pagamento muda de status. Sem isso,
-                você teria que aprovar vendas manualmente.
+                O Mercado Pago avisa o TicketFlow por essa URL sempre que um pagamento muda de
+                status. Sem isso, você teria que aprovar vendas manualmente.
               </p>
 
               <div className="space-y-2">
@@ -524,7 +550,9 @@ export function MercadoPagoWizardPage() {
                     type="password"
                     value={secretInput}
                     onChange={(e) => setSecretInput(e.target.value)}
-                    placeholder={secretTail ? "Substituir chave secreta" : "Chave secreta do webhook"}
+                    placeholder={
+                      secretTail ? "Substituir chave secreta" : "Chave secreta do webhook"
+                    }
                     className="rounded-[var(--radius-sm)]"
                   />
                   <Button
@@ -538,7 +566,7 @@ export function MercadoPagoWizardPage() {
               </div>
 
               <div>
-                <Button 
+                <Button
                   className="w-full"
                   disabled={testWebhookMutation.isPending || !orgId}
                   onClick={() => {
@@ -547,11 +575,13 @@ export function MercadoPagoWizardPage() {
                   }}
                 >
                   {testWebhookMutation.isPending ? (
-                     <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Testando...
                     </span>
-                  ) : "Testar Webhook"}
+                  ) : (
+                    "Testar Webhook"
+                  )}
                 </Button>
               </div>
 
@@ -584,18 +614,20 @@ export function MercadoPagoWizardPage() {
               <div className="space-y-3">
                 {pixResult ? (
                   <div className="flex flex-col items-center gap-4 border border-[var(--border-default)] p-6">
-                    <img 
-                      src={`data:image/png;base64,${pixResult.qr_code_base64}`} 
-                      alt="QR Code PIX" 
+                    <img
+                      src={`data:image/png;base64,${pixResult.qr_code_base64}`}
+                      alt="QR Code PIX"
                       className="h-48 w-48"
                     />
                     <div className="w-full space-y-2">
-                      <p className="text-center text-micro text-[var(--text-secondary)]">Copia e Cola:</p>
+                      <p className="text-center text-micro text-[var(--text-secondary)]">
+                        Copia e Cola:
+                      </p>
                       <div className="flex items-center gap-2 bg-[var(--bg-tertiary)] p-2">
                         <code className="flex-1 truncate text-micro">{pixResult.qr_code}</code>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => {
                             navigator.clipboard.writeText(pixResult.qr_code);
                             toast.success("Código copiado!");
@@ -607,48 +639,42 @@ export function MercadoPagoWizardPage() {
                     </div>
                   </div>
                 ) : (
-                  <Button 
+                  <Button
                     className="w-full"
                     disabled={createPixMutation.isPending}
                     onClick={async () => {
-                      // Para teste, criamos uma venda fictícia de R$ 0,01 ou usamos uma existente
-                      // O prompt pede para criar PIX de R$ 0,01.
-                      // Vamos criar uma venda pendente real no banco para isso.
                       if (!orgId) return;
-                      const { data: sale } = await supabase.from("sales").insert({
-                        organization_id: orgId,
-                        event_id: '00000000-0000-0000-0000-000000000000', // UUID dummy se necessário ou buscar um evento
-                        batch_id: '00000000-0000-0000-0000-000000000000',
-                        quantity: 1,
-                        unit_price: 0.01,
-                        total_amount: 0.01,
-                        status: 'pendente',
-                        buyer_name: 'Teste Checkout',
-                        buyer_email: 'teste@ticketflow.com',
-                        buyer_whatsapp: '5511999999999',
-                        payment_method: 'pix_ticketflow',
-                        sale_code: 'TEST' + Math.floor(Math.random() * 1000)
-                      } as any).select().single();
-
-                      if (sale) {
-                        createPixMutation.mutate({ sale_id: sale.id! }, {
-                          onSuccess: (data: any) => setPixResult(data)
-                        });
+                      const { data: sale, error } = await supabase.rpc("create_mp_test_sale", {
+                        _organization_id: orgId,
+                      });
+                      if (error || !sale?.[0]) {
+                        toast.error(error?.message || "Não foi possível criar a venda de teste");
+                        return;
                       }
+
+                      createPixMutation.mutate(
+                        { sale_id: sale[0].sale_id },
+                        {
+                          onSuccess: (data: any) => setPixResult(data),
+                        },
+                      );
                     }}
                   >
                     {createPixMutation.isPending ? (
-                       <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Gerando PIX...
                       </span>
-                    ) : "Criar PIX de teste (R$ 0,01)"}
+                    ) : (
+                      "Criar PIX de teste (R$ 0,01)"
+                    )}
                   </Button>
                 )}
               </div>
 
               <p className="text-small text-[var(--text-secondary)]">
-                Utilize o botão acima para gerar um pagamento real de R$ 0,01. Após pagar, o status será atualizado via Webhook.
+                Utilize o botão acima para gerar um pagamento real de R$ 0,01. Após pagar, o status
+                será atualizado via Webhook.
               </p>
 
               <div className="flex justify-between">

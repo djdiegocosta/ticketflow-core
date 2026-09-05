@@ -41,16 +41,30 @@ export const saveMpCredentials = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(supabaseAdmin, context.userId, data.organization_id);
 
-    const encryptedToken = await encrypt(data.access_token);
-    const encryptedWebhookSecret = data.webhook_secret ? await encrypt(data.webhook_secret) : null;
+    // Busca o que já está salvo, para não apagar um campo só porque esta
+    // chamada específica (ex.: "salvar só o webhook secret") não o reenviou.
+    const { data: existing } = await supabaseAdmin
+      .from("mp_config")
+      .select("public_key, access_token_encrypted, webhook_secret_encrypted")
+      .eq("organization_id", data.organization_id)
+      .eq("environment", data.environment)
+      .maybeSingle();
+
+    const publicKey = data.public_key.trim() || existing?.public_key || null;
+    const accessTokenEncrypted = data.access_token.trim()
+      ? await encrypt(data.access_token)
+      : (existing?.access_token_encrypted ?? null);
+    const webhookSecretEncrypted = data.webhook_secret?.trim()
+      ? await encrypt(data.webhook_secret)
+      : (existing?.webhook_secret_encrypted ?? null);
 
     const { error } = await supabaseAdmin.from("mp_config").upsert(
       {
         organization_id: data.organization_id,
         environment: data.environment,
-        public_key: data.public_key,
-        access_token_encrypted: encryptedToken,
-        webhook_secret_encrypted: encryptedWebhookSecret,
+        public_key: publicKey,
+        access_token_encrypted: accessTokenEncrypted,
+        webhook_secret_encrypted: webhookSecretEncrypted,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "organization_id,environment" },

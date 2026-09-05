@@ -1198,6 +1198,12 @@ export type Database = {
           sale_id: string
         }[]
       }
+      create_mp_test_sale: {
+        Args: { _organization_id: string }
+        Returns: {
+          sale_id: string
+        }[]
+      }
       create_pending_sale: {
         Args: {
           _batch_id: string
