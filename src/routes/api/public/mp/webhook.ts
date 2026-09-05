@@ -26,13 +26,18 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           const signatureHeader = request.headers.get("x-signature");
           const requestId = request.headers.get("x-request-id");
 
-          if (!signatureHeader || !requestId) throw new Error("Missing headers");
+          if (!signatureHeader || !requestId) {
+            return new Response("Unauthorized", { status: 401 });
+          }
 
           const parts = signatureHeader.split(",");
           const ts = parts.find(p => p.startsWith("ts="))?.split("=")[1];
           const v1 = parts.find(p => p.startsWith("v1="))?.split("=")[1];
 
-          if (!ts || !v1) throw new Error("Invalid signature format");
+          if (!ts || !v1) {
+            return new Response("Unauthorized", { status: 401 });
+          }
+
 
           const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;
 

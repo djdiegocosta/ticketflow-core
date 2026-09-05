@@ -90,13 +90,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setOrganizationStatus(orgStatus);
       setSession(currentSession);
 
-      // Navegação por papel — após contexto carregado
-      if (role === "operador_checkin") {
-        navigate({ to: "/checkin", replace: true });
-      } else if (role === "admin" || role === "colaborador") {
-        navigate({ to: "/admin", replace: true });
-      } else {
-        navigate({ to: "/cliente", replace: true });
+      // Navegação por papel — só faz sentido logo após um login de verdade
+      // (usuário ainda numa tela de entrada tipo /login, /cadastro ou /).
+      // Se a pessoa já está numa página válida pra ela (ex: /admin/vendas),
+      // NÃO deve ser movida dali. Sem essa checagem, toda vez que o Supabase
+      // revalida a sessão sozinho (isso acontece automaticamente sempre que
+      // a aba volta a ficar visível, mesmo sem nenhuma ação da pessoa), o
+      // usuário era jogado de volta pro dashboard, perdendo a página em que
+      // estava.
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+      const isEntryPage = ["/", "/login", "/cadastro", "/recuperar-senha", "/redefinir-senha"].includes(currentPath);
+      const isPublicArea =
+        currentPath.startsWith("/e/") || currentPath.startsWith("/meus-ingressos") || currentPath.startsWith("/ingresso/");
+      const alreadyOnOwnArea =
+        (role === "operador_checkin" && currentPath.startsWith("/checkin")) ||
+        ((role === "admin" || role === "colaborador") && currentPath.startsWith("/admin")) ||
+        (role !== "operador_checkin" && role !== "admin" && role !== "colaborador" && currentPath.startsWith("/cliente"));
+
+      if (!isPublicArea && (isEntryPage || !alreadyOnOwnArea)) {
+        if (role === "operador_checkin") {
+          navigate({ to: "/checkin", replace: true });
+        } else if (role === "admin" || role === "colaborador") {
+          navigate({ to: "/admin", replace: true });
+        } else {
+          navigate({ to: "/cliente", replace: true });
+        }
       }
     } catch (err) {
       console.error("[AuthContext] loadContext error:", err);
