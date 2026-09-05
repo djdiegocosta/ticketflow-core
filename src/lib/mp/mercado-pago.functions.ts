@@ -78,44 +78,52 @@ export const createMpPix = createServerFn({ method: "POST" })
     if (saleError || !sale) throw new Error("Venda não encontrada");
     if (sale.status !== "pendente") throw new Error("A venda já foi processada");
     if (sale.expires_at && new Date(sale.expires_at) <= new Date()) throw new Error("Esta reserva expirou");
-    const orgId = sale.events.organization_id;
-    const { data: configs } = await supabaseAdmin.from("mp_config").select("*").eq("organization_id", orgId);
-    const prodConfig = configs?.find(c => c.environment === "producao" && c.validated_at);
-    const sandboxConfig = configs?.find(c => c.environment === "sandbox");
-    const config = prodConfig || sandboxConfig;
-    if (!config) throw new Error("Mercado Pago não configurado para esta organização");
-    const accessToken = await decrypt(config.access_token_encrypted!);
-    const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
-    const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
-    const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "X-Idempotency-Key": sale.id },
-      body: JSON.stringify({
-        transaction_amount: sale.total_amount,
-        description: `Ingresso TicketFlow - Venda ${sale.sale_code}`,
-        payment_method_id: "pix",
-        external_reference: sale.id,
-        notification_url: notificationUrl,
-        payer: { email: sale.buyer_email, first_name: sale.buyer_name.split(" ")[0], last_name: sale.buyer_name.split(" ").slice(1).join(" ") || "Cliente" },
-      }),
-    });
-    const mpData = await mpRes.json();
-    if (!mpRes.ok) {
+
+    try {
+      const orgId = sale.events.organization_id;
+      const { data: configs } = await supabaseAdmin.from("mp_config").select("*").eq("organization_id", orgId);
+      const prodConfig = configs?.find(c => c.environment === "producao" && c.validated_at);
+      const sandboxConfig = configs?.find(c => c.environment === "sandbox");
+      const config = prodConfig || sandboxConfig;
+      if (!config) throw new Error("Mercado Pago não configurado para esta organização");
+      const accessToken = await decrypt(config.access_token_encrypted!);
+      const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
+      const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
+      const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "X-Idempotency-Key": sale.id },
+        body: JSON.stringify({
+          transaction_amount: sale.total_amount,
+          description: `Ingresso TicketFlow - Venda ${sale.sale_code}`,
+          payment_method_id: "pix",
+          external_reference: sale.id,
+          notification_url: notificationUrl,
+          payer: { email: sale.buyer_email, first_name: sale.buyer_name.split(" ")[0], last_name: sale.buyer_name.split(" ").slice(1).join(" ") || "Cliente" },
+        }),
+      });
+      const mpData = await mpRes.json();
+      if (!mpRes.ok) {
+        await supabaseAdmin.from("sales").update({
+          mp_debug_response: JSON.stringify({ stage: "mp_rejected", status: mpRes.status, environment: config.environment, body: mpData }),
+        }).eq("id", sale.id);
+        throw new Error(mpData.message || "Erro ao gerar PIX");
+      }
+      const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
+      const qrCodeBase64 = mpData.point_of_interaction?.transaction_data?.qr_code_base64;
+      if (!qrCode || !qrCodeBase64) {
+        await supabaseAdmin.from("sales").update({
+          mp_debug_response: JSON.stringify({ stage: "missing_qr_code", status: mpRes.status, environment: config.environment, body: mpData }),
+        }).eq("id", sale.id);
+        throw new Error("O Mercado Pago não retornou o QR Code do Pix");
+      }
+      const mpPaymentId = String(mpData.id);
+      const { error: updateError } = await supabaseAdmin.from("sales").update({ mp_payment_id: mpPaymentId, mp_qr_code: qrCode, mp_qr_code_base64: qrCodeBase64 }).eq("id", sale.id).eq("status", "pendente");
+      if (updateError) throw new Error(updateError.message);
+      return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId };
+    } catch (err: any) {
       await supabaseAdmin.from("sales").update({
-        mp_debug_response: JSON.stringify({ status: mpRes.status, environment: config.environment, body: mpData }),
+        mp_debug_response: JSON.stringify({ stage: "exception", message: err?.message, name: err?.name, stack: String(err?.stack).slice(0, 2000) }),
       }).eq("id", sale.id);
-      throw new Error(mpData.message || "Erro ao gerar PIX");
+      throw err;
     }
-    const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
-    const qrCodeBase64 = mpData.point_of_interaction?.transaction_data?.qr_code_base64;
-    if (!qrCode || !qrCodeBase64) {
-      await supabaseAdmin.from("sales").update({
-        mp_debug_response: JSON.stringify({ status: mpRes.status, environment: config.environment, body: mpData }),
-      }).eq("id", sale.id);
-      throw new Error("O Mercado Pago não retornou o QR Code do Pix");
-    }
-    const mpPaymentId = String(mpData.id);
-    const { error: updateError } = await supabaseAdmin.from("sales").update({ mp_payment_id: mpPaymentId, mp_qr_code: qrCode, mp_qr_code_base64: qrCodeBase64 }).eq("id", sale.id).eq("status", "pendente");
-    if (updateError) throw new Error(updateError.message);
-    return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId };
   });
