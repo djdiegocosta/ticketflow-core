@@ -63,6 +63,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Setembro/2026
+
+### Correção crítica — Geração de Pix no Checkout
+- Bug: checkout público não coletava e-mail do comprador (campo `buyer_email` sempre enviado vazio). A API do Mercado Pago exige e-mail válido do pagador para gerar qualquer pagamento, incluindo Pix — a venda era criada normalmente, mas a geração do Pix falhava sempre depois, com o cliente vendo "Erro ao gerar o Pix" e a venda ficando pendente no sistema.
+- Correção: adicionado campo obrigatório de e-mail no formulário de checkout (`CheckoutPage.tsx`), com validação de formato, e o valor real passa a ser enviado para `createPendingSale` e, por consequência, para a criação do pagamento Pix.
+- Arquivo alterado: `src/pages/CheckoutPage.tsx`.
+
+---
+
 ## Pendências conhecidas
 - Conexão real com Supabase (schema, autenticação, Edge Functions) ainda não realizada neste projeto novo.
 - Integração real com Mercado Pago depende da conexão com Supabase.
