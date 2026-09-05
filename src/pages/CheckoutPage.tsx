@@ -11,7 +11,7 @@ import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-for
 import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { Copy, CheckCircle2, Clock, Loader2, User, Phone } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
@@ -22,6 +22,7 @@ import { captureRef, getStoredRef } from '@/lib/attribution';
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
   buyerWhatsApp: z.string().min(1, "WhatsApp obrigatório").refine(val => val.replace(/\D/g, "").length >= 11, "WhatsApp inválido"),
+  buyerEmail: z.string().min(1, "E-mail obrigatório").email("Digite um e-mail válido"),
   participants: z.array(z.object({
     name: z.string().min(1, "Nome do participante obrigatório").refine(isFullName, "Nome completo obrigatório")
   }))
@@ -62,6 +63,7 @@ export default function CheckoutPage() {
     defaultValues: {
       buyerName: '',
       buyerWhatsApp: '',
+      buyerEmail: '',
       participants: Array(qty).fill({ name: '' })
     }
   });
@@ -157,7 +159,7 @@ export default function CheckoutPage() {
         batch_id: batch.id,
         buyer_name: values.buyerName,
         buyer_whatsapp: values.buyerWhatsApp,
-        buyer_email: "",
+        buyer_email: values.buyerEmail,
         quantity: qty,
         participant_names: values.participants.map(p => p.name),
         customer_id: customerId as any,
@@ -243,6 +245,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
                 <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
+                <SmartField label="E-mail" icon={Mail} value={form.watch('buyerEmail')} onChange={(v) => form.setValue('buyerEmail', v, { shouldValidate: true })} isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch('buyerEmail'))} placeholder="seuemail@exemplo.com" inputMode="email" error={form.formState.errors.buyerEmail?.message as string} />
               </div>
             </div>
 
