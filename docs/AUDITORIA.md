@@ -123,9 +123,9 @@ A definição funcional da view não foi alterada: continuam sendo calculadas as
 - Verificação posterior confirmou `reloptions = {security_invoker=true}`.
 - `anon` e `authenticated` continuam com permissão `SELECT`; a diferença é que a execução agora respeita o contexto do chamador.
 - O Security Advisor deixou de reportar o alerta específico da view `event_ticket_stats`.
-- Migration Supabase: `harden_event_ticket_stats_view_security_invoker`
-- Migration versionada no GitHub: `supabase/migrations/20260905220900_harden_event_ticket_stats_view_security_invoker.sql`
-- Commit GitHub: `cdf25b705083241d166cb3cf1d0128d75df8666d`
+- Migration Supabase: `harden_event_ticket_stats_view_security_invoker` (versão `20260905220902`)
+- Migration versionada no GitHub: `supabase/migrations/20260905220902_harden_event_ticket_stats_view_security_invoker.sql`
+- Commit GitHub que alinhou a migration ao número real aplicado no Supabase: `3d0c3e1e2d33f24f4cd394ef3dbf30c98e9c318d`
 
 ### Registro de resolução
 
@@ -543,6 +543,7 @@ Ainda não resolvido.
 | 05/09/2026 19:00 | ChatGPT | Documento `docs/AUDITORIA.md` criado com os achados da auditoria técnica do GitHub, Supabase e Vercel. |
 | 05/09/2026 19:06 | ChatGPT | AUD-001 corrigido: removida execução `anon` das funções SECURITY DEFINER privilegiadas e registrado o resultado da verificação pós-correção. |
 | 05/09/2026 19:09 | ChatGPT | AUD-002 corrigido: `event_ticket_stats` convertida para `SECURITY INVOKER`, verificada no banco e retirada do Security Advisor. |
+| 05/09/2026 19:10 | ChatGPT | Corrigida a documentação do AUD-002 para refletir a versão real da migration aplicada no Supabase (`20260905220902`) e alinhada a migration versionada no GitHub. |
 
 ## Como registrar uma resolução
 
