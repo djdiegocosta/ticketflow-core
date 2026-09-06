@@ -224,9 +224,6 @@ export function useSalesStats(eventId?: string) {
           if (s.status === "pago" && !s.is_courtesy) {
             stats.totalRevenue += Number(s.total_amount);
             stats.paidSales++;
-          } else if (s.status === "pendente") {
-            stats.pendingSales++;
-            stats.pendingAmount += Number(s.total_amount);
           } else if (s.status === "cancelado") {
             stats.cancelledSales++;
           }
