@@ -96,7 +96,8 @@ Baseado em revisão estruturada (Fitts, Hick, Miller, Doherty, Postel) sobre o c
 
 ## Pendências conhecidas, não priorizadas ainda
 
-- 🔴 Função `checkin_ticket` existe apenas no banco ao vivo, fora de controle de versão (mesmo padrão do bucket `event-images`, criado fora de migration).
+- ✅ Função `checkin_ticket` reconciliada com o repositório — a migration mais recente que a definia (`20260903050000_harden_admin_operations.sql`) usava colunas (`ticket_id`, `checked_by`) que não existem em `checkin_log`; um banco recriado do zero quebraria o check-in. Nova migration (`20260905231500_restore_checkin_ticket_correct_definition.sql`) recria a função com a definição real e funcional, sem alterar comportamento em produção.
+- 🔴 Bucket `event-images` continua criado fora de migration, mesmo risco ainda não corrigido.
 - 🔴 Botão "Baixar todos os ingressos (PDF)" na tela de confirmação de compra não tem ação implementada.
 - 🔴 Preferência de tema do cliente (claro/escuro) ainda salva só localmente no navegador, não na conta.
 - 🔴 Foto de perfil do cliente — sem campo no banco, sem upload implementado.

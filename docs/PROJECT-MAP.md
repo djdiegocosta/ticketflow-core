@@ -2,7 +2,7 @@
 
 > **Purpose:** índice operacional de alta densidade para LLMs/agentes de código. Use este arquivo antes de investigar ou alterar o projeto.
 >
-> **Audit basis:** repositório `djdiegocosta/ticketflow-core`, branch `main`, commit `f97be42e4dbbc530235e1c01a23b46f11b76fecc`, auditoria realizada em 04/09/2026. O mapa privilegia código/migrations atuais sobre documentação histórica. Alterações existentes apenas em branches/PRs abertos são marcadas como **NÃO MERGED**.
+> **Audit basis:** repositório `djdiegocosta/ticketflow-core`, branch `main`, commit `c5cd08718eac4f0a15fa1f97133bfa14ffaa2691`, revalidado em 05/09/2026 (auditoria original de 04/09/2026, no commit `f97be42e4dbbc530235e1c01a23b46f11b76fecc`, atualizada após confirmação de que o hardening de Mercado Pago do PR #12 chegou à `main` pelo PR #16, e após checagem individual de cada função citada nas Seções 24 e 25 direto no banco). O mapa privilegia código/migrations atuais sobre documentação histórica. Alterações existentes apenas em branches/PRs abertos são marcadas como **NÃO MERGED**.
 
 ## 0. Regra de uso por LLM
 
@@ -88,7 +88,7 @@ O TPS documenta `/checkin` como módulo isolado. Na implementação atual, `src/
 - `src/routes/__root.tsx` — shell global.
 - `src/components/layouts/AdminLayout.tsx` — navegação/layout administrativo.
 - `src/components/layouts/MobileLayout.tsx` — área do cliente/mobile.
-- `src/lib/auth-context.tsx` — sessão, papel, organização e redirecionamento.
+- `src/lib/auth-context.tsx` — sessão, papel, organização e redirecionamento. Contém lógica que evita redirecionar a pessoa de volta para a home do seu papel quando a sessão é apenas revalidada em segundo plano (ex.: voltar de outra aba) — não remover essa checagem de "já está na própria área" sem entender por que existe.
 - `src/components/layouts/AdminPageActionContext.tsx` — ação primária do topbar administrativo.
 
 ### Modelo de acesso
@@ -192,7 +192,7 @@ Regras:
 RPCs centrais observados:
 - `create_pending_sale`
 - `confirm_sale_paid`
-- `confirm_sale_manual`
+- `create_manual_sale`
 - `create_locked_tickets`
 - operações de cancelamento/reembolso, que exigem revisão de autorização antes de alteração.
 
@@ -208,7 +208,7 @@ Regra pretendida:
 - expiração deve liberar a reserva de estoque;
 - job periódico do banco executa a limpeza.
 
-**Estado na `main` auditada:** o hardening de restauração de estoque, uso do `expires_at` no timer e correção do cron está em PR #13 e, portanto, é **NÃO MERGED** até confirmação do merge. Não documentar esse comportamento como confirmado na `main`.
+**Estado na `main` auditada:** o hardening de restauração de estoque, uso do `expires_at` no timer e correção do cron **continua NÃO MERGED**. Existem duas branches abertas cobrindo esse escopo — PR #13 (`fix/pending-sale-expiration`, escopo original) e PR #15 (`fix/consolidated-hardening`, consolidação mais recente que tenta unificar #12 e #13 numa base atual da `main`). Nenhuma das duas está mesclada. Não documentar esse comportamento como confirmado na `main` até um dos dois PRs ser mesclado.
 
 ## 9. Checkout público
 
@@ -243,7 +243,6 @@ Arquivos principais:
 - `src/lib/mp/mercado-pago.functions.ts`
 - `src/routes/api/public/mp/webhook.ts`
 - `src/routes/admin.configuracoes.mercado-pago.tsx`
-- `src/lib/mp/admin-middleware.ts` **NÃO MERGED** no estado auditado da `main`.
 
 Funções:
 - administração de credenciais;
@@ -251,7 +250,8 @@ Funções:
 - criação de PIX;
 - webhook de pagamento aprovado.
 
-**Estado da `main`:** o endurecimento de autenticação administrativa, validação adicional do webhook, bloqueio de PIX expirado e idempotência reforçada está no PR #12 e não deve ser considerado implementado na `main` até merge/build.
+**Estado da `main` (confirmado no código e nas grants do banco):** o endurecimento de autenticação administrativa (`assertOrgAdmin` em toda função administrativa), a validação de assinatura HMAC do webhook, o bloqueio de criação de PIX para venda com `expires_at` vencido (`mercado-pago.functions.ts`, checagem explícita antes de chamar o Mercado Pago) e as restrições de privilégio de `confirm_sale_paid`/`create_locked_tickets` (hoje `EXECUTE` só para `service_role`, negado para `anon`/`authenticated`) **já estão IMPLEMENTADOS na `main`**. Chegaram pelo **PR #16** ("fix: consolidate payment and security hardening", mesclado em 05/09/2026) — uma consolidação criada direto da `main` que superou o PR #12 original (o #12 segue aberto, mas seu conteúdo já está coberto pelo #16; não usar o #12 como referência de pendência para este escopo).
+`src/lib/mp/admin-middleware.ts` nunca existiu como arquivo separado — a autorização administrativa foi consolidada dentro de `mercado-pago.functions.ts` via `assertOrgAdmin`.
 
 ## 11. Confirmação de pagamento e tickets
 
@@ -259,11 +259,9 @@ RPCs críticas:
 - `confirm_sale_paid(sale_id, mp_payment_id)`;
 - `create_locked_tickets(sale_id, participants)`.
 
-No desenho de segurança alvo, ambas são privilegiadas e não devem ser executáveis por `anon`/`PUBLIC`.
+**Confirmado no banco (grants atuais):** ambas já são restritas — `EXECUTE` concedido apenas a `service_role`; `anon` e `authenticated` não podem executá-las. O desenho de segurança alvo já está implementado, não é mais apenas uma intenção.
 
-**Importante:** como o hardening correspondente está fora da `main`, distinguir o desenho desejado do estado efetivamente implantado em cada ambiente.
-
-O webhook deve ser a autoridade para pagamento online; o cliente não deve conseguir simular confirmação.
+O webhook é a autoridade para pagamento online; o cliente não consegue simular confirmação diretamente via essas RPCs.
 
 ## 12. Check-in
 
@@ -308,7 +306,7 @@ Arquivos:
 - `src/pages/admin/ClientsListPage.tsx`
 - `src/routes/admin.clientes.index.tsx`
 - `src/routes/admin.clientes.$id.tsx`
-- `src/routes/cliente/perfil.tsx`
+- `src/routes/cliente.perfil.tsx`
 - `src/lib/customers-queries.ts` e módulos relacionados.
 
 Tabela: `customers`.
@@ -359,7 +357,7 @@ Qualquer RPC `SECURITY DEFINER` público exige revisão individual de dados reto
 ## 17. Dashboard e indicadores
 
 Arquivos:
-- `src/pages/admin/DashboardPage.tsx` ou página correspondente;
+- `src/pages/AdminDashboard.tsx`;
 - `src/lib/dashboard-queries.ts`;
 - componentes de gráficos/cards.
 
@@ -414,17 +412,18 @@ Rota principal: `src/routes/admin.ferramentas.index.tsx`.
 - Checklist do Evento
 - Links de venda, quando a rota correspondente estiver ativa.
 
-Sorteios: decisão atual é remover/não priorizar.
-
 Financeiro, Importação e Relatórios podem existir como áreas preparadas/placeholder; não assumir que estão funcionalmente completas sem verificar a implementação.
+
+> Decisões de roadmap de produto (o que priorizar, o que remover) pertencem ao `docs/TPS.md`, não a este mapa.
 
 ## 20. Vitrine
 
 Área de banners/vitrine, com armazenamento próprio e regras de upload.
 
-Buckets identificados no projeto:
+Buckets identificados no projeto (confirmado em `storage.buckets`):
 - `event-images` para imagens de eventos;
-- `organization-logos` para logos.
+- `organization-logos` para logos;
+- `client-banners` para os banners da Vitrine.
 
 Não assumir exclusividade de banner apenas pela UI; a garantia deve ser verificada no banco/trigger/política correspondente.
 
@@ -442,13 +441,21 @@ Preferências operacionais implementadas:
 - threshold Quente;
 - threshold Explodindo.
 
-Tema do cliente não deve ser tratado como preferência persistida sem implementação específica.
+A **cor** de destaque (`organizations.accent_color`) é preferência da organização (admin), não do cliente individual — não implementar seleção de cor por cliente sem confirmação explícita. Já o modo **claro/escuro** é uma preferência persistida globalmente no navegador (`localStorage`, chave `ticketflow-theme`, ver `src/lib/theme.tsx`), aplicada em toda a aplicação — não tratar esse toggle como não-persistido.
 
 ## 22. Design System
 
 Fontes de verdade:
 - `docs/DESIGN-SYSTEM.md`;
 - estilos/componentes atuais.
+
+> `docs/DESIGN-SYSTEM.md` e `docs/TPS.md` ainda descrevem uma opção de "cantos retos" configurável (`organizations.corner_style`) como implementada. Essa opção **foi removida do produto**: não existe mais UI para escolhê-la, e o runtime não lê/escreve mais essa coluna. Cantos arredondados são hoje o único padrão do sistema. A coluna `corner_style` continua existindo no banco, mas é legado não utilizado pelo frontend.
+
+Sistema de tema de cor (implementado, `src/lib/design.tsx`):
+- 4 temas — Verde, Azul, Roxo, Vermelho — definidos em `ACCENT_COLORS`, com valores próprios para modo claro e escuro;
+- `--icon-brand`: cor "viva"/saturada usada nos ícones dos cards do dashboard (token separado de `--accent`, que é usado em botões/links);
+- `FULL_THEME_OVERRIDES`: override completo de fundo/texto/borda/gráficos (não só a cor de destaque) — hoje definido para os temas Vermelho e Roxo; Verde e Azul usam os tokens padrão do sistema;
+- aplicado tanto no admin (`DesignProvider`) quanto nas páginas públicas/cliente (`useApplyPublicDesign`, `useApplyCustomerDesign` em `src/lib/customer-queries.ts`).
 
 Princípios relevantes:
 - desktop-first no Admin;
@@ -496,31 +503,36 @@ Funções administrativas/mutáveis devem:
 - usar `SET search_path` seguro ou referências totalmente qualificadas;
 - evitar depender de valores fornecidos pelo browser para autorização.
 
-Getters públicos que exigem revisão individual:
-- `get_sale_status`
-- `get_sales_by_whatsapp`
-- `get_ticket_by_code`
+Getters públicos que exigem revisão individual (nomes confirmados em `pg_proc`, banco atual):
 - `get_available_batches`
 - `handle_new_user`
 - `has_role`
-- `is_staff`
+- `get_tickets_by_sale_code`
+- `create_manual_sale`
+
+> Nomes como `get_sale_status`, `get_sales_by_whatsapp`, `get_ticket_by_code` e `is_staff` **não existem** no banco atual — não usar como referência de busca; se aparecerem em documentação histórica, tratar como nomenclatura antiga/planejada e nunca implementada com esse nome.
 
 Não revogar esses getters em bloco sem analisar callers e necessidade no fluxo público.
 
 ## 25. Search path / views — pendências de segurança
 
-Warnings já identificados para funções com `search_path` mutável incluem:
+Warnings de `search_path` mutável — status confirmado via `pg_proc.proconfig` no banco atual:
+
+Ainda pendentes (mutável, sem `SET search_path` fixo):
 - `generate_short_code`
 - `get_hourly_sales_stats`
 - `get_new_customers_count`
+
+Já corrigidas (search_path já fixado como `public`; não tratar como pendência):
 - `handle_new_user`
 - `get_single_organization_id`
-- `is_staff`
 - `has_role`
 - `get_available_batches`
 - `get_user_organization`
 
-Também existe alerta relacionado a `public.event_ticket_stats` como view/SECURITY DEFINER.
+> `is_staff` foi removida desta lista por não existir como função no banco atual.
+
+Também existe alerta relacionado a `public.event_ticket_stats` como view sem `security_invoker` habilitado (`reloptions` nulo, confirmado no banco) — continua pendente.
 
 Esses itens devem ser corrigidos com análise de compatibilidade, não por alteração cega.
 
@@ -541,25 +553,30 @@ Exemplo confirmado: o TPS descreve `/checkin` como rota isolada, enquanto `admin
 
 Repositório oficial: `djdiegocosta/ticketflow-core`.
 
-PRs relevantes conhecidos:
+PRs relevantes conhecidos (estado confirmado via API do GitHub):
 - PR #9 — exportação Meta Ads — MERGED;
 - PR #10 — dashboard/temperatura/preferências — MERGED;
-- PR #12 — hardening Mercado Pago/segurança — ABERTO; NÃO MERGED;
-- PR #13 — expiração/estoque/checkout expiration — ABERTO; NÃO MERGED.
+- PR #11 — remoção de superadmin legado — MERGED;
+- PR #14 — este próprio PROJECT-MAP.md — MERGED;
+- PR #16 — consolidação de hardening de pagamento/segurança (Mercado Pago, webhook, RPCs privilegiadas) — **MERGED**; substitui na prática o escopo do PR #12;
+- PR #12 — hardening Mercado Pago (versão original) — ABERTO, mas obsoleto: seu conteúdo já está coberto pelo #16; não usar como referência de pendência;
+- PR #7 — botão de lista PDF em Vendas — ABERTO; NÃO MERGED;
+- PR #13 — expiração/estoque/checkout expiration (versão original) — ABERTO; NÃO MERGED;
+- PR #15 — consolidação mais recente de expiração/estoque (tenta unificar #12 e #13) — ABERTO; NÃO MERGED; é a referência mais atual para quem for continuar esse trabalho.
 
-Não assumir que uma alteração vista em PR aberto já está em `main`.
+Não assumir que uma alteração vista em PR aberto já está em `main` — mas também não assumir que todo hardening relevante ainda está pendente só porque o PR que o descrevia originalmente continua aberto: confirme sempre no código/banco atual (ver Seções 10 e 11).
 
 ## 28. Pendências técnicas prioritárias conhecidas
 
 ### P0/P1 — segurança e integridade
-- concluir hardening de mutations administrativas restantes;
-- revisar getters públicos por exposição/rate limit;
-- corrigir `SECURITY DEFINER`/search_path;
-- revisar `event_ticket_stats`;
+- ~~concluir hardening de mutations administrativas restantes~~ — **RESOLVIDO** via PR #16 (ver Seções 10/11);
+- corrigir os 3 getters/funções com `search_path` ainda mutável: `generate_short_code`, `get_hourly_sales_stats`, `get_new_customers_count` (ver Seção 25 — lista reduzida após confirmação no banco);
+- revisar `event_ticket_stats` (view sem `security_invoker`, ainda pendente);
+- restaurar estoque automaticamente na expiração de venda pendente (PR #13/#15, ainda não mesclado);
 - confirmar RLS por tabela;
-- validar proteção contra senhas vazadas no Supabase Auth;
-- eliminar códigos de ingresso previsíveis;
-- limitar abuso de criação de PIX.
+- validar proteção contra senhas vazadas no Supabase Auth (não verificado nesta auditoria);
+- eliminar códigos de ingresso previsíveis (não verificado nesta auditoria);
+- limitar abuso de criação de PIX — a tabela `checkout_rate_limits` existe no banco, mas não há referência a ela em `mercado-pago.functions.ts`; rate limiting de criação de PIX ainda não está conectado.
 
 ### P1 — fluxo de negócio
 - confirmação pós-compra baseada no status real;
@@ -570,15 +587,8 @@ Não assumir que uma alteração vista em PR aberto já está em `main`.
 - E2E compra → PIX → webhook → ingresso;
 - E2E expiração → devolução de estoque.
 
-### P2 — qualidade/UX
-- `PublicEventPage`: revisar uso de `useMemo` onde deveria ser `useEffect`;
-- debounce na busca de cliente por WhatsApp;
-- feedback imediato ao clicar Gerar PIX;
-- refinamentos de QR/código do ingresso e hit areas.
-
 ### Release blocker
-- build/Vercel precisa ser validado antes de considerar branches de hardening prontas para merge;
-- fluxo real Mercado Pago precisa ser testado ponta a ponta.
+- fluxo real de expiração/restauração de estoque (PR #13/#15) precisa ser mesclado e testado ponta a ponta antes de considerar o ciclo de segurança do checkout fechado.
 
 ## 29. Fluxos dourados
 
@@ -604,6 +614,7 @@ src/lib/events-queries.ts
 src/lib/sales-queries.ts
 src/lib/dashboard-queries.ts
 src/lib/settings-queries.ts
+src/lib/customer-queries.ts
 src/pages/CheckoutPage.tsx
 src/pages/PublicEventPage.tsx
 src/pages/admin/SalesListPage.tsx

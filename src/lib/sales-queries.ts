@@ -181,6 +181,18 @@ export function useSalesStats(eventId?: string) {
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) throw ticketsError;
 
+      // Vendas pendentes ainda não possuem ingressos, então precisam ser lidas direto da tabela sales.
+      let pendingQuery = supabase
+        .from("sales")
+        .select("id, total_amount")
+        .eq("organization_id", orgId)
+        .eq("status", "pendente")
+        .eq("is_courtesy", false);
+      if (eventId && eventId !== "overview") pendingQuery = pendingQuery.eq("event_id", eventId);
+
+      const { data: pendingData, error: pendingError } = await pendingQuery;
+      if (pendingError) throw pendingError;
+
       const stats = {
         totalRevenue: 0,
         totalSales: 0,
@@ -212,9 +224,6 @@ export function useSalesStats(eventId?: string) {
           if (s.status === "pago" && !s.is_courtesy) {
             stats.totalRevenue += Number(s.total_amount);
             stats.paidSales++;
-          } else if (s.status === "pendente") {
-            stats.pendingSales++;
-            stats.pendingAmount += Number(s.total_amount);
           } else if (s.status === "cancelado") {
             stats.cancelledSales++;
           }
@@ -223,6 +232,15 @@ export function useSalesStats(eventId?: string) {
         if (!s.is_courtesy && s.status === "pago") {
           const dateStr = new Date(t.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
           if (dailyMap.has(dateStr)) dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
+        }
+      });
+
+      (pendingData || []).forEach((s) => {
+        stats.pendingSales++;
+        stats.pendingAmount += Number(s.total_amount);
+        if (!saleIds.has(s.id)) {
+          saleIds.add(s.id);
+          stats.totalSales++;
         }
       });
 
