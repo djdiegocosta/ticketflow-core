@@ -227,16 +227,18 @@ export default function CheckoutPage() {
   return (
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
-            <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
-            <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
-              <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
-              <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
+        {step === 'info' && (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
+              <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
+              <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
+                <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
+                <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {step === 'info' && (
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -245,7 +247,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
                 <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
-                <SmartField label="E-mail" icon={Mail} value={form.watch('buyerEmail')} onChange={(v) => form.setValue('buyerEmail', v, { shouldValidate: true })} isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch('buyerEmail'))} placeholder="seuemail@exemplo.com" inputMode="email" error={form.formState.errors.buyerEmail?.message as string} />
+                <SmartField label="E-mail" icon={Mail} value={form.watch('buyerEmail')} onChange={(v) => form.setValue('buyerEmail', v, { shouldValidate: true })} isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch('buyerEmail'))} placeholder="SEUEMAIL@EXEMPLO.COM" inputMode="email" error={form.formState.errors.buyerEmail?.message as string} forceUppercase />
               </div>
             </div>
 
@@ -290,21 +292,16 @@ export default function CheckoutPage() {
         )}
 
         {step === 'payment' && (
-          <div className="flex flex-col gap-8 animate-in slide-in-from-right duration-300">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-muted)] text-[var(--accent)]">
-                <Clock className="h-8 w-8" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Aguardando Pagamento</h2>
-                <p className="text-small text-[var(--text-secondary)]">O seu Pix expira em <span className="font-mono font-bold text-[var(--accent-text)]">{formatTime(countdown)}</span></p>
-              </div>
+          <div className="flex flex-col gap-6 animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-center gap-2 text-center">
+              <Clock className="h-4 w-4 text-[var(--accent)]" />
+              <p className="text-small text-[var(--text-secondary)]">Aguardando Pagamento — expira em <span className="font-mono font-bold text-[var(--accent-text)]">{formatTime(countdown)}</span></p>
             </div>
 
-            <div className="flex flex-col items-center gap-6 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
-              <div className="bg-white p-4 rounded-xl shadow-sm min-h-[232px] min-w-[232px] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
+              <div className="bg-white p-3 rounded-xl shadow-sm min-h-[190px] min-w-[190px] flex items-center justify-center">
                 {pixData ? (
-                  <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-[200px] w-[200px]" />
+                  <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-[164px] w-[164px]" />
                 ) : (
                   <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
                 )}
@@ -321,7 +318,18 @@ export default function CheckoutPage() {
                   </span>
                   {pixCopied ? <CheckCircle2 className="h-5 w-5 text-success" /> : <Copy className="h-5 w-5" />}
                 </Button>
-                <p className="text-center text-xs text-[var(--text-secondary)]">Copie o código acima e pague no app do seu banco</p>
+                <p className="text-center text-body font-bold text-[var(--accent-text)]">Copie o código acima e pague no app do seu banco</p>
+              </div>
+            </div>
+
+            <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
+                <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
+                <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
+                  <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
+                  <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
+                </div>
               </div>
             </div>
 
