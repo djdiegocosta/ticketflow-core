@@ -235,6 +235,15 @@ export function useSalesStats(eventId?: string) {
         }
       });
 
+      (pendingData || []).forEach((s) => {
+        stats.pendingSales++;
+        stats.pendingAmount += Number(s.total_amount);
+        if (!saleIds.has(s.id)) {
+          saleIds.add(s.id);
+          stats.totalSales++;
+        }
+      });
+
       stats.last14Days = Array.from(dailyMap.entries()).map(([date, value]) => ({ date, value })).reverse();
       return stats;
     },
