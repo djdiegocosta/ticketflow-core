@@ -12,10 +12,10 @@ interface SmartFieldProps {
   type?: string;
   inputMode?: React.InputHTMLAttributes<HTMLInputElement>["inputMode"];
   error?: string;
-  forceUppercase?: boolean;
+  forceLowercase?: boolean;
 }
 
-export function SmartField({ label, icon: Icon, value, onChange, isValid, placeholder, type, inputMode, error, forceUppercase }: SmartFieldProps) {
+export function SmartField({ label, icon: Icon, value, onChange, isValid, placeholder, type, inputMode, error, forceLowercase }: SmartFieldProps) {
   return (
     <div className="space-y-1">
       <label className="text-micro font-bold uppercase">{label}</label>
@@ -23,11 +23,12 @@ export function SmartField({ label, icon: Icon, value, onChange, isValid, placeh
         <input
           type={type}
           value={value}
-          onChange={(e) => onChange(forceUppercase ? e.target.value.toUpperCase() : e.target.value)}
+          onChange={(e) => onChange(forceLowercase ? e.target.value.toLowerCase() : e.target.value)}
           placeholder={placeholder}
           inputMode={inputMode}
-          autoCapitalize={forceUppercase ? "characters" : undefined}
-          style={forceUppercase ? { textTransform: "uppercase" } : undefined}
+          autoCapitalize={forceLowercase ? "none" : undefined}
+          autoCorrect={forceLowercase ? "off" : undefined}
+          style={forceLowercase ? { textTransform: "lowercase" } : undefined}
           className={cn("w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 pl-10 pr-10 rounded-[var(--radius-sm)] outline-none", error ? "border-[var(--error)]" : "focus:border-[var(--accent)]")}
         />
         {React.createElement(Icon, { className: cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none", error ? "text-[var(--error)]" : "text-[var(--text-disabled)]") })}
