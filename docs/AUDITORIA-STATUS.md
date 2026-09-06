@@ -103,3 +103,15 @@ Baseado em revisão estruturada (Fitts, Hick, Miller, Doherty, Postel) sobre o c
 - 🔴 App Android nativo para Check-in — intenção registrada, arquitetura já favorável (checagem centralizada em função de banco), não iniciado.
 - 🔴 Regra fina de validação de nome (aviso não-bloqueante para nome composto comum de 2 palavras) — não implementada, mas concentrada num único ponto do código, fácil de aplicar quando priorizada.
 - 🔴 Áreas Financeiro, Importação e Sorteios — banco de dados já preparado (tabelas existem), interface ainda é placeholder. Fora do escopo por decisão do usuário até segunda ordem.
+
+## Rodada — Causa raiz do problema do Pix: chave de criptografia divergente entre plataformas
+
+**Achado pelo usuário, registrado aqui para não se perder.**
+
+O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_secret`) usando uma chave lida de uma variável de ambiente (`APP_ENCRYPTION_KEY`, em `src/lib/mp/utils.server.ts`). Essa variável é configurada separadamente em cada lugar onde o site roda — e o projeto está publicado tanto no Lovable quanto na Vercel, cada um puxando o mesmo código do GitHub, mas cada um com sua própria cópia dessa variável.
+
+**Consequência:** se a credencial foi salva rodando em uma plataforma (criptografada com a chave dela) e depois é lida/testada rodando na outra plataforma (com uma chave diferente), a descriptografia falha silenciosamente ou gera erro — dando exatamente a sensação de "salvei, mas não funciona depois / não consigo testar" relatada pelo usuário.
+
+**Importante:** isso é uma causa **adicional e independente** dos bugs de código já corrigidos nesta mesma área (sobrescrita de credencial ao salvar só o webhook secret; botão de teste com inserção direta bloqueada por RLS). Os dois tipos de problema coexistiam — corrigir só o código não resolve isso, e garantir a mesma chave nas duas plataformas não substitui as correções de código já aplicadas.
+
+**Ação pendente (não é algo que dá para resolver só editando código do repositório):** confirmar `APP_ENCRYPTION_KEY` idêntica nas variáveis de ambiente do Lovable e da Vercel — ou definir qual das duas é a plataforma de produção real e garantir que a chave usada lá é a mesma com que as credenciais atualmente salvas no banco foram criptografadas (senão, o caminho mais seguro é gerar uma chave nova e resalvar as credenciais do zero por essa plataforma).
