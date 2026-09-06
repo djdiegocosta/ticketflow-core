@@ -249,16 +249,32 @@ Implementar vínculo seguro por WhatsApp, respeitando organização e evitando a
 ## 9. Performance — políticas RLS com avaliação repetida de autenticação
 
 **ID:** AUD-009  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA
 
 ### Problema
 
-Performance Advisor identificou políticas que reavaliam `auth.*()`/`current_setting()` por linha em várias tabelas.
+Performance Advisor identificou políticas que reavaliavam `auth.*()`/`current_setting()` por linha em várias tabelas, criando planos de inicialização de autenticação desnecessariamente repetidos.
 
-### Ação necessária
+### Correção aplicada
 
-Otimizar as expressões RLS sem alterar a regra de autorização.
+As políticas RLS afetadas passaram a encapsular `auth.uid()` em uma subconsulta init-plan, no formato `(select auth.uid())`. Isso permite que o valor da sessão seja calculado uma vez por consulta, em vez de ser reavaliado para cada linha. Nenhuma regra de autorização foi alterada.
+
+**Migration:** `20260906183200_optimize_rls_aud009_aud011.sql`  
+**Commit:** `e83f32ebc47e4acfbd2e3f91675cf83ad9a43ece`
+
+### Validação pós-correção
+
+- Performance Advisor deixou de reportar qualquer alerta `auth_rls_initplan`.
+- As políticas continuam usando as mesmas condições de autorização.
+- As alterações foram aplicadas diretamente no projeto Supabase correto e versionadas no `main`.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:32 BRT
+- **Agente:** ChatGPT
+- **Evidência:** Performance Advisor sem alertas `auth_rls_initplan` após a migration; políticas conferidas em `pg_policies`.
 
 ---
 
@@ -281,16 +297,40 @@ Revisar as consultas reais e criar índices somente onde trouxerem benefício co
 ## 11. Performance — múltiplas políticas permissivas RLS
 
 **ID:** AUD-011  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA
 
 ### Problema
 
-Há múltiplas políticas permissivas para as mesmas combinações de papel/ação em várias tabelas.
+Havia múltiplas políticas permissivas para as mesmas combinações de papel/ação em várias tabelas. Parte delas era redundante porque uma política `ALL` já fornecia exatamente a mesma autorização de leitura.
 
-### Ação necessária
+### Correção aplicada
 
-Consolidar somente quando o comportamento de autorização permanecer exatamente igual.
+Foram removidas somente as políticas `SELECT` que duplicavam exatamente uma política `ALL` existente, preservando todas as políticas com regras diferentes:
+
+- `checkout_rate_limits` — removida `Admin vê limites de checkout dos eventos da propria organizaca`.
+- `events` — removida `Admins can read organization events`.
+- `ticket_batches` — removida `Admins can read organization batches`.
+- `mp_config` — removida `Admin manages organization MP config`, mantendo a política equivalente `Admins can manage their organization's mp_config`.
+
+As múltiplas políticas restantes em `client_banners`, `customers`, `points_ledger`, `sales`, `tickets` e `user_roles` possuem condições de autorização diferentes e, portanto, não foram fundidas artificialmente.
+
+**Migration:** `20260906183200_optimize_rls_aud009_aud011.sql`  
+**Commit:** `e83f32ebc47e4acfbd2e3f91675cf83ad9a43ece`
+
+### Validação pós-correção
+
+- Os quatro conjuntos de políticas redundantes foram eliminados.
+- O Performance Advisor não reporta mais esses casos redundantes.
+- As múltiplas políticas restantes foram preservadas por terem regras de autorização distintas.
+- Não houve alteração deliberada de escopo de acesso.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:32 BRT
+- **Agente:** ChatGPT
+- **Evidência:** migration aplicada em produção, políticas conferidas em `pg_policies` e Performance Advisor reexecutado após a alteração.
 
 ---
 
@@ -466,7 +506,7 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 - Repositório: `djdiegocosta/ticketflow-core`
 - Branch: `main`
 - Permissões disponíveis: `admin`, `maintain`, `push`, `pull`, `triage`.
-- Migrations de segurança, expiração e Storage estão versionadas.
+- Migrations de segurança, expiração, Storage e RLS estão versionadas.
 
 ## Supabase
 
@@ -484,13 +524,12 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 
 # Prioridade atual
 
-1. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
-2. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
-3. **AUD-010** — revisar índices de FKs.
-4. **AUD-013 / AUD-014** — documentação.
-5. **AUD-015** — QA funcional.
+1. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
+2. **AUD-010** — revisar índices de FKs.
+3. **AUD-013 / AUD-014** — documentação.
+4. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
@@ -509,6 +548,7 @@ AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano
 | 06/09/2026 | 14:58 | Claude 2 | AUD-017 | PDF de check-in da lista de vendas corrigido para incluir só vendas pagas/cortesias. |
 | 06/09/2026 | 15:08 | ChatGPT | AUD-007 | Botão de download de todos os ingressos passou a gerar PDF real, com um ingresso por página e QR Code individual. |
 | 06/09/2026 | 15:27 | ChatGPT | AUD-004 | `search_path` das três funções do achado foi fixado em vazio e validado em produção. |
+| 06/09/2026 | 15:32 | ChatGPT | AUD-009 / AUD-011 | Políticas RLS otimizadas para avaliação única de `auth.uid()` e quatro políticas SELECT redundantes removidas após validação de equivalência. |
 | 06/09/2026 | 15:35 | Claude 2 | AUD-012 | `.env` removido do repositório, `.gitignore` e `.env.example` atualizados, build validado. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
