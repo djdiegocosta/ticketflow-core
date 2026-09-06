@@ -371,7 +371,7 @@ Migrations versionadas no GitHub:
 ### Resolução
 
 - **Data:** 06/09/2026
-- **Hora:** 09:xx BRT
+- **Hora:** 09:02 BRT
 - **Agente:** ChatGPT
 - **Evidência:** migrations aplicadas e versionadas; buckets e políticas conferidos diretamente em produção.
 
@@ -427,6 +427,6 @@ AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção p
 | 05/09/2026 | 21:03 | Claude 2 | AUD-006 | Reconciliada e versionada a função `checkin_ticket`. |
 | 05/09/2026 | 21:15 | Claude 2 | AUD-016 | Identificada ausência de versionamento dos buckets Storage. |
 | 06/09/2026 | 08:49 | ChatGPT | AUD-005 | Fluxo de expiração de vendas pendentes reconciliado e frontend corrigido. |
-| 06/09/2026 | 09:xx | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
+| 06/09/2026 | 09:02 | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
