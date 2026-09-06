@@ -237,7 +237,7 @@ export default function CheckoutPage() {
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
         {step === 'info' && (
-          <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
+ <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
             <div className="flex flex-col gap-1">
               <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
               <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
               
               <div className="space-y-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] p-3">
+ <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
                     <Label>Nome do Participante {qty > 1 ? index + 1 : ''}</Label>
                     <Input 
                       placeholder="Nome Sobrenome"
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
+ <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
               <div className="flex flex-col gap-1">
                 <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
                 <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>

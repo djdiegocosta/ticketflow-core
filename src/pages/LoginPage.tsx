@@ -76,11 +76,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-1.5">
           <Brandmark size="lg" />
-          <p className="text-small text-[var(--text-secondary)]">Gestão de eventos e ingressos</p>
         </div>
 
         {/* Card de login */}
-        <Card className="w-full max-w-[400px] border border-[var(--border-default)] bg-[var(--bg-primary)] shadow-lg shadow-black/5 rounded-xl">
+        <Card className="w-full max-w-[400px] bg-[var(--bg-primary)] shadow-lg shadow-black/5 rounded-xl">
           <CardContent className="p-6">
             <h2 className="mb-5 text-center text-xl font-semibold text-[var(--text-primary)]">
               Entrar na sua conta
@@ -161,7 +160,7 @@ export default function LoginPage() {
             </Form>
 
             {/* Link de cadastro destacado */}
-            <div className="mt-5 p-4 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-default)] text-center">
+ <div className="mt-5 p-4 rounded-lg bg-[var(--bg-tertiary)] text-center">
               <p className="text-small text-[var(--text-secondary)] mb-1.5">Não tem uma conta?</p>
               <Link
                 to="/cadastro"

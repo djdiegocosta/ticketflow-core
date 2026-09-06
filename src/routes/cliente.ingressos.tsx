@@ -76,7 +76,7 @@ export function Page_cliente_ingressos() {
       <div className="flex items-center justify-between">
         <h1 className="text-heading-1">Meus Ingressos</h1>
         {isOfflineMode && (
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-md">
+ <div className="flex items-center gap-1.5 px-2 py-1 bg-[var(--bg-secondary)] rounded-md">
             <Database className="h-3 w-3 text-[var(--text-secondary)]" />
             <span className="text-[10px] text-[var(--text-secondary)] uppercase font-medium">Offline</span>
           </div>
@@ -106,7 +106,7 @@ export function Page_cliente_ingressos() {
               key={t.id} 
               to="/ingresso/$ticket_code" 
               params={{ ticket_code: t.ticket_code }}
-              className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-4 rounded-[var(--radius-md)] flex justify-between items-center active:scale-[0.98] transition-transform"
+ className="bg-[var(--bg-secondary)] p-4 rounded-[var(--radius-md)] flex justify-between items-center active:scale-[0.98] transition-transform"
             >
               <div className="flex flex-col gap-0.5">
                 <p className="font-semibold text-body">{t.event_name}</p>

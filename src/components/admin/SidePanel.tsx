@@ -186,7 +186,7 @@ export function PanelDiscardDialog({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-6">
-      <div className="w-full max-w-[400px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)] rounded-[var(--radius-md)]">
+ <div className="w-full max-w-[400px] bg-bg-primary p-6 shadow-[var(--shadow-lg)] rounded-[var(--radius-md)]">
         <h3 className="text-heading-2 text-text-primary">{title}</h3>
         <p className="mt-2 text-body text-text-secondary">{description}</p>
         <div className="mt-6 flex justify-end gap-3">

@@ -16,13 +16,13 @@ const TEMPERATURE_META: Record<TemperatureLevel, { label: string; icon: any; col
 };
 
 const MetricCard = ({ title, value, icon: Icon, trend, secondary, gaugeValue, iconColor, iconSize = "h-5 w-5", temperatureUnit }: any) => (
-  <div className="flex h-full flex-col rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-5 shadow-sm">
+  <div className="flex h-full flex-col rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-sm">
     <div className="mb-2 flex items-start justify-between"><span className="text-small text-text-secondary">{title}</span>{temperatureUnit ? <div className="relative"><Icon className={cn(iconSize, iconColor)} /><span className="absolute -right-3 -top-2 text-[10px] font-medium text-text-secondary">°C</span></div> : <Icon className={cn(iconSize, iconColor)} />}</div>
     <div className="flex flex-1 items-end justify-between gap-3"><div><div className="mb-1 text-heading-1 text-text-primary">{value}</div>{trend && <div className="text-small text-success">{trend}</div>}{secondary && <div className="text-small text-text-secondary">{secondary}</div>}</div>{gaugeValue !== undefined && <div className="relative h-[50px] w-[90px] shrink-0"><svg viewBox="0 0 90 50" width="90" height="50" className="block"><path d="M 8 46 A 37 37 0 0 1 82 46" fill="none" stroke="var(--bg-tertiary)" strokeWidth={10} strokeLinecap="round" /><path d="M 8 46 A 37 37 0 0 1 82 46" fill="none" stroke="var(--warning)" strokeWidth={10} strokeLinecap="round" strokeDasharray={Math.PI * 37} strokeDashoffset={Math.PI * 37 * (1 - gaugeValue / 100)} /></svg><div className="absolute inset-x-0 bottom-0 flex items-end justify-center"><span className="text-heading-2 font-semibold leading-none text-text-primary">{gaugeValue}%</span></div></div>}</div>
   </div>
 );
 
-const Panel = ({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) => <section className="flex h-full flex-col rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-6"><div className="mb-5 flex items-center justify-between gap-4"><h2 className="text-heading-2 text-text-primary">{title}</h2>{action}</div><div className="flex-1">{children}</div></section>;
+const Panel = ({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) => <section className="flex h-full flex-col rounded-[var(--radius-md)] bg-bg-secondary p-6"><div className="mb-5 flex items-center justify-between gap-4"><h2 className="text-heading-2 text-text-primary">{title}</h2>{action}</div><div className="flex-1">{children}</div></section>;
 
 export function AdminDashboard() {
   const { isLoading: eventsLoading, event: operationalEvent } = useOperationalEvent();

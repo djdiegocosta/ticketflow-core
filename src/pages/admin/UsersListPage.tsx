@@ -158,7 +158,7 @@ export default function UsersListPage() {
       {/* Delete Confirmation Modal */}
       {userToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(0,0,0,0.6)] p-6">
-          <div className="w-full max-w-[400px] rounded-[var(--radius-lg)] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+ <div className="w-full max-w-[400px] rounded-[var(--radius-lg)] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-center gap-3 text-error mb-2">
               <UserX className="h-5 w-5" />
               <h3 className="text-heading-2">Remover usuário?</h3>

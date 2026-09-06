@@ -142,7 +142,7 @@ export default function EventPage() {
 
           <div className="flex flex-col gap-4 pt-4">
             <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Quantidade</h3>
-            <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-2">
+ <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-2">
               <Button
                 variant="ghost"
                 size="icon"

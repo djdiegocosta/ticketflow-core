@@ -45,7 +45,7 @@ function StepList({ children }: { children: React.ReactNode }) {
 function StepItem({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center border border-[var(--border-default)] bg-[var(--bg-tertiary)] text-micro text-[var(--text-secondary)]">
+ <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-[var(--bg-tertiary)] text-micro text-[var(--text-secondary)]">
         {n}
       </span>
       <span>{children}</span>
@@ -210,7 +210,7 @@ export function MercadoPagoWizardPage() {
             </p>
           </div>
         </div>
-        <span className="border border-[var(--border-default)] bg-[var(--bg-tertiary)] px-3 py-1 text-micro text-[var(--text-secondary)]">
+ <span className="bg-[var(--bg-tertiary)] px-3 py-1 text-micro text-[var(--text-secondary)]">
           Ambiente: {environmentLabel(env)}
         </span>
       </div>
@@ -231,7 +231,7 @@ export function MercadoPagoWizardPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Etapas */}
-        <nav className="w-full shrink-0 border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-2 lg:w-64">
+ <nav className="w-full shrink-0 bg-[var(--bg-secondary)] p-2 lg:w-64">
           <div className="flex flex-col gap-1">
             {steps.map((step) => {
               const active = current === step.id;
@@ -272,7 +272,7 @@ export function MercadoPagoWizardPage() {
         </nav>
 
         {/* Conteúdo */}
-        <div className="min-w-0 flex-1 border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6">
+ <div className="min-w-0 flex-1 bg-[var(--bg-secondary)] p-6">
           {current === 1 && (
             <div className="space-y-6">
               <div>
@@ -507,7 +507,7 @@ export function MercadoPagoWizardPage() {
 
               <div className="space-y-2">
                 <label className="text-small text-[var(--text-secondary)]">URL do webhook</label>
-                <div className="flex items-center gap-2 border border-[var(--border-default)] bg-[var(--bg-tertiary)] p-4">
+ <div className="flex items-center gap-2 bg-[var(--bg-tertiary)] p-4">
                   <code className="flex-1 break-all text-body text-[var(--text-secondary)]">
                     {webhookUrl || "Carregando URL..."}
                   </code>
@@ -613,7 +613,7 @@ export function MercadoPagoWizardPage() {
 
               <div className="space-y-3">
                 {pixResult ? (
-                  <div className="flex flex-col items-center gap-4 border border-[var(--border-default)] p-6">
+ <div className="flex flex-col items-center gap-4 p-6">
                     <img
                       src={`data:image/png;base64,${pixResult.qr_code_base64}`}
                       alt="QR Code PIX"

@@ -114,7 +114,7 @@ function SaleCard({ sale }: { sale: any }) {
   const eventDate = sale.events?.event_date || sale.event_date;
   
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] overflow-hidden">
+ <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] overflow-hidden">
       <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-tertiary)]/50">
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
@@ -124,7 +124,7 @@ function SaleCard({ sale }: { sale: any }) {
               <span>{eventDate ? new Date(eventDate).toLocaleDateString('pt-BR') : '—'}</span>
             </div>
           </div>
-          <span className="text-[10px] font-mono font-bold bg-[var(--bg-primary)] px-2 py-1 rounded border border-[var(--border-subtle)]">
+ <span className="text-[10px] font-mono font-bold bg-[var(--bg-primary)] px-2 py-1 rounded">
             {sale.sale_code}
           </span>
         </div>
@@ -139,7 +139,7 @@ function SaleCard({ sale }: { sale: any }) {
               key={ticket.id}
               to="/ingresso/$ticket_code" 
               params={{ ticket_code: ticket.ticket_code }}
-              className="flex items-center justify-between p-3 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-primary)] hover:border-[var(--accent)] transition-colors group"
+ className="flex items-center justify-between p-3 rounded-[var(--radius-md)] bg-[var(--bg-primary)] hover:border-[var(--accent)] transition-colors group"
             >
               <div className="flex flex-col">
                 <span className="text-small font-bold text-[var(--text-primary)]">{ticket.participant_name}</span>

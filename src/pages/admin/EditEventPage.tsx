@@ -286,7 +286,7 @@ export function EditEventPage() {
         </div>
       </div>
 
-      <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-lg border border-border-subtle shadow-sm">
+ <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-lg shadow-sm">
         {[
           { n: 1, l: "Básico" },
           { n: 2, l: "Modelo" },
@@ -297,7 +297,7 @@ export function EditEventPage() {
         ))}
       </div>
 
-      <div className="bg-bg-secondary border border-border-default rounded-lg p-8 shadow-sm min-h-[400px]">
+ <div className="bg-bg-secondary rounded-lg p-8 shadow-sm min-h-[400px]">
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-heading-2">Informações básicas</h2>
@@ -530,7 +530,7 @@ export function EditEventPage() {
               {batches.map((b) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between p-4 bg-bg-primary border border-border-subtle rounded-md"
+ className="flex items-center justify-between p-4 bg-bg-primary rounded-md"
                 >
                   <div className="min-w-0">
                     <div className="text-body font-bold truncate">{b.name}</div>
@@ -558,7 +558,7 @@ export function EditEventPage() {
             </div>
 
             {draft && (
-              <div className="p-4 bg-bg-primary border border-border-default rounded-md space-y-4">
+ <div className="p-4 bg-bg-primary rounded-md space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-small font-medium text-text-secondary">Nome do lote</label>
@@ -632,7 +632,7 @@ export function EditEventPage() {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setDraft(null)}
-                    className="px-4 py-2 border border-border-default rounded-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
+ className="px-4 py-2 rounded-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
                   >
                     Cancelar
                   </button>
@@ -656,14 +656,14 @@ export function EditEventPage() {
           <div className="space-y-8">
             <h2 className="text-heading-2">Resumo do evento</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-bg-primary border border-border-subtle rounded-md space-y-2">
+ <div className="p-4 bg-bg-primary rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                 <div className="text-body font-bold">{title}</div>
                 <div className="text-small text-text-secondary">
                   {location} • {date && time ? new Date(`${date}T${time}`).toLocaleString("pt-BR") : "—"}
                 </div>
               </div>
-              <div className="p-4 bg-bg-primary border border-border-subtle rounded-md space-y-2">
+ <div className="p-4 bg-bg-primary rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Vendas</div>
                 <div className="text-body font-bold">
                   {model === "lotes" ? "Modelo por lotes" : "Preço único"}
@@ -683,7 +683,7 @@ export function EditEventPage() {
           <button
             onClick={() => setStep((s) => Math.max(s - 1, 1))}
             disabled={step === 1}
-            className="px-6 py-2 border border-border-default rounded-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
+ className="px-6 py-2 rounded-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
           >
             Voltar
           </button>

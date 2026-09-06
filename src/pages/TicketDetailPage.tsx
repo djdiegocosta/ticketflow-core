@@ -58,7 +58,7 @@ export default function TicketDetailPage() {
       <div className="flex flex-col gap-6 px-5 py-8 animate-in fade-in duration-500">
         
         {/* Ticket Boarding Pass Card */}
-        <div className="rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-xl overflow-hidden relative">
+ <div className="rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] shadow-xl overflow-hidden relative">
           {/* Status Pill */}
           <div className="absolute top-4 right-4 z-20">
             <StatusPill tone={ticketStatusMeta(ticket.status).tone}>
@@ -150,7 +150,7 @@ export default function TicketDetailPage() {
         </div>
 
         {/* Instructions */}
-        <div className="rounded-[var(--radius-lg)] bg-[var(--bg-tertiary)]/30 p-4 border border-[var(--border-subtle)] border-dashed">
+ <div className="rounded-[var(--radius-lg)] bg-[var(--bg-tertiary)]/30 p-4 border-dashed">
           <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase mb-2">Instruções</h4>
           <ul className="text-xs text-[var(--text-secondary)] space-y-2 list-disc pl-4">
             <li>Chegue com antecedência ao local do evento.</li>

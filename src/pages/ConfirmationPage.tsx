@@ -147,7 +147,7 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Resumo */}
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4">
+ <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
           <h3 className="text-small font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Resumo</h3>
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-body">
@@ -176,7 +176,7 @@ export default function ConfirmationPage() {
           <h3 className="text-heading-3 font-bold text-[var(--text-primary)]">Seus Ingressos</h3>
           <div className="flex flex-col gap-4">
             {(sale.tickets || []).map((ticket: any) => (
-              <div key={ticket.id} className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-primary)] overflow-hidden">
+ <div key={ticket.id} className="flex flex-col rounded-[var(--radius-lg)] bg-[var(--bg-primary)] overflow-hidden">
                 <div className="flex items-center gap-4 p-4 border-b border-dashed border-[var(--border-subtle)]">
                   <div className="bg-white p-2 rounded-md">
                     <QRCodeSVG data-ticket-qr={ticket.id} value={ticket.ticket_code} size={64} />

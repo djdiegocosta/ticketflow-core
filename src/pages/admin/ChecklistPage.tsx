@@ -197,7 +197,7 @@ export function ChecklistPage() {
           </TabsList>
 
           <TabsContent value="tarefas" className="space-y-6 outline-none">
-            <div className="bg-bg-secondary border border-border-subtle p-6 space-y-4">
+ <div className="bg-bg-secondary p-6 space-y-4">
               {activeTasks.length === 0 ? (
                 <div className="text-center py-12 text-text-secondary">
                   Nenhuma tarefa pendente.
@@ -234,7 +234,7 @@ export function ChecklistPage() {
           </TabsContent>
 
           <TabsContent value="concluidas" className="outline-none">
-            <div className="bg-bg-secondary border border-border-subtle p-6 space-y-4">
+ <div className="bg-bg-secondary p-6 space-y-4">
               {completedTasks.length === 0 ? (
                 <div className="text-center py-12 text-text-secondary">
                   Nenhuma tarefa concluída ainda.
@@ -297,7 +297,7 @@ export function ChecklistPage() {
             <button
               type="button"
               onClick={() => setIsPanelOpen(false)}
-              className="flex-1 rounded-[var(--radius-sm)] border border-border-subtle px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
+ className="flex-1 rounded-[var(--radius-sm)] px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
             >
               Cancelar
             </button>

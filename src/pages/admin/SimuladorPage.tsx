@@ -72,7 +72,7 @@ function StepSection({
         </span>
         <h2 className="text-heading-2 text-text-primary">{title}</h2>
       </div>
-      <div className="border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+ <div className="bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
         {children}
       </div>
     </section>
@@ -436,7 +436,7 @@ export function SimuladorPage() {
           <div className="flex gap-3">
             <button
               onClick={fetchHistory}
-              className="flex items-center gap-2 border border-border-subtle bg-bg-secondary px-4 py-2.5 text-body font-medium text-text-primary transition-colors hover:bg-bg-tertiary"
+ className="flex items-center gap-2 bg-bg-secondary px-4 py-2.5 text-body font-medium text-text-primary transition-colors hover:bg-bg-tertiary"
             >
               <History className="h-4 w-4" />
               Histórico
@@ -604,7 +604,7 @@ export function SimuladorPage() {
       <StepSection step={3} title="Bar do evento">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-body text-text-primary">Este evento terá bar próprio?</span>
-          <div className="flex border border-border-default">
+ <div className="flex">
             {[
               { label: "Sim", val: true },
               { label: "Não", val: false },
@@ -655,7 +655,7 @@ export function SimuladorPage() {
               />
             </div>
 
-            <div className="mt-5 border border-border-subtle bg-bg-tertiary p-4">
+ <div className="mt-5 bg-bg-tertiary p-4">
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 <div>
                   <span className="text-small text-text-secondary">Público presente (bar)</span>
@@ -854,7 +854,7 @@ export function SimuladorPage() {
 
       {/* Resultado financeiro */}
       <BlockSection title="Resultado Financeiro">
-        <div className="border border-border-subtle bg-[#111111] p-6 shadow-[var(--shadow-sm)]">
+ <div className="bg-[#111111] p-6 shadow-[var(--shadow-sm)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="text-small text-[#9a9a9a]">
@@ -891,7 +891,7 @@ export function SimuladorPage() {
           />
         </MiniMetricGrid>
 
-        <div className="border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
+ <div className="bg-bg-secondary shadow-[var(--shadow-sm)]">
           {[
             { label: "Receita de ingressos", value: ticketRevenue },
             ...(hasBar ? [{ label: "(+) Receita bruta do bar", value: barRevenue }] : []),
@@ -947,7 +947,7 @@ export function SimuladorPage() {
 
       {/* Ponto de equilíbrio */}
       <BlockSection title="Ponto de Equilíbrio">
-        <div className="space-y-6 border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+ <div className="space-y-6 bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
           <div className={cn("grid grid-cols-1 gap-6", hasBar ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
             <div>
               <span className="text-small text-text-secondary">
@@ -1018,7 +1018,7 @@ export function SimuladorPage() {
               <div
                 key={s.label}
                 className={cn(
-                  "border border-border-subtle border-t-2 bg-bg-secondary p-4 shadow-[var(--shadow-sm)]",
+" border-t-2 bg-bg-secondary p-4 shadow-[var(--shadow-sm)]",
                   s.tone,
                 )}
               >

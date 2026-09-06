@@ -56,7 +56,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 function Panel({ title, titleAdornment, children }: { title: string; titleAdornment?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-6">
+ <div className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-6">
       <div className="flex flex-wrap items-center gap-4">
         <h2 className="text-heading-2 text-[var(--text-primary)]">{title}</h2>
         {titleAdornment}
@@ -129,7 +129,7 @@ export function SettingsPage() {
     <div className="space-y-8">
       <h1 className="text-heading-1 text-[var(--text-primary)]">{"\n"}</h1>
       <div className="flex flex-col gap-6 lg:flex-row">
-        <nav className="w-full shrink-0 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-2 lg:w-56">
+ <nav className="w-full shrink-0 rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-2 lg:w-56">
           <div className="flex flex-col gap-1">
             {sections.map((section) => {
               const isActive = active === section.id;
@@ -167,7 +167,7 @@ export function SettingsPage() {
                   <div className="space-y-2"><FieldLabel>Quente a partir de</FieldLabel><div className="flex items-center gap-2"><Input type="number" min={1} value={quente} onChange={(e) => setQuente(Number(e.target.value))} className="rounded-[var(--radius-sm)]" /><span className="text-small text-[var(--text-secondary)]">vendas/dia</span></div></div>
                   <div className="space-y-2"><FieldLabel>Explodindo a partir de</FieldLabel><div className="flex items-center gap-2"><Input type="number" min={1} value={explodindo} onChange={(e) => setExplodindo(Number(e.target.value))} className="rounded-[var(--radius-sm)]" /><span className="text-small text-[var(--text-secondary)]">vendas/dia</span></div></div>
                 </div>
-                <div className="mt-5 rounded-[var(--radius-sm)] border border-[var(--border-subtle)] bg-[var(--bg-tertiary)] p-4"><div className="flex flex-wrap items-center gap-4 text-small"><span className="font-medium text-sky-400">Fria</span><span className="text-[var(--text-secondary)]">&lt; {aquecendo}</span><span className="font-medium text-warning">Aquecendo</span><span className="text-[var(--text-secondary)]">{aquecendo}–{Math.max(aquecendo, quente - 1)}</span><span className="font-medium text-error">Quente</span><span className="text-[var(--text-secondary)]">{quente}–{Math.max(quente, explodindo - 1)}</span><span className="font-medium text-error">Explodindo</span><span className="text-[var(--text-secondary)]">≥ {explodindo}</span><Flame className="ml-auto h-4 w-4 text-error" /></div></div>
+ <div className="mt-5 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] p-4"><div className="flex flex-wrap items-center gap-4 text-small"><span className="font-medium text-sky-400">Fria</span><span className="text-[var(--text-secondary)]">&lt; {aquecendo}</span><span className="font-medium text-warning">Aquecendo</span><span className="text-[var(--text-secondary)]">{aquecendo}–{Math.max(aquecendo, quente - 1)}</span><span className="font-medium text-error">Quente</span><span className="text-[var(--text-secondary)]">{quente}–{Math.max(quente, explodindo - 1)}</span><span className="font-medium text-error">Explodindo</span><span className="text-[var(--text-secondary)]">≥ {explodindo}</span><Flame className="ml-auto h-4 w-4 text-error" /></div></div>
               </div>
 
               <div className="flex items-start justify-between gap-6 border-t border-[var(--border-subtle)] pt-6"><div><p className="text-body text-[var(--text-primary)]">Unificar listas de PDF de check-in</p><p className="text-small text-[var(--text-secondary)]">Ativado: Vendas e Cortesias saem em uma única lista. Desativado: uma lista para cada.</p></div><Switch checked={unified} onCheckedChange={setUnified} /></div>

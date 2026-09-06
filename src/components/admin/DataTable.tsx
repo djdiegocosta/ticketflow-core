@@ -17,7 +17,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-        "w-full overflow-x-auto border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
+"w-full overflow-x-auto bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
         className,
       )}
     >
@@ -110,7 +110,7 @@ const pillToneClass: Record<PillTone, string> = {
   error: "bg-error-muted text-error-text border border-error-text/10",
   success: "bg-success-muted text-success-text border border-success-text/10",
   info: "bg-info-muted text-info-text border border-info-text/10",
-  neutral: "bg-bg-tertiary text-text-secondary border border-border-subtle",
+  neutral: "bg-bg-tertiary text-text-secondary",
 };
 
 export function StatusPill({

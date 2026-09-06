@@ -26,7 +26,7 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
-    <div className="rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+ <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-micro text-text-secondary">{label}</span>
         <Icon className="h-4 w-4 text-text-secondary" />
@@ -107,7 +107,7 @@ export function ClientDetailPage({ id }: { id: string }) {
         Clientes
       </Link>
 
-      <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center sm:justify-between">
+ <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <span className="flex h-12 w-12 items-center justify-center rounded-[var(--radius-full)] bg-bg-tertiary text-body font-semibold text-text-primary">
             {getInitials(client.full_name)}
@@ -148,7 +148,7 @@ export function ClientDetailPage({ id }: { id: string }) {
         <StatCard label="Idade" value={age !== null ? `${age} anos` : "—"} icon={User} />
       </div>
 
-      <div className="rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+ <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
         <h2 className="mb-4 text-heading-2 text-text-primary">Dados do cliente</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InfoRow label="Nome" value={client.full_name} />
@@ -159,7 +159,7 @@ export function ClientDetailPage({ id }: { id: string }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[var(--radius-md)] border border-border-subtle bg-bg-secondary shadow-[var(--shadow-sm)]">
+ <div className="overflow-x-auto rounded-[var(--radius-md)] bg-bg-secondary shadow-[var(--shadow-sm)]">
         <div className="px-5 pt-5">
           <h2 className="text-heading-2 text-text-primary">Histórico de compras</h2>
         </div>

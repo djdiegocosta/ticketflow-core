@@ -222,7 +222,7 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
               {events.filter((e: any) => e.status === "publicado" && !e.is_closed).map((e: any) => <option key={e.id} value={e.id}>{e.title}</option>)}
             </FilterSelect>
           ) : (
-            <div className="rounded-[var(--radius-sm)] border border-[var(--border-subtle)] bg-[var(--bg-tertiary)] px-3 py-2 text-body">{operationalEvent?.title}</div>
+ <div className="rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-3 py-2 text-body">{operationalEvent?.title}</div>
           )}
         </div>
 
@@ -279,7 +279,7 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
             <h3 className="text-body font-semibold">{participants.length} nomes adicionados</h3>
             {participants.length > 0 && <Button variant="ghost" size="sm" className="h-8 text-[var(--text-tertiary)]" onClick={() => { setParticipants([]); setIsDirty(false); }}>Limpar tudo</Button>}
           </div>
-          <div className="divide-y divide-[var(--border-subtle)] border border-[var(--border-subtle)]">
+ <div className="divide-y divide-[var(--border-subtle)]">
             {participants.length === 0 ? <div className="py-8 text-center text-small text-[var(--text-tertiary)]">Nenhum nome adicionado ainda.</div> : participants.map((p) => (
               <div key={p.id} className="group flex items-center justify-between p-3 hover:bg-[var(--bg-tertiary)]">
                 <div className="flex flex-1 items-center gap-2">

@@ -100,7 +100,7 @@ export function SalesLinksSection({
       </div>
 
       {/* Link padrão */}
-      <div className="flex items-center gap-3 rounded-md border border-border-subtle bg-bg-primary p-3">
+ <div className="flex items-center gap-3 rounded-md bg-bg-primary p-3">
         <div className="min-w-0 flex-1">
           <div className="text-small font-semibold text-text-primary">Link padrão</div>
           <div className="truncate text-small text-text-secondary">{eventDefaultUrl(slug)}</div>
@@ -109,7 +109,7 @@ export function SalesLinksSection({
       </div>
 
       {/* Formulário */}
-      <div className="space-y-3 rounded-md border border-border-subtle bg-bg-primary p-4">
+ <div className="space-y-3 rounded-md bg-bg-primary p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-small font-medium text-text-secondary">Nome do canal</label>
@@ -175,7 +175,7 @@ export function SalesLinksSection({
           {links.map((link) => (
             <div
               key={link.id}
-              className="flex items-center gap-3 rounded-md border border-border-subtle bg-bg-primary p-3"
+ className="flex items-center gap-3 rounded-md bg-bg-primary p-3"
             >
               <div className="min-w-0 flex-1">
                 <div className="text-small font-semibold text-text-primary">

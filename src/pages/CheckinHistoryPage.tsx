@@ -49,7 +49,7 @@ export function CheckinHistoryPage() {
       </header>
 
       <main className="flex-1 px-4 py-4">
-        <div className="flex flex-col border border-[var(--border-subtle)] bg-[var(--bg-secondary)]">
+ <div className="flex flex-col bg-[var(--bg-secondary)]">
           {isLoading ? (
             <div className="px-4 py-12 text-center text-small text-[var(--text-secondary)]">
               Carregando histórico...

@@ -44,7 +44,7 @@ export function Page_cliente_eventos() {
               key={event.id} 
               to="/e/$slug" 
               params={{ slug: event.slug }}
-              className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] overflow-hidden flex flex-col active:scale-[0.98] transition-transform"
+ className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] overflow-hidden flex flex-col active:scale-[0.98] transition-transform"
             >
               <div className="aspect-video w-full bg-[var(--bg-tertiary)] overflow-hidden">
                 {event.image_url ? (

@@ -32,7 +32,7 @@ function StatusBadge({ sale }: { sale: any }) {
         sale.status === "pago" && "bg-accent-muted text-accent-text",
         sale.status === "pendente" && "bg-warning-muted text-warning-text",
         sale.status === "cancelado" && "bg-error-muted text-error-text",
-        sale.status === "reembolsado" && "bg-bg-tertiary text-text-secondary border border-border-subtle",
+        sale.status === "reembolsado" && "bg-bg-tertiary text-text-secondary",
       )}
     >
       {statusLabels[sale.status] || sale.status}
@@ -49,7 +49,7 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-const card = "border border-border-subtle bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
+const card = "bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
   const { data: sale, isLoading, error: fetchError } = useSale(id) as any;
@@ -202,7 +202,7 @@ export function SaleDetailPage({ id }: { id: string }) {
           {(sale.tickets || []).map((ticket: any) => (
             <div
               key={ticket.ticket_code}
-              className="flex flex-col gap-3 border border-border-subtle bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
+ className="flex flex-col gap-3 bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-body text-text-primary">{ticket.participant_name}</p>
@@ -235,7 +235,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
-          <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+ <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Cancelar venda?</h3>
             <p className="mt-2 text-body text-text-secondary">
               Esta ação invalida os {(sale.tickets || []).length} ingresso(s) desta venda.
@@ -263,7 +263,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {qrTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
-          <div className="w-full max-w-[360px] border border-border-subtle bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
+ <div className="w-full max-w-[360px] bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between">
               <h3 className="text-heading-2 text-text-primary">QR Code</h3>
               <button
@@ -288,7 +288,7 @@ export function SaleDetailPage({ id }: { id: string }) {
       )}
       {refundOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
-          <div className="w-full max-w-[420px] border border-border-subtle bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+ <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Reembolsar venda</h3>
             <div className="mt-4 space-y-4">
               <div>
