@@ -370,32 +370,58 @@ As múltiplas políticas restantes em `client_banners`, `customers`, `points_led
 ## 13. Documentação — `CHANGELOG.md` divergente do estado real
 
 **ID:** AUD-013  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA
 
 ### Problema
 
 O changelog contém afirmações históricas que conflitam com o estado atual de Supabase/Mercado Pago.
 
-### Ação necessária
+### Correção aplicada
 
-Atualizar a documentação sem apagar o histórico anterior.
+As três afirmações da seção "Pendências conhecidas" (Julho/2026) foram marcadas com riscado + nota explicando por que estão desatualizadas, sem apagar o texto original: Supabase conectado e em produção desde Agosto/2026; integração Mercado Pago implementada e ativa; `ARQUITETURA.md` nunca chegou a ser criado — `PROJECT-MAP.md` cumpre esse papel hoje. Adicionada nota apontando `docs/AUDITORIA.md` como fonte de verdade para o estado técnico vivo do projeto.
+
+**Commit:** correção aplicada em `docs/CHANGELOG.md`, branch `main`.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:55 BRT
+- **Agente:** Claude 2
+- **Evidência:** seção "Pendências conhecidas" corrigida com riscado + nota, histórico original preservado.
 
 ---
 
 ## 14. Documentação — arquivos operacionais esperados ausentes
 
 **ID:** AUD-014  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** BAIXA
 
 ### Problema
 
 `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` não existem na `main`.
 
-### Ação necessária
+### Correção aplicada
 
-Decidir se devem ser recriados ou se a documentação atual substitui formalmente esses arquivos.
+Decisão: `docs/PROJECT-MAP.md` já cumpre integralmente o papel que `docs/CLAUDE.md` teria (índice operacional para agentes, mantido revalidado a cada auditoria) — recriar duplicaria conteúdo e criaria duas fontes de verdade divergentes.
+
+Em vez de duplicar, foram criados dois arquivos-ponte curtos, para que um agente procurando pelo caminho esperado encontre a orientação certa:
+
+- `docs/CLAUDE.md` — aponta para `PROJECT-MAP.md` → `TPS.md` → `AUDITORIA.md` → `docs/skills/ticketflow-development.md`, nesta ordem de leitura.
+- `docs/skills/ticketflow-development.md` — convenções específicas deste repositório (migrations idempotentes, checagem de divergência repo/banco antes de alterar funções, como registrar problema novo em `AUDITORIA.md`).
+
+**Commits:**
+
+- `docs/CLAUDE.md`: `f57d3b75fd6978c6630c29c6e3a757edcb1861f1`
+- `docs/skills/ticketflow-development.md`: `6d42368b0a36ecc4ceda1d2a5915e5d4bef5c171`
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:58 BRT
+- **Agente:** Claude 2
+- **Evidência:** ambos os arquivos presentes na `main`.
 
 ---
 
@@ -526,10 +552,9 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 
 1. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
 2. **AUD-010** — revisar índices de FKs.
-3. **AUD-013 / AUD-014** — documentação.
-4. **AUD-015** — QA funcional.
+3. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
@@ -550,5 +575,7 @@ AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano
 | 06/09/2026 | 15:27 | ChatGPT | AUD-004 | `search_path` das três funções do achado foi fixado em vazio e validado em produção. |
 | 06/09/2026 | 15:32 | ChatGPT | AUD-009 / AUD-011 | Políticas RLS otimizadas para avaliação única de `auth.uid()` e quatro políticas SELECT redundantes removidas após validação de equivalência. |
 | 06/09/2026 | 15:35 | Claude 2 | AUD-012 | `.env` removido do repositório, `.gitignore` e `.env.example` atualizados, build validado. |
+| 06/09/2026 | 15:55 | Claude 2 | AUD-013 | `CHANGELOG.md` corrigido (riscado + nota), pendências desatualizadas sobre Supabase/MP/ARQUITETURA.md esclarecidas. |
+| 06/09/2026 | 15:58 | Claude 2 | AUD-014 | Criados `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` apontando para `PROJECT-MAP.md`/`TPS.md`/`AUDITORIA.md` como fonte real. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
