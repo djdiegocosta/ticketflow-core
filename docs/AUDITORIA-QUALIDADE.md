@@ -28,7 +28,7 @@ Horários neste documento são BRT (UTC-3).
 ## 1. Link do evento sem preview ao compartilhar
 
 **ID:** QUA-001
-**Status:** `ABERTO`
+**Status:** `RESOLVIDO`
 **Severidade:** ALTA
 **Descoberta:** 06/09/2026 20:08 BRT
 **Agente:** Claude
@@ -43,9 +43,32 @@ As páginas públicas (`/e/:slug`, `/e/:slug/checkout`, `/e/:slug/confirmacao/:s
 
 Quando alguém compartilha o link do evento no WhatsApp, Instagram ou Facebook, o preview que aparece não mostra nome, data nem imagem do evento — apenas um card genérico do TicketFlow. Como esse compartilhamento costuma ser o principal canal de divulgação de um evento, isso reduz a taxa de clique e prejudica vendas diretamente.
 
-### Ação necessária
+### Correção aplicada
 
-Tornar o título/descrição/imagem dinâmicos por evento (nome do evento, data, imagem de capa já cadastrada).
+Criado `src/lib/event-meta.ts` com duas funções: `fetchEventMeta(slug)` busca título, descrição, imagem, data e local do evento publicado; `buildEventMeta(event, opts)` monta o título/descrição/og:image reais a partir desses dados, com `titleSuffix` e `descriptionOverride` opcionais por etapa.
+
+As três rotas públicas passaram a usar `loader` (executa no servidor, antes de gerar o HTML) para buscar os dados e alimentar o `head()`:
+- `/e/$slug/` — título e imagem do evento, descrição combinando descrição do evento, data e local.
+- `/e/$slug/checkout` — mesmo evento/imagem, título com sufixo "Checkout".
+- `/e/$slug/confirmacao/$sale_code` — mesmo evento/imagem, título com sufixo "Confirmação".
+
+Quando o evento não tem imagem cadastrada, cai no `twitter:card` tipo `summary` (sem imagem) em vez de simular uma imagem inexistente.
+
+**Arquivo novo:** `src/lib/event-meta.ts`
+**Commit:** `0c49b3660328e4e4b95a54b0c0a47e8f733c29d9`
+
+### Validação pós-correção
+
+- Build de produção concluído sem erros.
+- Deploy `dpl_Ds4gc6Wqi4jMqj6gx1Ba4WhQnTsL` concluído com `READY`.
+- Pendente: Diego confirmar visualmente o preview ao colar o link de um evento real no WhatsApp (o cache de preview de cada rede social pode levar um tempo para atualizar em links já compartilhados antes desta correção).
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 20:38 BRT
+- **Agente:** Claude
+- **Evidência:** build e deploy validados; falta apenas confirmação visual do usuário no link real.
 
 ---
 
@@ -202,13 +225,12 @@ Fora do foco principal desta auditoria (que é experiência do cliente), mas reg
 
 # Prioridade sugerida
 
-1. **QUA-001** — preview do link ao compartilhar (afeta vendas diretamente).
-2. **QUA-002** — confirmação automática por e-mail/WhatsApp (afeta recuperação de ingresso).
-3. **QUA-003** — aviso de privacidade/termos (risco legal).
-4. **QUA-004** — alerta de falha no Pix (evita descobrir problema só quando o cliente reclama).
-5. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
+1. **QUA-002** — confirmação automática por e-mail/WhatsApp (afeta recuperação de ingresso).
+2. **QUA-003** — aviso de privacidade/termos (risco legal).
+3. **QUA-004** — alerta de falha no Pix (evita descobrir problema só quando o cliente reclama).
+4. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
 
-QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+QUA-001 já foi corrigido. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
 
 ---
 
@@ -217,5 +239,6 @@ QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
 | Data | Hora BRT | Agente | ID | Alteração |
 |---|---:|---|---|---|
 | 06/09/2026 | 20:08 | Claude | — | Auditoria inicial registrada: 8 itens (4 abertos, 3 verificados sem problema, 1 aberto de menor prioridade). |
+| 06/09/2026 | 20:38 | Claude | QUA-001 | Meta tags dinâmicas implementadas (título, descrição e og:image reais do evento) nas 3 páginas públicas; build e deploy validados. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
