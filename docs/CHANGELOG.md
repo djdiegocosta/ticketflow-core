@@ -70,6 +70,11 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Correção: adicionado campo obrigatório de e-mail no formulário de checkout (`CheckoutPage.tsx`), com validação de formato, e o valor real passa a ser enviado para `createPendingSale` e, por consequência, para a criação do pagamento Pix.
 - Arquivo alterado: `src/pages/CheckoutPage.tsx`.
 
+### Correção crítica — Divergência de `checkin_ticket` entre repositório e produção
+- Bug: a migration mais recente que redefinia `checkin_ticket` (`20260903050000_harden_admin_operations.sql`) usava colunas (`ticket_id`, `checked_by`) que não existem na tabela `checkin_log`. A função realmente ativa em produção era uma versão anterior, aplicada fora desse histórico. Um banco recriado do zero a partir das migrations instalaria a versão quebrada e o check-in do evento pararia de funcionar.
+- Correção: nova migration (`20260905231500_restore_checkin_ticket_correct_definition.sql`) recria a função com a definição real e funcional hoje em produção. Nenhuma mudança de comportamento — só reconciliação entre repositório e banco.
+- Arquivo criado: `supabase/migrations/20260905231500_restore_checkin_ticket_correct_definition.sql`.
+
 ---
 
 ## Pendências conhecidas
