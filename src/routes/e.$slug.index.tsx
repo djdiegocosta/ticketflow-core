@@ -1,18 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import PublicEventPage from "@/pages/PublicEventPage";
+import { fetchEventMeta, buildEventMeta } from "@/lib/event-meta";
 
 export const Route = createFileRoute("/e/$slug/")({
   validateSearch: (search) => z.object({ ref: z.string().optional() }).parse(search),
-  head: () => ({
-    meta: [
-      { title: "Evento | TicketFlow" },
-      { name: "description", content: "Garanta seu ingresso para este evento exclusivo." },
-      { property: "og:title", content: "Evento | TicketFlow" },
-      { property: "og:description", content: "Garanta seu ingresso para este evento exclusivo." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+  loader: ({ params }) => fetchEventMeta(params.slug),
+  head: ({ loaderData }) => ({
+    meta: buildEventMeta(loaderData),
   }),
   component: PublicEventPage,
 });

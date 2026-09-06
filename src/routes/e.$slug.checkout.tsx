@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import CheckoutPage from "@/pages/CheckoutPage";
 import { z } from 'zod';
+import { fetchEventMeta, buildEventMeta } from "@/lib/event-meta";
 
 export const Route = createFileRoute("/e/$slug/checkout")({
   validateSearch: (search) => z.object({
@@ -8,13 +9,12 @@ export const Route = createFileRoute("/e/$slug/checkout")({
     qty: z.string().optional(),
     ref: z.string().optional()
   }).parse(search),
-  head: () => ({
-    meta: [
-      { title: "Checkout | TicketFlow" },
-      { name: "description", content: "Finalize sua compra com segurança." },
-      { property: "og:title", content: "Checkout | TicketFlow" },
-      { property: "og:description", content: "Finalize sua compra com segurança." },
-    ],
+  loader: ({ params }) => fetchEventMeta(params.slug),
+  head: ({ loaderData }) => ({
+    meta: buildEventMeta(loaderData, {
+      titleSuffix: "Checkout",
+      descriptionOverride: "Finalize sua compra com segurança.",
+    }),
   }),
   component: CheckoutPage,
 });
