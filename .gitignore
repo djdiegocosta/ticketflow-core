@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Variáveis de ambiente (AUD-012 — nunca versionar)
+.env
+.env.local
+.env.*.local
