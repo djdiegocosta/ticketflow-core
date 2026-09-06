@@ -111,7 +111,7 @@ export const createMpPix = createServerFn({ method: "POST" })
       if (!mpRes.ok) {
         await supabaseAdmin.from("sales").update({
           mp_debug_response: JSON.stringify({ stage: "mp_rejected", status: mpRes.status, environment: config.environment, body: mpData }),
-        }).eq("id", sale.id);
+        } as never).eq("id", sale.id);
         throw new Error(mpData.message || "Erro ao gerar PIX");
       }
       const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
@@ -119,7 +119,7 @@ export const createMpPix = createServerFn({ method: "POST" })
       if (!qrCode || !qrCodeBase64) {
         await supabaseAdmin.from("sales").update({
           mp_debug_response: JSON.stringify({ stage: "missing_qr_code", status: mpRes.status, environment: config.environment, body: mpData }),
-        }).eq("id", sale.id);
+        } as never).eq("id", sale.id);
         throw new Error("O Mercado Pago não retornou o QR Code do Pix");
       }
       const mpPaymentId = String(mpData.id);
@@ -129,7 +129,8 @@ export const createMpPix = createServerFn({ method: "POST" })
     } catch (err: any) {
       await supabaseAdmin.from("sales").update({
         mp_debug_response: JSON.stringify({ stage: "exception", message: err?.message, name: err?.name, stack: String(err?.stack).slice(0, 2000) }),
-      }).eq("id", sale.id);
+      } as never).eq("id", sale.id);
       throw err;
     }
+
   });
