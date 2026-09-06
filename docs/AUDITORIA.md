@@ -24,6 +24,7 @@ Este documento é um **registro operacional vivo**. Nenhum item deve ser removid
 - Nunca marcar como `RESOLVIDO` apenas porque uma correção foi proposta.
 - Quando outro agente resolver um item, registrar o nome identificável do agente no histórico.
 - Para alterações futuras feitas por ChatGPT, usar `ChatGPT` como agente responsável.
+- Para alterações futuras feitas por Claude, usar `Claude 2` como agente responsável.
 - Horários devem ser registrados em **BRT (UTC-3)**.
 
 ---
@@ -230,7 +231,7 @@ Ainda não resolvido.
 ## 6. Integridade operacional — `checkin_ticket` fora do controle de versão
 
 **ID:** AUD-006  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** ALTA  
 **Data de descoberta:** 05/09/2026 19:00 BRT  
 **Agente da descoberta:** ChatGPT  
@@ -239,17 +240,30 @@ Ainda não resolvido.
 
 A função `checkin_ticket` existe no banco vivo, mas não está garantidamente representada por migration versionada na `main`, conforme documentação operacional atual.
 
+Investigação mais profunda (Claude 2, 05/09/2026) encontrou uma causa mais específica: a função **já existia** em duas migrations (`20260901120000_baseline_functions_snapshot.sql` e `20260903050000_harden_admin_operations.sql`), mas a versão da migration mais recente usava colunas (`ticket_id`, `checked_by`) que não existem na tabela real `checkin_log` (`organization_id`, `event_id`, `participant_name`, `result`, `performed_by`). A função realmente ativa em produção era uma versão anterior, com assinatura e corpo diferentes, nunca reconciliada no histórico de migrations.
+
 ### Impacto
 
-O banco de produção pode ficar diferente do banco reproduzível pelo repositório. Uma recriação/restauração do ambiente pode perder comportamento essencial de check-in.
+O banco de produção estava divergente do banco reproduzível pelo repositório. Uma recriação/restauração do ambiente a partir das migrations instalaria a versão quebrada (referenciando colunas inexistentes) e o check-in do evento pararia de funcionar.
 
-### Ação necessária
+### Correção aplicada
 
-Localizar a definição real da função no banco, comparar com o código/migrations e criar migration idempotente e versionada contendo a definição correta e seus `GRANT`s/RLS relacionados.
+Nova migration idempotente aplicada no Supabase e versionada no GitHub, recriando `checkin_ticket` com a definição real e funcional que já estava em produção (mesma lógica, mesmas colunas de `checkin_log`, mesmo `REVOKE EXECUTE` de `anon`/`PUBLIC`). Nenhuma mudança de comportamento em produção — apenas reconciliação entre repositório e banco.
+
+### Evidência
+
+- Migration Supabase aplicada: `restore_checkin_ticket_correct_definition`
+- Migration versionada no GitHub: `supabase/migrations/20260905231500_restore_checkin_ticket_correct_definition.sql`
+- Commit GitHub: `7906a3deb8b3546aa8cd1881176b92dbaabb4116`
+- Verificação pós-correção: definição da função no banco comparada byte a byte com o arquivo de migration, idênticas.
+- Documentação histórica (`docs/AUDITORIA-STATUS.md`) e `docs/CHANGELOG.md` atualizados no mesmo commit/rodada com a explicação da causa raiz.
 
 ### Registro de resolução
 
-Ainda não resolvido.
+- **Data:** 05/09/2026
+- **Hora:** 21:03 BRT
+- **Agente:** Claude 2
+- **Ação:** causa raiz investigada, migration de reconciliação aplicada no Supabase e versionada no GitHub, documentação histórica atualizada.
 
 ---
 
@@ -493,6 +507,32 @@ Ainda não resolvido.
 
 ---
 
+## 16. Integridade operacional — buckets de storage criados fora de migration
+
+**ID:** AUD-016  
+**Status:** `ABERTO`  
+**Severidade:** ALTA  
+**Data de descoberta:** 05/09/2026 21:10 BRT  
+**Agente da descoberta:** Claude 2  
+
+### Problema
+
+Os três buckets de storage em uso pelo projeto (`event-images`, `organization-logos`, `client-banners`) existem no banco ao vivo, mas nenhum deles está representado em migration versionada. Buscas por `storage.buckets` em todo o histórico de `supabase/migrations` não retornaram nenhuma ocorrência.
+
+### Impacto
+
+Mesmo risco identificado no AUD-006 antes da correção: uma recriação/restauração do ambiente a partir das migrations não recriaria os buckets nem suas políticas de acesso (upload de logo, imagens de evento, banners da Vitrine deixariam de funcionar até alguém recriar manualmente cada bucket e política).
+
+### Ação necessária
+
+Criar migration(s) versionada(s) contendo `insert into storage.buckets` para os três buckets (com a mesma flag `public` já configurada) e as `CREATE POLICY` correspondentes hoje ativas em `storage.objects` para cada um. Migration deve ser idempotente (`ON CONFLICT DO NOTHING` ou equivalente) para não falhar caso os buckets já existam.
+
+### Registro de resolução
+
+Ainda não resolvido.
+
+---
+
 # Situação da infraestrutura na data da auditoria
 
 ## GitHub
@@ -501,6 +541,7 @@ Ainda não resolvido.
 - Branch auditada: `main`.
 - Permissões disponíveis para o agente: `admin`, `maintain`, `push`, `pull` e `triage`.
 - O repositório está conectado ao Lovable. Alterações publicadas na branch conectada sincronizam com o Lovable, conforme `AGENTS.md`.
+- **Recheck Claude 2, 05/09/2026 21:15 BRT:** commit atual da `main` é `b4136923e157b5ff7bb66bfe2834eb29f4bdd4fa`. `.env` continua versionado na raiz (AUD-012 ainda aberto). Quatro PRs abertos contra `main`: #7 (botão PDF, AUD-007), #12 e #13 (hardening/expiração — parecem ter sido superados por #15), #15 "consolidate payment and pending-sale hardening" (mais recente, provável candidato único a mesclar para resolver AUD-005). Nenhum PR foi mesclado nesta rodada.
 
 ## Supabase
 
@@ -511,6 +552,7 @@ Ainda não resolvido.
 - Todas as tabelas públicas verificadas pelo catálogo retornaram RLS habilitado.
 - O Security Advisor encontrou os problemas registrados acima.
 - O Performance Advisor encontrou os problemas de performance registrados acima.
+- **Recheck Claude 2, 05/09/2026 21:15 BRT:** Security Advisor e Performance Advisor reconsultados do zero; achados batem exatamente com AUD-003/004/009/010/011, sem itens novos nessas categorias. Função `create_mp_test_sale` (aparece no advisor como exposta a `authenticated`) foi inspecionada linha a linha: possui checagem interna de `has_role(auth.uid(),'admin')` e de organização — não é uma vulnerabilidade nova, é o mesmo padrão de proteção interna já aceito no AUD-001. Buckets de storage auditados e registrados no novo item AUD-016.
 
 ## Vercel
 
@@ -518,13 +560,14 @@ Ainda não resolvido.
 - O deployment de produção auditado está em estado `READY`.
 - A produção estava apontando para a `main` no commit `df77760fb82d65198e00b9b65d64b05fb8a0bf8b` no momento da consulta.
 - Não foram encontrados erros de runtime agrupados por rota no período de 7 dias consultado para esse deployment.
+- **Recheck Claude 2, 05/09/2026 21:15 BRT:** projeto e deployment de produção seguem `READY` (`dpl_EDVcC1JDfdiGazg4Ahv5XNHGpjJ2`). Nenhum erro de runtime nos últimos 7 dias. Nada de novo a registrar.
 
 ---
 
 # Prioridade de correção
 
-1. **AUD-005 — Expiração/liberação de estoque de vendas pendentes.**
-2. **AUD-006 — Versionamento do `checkin_ticket`.**
+1. **AUD-005 — Expiração/liberação de estoque de vendas pendentes.** PR #15 é o candidato consolidado a mesclar.
+2. **AUD-016 — Versionar buckets de storage (`event-images`, `organization-logos`, `client-banners`).**
 3. **AUD-003 — Proteção contra senhas vazadas.**
 4. **AUD-012 — Remoção do `.env` versionado.**
 5. **AUD-004 — `search_path` das funções.**
@@ -533,6 +576,8 @@ Ainda não resolvido.
 8. **AUD-010 — índices de chaves estrangeiras.**
 9. **AUD-013/AUD-014 — saneamento da documentação.**
 10. **AUD-015 — QA dos itens ainda não confirmados.**
+
+> ✅ **AUD-006 resolvido nesta rodada** (Claude 2) — removido da lista de prioridades ativas.
 
 > **Regra operacional:** nenhum item crítico de segurança ou integridade deve ser tratado como resolvido sem confirmação no banco/código e, quando aplicável, em deployment de produção.
 
@@ -544,6 +589,7 @@ Ainda não resolvido.
 | 05/09/2026 19:06 | ChatGPT | AUD-001 corrigido: removida execução `anon` das funções SECURITY DEFINER privilegiadas e registrado o resultado da verificação pós-correção. |
 | 05/09/2026 19:09 | ChatGPT | AUD-002 corrigido: `event_ticket_stats` convertida para `SECURITY INVOKER`, verificada no banco e retirada do Security Advisor. |
 | 05/09/2026 19:10 | ChatGPT | Corrigida a documentação do AUD-002 para refletir a versão real da migration aplicada no Supabase (`20260905220902`) e alinhada a migration versionada no GitHub. |
+| 05/09/2026 21:15 | Claude 2 | Segunda auditoria técnica cruzando GitHub + Supabase + Vercel: reconfirmados AUD-003, AUD-004, AUD-005, AUD-007 a AUD-015 (sem mudança); AUD-006 investigado a fundo e corrigido (causa raiz era divergência de migration, não ausência); novo item AUD-016 registrado (buckets de storage fora de migration); seções "Situação da infraestrutura" e "Prioridade de correção" atualizadas com o estado observado nesta data/hora. |
 
 ## Como registrar uma resolução
 
