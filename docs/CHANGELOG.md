@@ -78,6 +78,14 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 ---
 
 ## Pendências conhecidas
-- Conexão real com Supabase (schema, autenticação, Edge Functions) ainda não realizada neste projeto novo.
-- Integração real com Mercado Pago depende da conexão com Supabase.
-- ARQUITETURA.md será reescrito somente após a conexão real com o banco de dados (evitar documentação prematura que ficaria desatualizada).
+
+> **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
+
+- ~~Conexão real com Supabase (schema, autenticação, Edge Functions) ainda não realizada neste projeto novo.~~ **Desatualizado:** Supabase está conectado e em produção desde Agosto/2026 (projeto `ywcdopjqfhisopipqxgq`), com schema completo, autenticação, RLS e dezenas de funções `SECURITY DEFINER` versionadas em `supabase/migrations`.
+- ~~Integração real com Mercado Pago depende da conexão com Supabase.~~ **Desatualizado:** a integração com Mercado Pago está implementada e ativa (checkout, Pix, webhook, confirmação de pagamento) — ver `src/lib/mp/` e `src/routes/api/public/mp/webhook.ts`.
+- ~~ARQUITETURA.md será reescrito somente após a conexão real com o banco de dados.~~ **Desatualizado:** o arquivo `docs/ARQUITETURA.md` nunca chegou a ser criado; `docs/PROJECT-MAP.md` cumpre hoje esse papel (índice operacional do projeto, mantido revalidado a cada auditoria).
+
+### Estado real (06/09/2026)
+
+Para o estado operacional atual — o que está funcionando, o que está pendente e por quê — a fonte de verdade é `docs/AUDITORIA.md`. Este changelog registra decisões de produto ao longo do tempo; `AUDITORIA.md` registra o estado técnico vivo (segurança, integridade de dados, performance).
+
