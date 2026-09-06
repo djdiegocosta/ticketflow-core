@@ -292,16 +292,40 @@ Consolidar somente quando o comportamento de autorização permanecer exatamente
 ## 12. Repositório — `.env` versionado
 
 **ID:** AUD-012  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA
 
 ### Problema
 
-`.env` está versionado. A auditoria encontrou a chave pública `anon`, não `service_role`, mas configuração de ambiente não deve permanecer versionada como configuração operacional.
+`.env` estava versionado, contendo `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_PROJECT_ID` e as variantes `VITE_*`. A auditoria encontrou a chave pública `anon`, não `service_role`.
 
-### Ação necessária
+### Correção aplicada
 
-Remover `.env`, manter `.env` no `.gitignore`, criar `.env.example` sem valores sensíveis e validar variáveis de produção na Vercel.
+Investigação em todo o código-fonte confirmou que nenhuma dessas variáveis é consumida por código ativo em produção:
+
+- `src/integrations/supabase/client.ts` (gerado pelo Lovable) tem URL e chave fixas diretamente no código-fonte, não lê `.env`.
+- `src/lib/supabase.ts` lê `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY`, mas não é importado por nenhum outro arquivo — código órfão de uma fase anterior do projeto.
+- O código server-side (`client.server.ts`, `auth-middleware.ts`) lê `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` via `process.env`, já configuradas na Vercel independentemente do arquivo `.env`.
+
+Ações tomadas:
+
+- `.env` removido do repositório.
+- `.env` e variantes (`*.local`) adicionados ao `.gitignore`.
+- `.env.example` criado, sem valores sensíveis, para uso em desenvolvimento local.
+
+**Commit de remoção do `.env`:** `fad914de83eb89c3ee289a1fec09567cc3369a4f`
+
+### Validação pós-correção
+
+- Build de produção na Vercel concluído com `READY` após a remoção (`dpl_AZfkXQtGWF7F7tcyCQa1pBgjpZ69`).
+- Nenhum erro de runtime nos 10 minutos seguintes ao deploy.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:35 BRT
+- **Agente:** Claude 2
+- **Evidência:** deploy `READY`, sem erros de runtime; variáveis reais confirmadas já presentes na Vercel (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) antes da remoção.
 
 ---
 
@@ -434,17 +458,53 @@ Migrations versionadas no GitHub:
 
 # Prioridade atual
 
-1. **AUD-012** — remover `.env` versionado.
-2. **AUD-004** — endurecer `search_path`.
-3. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
-4. **AUD-007 / AUD-008** — corrigir pendências funcionais do cliente.
-5. **AUD-010** — revisar índices de FKs.
-6. **AUD-013 / AUD-014** — documentação.
-7. **AUD-015** — QA funcional.
+1. **AUD-004** — endurecer `search_path`.
+2. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
+3. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
+4. **AUD-010** — revisar índices de FKs.
+5. **AUD-013 / AUD-014** — documentação.
+6. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção por já estarem resolvidos.  
-AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).  
-AUD-007 foi resolvido em 06/09/2026 e deve ser removido da fila ativa na próxima revisão de prioridade.
+AUD-001, AUD-002, AUD-005, AUD-006, AUD-007, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
+AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
+
+---
+
+## 17. Integridade operacional — PDF de check-in incluía vendas pendentes/canceladas
+
+**ID:** AUD-017  
+**Status:** `RESOLVIDO`  
+**Severidade:** ALTA  
+**Descoberta:** 06/09/2026 14:50 BRT  
+**Agente da descoberta:** Diego (reportado diretamente)
+
+### Problema
+
+O botão "PDF" da lista de vendas (`src/pages/admin/SalesListPage.tsx`) gera a lista de check-in usada como substituto manual quando o check-in automático falha. O filtro só excluía vendas com `status = 'cancelado'`, deixando vazar `pendente` e `expirado` (e futuramente `reembolsado`) para a lista impressa na portaria.
+
+### Impacto
+
+Pessoas com venda pendente/expirada (ou seja, sem pagamento confirmado) poderiam ser liberadas na entrada do evento por constarem na lista impressa, mesmo sem ingresso válido.
+
+### Correção aplicada
+
+Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true`. Confirmado no banco que cortesias sempre nascem com `status = 'pago'` (função `create_courtesy`), então a condição cobre exatamente "vendas válidas e cortesias" pedido.
+
+**Arquivo:** `src/pages/admin/SalesListPage.tsx`  
+**Commit:** `e0bfbe57d431a56234600990c71248de215b1105`
+
+### Validação pós-correção
+
+- Deploy `dpl_7mv2uLmpw24dSsr5jLzuuoC7fMf9` concluído com `READY`.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 14:58 BRT
+- **Agente:** Claude 2
+- **Evidência:** filtro corrigido e versionado; deploy validado sem erro.
+
+---
 
 # Histórico de alterações deste documento
 
@@ -458,5 +518,7 @@ AUD-007 foi resolvido em 06/09/2026 e deve ser removido da fila ativa na próxim
 | 06/09/2026 | 09:02 | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
 | 06/09/2026 | 13:40 | Claude 2 | AUD-003 | Marcado como ADIADO — recurso exige plano Pro do Supabase; Diego optou por adiar o upgrade. |
 | 06/09/2026 | 15:08 | ChatGPT | AUD-007 | Botão de download de todos os ingressos passou a gerar PDF real, com um ingresso por página e QR Code individual. |
+| 06/09/2026 | 14:58 | Claude 2 | AUD-017 | PDF de check-in da lista de vendas corrigido para incluir só vendas pagas/cortesias. |
+| 06/09/2026 | 15:35 | Claude 2 | AUD-012 | `.env` removido do repositório, `.gitignore` e `.env.example` atualizados, build validado. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
