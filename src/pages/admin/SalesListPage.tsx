@@ -55,7 +55,11 @@ export function SalesListPage() {
   const pageRows = filtered.slice(start, start + pageSize);
 
   const generatePdf = () => {
-    const names = filtered.filter((s) => s.status !== "cancelado").map((s) => s.buyer_name);
+    // Lista de check-in substitui o check-in automático quando ele falha,
+    // por isso só pode conter vendas realmente válidas (pagas) e cortesias
+    // (cortesias já nascem com status "pago" — ver create_courtesy).
+    // Nunca incluir pendente/expirado/cancelado/reembolsado.
+    const names = filtered.filter((s) => s.status === "pago" || s.is_courtesy).map((s) => s.buyer_name);
     if (names.length === 0) { toast.error("Nenhum participante para gerar a lista"); return; }
     generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names); toast.success("Lista PDF gerada");
   };
