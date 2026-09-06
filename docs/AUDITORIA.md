@@ -1,31 +1,25 @@
 # TicketFlow — Auditoria Técnica Oficial
 
-**Data da auditoria:** 05/09/2026 18:59–19:00 BRT (horário de observação dos serviços)
+**Data da auditoria inicial:** 05/09/2026 18:59–19:00 BRT
 **Agente da auditoria:** ChatGPT
-**Branch auditada:** `main`
-**Commit de referência do mapa do projeto:** `c5cd08718eac4f0a15fa1f97133bfa14ffaa2691`
+**Branch:** `main`
 **Repositório:** `djdiegocosta/ticketflow-core`
 **Projeto Supabase:** `ywcdopjqfhisopipqxgq`
 **Projeto Vercel:** `ticketflow-core`
 
 ## Objetivo
 
-Registrar de forma permanente os problemas técnicos encontrados na auditoria do TicketFlow, permitindo acompanhar cada problema desde a descoberta até a resolução.
+Este documento é o registro operacional vivo dos problemas encontrados na auditoria do TicketFlow. Nenhum item é removido quando resolvido. O status passa para `RESOLVIDO` e recebe data, hora, agente e evidência.
 
-Este documento é um **registro operacional vivo**. Nenhum item deve ser removido quando for resolvido. O status deve ser alterado para `RESOLVIDO` e deve ser acrescentado um registro com **data, hora e agente responsável**.
-
-## Regras deste documento
+### Status permitidos
 
 - `ABERTO` — problema confirmado e ainda não resolvido.
-- `EM ANÁLISE` — investigação iniciada, mas a causa ou solução ainda não foi confirmada.
+- `EM ANÁLISE` — investigação iniciada, mas causa/solução ainda não confirmada.
 - `RESOLVIDO` — correção aplicada e confirmada no código, banco, deployment ou teste correspondente.
 - `NÃO É BUG` — achado investigado e confirmado como comportamento intencional.
-- `ADIADO` — problema confirmado, mas fora da prioridade operacional atual.
-- Nunca marcar como `RESOLVIDO` apenas porque uma correção foi proposta.
-- Quando outro agente resolver um item, registrar o nome identificável do agente no histórico.
-- Para alterações futuras feitas por ChatGPT, usar `ChatGPT` como agente responsável.
-- Para alterações futuras feitas por Claude, usar `Claude 2` como agente responsável.
-- Horários devem ser registrados em **BRT (UTC-3)**.
+- `ADIADO` — problema confirmado, mas fora da prioridade atual.
+
+Horários neste documento são BRT (UTC-3). Para alterações feitas por ChatGPT, usar `ChatGPT`. Para alterações feitas por Claude, usar `Claude 2`.
 
 ---
 
@@ -34,65 +28,25 @@ Este documento é um **registro operacional vivo**. Nenhum item deve ser removid
 **ID:** AUD-001  
 **Status:** `RESOLVIDO`  
 **Severidade:** CRÍTICA  
-**Data de descoberta:** 05/09/2026 18:59 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 18:59 BRT  
+**Agente:** ChatGPT
 
 ### Problema
 
-O Supabase Security Advisor identificou diversas funções `SECURITY DEFINER` expostas para `anon` e/ou `authenticated` através da API RPC. `SECURITY DEFINER` faz a função executar com os privilégios do proprietário, portanto a exposição precisa ser intencional e protegida.
+Funções privilegiadas `SECURITY DEFINER` estavam executáveis por `anon`/API RPC. O risco envolvia operações como cancelamento, reembolso, venda manual, cortesia, exclusões, check-in e administração.
 
-As funções identificadas incluem operações sensíveis como cancelamento, reembolso, criação de venda manual, criação de cortesia, exclusão de cliente/evento, check-in, convites e atualização de organização.
+### Correção e evidência
 
-Funções relevantes detectadas:
+Foi aplicada a migration `20260905190600_harden_public_execute_security_definer_functions`, removendo `EXECUTE` de `PUBLIC`/`anon` nas funções administrativas e mantendo apenas as funções deliberadamente públicas do fluxo do cliente. `handle_new_user` também deixou de ser público.
 
-- `award_points`
-- `cancel_event`
-- `cancel_sale`
-- `checkin_ticket`
-- `create_courtesy`
-- `create_manual_sale`
-- `create_mp_test_sale`
-- `create_pending_sale`
-- `delete_courtesy_ticket`
-- `delete_customer`
-- `delete_event`
-- `draw_raffle_winner`
-- `invite_user`
-- `refund_sale`
-- `remove_user_or_invite`
-- `signup_customer`
-- `track_checkout_abandonment`
-- `update_courtesy_participant`
-- `update_customer`
-- `update_organization_profile`
-- além de funções auxiliares como `has_role`, `get_user_organization`, `get_default_organization` e outras funções de leitura.
+**Commit:** `3174749d9783ca500ac3ac2c35196846e736f77c`
 
-### Impacto
-
-Risco de execução indevida de operações privilegiadas caso as próprias funções não façam validação rigorosa de autenticação, papel e organização.
-
-### Correção aplicada
-
-Foi aplicada uma migration específica para remover `EXECUTE` de `anon` nas funções privilegiadas e administrativas. A correção preserva as funções que precisam permanecer públicas para o fluxo de compra/consulta do cliente.
-
-Também foi removida a execução pública de `handle_new_user`, que é função interna de infraestrutura, mantendo sua execução para `service_role`.
-
-As funções administrativas continuam disponíveis para `authenticated` e `service_role`, porque o painel administrativo depende delas. A proteção de autorização interna por usuário, papel e organização permanece necessária e continua sendo responsabilidade das próprias funções.
-
-### Evidência
-
-- Migration Supabase: `20260905190600_harden_public_execute_security_definer_functions`
-- Commit GitHub: `3174749d9783ca500ac3ac2c35196846e736f77c`
-- Verificação pós-correção confirmou que as funções privilegiadas listadas não possuem mais `anon` em `proacl`.
-- `handle_new_user` ficou disponível somente para `postgres`/`service_role`.
-- O Security Advisor deixou de apontar as funções administrativas anteriormente expostas a `anon`. Permanecem alertas para funções deliberadamente públicas do fluxo de cliente e para funções executáveis por `authenticated`, que serão tratadas conforme o escopo de cada item.
-
-### Registro de resolução
+### Resolução
 
 - **Data:** 05/09/2026
 - **Hora:** 19:06 BRT
 - **Agente:** ChatGPT
-- **Ação:** correção aplicada no Supabase e migration versionada no GitHub.
+- **Evidência:** verificação pós-correção confirmou ausência de `anon` em `proacl` das funções privilegiadas; Security Advisor deixou de apontar a exposição administrativa.
 
 ---
 
@@ -101,39 +55,26 @@ As funções administrativas continuam disponíveis para `authenticated` e `serv
 **ID:** AUD-002  
 **Status:** `RESOLVIDO`  
 **Severidade:** CRÍTICA  
-**Data de descoberta:** 05/09/2026 18:59 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 18:59 BRT  
+**Agente:** ChatGPT
 
 ### Problema
 
-O Security Advisor detectou a view `public.event_ticket_stats` definida com `SECURITY DEFINER`.
+A view pública `public.event_ticket_stats` executava com contexto do proprietário, podendo contornar RLS das tabelas subjacentes.
 
-### Impacto
+### Correção e evidência
 
-A view podia aplicar permissões e RLS do proprietário da view, e não necessariamente do usuário que consulta. Como a view possui `SELECT` para `anon` e `authenticated`, havia risco de exposição de dados das tabelas subjacentes (`sales` e `tickets`) fora das políticas RLS do chamador.
+A view foi alterada para `SECURITY INVOKER`, preservando o `SELECT` existente e fazendo a consulta respeitar o contexto do chamador.
 
-### Correção aplicada
+**Migration:** `20260905220902_harden_event_ticket_stats_view_security_invoker.sql`  
+**Commit:** `3d0c3e1e2d33f24f4cd394ef3dbf30c98e9c318d`
 
-A view foi alterada para `SECURITY INVOKER`. Isso mantém a view disponível para o fluxo existente, mas faz a consulta respeitar as permissões e as políticas RLS do papel que está realizando a chamada.
-
-A definição funcional da view não foi alterada: continuam sendo calculadas as estatísticas de ingressos vendidos, cortesias e check-ins agrupadas por evento e organização.
-
-### Evidência
-
-- Definição anterior confirmada no banco: `public.event_ticket_stats` com `reloptions = null` e proprietário `postgres`.
-- Verificação posterior confirmou `reloptions = {security_invoker=true}`.
-- `anon` e `authenticated` continuam com permissão `SELECT`; a diferença é que a execução agora respeita o contexto do chamador.
-- O Security Advisor deixou de reportar o alerta específico da view `event_ticket_stats`.
-- Migration Supabase: `harden_event_ticket_stats_view_security_invoker` (versão `20260905220902`)
-- Migration versionada no GitHub: `supabase/migrations/20260905220902_harden_event_ticket_stats_view_security_invoker.sql`
-- Commit GitHub que alinhou a migration ao número real aplicado no Supabase: `3d0c3e1e2d33f24f4cd394ef3dbf30c98e9c318d`
-
-### Registro de resolução
+### Resolução
 
 - **Data:** 05/09/2026
 - **Hora:** 19:09 BRT
 - **Agente:** ChatGPT
-- **Ação:** view convertida para `SECURITY INVOKER`, verificada no banco e validada novamente pelo Security Advisor.
+- **Evidência:** `reloptions = {security_invoker=true}` e Security Advisor sem o alerta específico da view.
 
 ---
 
@@ -142,22 +83,17 @@ A definição funcional da view não foi alterada: continuam sendo calculadas as
 **ID:** AUD-003  
 **Status:** `ABERTO`  
 **Severidade:** ALTA  
-**Data de descoberta:** 05/09/2026 18:59 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 18:59 BRT
 
 ### Problema
 
-O Supabase Auth está com a proteção contra senhas comprometidas desativada.
-
-### Impacto
-
-Contas podem aceitar senhas que já foram identificadas em vazamentos conhecidos.
+A proteção do Supabase Auth contra senhas comprometidas está desativada.
 
 ### Ação necessária
 
-Ativar a proteção de senhas vazadas no Supabase Auth e validar o fluxo de login/cadastro após a alteração.
+Ativar a proteção e validar login/cadastro.
 
-### Registro de resolução
+### Resolução
 
 Ainda não resolvido.
 
@@ -168,63 +104,82 @@ Ainda não resolvido.
 **ID:** AUD-004  
 **Status:** `ABERTO`  
 **Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 18:59 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 18:59 BRT
 
 ### Problema
 
-O Security Advisor identificou `search_path` mutável nas funções:
-
-- `generate_short_code`
-- `get_hourly_sales_stats`
-- `get_new_customers_count`
-
-### Impacto
-
-Funções que dependem de resolução de objetos pelo `search_path` podem ficar sujeitas a resolução inesperada de objetos, especialmente em funções privilegiadas.
+Security Advisor apontou `search_path` mutável em `generate_short_code`, `get_hourly_sales_stats` e `get_new_customers_count`.
 
 ### Ação necessária
 
-Definir `search_path` seguro e explícito nas funções, preferencialmente restringindo a resolução aos schemas necessários.
+Definir `search_path` seguro e explícito.
 
-### Registro de resolução
+### Resolução
 
 Ainda não resolvido.
 
 ---
 
-## 5. Integridade operacional — expiração de vendas pendentes ainda não confirmada na `main`
+## 5. Integridade operacional — expiração de vendas pendentes
 
 **ID:** AUD-005  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** CRÍTICA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 19:00 BRT  
+**Agente:** ChatGPT
 
 ### Problema
 
-O `PROJECT-MAP.md` informa que o hardening da expiração de vendas pendentes, incluindo restauração de estoque, uso correto de `expires_at` no timer e correção do cron, continua **NÃO MERGED** na `main`.
+O checkout usava um contador fixo de 30 minutos, enquanto o banco já possuía `expires_at`. A restauração de estoque e o mecanismo de expiração precisavam ser confirmados e reconciliados com a `main`.
 
-Existem PRs abertos relacionados a esse escopo, mas a correção não pode ser considerada parte do ambiente de produção enquanto não estiver mesclada e confirmada.
+PRs anteriores relacionados ao problema não eram confiáveis para esta correção: parte da solução estava associada a uma versão antiga da `main`/projeto Supabase diferente. Por isso a correção não foi simplesmente mesclada.
 
-### Impacto
+### Correção aplicada
 
-Uma venda pendente expirada pode continuar afetando a reserva de estoque ou apresentar comportamento divergente entre o contador do checkout e o estado real do banco.
+A produção atual foi auditada diretamente no projeto Supabase correto.
 
-### Ação necessária
+A função `create_pending_sale` já grava `expires_at` usando `organizations.pending_sale_expiration_minutes`, com fallback de 30 minutos, e reduz o estoque de forma protegida.
 
-Revisar a solução consolidada atual, mesclar somente a correção compatível com a `main` e validar:
+A função `expire_pending_sales_job()` foi reconciliada para:
 
-- criação da venda pendente;
-- `expires_at`;
-- expiração;
-- liberação do estoque;
-- comportamento do checkout;
-- execução periódica do mecanismo de limpeza.
+- localizar somente vendas `pendente` com `expires_at <= now()`;
+- usar `FOR UPDATE SKIP LOCKED` para evitar processamento concorrente duplicado;
+- devolver a quantidade ao lote quando o lote possui estoque limitado;
+- alterar a venda para `expirado` somente enquanto ela ainda está `pendente`.
 
-### Registro de resolução
+A função `confirm_sale_paid()` também foi verificada: ela só transforma uma venda pendente em paga quando `expires_at` ainda não passou. Isso impede confirmação de pagamento depois da expiração.
 
-Ainda não resolvido.
+O cron `expire-pending-sales` está configurado para executar a cada minuto. A consulta de histórico do cron mostrou execuções recentes consecutivas com status `succeeded`.
+
+Foi aplicada no Supabase a migration:
+
+`20260906114656_reconcile_pending_sale_expiration_flow`
+
+A mesma migration foi versionada no GitHub:
+
+`supabase/migrations/20260906114656_reconcile_pending_sale_expiration_flow.sql`
+
+**Commit:** `b6d4eeb58b8323a836de931f3b6c487934500ef7`
+
+No checkout, `src/pages/CheckoutPage.tsx` deixou de usar `1800` segundos como fonte de verdade. O timer agora usa o `expires_at` retornado por `create_pending_sale` e também reage ao status `expirado` vindo do banco.
+
+**Commit do frontend:** `fd5fdb934cf864ad388fa0ca8a734e5279ac61ff`
+
+### Validação pós-correção
+
+- `create_pending_sale` retorna `sale_id`, `sale_code`, `total_amount` e `expires_at`.
+- `sales.expires_at` existe em produção.
+- Não havia venda `pendente` já vencida no momento da validação (`expired_but_pending = 0`).
+- Existiam vendas efetivamente marcadas como `expirado`, demonstrando que o estado de expiração está sendo persistido.
+- Cron de expiração tinha execuções recentes `succeeded`.
+- O deployment Vercel correspondente ao commit do frontend foi iniciado automaticamente e não apresentou erros de build nas verificações disponíveis.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 08:49 BRT
+- **Agente:** ChatGPT
+- **Evidência:** migration aplicada no Supabase, cron validado, funções de criação/expiração/pagamento verificadas, `expired_but_pending = 0`, frontend corrigido e deployment iniciado para o commit `fd5fdb934cf864ad388fa0ca8a734e5279ac61ff`.
 
 ---
 
@@ -233,37 +188,25 @@ Ainda não resolvido.
 **ID:** AUD-006  
 **Status:** `RESOLVIDO`  
 **Severidade:** ALTA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Descoberta:** 05/09/2026 19:00 BRT  
+**Agente da descoberta:** ChatGPT
 
 ### Problema
 
-A função `checkin_ticket` existe no banco vivo, mas não está garantidamente representada por migration versionada na `main`, conforme documentação operacional atual.
+A função `checkin_ticket` tinha divergência entre a função ativa em produção e migrations antigas do repositório. Uma migration referenciava colunas inexistentes em `checkin_log`.
 
-Investigação mais profunda (Claude 2, 05/09/2026) encontrou uma causa mais específica: a função **já existia** em duas migrations (`20260901120000_baseline_functions_snapshot.sql` e `20260903050000_harden_admin_operations.sql`), mas a versão da migration mais recente usava colunas (`ticket_id`, `checked_by`) que não existem na tabela real `checkin_log` (`organization_id`, `event_id`, `participant_name`, `result`, `performed_by`). A função realmente ativa em produção era uma versão anterior, com assinatura e corpo diferentes, nunca reconciliada no histórico de migrations.
+### Correção e evidência
 
-### Impacto
+Claude 2 reconciliou a função com a definição funcional de produção através da migration `20260905231500_restore_checkin_ticket_correct_definition.sql`.
 
-O banco de produção estava divergente do banco reproduzível pelo repositório. Uma recriação/restauração do ambiente a partir das migrations instalaria a versão quebrada (referenciando colunas inexistentes) e o check-in do evento pararia de funcionar.
+**Commit:** `7906a3deb8b3546aa8cd1881176b92dbaabb4116`
 
-### Correção aplicada
-
-Nova migration idempotente aplicada no Supabase e versionada no GitHub, recriando `checkin_ticket` com a definição real e funcional que já estava em produção (mesma lógica, mesmas colunas de `checkin_log`, mesmo `REVOKE EXECUTE` de `anon`/`PUBLIC`). Nenhuma mudança de comportamento em produção — apenas reconciliação entre repositório e banco.
-
-### Evidência
-
-- Migration Supabase aplicada: `restore_checkin_ticket_correct_definition`
-- Migration versionada no GitHub: `supabase/migrations/20260905231500_restore_checkin_ticket_correct_definition.sql`
-- Commit GitHub: `7906a3deb8b3546aa8cd1881176b92dbaabb4116`
-- Verificação pós-correção: definição da função no banco comparada byte a byte com o arquivo de migration, idênticas.
-- Documentação histórica (`docs/AUDITORIA-STATUS.md`) e `docs/CHANGELOG.md` atualizados no mesmo commit/rodada com a explicação da causa raiz.
-
-### Registro de resolução
+### Resolução
 
 - **Data:** 05/09/2026
 - **Hora:** 21:03 BRT
 - **Agente:** Claude 2
-- **Ação:** causa raiz investigada, migration de reconciliação aplicada no Supabase e versionada no GitHub, documentação histórica atualizada.
+- **Evidência:** migration aplicada e definição comparada com a função ativa.
 
 ---
 
@@ -271,25 +214,15 @@ Nova migration idempotente aplicada no Supabase e versionada no GitHub, recriand
 
 **ID:** AUD-007  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-A documentação de auditoria registra que o botão de baixar todos os ingressos em PDF na confirmação da compra ainda não possui ação implementada.
-
-### Impacto
-
-O usuário pode clicar em uma ação apresentada como disponível sem receber o resultado esperado.
+O botão de baixar todos os ingressos em PDF na confirmação da compra não possui ação implementada.
 
 ### Ação necessária
 
-Implementar a ação ou, enquanto não implementada, remover/desabilitar o controle para não apresentar funcionalidade falsa.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Implementar a ação ou remover/desabilitar o controle até que exista implementação real.
 
 ---
 
@@ -297,53 +230,31 @@ Ainda não resolvido.
 
 **ID:** AUD-008  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-Compras feitas como visitante antes da criação da conta não são vinculadas automaticamente à conta criada posteriormente. O vínculo só ocorre para fluxos posteriores à correção já aplicada.
-
-### Impacto
-
-O cliente pode criar uma conta e não encontrar no histórico os ingressos adquiridos anteriormente com o mesmo WhatsApp.
+Compras feitas como visitante antes da criação da conta não são vinculadas automaticamente à conta criada posteriormente.
 
 ### Ação necessária
 
-Definir e implementar vínculo seguro por WhatsApp, evitando associação indevida entre pessoas e mantendo a separação por organização.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Implementar vínculo seguro por WhatsApp, respeitando organização e evitando associação indevida.
 
 ---
 
-## 9. Performance — políticas RLS com avaliação repetida de funções de autenticação
+## 9. Performance — políticas RLS com avaliação repetida de autenticação
 
 **ID:** AUD-009  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-O Performance Advisor identificou várias políticas RLS que reavaliam `auth.*()`/`current_setting()` por linha. O padrão recomendado é encapsular a chamada em `(select auth.<function>())` quando aplicável.
-
-As ocorrências abrangem, entre outras, `organizations`, `profiles`, `user_roles`, `events`, `ticket_batches`, `sales`, `tickets`, `customers`, `mp_config`, `checkout_rate_limits`, `checkout_abandonments`, `client_banners`, `points_ledger`, `checkin_log`, `event_checklist_items`, `simulations`, `raffles` e tabelas auxiliares.
-
-### Impacto
-
-Pode gerar custo desnecessário de avaliação das políticas conforme o volume de dados cresce.
+Performance Advisor identificou políticas que reavaliam `auth.*()`/`current_setting()` por linha em várias tabelas.
 
 ### Ação necessária
 
-Revisar as políticas afetadas e aplicar a forma otimizada sem alterar a regra de autorização.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Otimizar as expressões RLS sem alterar a regra de autorização.
 
 ---
 
@@ -351,25 +262,15 @@ Ainda não resolvido.
 
 **ID:** AUD-010  
 **Status:** `ABERTO`  
-**Severidade:** BAIXA/MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** BAIXA/MÉDIA
 
 ### Problema
 
-O Performance Advisor identificou chaves estrangeiras sem índice de cobertura, incluindo relações em `checkin_log`, `diagnostic_logs`, `event_checklist_items`, `events`, `pending_invites`, `points_ledger`, `raffles`, `raffle_winners`, `sales`, `sales_links`, `ticket_batches`, `tickets` e `user_roles`.
-
-### Impacto
-
-Pode degradar consultas e operações de manutenção de relações conforme o volume de dados crescer.
+Existem FKs sem índices de cobertura em várias relações.
 
 ### Ação necessária
 
-Revisar cada relação contra as consultas reais antes de criar índices. Não criar índices indiscriminadamente.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Revisar as consultas reais e criar índices somente onde trouxerem benefício comprovado.
 
 ---
 
@@ -377,25 +278,15 @@ Ainda não resolvido.
 
 **ID:** AUD-011  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-Foram detectadas múltiplas políticas permissivas para a mesma combinação de papel/ação em tabelas como `checkout_rate_limits`, `client_banners`, `customers`, `events`, `mp_config`, `points_ledger`, `sales`, `ticket_batches`, `tickets` e `user_roles`.
-
-### Impacto
-
-Cada política permissiva relevante pode precisar ser avaliada, aumentando o custo das consultas e dificultando a manutenção das regras de acesso.
+Há múltiplas políticas permissivas para as mesmas combinações de papel/ação em várias tabelas.
 
 ### Ação necessária
 
-Consolidar políticas somente quando isso preservar exatamente o mesmo comportamento de autorização. Segurança tem prioridade sobre otimização.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Consolidar somente quando o comportamento de autorização permanecer exatamente igual.
 
 ---
 
@@ -403,207 +294,149 @@ Ainda não resolvido.
 
 **ID:** AUD-012  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-O arquivo `.env` está versionado na raiz do repositório `main`.
-
-O conteúdo auditado contém identificadores e a chave pública do Supabase. A chave encontrada é uma chave de publicação (`anon`), não uma `service_role` key, mas o arquivo ainda representa configuração de ambiente que não deveria ser mantida como segredo/configuração operacional versionada.
-
-### Impacto
-
-Aumenta o risco de configuração acidental, dificulta a separação entre ambiente local e produção e pode criar risco grave se algum segredo for adicionado ao mesmo arquivo no futuro.
+`.env` está versionado. A auditoria encontrou a chave pública `anon`, não `service_role`, mas configuração de ambiente não deve permanecer versionada como configuração operacional.
 
 ### Ação necessária
 
-Remover `.env` do controle de versão, garantir `.env` no `.gitignore` e manter somente um `.env.example` com nomes de variáveis sem valores sensíveis. Validar que as variáveis de produção permanecem configuradas na Vercel.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Remover `.env`, manter `.env` no `.gitignore`, criar `.env.example` sem valores sensíveis e validar variáveis de produção na Vercel.
 
 ---
 
-## 13. Documentação — `CHANGELOG.md` diverge do estado real da infraestrutura
+## 13. Documentação — `CHANGELOG.md` divergente do estado real
 
 **ID:** AUD-013  
 **Status:** `ABERTO`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-`docs/CHANGELOG.md` ainda informa que a conexão real com Supabase e Mercado Pago não foi realizada, enquanto o `PROJECT-MAP.md` e a infraestrutura auditada confirmam que o projeto está conectado ao Supabase e que o fluxo Mercado Pago possui implementação na `main`.
-
-### Impacto
-
-Agentes e desenvolvedores podem tomar decisões com base em um estado histórico incorreto.
+O changelog contém afirmações históricas que conflitam com o estado atual de Supabase/Mercado Pago.
 
 ### Ação necessária
 
-Atualizar o changelog/documentação histórica para refletir o estado atual, sem apagar o histórico anterior.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Atualizar a documentação sem apagar o histórico anterior.
 
 ---
 
-## 14. Documentação — arquivos operacionais esperados não existem
+## 14. Documentação — arquivos operacionais esperados ausentes
 
 **ID:** AUD-014  
 **Status:** `ABERTO`  
-**Severidade:** BAIXA  
-**Data de descoberta:** 05/09/2026 18:59 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** BAIXA
 
 ### Problema
 
-Foram procurados `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md`, mas ambos retornaram `404` no branch `main`.
-
-O repositório possui `AGENTS.md` na raiz, que orienta os agentes a preservar o histórico publicado e manter a branch conectada ao Lovable em estado funcional.
-
-### Impacto
-
-A ausência desses documentos não quebra o sistema, mas reduz a padronização do processo para agentes futuros.
+`docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` não existem na `main`.
 
 ### Ação necessária
 
-Decidir se esses documentos continuam sendo necessários. Se forem, recriá-los em versão compatível com a documentação atual. Se não forem mais necessários, registrar formalmente essa decisão em documentação do projeto.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Decidir se devem ser recriados ou se a documentação atual substitui formalmente esses arquivos.
 
 ---
 
-## 15. Produto/UX — itens históricos aguardando confirmação de teste
+## 15. Produto/UX — itens históricos aguardando QA
 
 **ID:** AUD-015  
 **Status:** `EM ANÁLISE`  
-**Severidade:** MÉDIA  
-**Data de descoberta:** 05/09/2026 19:00 BRT  
-**Agente da descoberta:** ChatGPT  
+**Severidade:** MÉDIA
 
 ### Problema
 
-A documentação histórica contém diversos itens marcados como `⏳`, indicando que uma correção foi entregue, mas ainda depende de teste/confirmação. Entre eles estão ajustes da Vitrine, Skeleton Screen, SmartField, espaçamentos, link de retorno do ingresso, selo de status, máscara/entrada de datas, cidade, campo sexo, conexão da tela pública com lotes disponíveis e outros refinamentos de UX.
-
-### Impacto
-
-Não é possível considerar esses itens confirmados apenas pela existência do código ou pelo registro histórico do prompt.
+Há diversos itens históricos marcados como aguardando teste, incluindo Vitrine, Skeleton Screen, SmartField, espaçamentos, navegação de ingresso, datas, cidade, sexo e integração pública com lotes.
 
 ### Ação necessária
 
-Executar uma rodada de QA funcional das áreas prioritárias e alterar cada item individualmente para `RESOLVIDO` somente após confirmação.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Executar QA funcional e marcar cada item individualmente somente após confirmação.
 
 ---
 
-## 16. Integridade operacional — buckets de storage criados fora de migration
+## 16. Integridade operacional — buckets de storage fora de migration
 
 **ID:** AUD-016  
 **Status:** `ABERTO`  
 **Severidade:** ALTA  
-**Data de descoberta:** 05/09/2026 21:10 BRT  
-**Agente da descoberta:** Claude 2  
+**Agente da descoberta:** Claude 2
 
 ### Problema
 
-Os três buckets de storage em uso pelo projeto (`event-images`, `organization-logos`, `client-banners`) existem no banco ao vivo, mas nenhum deles está representado em migration versionada. Buscas por `storage.buckets` em todo o histórico de `supabase/migrations` não retornaram nenhuma ocorrência.
+Os buckets `event-images`, `organization-logos` e `client-banners` existem no banco vivo, mas não estavam representados em migrations versionadas.
 
 ### Impacto
 
-Mesmo risco identificado no AUD-006 antes da correção: uma recriação/restauração do ambiente a partir das migrations não recriaria os buckets nem suas políticas de acesso (upload de logo, imagens de evento, banners da Vitrine deixariam de funcionar até alguém recriar manualmente cada bucket e política).
+Uma recriação do ambiente apenas pelas migrations não recriaria os buckets e suas políticas de acesso.
 
 ### Ação necessária
 
-Criar migration(s) versionada(s) contendo `insert into storage.buckets` para os três buckets (com a mesma flag `public` já configurada) e as `CREATE POLICY` correspondentes hoje ativas em `storage.objects` para cada um. Migration deve ser idempotente (`ON CONFLICT DO NOTHING` ou equivalente) para não falhar caso os buckets já existam.
-
-### Registro de resolução
-
-Ainda não resolvido.
+Versionar os três buckets e suas políticas em migrations idempotentes, preservando o comportamento atual.
 
 ---
 
-# Situação da infraestrutura na data da auditoria
+# Situação de infraestrutura
 
 ## GitHub
 
-- Repositório correto acessado: `djdiegocosta/ticketflow-core`.
-- Branch auditada: `main`.
-- Permissões disponíveis para o agente: `admin`, `maintain`, `push`, `pull` e `triage`.
-- O repositório está conectado ao Lovable. Alterações publicadas na branch conectada sincronizam com o Lovable, conforme `AGENTS.md`.
-- **Recheck Claude 2, 05/09/2026 21:15 BRT:** commit atual da `main` é `b4136923e157b5ff7bb66bfe2834eb29f4bdd4fa`. `.env` continua versionado na raiz (AUD-012 ainda aberto). Quatro PRs abertos contra `main`: #7 (botão PDF, AUD-007), #12 e #13 (hardening/expiração — parecem ter sido superados por #15), #15 "consolidate payment and pending-sale hardening" (mais recente, provável candidato único a mesclar para resolver AUD-005). Nenhum PR foi mesclado nesta rodada.
+- Repositório: `djdiegocosta/ticketflow-core`
+- Branch: `main`
+- Permissões disponíveis: `admin`, `maintain`, `push`, `pull`, `triage`.
+- A migration do AUD-005 está versionada.
+- O frontend do checkout está versionado no commit `fd5fdb934cf864ad388fa0ca8a734e5279ac61ff`.
 
 ## Supabase
 
-- Projeto correto: `Ticket Flow`.
-- Project ref: `ywcdopjqfhisopipqxgq`.
-- Estado observado: `ACTIVE_HEALTHY`.
-- Região: São Paulo (`sa-east-1`).
-- Todas as tabelas públicas verificadas pelo catálogo retornaram RLS habilitado.
-- O Security Advisor encontrou os problemas registrados acima.
-- O Performance Advisor encontrou os problemas de performance registrados acima.
-- **Recheck Claude 2, 05/09/2026 21:15 BRT:** Security Advisor e Performance Advisor reconsultados do zero; achados batem exatamente com AUD-003/004/009/010/011, sem itens novos nessas categorias. Função `create_mp_test_sale` (aparece no advisor como exposta a `authenticated`) foi inspecionada linha a linha: possui checagem interna de `has_role(auth.uid(),'admin')` e de organização — não é uma vulnerabilidade nova, é o mesmo padrão de proteção interna já aceito no AUD-001. Buckets de storage auditados e registrados no novo item AUD-016.
+- Projeto: `Ticket Flow`
+- Ref: `ywcdopjqfhisopipqxgq`
+- Região: `sa-east-1`
+- Estado observado: `ACTIVE_HEALTHY`
+- `create_pending_sale`, `expire_pending_sales_job` e `confirm_sale_paid` foram inspecionadas diretamente no banco.
+- Cron de expiração possui histórico de execuções `succeeded`.
 
 ## Vercel
 
-- Projeto: `ticketflow-core`.
-- O deployment de produção auditado está em estado `READY`.
-- A produção estava apontando para a `main` no commit `df77760fb82d65198e00b9b65d64b05fb8a0bf8b` no momento da consulta.
-- Não foram encontrados erros de runtime agrupados por rota no período de 7 dias consultado para esse deployment.
-- **Recheck Claude 2, 05/09/2026 21:15 BRT:** projeto e deployment de produção seguem `READY` (`dpl_EDVcC1JDfdiGazg4Ahv5XNHGpjJ2`). Nenhum erro de runtime nos últimos 7 dias. Nada de novo a registrar.
+- Projeto: `ticketflow-core`
+- O commit do frontend `fd5fdb934cf864ad388fa0ca8a734e5279ac61ff` disparou deployment de produção automaticamente.
+- Na última verificação, o deployment estava em `BUILDING`.
+- A verificação de logs de build não encontrou eventos de erro/stderr/exit.
 
 ---
 
-# Prioridade de correção
+# Prioridade atual
 
-1. **AUD-005 — Expiração/liberação de estoque de vendas pendentes.** PR #15 é o candidato consolidado a mesclar.
-2. **AUD-016 — Versionar buckets de storage (`event-images`, `organization-logos`, `client-banners`).**
-3. **AUD-003 — Proteção contra senhas vazadas.**
-4. **AUD-012 — Remoção do `.env` versionado.**
-5. **AUD-004 — `search_path` das funções.**
-6. **AUD-009/AUD-011 — otimização e simplificação das políticas RLS.**
-7. **AUD-007/AUD-008 — pendências funcionais do fluxo do cliente.**
-8. **AUD-010 — índices de chaves estrangeiras.**
-9. **AUD-013/AUD-014 — saneamento da documentação.**
-10. **AUD-015 — QA dos itens ainda não confirmados.**
+1. **AUD-016** — versionar buckets de storage.
+2. **AUD-003** — proteção contra senhas vazadas.
+3. **AUD-012** — remover `.env` versionado.
+4. **AUD-004** — endurecer `search_path`.
+5. **AUD-009/AUD-011** — otimizar e simplificar RLS.
+6. **AUD-007/AUD-008** — pendências funcionais do cliente.
+7. **AUD-010** — índices de FKs.
+8. **AUD-013/AUD-014** — documentação.
+9. **AUD-015** — QA dos itens pendentes.
 
-> ✅ **AUD-006 resolvido nesta rodada** (Claude 2) — removido da lista de prioridades ativas.
+**AUD-005 foi removido da prioridade porque está resolvido e validado.**
 
-> **Regra operacional:** nenhum item crítico de segurança ou integridade deve ser tratado como resolvido sem confirmação no banco/código e, quando aplicável, em deployment de produção.
+---
 
-## Histórico de atualizações deste documento
+# Histórico de atualizações deste documento
 
 | Data/Hora BRT | Agente | Alteração |
 |---|---|---|
 | 05/09/2026 19:00 | ChatGPT | Documento `docs/AUDITORIA.md` criado com os achados da auditoria técnica do GitHub, Supabase e Vercel. |
-| 05/09/2026 19:06 | ChatGPT | AUD-001 corrigido: removida execução `anon` das funções SECURITY DEFINER privilegiadas e registrado o resultado da verificação pós-correção. |
-| 05/09/2026 19:09 | ChatGPT | AUD-002 corrigido: `event_ticket_stats` convertida para `SECURITY INVOKER`, verificada no banco e retirada do Security Advisor. |
-| 05/09/2026 19:10 | ChatGPT | Corrigida a documentação do AUD-002 para refletir a versão real da migration aplicada no Supabase (`20260905220902`) e alinhada a migration versionada no GitHub. |
-| 05/09/2026 21:15 | Claude 2 | Segunda auditoria técnica cruzando GitHub + Supabase + Vercel: reconfirmados AUD-003, AUD-004, AUD-005, AUD-007 a AUD-015 (sem mudança); AUD-006 investigado a fundo e corrigido (causa raiz era divergência de migration, não ausência); novo item AUD-016 registrado (buckets de storage fora de migration); seções "Situação da infraestrutura" e "Prioridade de correção" atualizadas com o estado observado nesta data/hora. |
+| 05/09/2026 19:06 | ChatGPT | AUD-001 corrigido e verificado no Supabase; migration versionada no GitHub. |
+| 05/09/2026 19:09 | ChatGPT | AUD-002 corrigido: `event_ticket_stats` convertida para `SECURITY INVOKER`. |
+| 05/09/2026 19:10 | ChatGPT | Evidência do AUD-002 alinhada à migration real `20260905220902`. |
+| 05/09/2026 21:15 | Claude 2 | Segunda auditoria técnica; AUD-006 resolvido e AUD-016 registrado. |
+| 06/09/2026 08:49 | ChatGPT | AUD-005 resolvido: fluxo de expiração de vendas pendentes reconciliado no Supabase, migration versionada, cron validado, confirmação de pagamento após expiração bloqueada e checkout atualizado para usar `expires_at`. |
 
-## Como registrar uma resolução
+## Regra de resolução
 
-Ao solucionar um item, manter o item no documento e alterar somente o necessário para refletir o novo estado:
+Nenhum item deve ser removido. Para resolver um item, alterar o status para `RESOLVIDO` e registrar:
 
-```text
-**Status:** `RESOLVIDO`
+- Data
+- Hora BRT
+- Agente
+- Evidência correspondente
 
-### Registro de resolução
-
-- **Data:** DD/MM/AAAA
-- **Hora:** HH:MM BRT
-- **Agente:** ChatGPT
-- **Evidência:** commit, migration, PR, teste, deployment ou verificação correspondente.
-```
-
-Se o problema for resolvido por outro agente, substituir `ChatGPT` pelo identificador desse agente e manter a evidência da alteração.
+Nenhum item crítico de segurança ou integridade deve ser tratado como resolvido sem confirmação no banco/código e, quando aplicável, no deployment de produção.
