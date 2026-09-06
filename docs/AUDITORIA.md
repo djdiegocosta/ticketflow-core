@@ -81,7 +81,7 @@ A view foi alterada para `SECURITY INVOKER`, preservando o `SELECT` existente e 
 ## 3. Segurança — proteção contra senhas vazadas desativada
 
 **ID:** AUD-003  
-**Status:** `ABERTO`  
+**Status:** `ADIADO`  
 **Severidade:** ALTA  
 **Descoberta:** 05/09/2026 18:59 BRT
 
@@ -93,9 +93,17 @@ A proteção do Supabase Auth contra senhas comprometidas está desativada.
 
 Ativar a proteção e validar login/cadastro.
 
+### Motivo do adiamento
+
+Tentativa de ativação (06/09/2026) retornou erro: esse recurso (checagem via HaveIBeenPwned) só está disponível a partir do plano **Pro** do Supabase (US$25/mês por organização). O projeto está no plano **Free**. Diego optou por adiar o upgrade por enquanto.
+
 ### Resolução
 
-Ainda não resolvido.
+- **Data:** 06/09/2026
+- **Hora:** 13:40 BRT
+- **Agente:** Claude 2
+- **Decisão:** Diego (dono do projeto), via Claude 2
+- **Evidência:** mensagem de erro do painel Supabase confirmando exigência de plano Pro; organização `DC Eventos` confirmada em plano `free`.
 
 ---
 
@@ -404,16 +412,16 @@ Migrations versionadas no GitHub:
 
 # Prioridade atual
 
-1. **AUD-003** — proteção contra senhas vazadas.
-2. **AUD-012** — remover `.env` versionado.
-3. **AUD-004** — endurecer `search_path`.
-4. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
-5. **AUD-007 / AUD-008** — corrigir pendências funcionais do cliente.
-6. **AUD-010** — revisar índices de FKs.
-7. **AUD-013 / AUD-014** — documentação.
-8. **AUD-015** — QA funcional.
+1. **AUD-012** — remover `.env` versionado.
+2. **AUD-004** — endurecer `search_path`.
+3. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
+4. **AUD-007 / AUD-008** — corrigir pendências funcionais do cliente.
+5. **AUD-010** — revisar índices de FKs.
+6. **AUD-013 / AUD-014** — documentação.
+7. **AUD-015** — QA funcional.
 
 AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção por já estarem resolvidos.
+AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
 
@@ -428,5 +436,6 @@ AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção p
 | 05/09/2026 | 21:15 | Claude 2 | AUD-016 | Identificada ausência de versionamento dos buckets Storage. |
 | 06/09/2026 | 08:49 | ChatGPT | AUD-005 | Fluxo de expiração de vendas pendentes reconciliado e frontend corrigido. |
 | 06/09/2026 | 09:02 | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
+| 06/09/2026 | 13:40 | Claude 2 | AUD-003 | Marcado como ADIADO — recurso exige plano Pro do Supabase; Diego optou por adiar o upgrade. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
