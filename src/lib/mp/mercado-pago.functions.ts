@@ -86,7 +86,13 @@ export const createMpPix = createServerFn({ method: "POST" })
       const sandboxConfig = configs?.find(c => c.environment === "sandbox");
       const config = prodConfig || sandboxConfig;
       if (!config) throw new Error("Mercado Pago não configurado para esta organização");
-      const accessToken = await decrypt(config.access_token_encrypted!);
+      let accessToken: string;
+      try {
+        accessToken = await decrypt(config.access_token_encrypted!);
+      } catch {
+        throw new Error("Não foi possível ler as credenciais salvas do Mercado Pago. Abra Configurações → Mercado Pago e salve novamente o Access Token.");
+      }
+
       const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
       const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
@@ -105,7 +111,7 @@ export const createMpPix = createServerFn({ method: "POST" })
       if (!mpRes.ok) {
         await supabaseAdmin.from("sales").update({
           mp_debug_response: JSON.stringify({ stage: "mp_rejected", status: mpRes.status, environment: config.environment, body: mpData }),
-        }).eq("id", sale.id);
+        } as never).eq("id", sale.id);
         throw new Error(mpData.message || "Erro ao gerar PIX");
       }
       const qrCode = mpData.point_of_interaction?.transaction_data?.qr_code;
@@ -113,7 +119,7 @@ export const createMpPix = createServerFn({ method: "POST" })
       if (!qrCode || !qrCodeBase64) {
         await supabaseAdmin.from("sales").update({
           mp_debug_response: JSON.stringify({ stage: "missing_qr_code", status: mpRes.status, environment: config.environment, body: mpData }),
-        }).eq("id", sale.id);
+        } as never).eq("id", sale.id);
         throw new Error("O Mercado Pago não retornou o QR Code do Pix");
       }
       const mpPaymentId = String(mpData.id);
@@ -123,7 +129,8 @@ export const createMpPix = createServerFn({ method: "POST" })
     } catch (err: any) {
       await supabaseAdmin.from("sales").update({
         mp_debug_response: JSON.stringify({ stage: "exception", message: err?.message, name: err?.name, stack: String(err?.stack).slice(0, 2000) }),
-      }).eq("id", sale.id);
+      } as never).eq("id", sale.id);
       throw err;
     }
+
   });
