@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { decrypt } from "@/lib/mp/utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { sendPurchaseConfirmationEmail } from "@/lib/email/confirmation-email.server";
 
 export const Route = createFileRoute("/api/public/mp/webhook")({
   server: {
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           if (!saleId) return new Response("Invalid payment reference", { status: 400 });
           const { data: sale, error: saleError } = await supabaseAdmin
             .from("sales")
-            .select("id, organization_id, total_amount, pending_participant_names")
+            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title)")
             .eq("id", saleId)
             .single();
           if (saleError || !sale) return new Response("Sale not found", { status: 404 });
@@ -81,6 +82,17 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             });
             if (ticketError) throw ticketError;
           }
+
+          // Envio de e-mail de confirmação (QUA-002). A função nunca lança erro:
+          // se o envio falhar, a venda já está confirmada e os ingressos já existem.
+          const eventTitle = (sale as unknown as { events?: { title?: string } }).events?.title ?? "seu evento";
+          await sendPurchaseConfirmationEmail({
+            buyerName: sale.buyer_name ?? "",
+            buyerEmail: sale.buyer_email ?? "",
+            eventTitle,
+            saleCode: sale.sale_code ?? "",
+          });
+
           return new Response("ok", { status: 200 });
         } catch (err) {
           console.error("Webhook error", err);
