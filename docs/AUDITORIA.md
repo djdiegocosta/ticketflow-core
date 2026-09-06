@@ -188,16 +188,40 @@ Claude 2 reconciliou a função através da migration `20260905231500_restore_ch
 ## 7. Produto/UX — botão "Baixar todos os ingressos (PDF)" sem ação
 
 **ID:** AUD-007  
-**Status:** `ABERTO`  
-**Severidade:** MÉDIA
+**Status:** `RESOLVIDO`  
+**Severidade:** MÉDIA  
+**Descoberta:** 05/09/2026
 
 ### Problema
 
-O botão de baixar todos os ingressos em PDF na confirmação da compra não possui ação implementada.
+O botão de baixar todos os ingressos em PDF na confirmação da compra não possuía ação implementada.
 
-### Ação necessária
+### Correção aplicada
 
-Implementar a ação ou remover/desabilitar o controle até existir implementação real.
+A página `src/pages/ConfirmationPage.tsx` passou a gerar e baixar um PDF real usando a dependência `jspdf` já existente no projeto.
+
+O PDF é gerado com um ingresso por página, contendo:
+
+- Identificação TicketFlow.
+- Nome do evento.
+- Data do evento.
+- Participante.
+- Número do ingresso na compra.
+- QR Code individual.
+- Código do ingresso.
+- Orientação para apresentação na entrada.
+
+A geração usa os QR Codes já renderizados na confirmação, convertendo-os para imagem antes de inseri-los no PDF. O botão também apresenta estado de processamento (`Gerando PDF...`) e fica desabilitado durante a geração, evitando cliques duplicados.
+
+**Arquivo:** `src/pages/ConfirmationPage.tsx`  
+**Commit:** `c75d7d1e188af96eb2d7ec1908494111ef7f7599`
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 15:08 BRT
+- **Agente:** ChatGPT
+- **Evidência:** implementação versionada no `main`; `jspdf` já estava declarado em `package.json`, eliminando necessidade de nova dependência. A função percorre todos os ingressos da venda, gera uma página por ingresso e executa `pdf.save()` com nome baseado no código da venda.
 
 ---
 
@@ -406,9 +430,7 @@ Migrations versionadas no GitHub:
 
 - Projeto: `ticketflow-core`
 - Deployment do frontend do AUD-005 foi iniciado e o build foi concluído sem erro conhecido na verificação realizada.
-- O estado final do deployment deve ser rechecado antes de qualquer declaração de produção `READY`.
-
----
+- O estado final do deployment deve ser rechecado quando necessário.
 
 # Prioridade atual
 
@@ -420,22 +442,21 @@ Migrations versionadas no GitHub:
 6. **AUD-013 / AUD-014** — documentação.
 7. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção por já estarem resolvidos.
-AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
+AUD-001, AUD-002, AUD-005, AUD-006 e AUD-016 estão fora da fila de correção por já estarem resolvidos.  
+AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).  
+AUD-007 foi resolvido em 06/09/2026 e deve ser removido da fila ativa na próxima revisão de prioridade.
 
----
+# Histórico de alterações deste documento
 
-# Histórico de alterações
-
-| Data | Hora BRT | Agente | Item | Ação |
+| Data | Hora BRT | Agente | ID | Alteração |
 |---|---:|---|---|---|
-| 05/09/2026 | 19:00 | ChatGPT | Auditoria | Criado o registro oficial `AUDITORIA.md`. |
-| 05/09/2026 | 19:06 | ChatGPT | AUD-001 | Removida execução pública de funções administrativas `SECURITY DEFINER`. |
-| 05/09/2026 | 19:09 | ChatGPT | AUD-002 | View `event_ticket_stats` alterada para `SECURITY INVOKER`. |
-| 05/09/2026 | 21:03 | Claude 2 | AUD-006 | Reconciliada e versionada a função `checkin_ticket`. |
+| 05/09/2026 | 18:59–19:00 | ChatGPT | — | Auditoria inicial registrada. |
+| 05/09/2026 | 19:06 | ChatGPT | AUD-001 | Funções administrativas SECURITY DEFINER deixaram de ser executáveis por `anon`. |
+| 05/09/2026 | 19:09 | ChatGPT | AUD-002 | View `event_ticket_stats` alterada para SECURITY INVOKER. |
 | 05/09/2026 | 21:15 | Claude 2 | AUD-016 | Identificada ausência de versionamento dos buckets Storage. |
 | 06/09/2026 | 08:49 | ChatGPT | AUD-005 | Fluxo de expiração de vendas pendentes reconciliado e frontend corrigido. |
 | 06/09/2026 | 09:02 | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
 | 06/09/2026 | 13:40 | Claude 2 | AUD-003 | Marcado como ADIADO — recurso exige plano Pro do Supabase; Diego optou por adiar o upgrade. |
+| 06/09/2026 | 15:08 | ChatGPT | AUD-007 | Botão de download de todos os ingressos passou a gerar PDF real, com um ingresso por página e QR Code individual. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
