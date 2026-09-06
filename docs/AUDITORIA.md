@@ -110,7 +110,7 @@ Tentativa de ativação (06/09/2026) retornou erro: esse recurso (checagem via H
 ## 4. Segurança — `search_path` mutável em funções
 
 **ID:** AUD-004  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA  
 **Descoberta:** 05/09/2026 18:59 BRT
 
@@ -118,13 +118,27 @@ Tentativa de ativação (06/09/2026) retornou erro: esse recurso (checagem via H
 
 Security Advisor apontou `search_path` mutável em `generate_short_code`, `get_hourly_sales_stats` e `get_new_customers_count`.
 
-### Ação necessária
+### Correção aplicada
 
-Definir `search_path` seguro e explícito.
+O `search_path` das três funções foi fixado em vazio (`search_path = ''`), conforme recomendação do Supabase. Isso impede que a resolução de objetos dependa do `search_path` da sessão; as referências a objetos do projeto já estão qualificadas com `public.` quando necessário.
+
+**Migration:** `20260906183000_harden_function_search_paths_aud004.sql`  
+**Commit:** `f3d39db228504a8649116497b9927cb0a8fb6bad`
+
+### Validação pós-correção
+
+- `generate_short_code()` executou normalmente e retornou código válido.
+- `get_new_customers_count(30)` executou normalmente.
+- `get_hourly_sales_stats(NULL)` executou normalmente.
+- As três funções passaram a apresentar `proconfig = {search_path=""}`.
+- As funções continuam `SECURITY INVOKER`.
 
 ### Resolução
 
-Ainda não resolvido.
+- **Data:** 06/09/2026
+- **Hora:** 15:27 BRT
+- **Agente:** ChatGPT
+- **Evidência:** migration aplicada no Supabase, funções verificadas em produção e chamadas de teste executadas com sucesso.
 
 ---
 
@@ -200,18 +214,9 @@ O botão de baixar todos os ingressos em PDF na confirmação da compra não pos
 
 A página `src/pages/ConfirmationPage.tsx` passou a gerar e baixar um PDF real usando a dependência `jspdf` já existente no projeto.
 
-O PDF é gerado com um ingresso por página, contendo:
+O PDF é gerado com um ingresso por página, contendo identificação TicketFlow, nome e data do evento, participante, número do ingresso, QR Code individual, código do ingresso e orientação para apresentação na entrada.
 
-- Identificação TicketFlow.
-- Nome do evento.
-- Data do evento.
-- Participante.
-- Número do ingresso na compra.
-- QR Code individual.
-- Código do ingresso.
-- Orientação para apresentação na entrada.
-
-A geração usa os QR Codes já renderizados na confirmação, convertendo-os para imagem antes de inseri-los no PDF. O botão também apresenta estado de processamento (`Gerando PDF...`) e fica desabilitado durante a geração, evitando cliques duplicados.
+A geração usa os QR Codes já renderizados na confirmação. O botão apresenta estado de processamento (`Gerando PDF...`) e fica desabilitado durante a geração.
 
 **Arquivo:** `src/pages/ConfirmationPage.tsx`  
 **Commit:** `c75d7d1e188af96eb2d7ec1908494111ef7f7599`
@@ -221,7 +226,7 @@ A geração usa os QR Codes já renderizados na confirmação, convertendo-os pa
 - **Data:** 06/09/2026
 - **Hora:** 15:08 BRT
 - **Agente:** ChatGPT
-- **Evidência:** implementação versionada no `main`; `jspdf` já estava declarado em `package.json`, eliminando necessidade de nova dependência. A função percorre todos os ingressos da venda, gera uma página por ingresso e executa `pdf.save()` com nome baseado no código da venda.
+- **Evidência:** implementação versionada no `main`; `jspdf` já estava declarado em `package.json`; a função percorre todos os ingressos, gera uma página por ingresso e executa `pdf.save()`.
 
 ---
 
@@ -301,17 +306,10 @@ Consolidar somente quando o comportamento de autorização permanecer exatamente
 
 ### Correção aplicada
 
-Investigação em todo o código-fonte confirmou que nenhuma dessas variáveis é consumida por código ativo em produção:
-
-- `src/integrations/supabase/client.ts` (gerado pelo Lovable) tem URL e chave fixas diretamente no código-fonte, não lê `.env`.
-- `src/lib/supabase.ts` lê `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY`, mas não é importado por nenhum outro arquivo — código órfão de uma fase anterior do projeto.
-- O código server-side (`client.server.ts`, `auth-middleware.ts`) lê `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` via `process.env`, já configuradas na Vercel independentemente do arquivo `.env`.
-
-Ações tomadas:
-
 - `.env` removido do repositório.
 - `.env` e variantes (`*.local`) adicionados ao `.gitignore`.
-- `.env.example` criado, sem valores sensíveis, para uso em desenvolvimento local.
+- `.env.example` criado, sem valores sensíveis.
+- Variáveis reais permanecem configuradas na Vercel.
 
 **Commit de remoção do `.env`:** `fad914de83eb89c3ee289a1fec09567cc3369a4f`
 
@@ -325,7 +323,7 @@ Ações tomadas:
 - **Data:** 06/09/2026
 - **Hora:** 15:35 BRT
 - **Agente:** Claude 2
-- **Evidência:** deploy `READY`, sem erros de runtime; variáveis reais confirmadas já presentes na Vercel (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) antes da remoção.
+- **Evidência:** deploy `READY`, sem erros de runtime; variáveis reais confirmadas na Vercel antes da remoção.
 
 ---
 
@@ -391,15 +389,7 @@ Os buckets `event-images`, `organization-logos` e `client-banners` existiam no b
 
 ### Correção aplicada
 
-Foi feita uma reconciliação diretamente no projeto Supabase correto.
-
-Os três buckets foram versionados com definição idempotente, preservando o estado atual:
-
-- `event-images` — público.
-- `organization-logos` — público.
-- `client-banners` — público.
-
-As oito políticas de `storage.objects` existentes para esses buckets também foram versionadas, preservando as regras atuais de leitura pública e upload/alteração/remoção administrativa.
+Os três buckets foram versionados com definição idempotente, preservando o estado atual. As oito políticas de `storage.objects` existentes para esses buckets também foram versionadas, preservando as regras atuais de leitura pública e upload/alteração/remoção administrativa.
 
 Migrations aplicadas no Supabase:
 
@@ -433,6 +423,42 @@ Migrations versionadas no GitHub:
 
 ---
 
+## 17. Integridade operacional — PDF de check-in incluía vendas pendentes/canceladas
+
+**ID:** AUD-017  
+**Status:** `RESOLVIDO`  
+**Severidade:** ALTA  
+**Descoberta:** 06/09/2026 14:50 BRT  
+**Agente da descoberta:** Diego (reportado diretamente)
+
+### Problema
+
+O botão "PDF" da lista de vendas (`src/pages/admin/SalesListPage.tsx`) gera a lista de check-in usada como substituto manual quando o check-in automático falha. O filtro só excluía vendas com `status = 'cancelado'`, deixando vazar `pendente` e `expirado` (e futuramente `reembolsado`) para a lista impressa na portaria.
+
+### Impacto
+
+Pessoas com venda pendente/expirada poderiam ser liberadas na entrada do evento por constarem na lista impressa, mesmo sem ingresso válido.
+
+### Correção aplicada
+
+Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true`. Confirmado no banco que cortesias sempre nascem com `status = 'pago'` (função `create_courtesy`), então a condição cobre exatamente vendas válidas e cortesias.
+
+**Arquivo:** `src/pages/admin/SalesListPage.tsx`  
+**Commit:** `e0bfbe57d431a56234600990c71248de215b1105`
+
+### Validação pós-correção
+
+- Deploy `dpl_7mv2uLmpw24dSsr5jLzuuoC7fMf9` concluído com `READY`.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 14:58 BRT
+- **Agente:** Claude 2
+- **Evidência:** filtro corrigido e versionado; deploy validado sem erro.
+
+---
+
 # Situação de infraestrutura
 
 ## GitHub
@@ -458,51 +484,14 @@ Migrations versionadas no GitHub:
 
 # Prioridade atual
 
-1. **AUD-004** — endurecer `search_path`.
-2. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
-3. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
-4. **AUD-010** — revisar índices de FKs.
-5. **AUD-013 / AUD-014** — documentação.
-6. **AUD-015** — QA funcional.
+1. **AUD-009 / AUD-011** — otimizar e simplificar RLS.
+2. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
+3. **AUD-010** — revisar índices de FKs.
+4. **AUD-013 / AUD-014** — documentação.
+5. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-005, AUD-006, AUD-007, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-012, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
-
----
-
-## 17. Integridade operacional — PDF de check-in incluía vendas pendentes/canceladas
-
-**ID:** AUD-017  
-**Status:** `RESOLVIDO`  
-**Severidade:** ALTA  
-**Descoberta:** 06/09/2026 14:50 BRT  
-**Agente da descoberta:** Diego (reportado diretamente)
-
-### Problema
-
-O botão "PDF" da lista de vendas (`src/pages/admin/SalesListPage.tsx`) gera a lista de check-in usada como substituto manual quando o check-in automático falha. O filtro só excluía vendas com `status = 'cancelado'`, deixando vazar `pendente` e `expirado` (e futuramente `reembolsado`) para a lista impressa na portaria.
-
-### Impacto
-
-Pessoas com venda pendente/expirada (ou seja, sem pagamento confirmado) poderiam ser liberadas na entrada do evento por constarem na lista impressa, mesmo sem ingresso válido.
-
-### Correção aplicada
-
-Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true`. Confirmado no banco que cortesias sempre nascem com `status = 'pago'` (função `create_courtesy`), então a condição cobre exatamente "vendas válidas e cortesias" pedido.
-
-**Arquivo:** `src/pages/admin/SalesListPage.tsx`  
-**Commit:** `e0bfbe57d431a56234600990c71248de215b1105`
-
-### Validação pós-correção
-
-- Deploy `dpl_7mv2uLmpw24dSsr5jLzuuoC7fMf9` concluído com `READY`.
-
-### Resolução
-
-- **Data:** 06/09/2026
-- **Hora:** 14:58 BRT
-- **Agente:** Claude 2
-- **Evidência:** filtro corrigido e versionado; deploy validado sem erro.
 
 ---
 
@@ -517,8 +506,9 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 | 06/09/2026 | 08:49 | ChatGPT | AUD-005 | Fluxo de expiração de vendas pendentes reconciliado e frontend corrigido. |
 | 06/09/2026 | 09:02 | ChatGPT | AUD-016 | Buckets e políticas Storage versionados e validados em produção. |
 | 06/09/2026 | 13:40 | Claude 2 | AUD-003 | Marcado como ADIADO — recurso exige plano Pro do Supabase; Diego optou por adiar o upgrade. |
-| 06/09/2026 | 15:08 | ChatGPT | AUD-007 | Botão de download de todos os ingressos passou a gerar PDF real, com um ingresso por página e QR Code individual. |
 | 06/09/2026 | 14:58 | Claude 2 | AUD-017 | PDF de check-in da lista de vendas corrigido para incluir só vendas pagas/cortesias. |
+| 06/09/2026 | 15:08 | ChatGPT | AUD-007 | Botão de download de todos os ingressos passou a gerar PDF real, com um ingresso por página e QR Code individual. |
+| 06/09/2026 | 15:27 | ChatGPT | AUD-004 | `search_path` das três funções do achado foi fixado em vazio e validado em produção. |
 | 06/09/2026 | 15:35 | Claude 2 | AUD-012 | `.env` removido do repositório, `.gitignore` e `.env.example` atualizados, build validado. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
