@@ -86,7 +86,13 @@ export const createMpPix = createServerFn({ method: "POST" })
       const sandboxConfig = configs?.find(c => c.environment === "sandbox");
       const config = prodConfig || sandboxConfig;
       if (!config) throw new Error("Mercado Pago não configurado para esta organização");
-      const accessToken = await decrypt(config.access_token_encrypted!);
+      let accessToken: string;
+      try {
+        accessToken = await decrypt(config.access_token_encrypted!);
+      } catch {
+        throw new Error("Não foi possível ler as credenciais salvas do Mercado Pago. Abra Configurações → Mercado Pago e salve novamente o Access Token.");
+      }
+
       const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
       const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
