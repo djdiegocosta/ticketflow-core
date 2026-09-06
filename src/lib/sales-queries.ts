@@ -181,6 +181,18 @@ export function useSalesStats(eventId?: string) {
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) throw ticketsError;
 
+      // Vendas pendentes ainda não possuem ingressos, então precisam ser lidas direto da tabela sales.
+      let pendingQuery = supabase
+        .from("sales")
+        .select("id, total_amount")
+        .eq("organization_id", orgId)
+        .eq("status", "pendente")
+        .eq("is_courtesy", false);
+      if (eventId && eventId !== "overview") pendingQuery = pendingQuery.eq("event_id", eventId);
+
+      const { data: pendingData, error: pendingError } = await pendingQuery;
+      if (pendingError) throw pendingError;
+
       const stats = {
         totalRevenue: 0,
         totalSales: 0,
