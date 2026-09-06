@@ -44,7 +44,8 @@ export default function CheckoutPage() {
   const trackAbandonment = useTrackAbandonment();
   
   const [step, setStep] = useState<'info' | 'payment'>('info');
-  const [countdown, setCountdown] = useState(1800);
+  const [countdown, setCountdown] = useState(0);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
   const [isCreatingSale, setIsCreatingSale] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
@@ -104,31 +105,28 @@ export default function CheckoutPage() {
   }, [event?.id, search.ref]);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    if (step === 'payment') {
-      timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
+    if (step !== 'payment' || !expiresAt) return;
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 1000));
+      setCountdown(remaining);
     };
-  }, [step]);
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [step, expiresAt]);
 
   useEffect(() => {
-    if (countdown === 0 && step === 'payment') {
+    if (countdown === 0 && step === 'payment' && expiresAt) {
       toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
       setStep('info');
       setCurrentSaleId(null);
       setCurrentSaleCode(null);
+      setExpiresAt(null);
+      setPixData(null);
     }
-  }, [countdown, step]);
+  }, [countdown, step, expiresAt]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -167,9 +165,10 @@ export default function CheckoutPage() {
       });
 
       const resultArr = saleResult as any[];
-      const { sale_id: id, sale_code } = resultArr[0];
+      const { sale_id: id, sale_code, expires_at } = resultArr[0];
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
+      setExpiresAt(expires_at);
 
       try {
         const pixResult = await generateSalePix({ sale_id: id });
@@ -183,7 +182,6 @@ export default function CheckoutPage() {
         return;
       }
       
-      setCountdown(1800);
       setStep('payment');
       window.scrollTo(0, 0);
     } catch (err: any) {
@@ -197,8 +195,19 @@ export default function CheckoutPage() {
     if (saleStatus === 'pago' && event && currentSaleCode) {
       toast.success("Pagamento confirmado com sucesso!");
       navigate({ to: `/e/${event.slug}/confirmacao/${currentSaleCode}` });
+      return;
     }
-  }, [saleStatus, event, currentSaleCode, navigate]);
+
+    if (saleStatus === 'expirado' && step === 'payment') {
+      toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
+      setStep('info');
+      setCurrentSaleId(null);
+      setCurrentSaleCode(null);
+      setExpiresAt(null);
+      setCountdown(0);
+      setPixData(null);
+    }
+  }, [saleStatus, event, currentSaleCode, navigate, step]);
 
   const handleSameAsBuyer = (checked: boolean | 'indeterminate') => {
     if (checked === true && qty === 1) {
