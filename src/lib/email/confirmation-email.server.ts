@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
  *
  * Usa uma conta Gmail comum + "senha de app" como transporte SMTP —
  * opção de custo zero, sem depender de domínio próprio verificado.
+ * Credenciais (GMAIL_USER/GMAIL_APP_PASSWORD) configuradas na Vercel em 06/09/2026.
  * Se as credenciais não estiverem configuradas, ou o envio falhar por
  * qualquer motivo, a função nunca lança erro: a confirmação de pagamento
  * e a criação dos ingressos NUNCA podem ser bloqueadas por causa do e-mail.
