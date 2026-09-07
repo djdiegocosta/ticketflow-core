@@ -8,7 +8,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
-import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
+import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail } from 'lucide-react';
@@ -289,6 +289,17 @@ export default function CheckoutPage() {
                 ))}
               </div>
             </div>
+
+            <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+              Ao continuar, você concorda com nossos{" "}
+              <Link to="/termos" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Termos de Uso
+              </Link>{" "}
+              e{" "}
+              <Link to="/privacidade" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Política de Privacidade
+              </Link>.
+            </p>
 
             <Button 
               type="submit"
