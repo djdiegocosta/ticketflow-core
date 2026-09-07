@@ -548,13 +548,48 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 - Deployment do frontend do AUD-005 foi iniciado e o build foi concluído sem erro conhecido na verificação realizada.
 - O estado final do deployment deve ser rechecado quando necessário.
 
+---
+
+## 18. Integridade financeira — Mercado Pago notificava domínio inexistente
+
+**ID:** AUD-018  
+**Status:** `RESOLVIDO`  
+**Severidade:** CRÍTICA  
+**Descoberta:** 07/09/2026 12:20 BRT  
+**Agente da descoberta:** Claude 2 (durante suporte a Diego configurando o webhook)
+
+### Problema
+
+`src/lib/mp/mercado-pago.functions.ts` monta o `notification_url` enviado ao Mercado Pago em cada Pix criado usando `process.env["VITE_SITE_URL"]`, sem fallback correto — a variável nunca esteve configurada (nem no `.env`, nem na Vercel), então o valor usado sempre foi o fallback antigo: `https://ticketflow2.lovable.app`. O mesmo problema afetava a URL exibida na tela de configuração (`MercadoPagoWizardPage.tsx`), que Diego confirmou ter copiado e cadastrado manualmente no painel do Mercado Pago também apontando para esse domínio errado.
+
+### Impacto
+
+**Nenhuma confirmação automática de pagamento chegava ao sistema.** Toda venda paga via Pix ficava presa em `pendente` até expirar pelo cron (AUD-005) e o estoque voltar — mesmo com o pagamento aprovado de verdade no Mercado Pago. Sem correção manual, o comprador pagava e não recebia o ingresso automaticamente.
+
+### Correção aplicada
+
+- Variável `VITE_SITE_URL` = `https://ticketflow-core.vercel.app` adicionada na Vercel (Diego, tipo `Config` — obrigatório para variáveis com prefixo de framework, a Vercel rejeita `Secret` nesse caso).
+- URL do webhook corrigida manualmente por Diego nas duas aplicações do Mercado Pago (sandbox e produção), de `ticketflow2.lovable.app` para `ticketflow-core.vercel.app`.
+- Evento "Order" desmarcado no Mercado Pago (não utilizado pelo código, que só processa `payment`).
+
+### Resolução
+
+- **Data:** 07/09/2026
+- **Hora:** 13:10 BRT
+- **Agente:** Claude 2 (código já estava correto — a causa raiz era configuração ausente, não bug de código)
+- **Evidência:** variável configurada, URLs corrigidas nas duas aplicações do Mercado Pago; validação ponta a ponta pendente de um pagamento de teste (ver AUDITORIA-QUALIDADE.md, QUA-002, que compartilha o mesmo teste).
+
+**Nota:** nenhum caso de "paguei e não recebi o ingresso" foi reportado por Diego até o momento da correção. Se algum for identificado retroativamente, cruzar pagamentos aprovados na API do Mercado Pago com vendas `expirado` no banco para reconciliar manualmente.
+
+---
+
 # Prioridade atual
 
 1. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
 2. **AUD-010** — revisar índices de FKs.
 3. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016 e AUD-017 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016, AUD-017 e AUD-018 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
@@ -579,3 +614,5 @@ AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano
 | 06/09/2026 | 15:58 | Claude 2 | AUD-014 | Criados `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` apontando para `PROJECT-MAP.md`/`TPS.md`/`AUDITORIA.md` como fonte real. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
+
+| 07/09/2026 | 13:10 | Claude 2 | AUD-018 | `VITE_SITE_URL` ausente causava `notification_url` do Mercado Pago apontando para domínio inexistente em todo Pix criado — nenhum pagamento confirmava automaticamente. Variável configurada na Vercel, URLs corrigidas nas duas aplicações do Mercado Pago. |
