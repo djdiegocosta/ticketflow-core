@@ -49,10 +49,9 @@ export default function ConfirmationPage() {
 
     try {
       const tickets = sale.tickets as any[];
-      const event = (sale as any).events;
-      const eventTitle = event?.title || 'Evento';
-      const eventDate = event?.event_date
-        ? new Date(event.event_date).toLocaleDateString('pt-BR')
+      const eventTitle = (sale as any).event_title || 'Evento';
+      const eventDate = (sale as any).event_date
+        ? new Date((sale as any).event_date).toLocaleDateString('pt-BR')
         : '—';
       const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -152,12 +151,12 @@ export default function ConfirmationPage() {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Evento</span>
-              <span className="font-semibold text-[var(--text-primary)] text-right">{(sale as any).events?.title}</span>
+              <span className="font-semibold text-[var(--text-primary)] text-right">{(sale as any).event_title}</span>
             </div>
             <div className="flex justify-between text-body">
               <span className="text-[var(--text-secondary)]">Data</span>
               <span className="font-semibold text-[var(--text-primary)]">
-                {(sale as any).events?.event_date ? new Date((sale as any).events.event_date).toLocaleDateString('pt-BR') : '—'}
+                {(sale as any).event_date ? new Date((sale as any).event_date).toLocaleDateString('pt-BR') : '—'}
               </span>
             </div>
             <div className="flex justify-between text-body">
@@ -220,7 +219,7 @@ export default function ConfirmationPage() {
               <Link 
                 to="/cadastro" 
                 search={{ 
-                  org_id: (sale as any).events?.organization_id,
+                  org_id: (sale as any).organization_id,
                   whatsapp: (sale as any).buyer_whatsapp 
                 }}
                 className="flex items-center justify-center gap-2"
