@@ -290,6 +290,17 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+              Ao continuar, você concorda com nossos{" "}
+              <Link to="/termos" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Termos de Uso
+              </Link>{" "}
+              e{" "}
+              <Link to="/privacidade" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Política de Privacidade
+              </Link>.
+            </p>
+
             <Button 
               type="submit"
               disabled={isCreatingSale}
