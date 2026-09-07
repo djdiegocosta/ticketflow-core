@@ -70,3 +70,33 @@ export function useAudienceStats(eventId?: string) {
     },
   });
 }
+
+const PIX_FAILURE_STAGES = ["mp_rejected", "missing_qr_code", "exception"];
+
+export function usePixFailures(eventId?: string) {
+  return useQuery({
+    queryKey: ["sales", "pix-failures", eventId],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 3600_000).toISOString();
+      let query = supabase
+        .from("sales")
+        .select("id, created_at, mp_debug_response")
+        .not("mp_debug_response", "is", null)
+        .gte("created_at", since);
+      if (eventId) query = query.eq("event_id", eventId);
+      const { data, error } = await query;
+      if (error) throw error;
+      const failures = (data ?? []).filter((sale) => {
+        if (!sale.mp_debug_response) return false;
+        try {
+          const parsed = JSON.parse(sale.mp_debug_response) as { stage?: string };
+          return !!parsed.stage && PIX_FAILURE_STAGES.includes(parsed.stage);
+        } catch {
+          return false;
+        }
+      });
+      return { count: failures.length };
+    },
+    refetchInterval: 60_000,
+  });
+}
