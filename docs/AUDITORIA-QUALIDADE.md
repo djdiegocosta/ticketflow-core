@@ -75,7 +75,7 @@ Quando o evento não tem imagem cadastrada, cai no `twitter:card` tipo `summary`
 ## 2. Recuperação de ingresso depende de um código que só aparece uma vez
 
 **ID:** QUA-002
-**Status:** `ABERTO`
+**Status:** `EM ANÁLISE`
 **Severidade:** ALTA
 **Descoberta:** 06/09/2026 20:08 BRT
 **Agente:** Claude
@@ -90,9 +90,18 @@ Não existe envio automático de e-mail ou WhatsApp confirmando a compra. A úni
 
 Cliente que compra, fecha o navegador e não anotou o código fica sem meio de recuperar o ingresso sozinho — precisa contatar o organizador manualmente. Em um evento com muita gente comprando pelo celular, isso gera atrito e mensagens de suporte evitáveis.
 
-### Ação necessária
+### Correção em andamento
 
-Enviar automaticamente e-mail (e idealmente WhatsApp) de confirmação com o código da venda e o link direto do ingresso, assim que o pagamento é aprovado.
+Decisão (Diego): começar só com e-mail, usando Gmail SMTP (custo zero, sem domínio próprio) em vez de um serviço dedicado — o projeto não tem domínio verificável hoje.
+
+- Criado `src/lib/email/confirmation-email.server.ts`: monta e envia o e-mail com nome do comprador, evento, código da venda e link para `/meus-ingressos`. Falha no envio nunca bloqueia a confirmação do pagamento nem a criação dos ingressos (só loga e segue).
+- Webhook do Mercado Pago (`src/routes/api/public/mp/webhook.ts`) passou a chamar o envio logo após `confirm_sale_paid` + `create_locked_tickets`.
+- Dependência `nodemailer` adicionada ao projeto.
+- Variáveis `GMAIL_USER` e `GMAIL_APP_PASSWORD` configuradas na Vercel (Diego, 06/09/2026).
+
+**Pendente:** teste ponta a ponta com uma compra real após o redeploy, pra confirmar que o e-mail chega e o link funciona. Status muda para `RESOLVIDO` só depois dessa validação.
+
+**Commits:** `0602af807c419f299a0f742bd1f454ed4935f835` (envio), `a3c743e530609408625332a09c69ee326a98c7a2` (webhook), `89029e05296e6a5d746b0957c2ad5bffdfbdadc4` (dependência).
 
 ---
 
