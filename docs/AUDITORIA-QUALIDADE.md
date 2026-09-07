@@ -99,14 +99,14 @@ Enviar automaticamente e-mail (e idealmente WhatsApp) de confirmação com o có
 ## 3. Nenhum aviso de privacidade ou termos no checkout
 
 **ID:** QUA-003
-**Status:** `ABERTO`
+**Status:** `RESOLVIDO`
 **Severidade:** ALTA
 **Descoberta:** 06/09/2026 20:08 BRT
 **Agente:** Claude
 
 ### Problema
 
-O checkout coleta nome, WhatsApp, e-mail e nome de cada participante, sem nenhum link para política de privacidade, termos de uso ou aviso de como os dados são usados. Confirmado por busca no código: não existe nenhuma página nem menção a "termos de uso", "política de privacidade" ou "LGPD" em nenhuma tela pública.
+O checkout coleta nome, WhatsApp, e-mail e nome de cada participante, sem nenhum link para política de privacidade, termos de uso ou aviso de como os dados são usados. Confirmado por busca no código: não existia nenhuma página nem menção a "termos de uso", "política de privacidade" ou "LGPD" em nenhuma tela pública.
 
 **Arquivo:** `src/pages/CheckoutPage.tsx`
 
@@ -114,9 +114,31 @@ O checkout coleta nome, WhatsApp, e-mail e nome de cada participante, sem nenhum
 
 A LGPD (Lei Geral de Proteção de Dados) exige informar a finalidade da coleta de dados pessoais, independente do porte do negócio. Hoje o sistema não cumpre isso, o que é um risco tanto para o cliente quanto para o organizador (Diego é o controlador dos dados coletados).
 
-### Ação necessária
+### Correção aplicada
 
-Criar uma página simples de política de privacidade/termos e referenciá-la no checkout (link ou checkbox de aceite).
+- Criada a página pública `src/pages/PrivacyPolicyPage.tsx`, acessível em `/privacidade`, com informações sobre dados coletados, finalidades, compartilhamento, segurança, retenção e direitos do titular.
+- Criada a página pública `src/pages/TermsPage.tsx`, acessível em `/termos`, com regras básicas de compra, pagamento, ingressos, cancelamento/reembolso, uso adequado e privacidade.
+- `src/pages/CheckoutPage.tsx` passou a exibir, antes do botão “Gerar Pix”, um aviso curto com links para “Termos de Uso” e “Política de Privacidade”. O aviso é informativo e não cria checkbox obrigatório nem altera o fluxo de compra.
+
+**Commits:**
+- `f347ebd1c7c02700bf2d4e8e988806bcba00ba22` — página de Política de Privacidade.
+- `7c5a7eae4051ae116876dba0e70680bc742bd9b7` — página de Termos de Uso.
+- `51fd97b5853e9fd68e3e4c3759e4ccd3ff6ccf1b` — rota `/privacidade`.
+- `098d948736a7abf88d3df59f63517f9e4ed71505` — rota `/termos`.
+- `cdb06e76a4382492d38e6ec7b730cfa048f2a613` — aviso e links no checkout via Lovable.
+
+### Validação pós-correção
+
+- Build de produção executado pelo agente que realizou a alteração no checkout: `bun run build` passou com exit code 0.
+- A alteração do checkout foi limitada ao `src/pages/CheckoutPage.tsx`; as páginas e rotas legais foram adicionadas separadamente e não alteraram o fluxo de pagamento.
+- Não foi alterado Supabase, Mercado Pago, estoque, timer ou validações do checkout.
+
+### Resolução
+
+- **Data:** 06/09/2026
+- **Hora:** 21:23 BRT
+- **Agente:** ChatGPT
+- **Evidência:** páginas e rotas legais criadas e aviso com links incorporado ao checkout; build de produção passou com exit code 0.
 
 ---
 
@@ -226,11 +248,10 @@ Fora do foco principal desta auditoria (que é experiência do cliente), mas reg
 # Prioridade sugerida
 
 1. **QUA-002** — confirmação automática por e-mail/WhatsApp (afeta recuperação de ingresso).
-2. **QUA-003** — aviso de privacidade/termos (risco legal).
-3. **QUA-004** — alerta de falha no Pix (evita descobrir problema só quando o cliente reclama).
-4. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
+2. **QUA-004** — alerta de falha no Pix (evita descobrir problema só quando o cliente reclama).
+3. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
 
-QUA-001 já foi corrigido. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+QUA-001 e QUA-003 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
 
 ---
 
@@ -240,5 +261,6 @@ QUA-001 já foi corrigido. QUA-005, QUA-006 e QUA-007 foram verificados e não p
 |---|---:|---|---|---|
 | 06/09/2026 | 20:08 | Claude | — | Auditoria inicial registrada: 8 itens (4 abertos, 3 verificados sem problema, 1 aberto de menor prioridade). |
 | 06/09/2026 | 20:38 | Claude | QUA-001 | Meta tags dinâmicas implementadas (título, descrição e og:image reais do evento) nas 3 páginas públicas; build e deploy validados. |
+| 06/09/2026 | 21:23 | ChatGPT | QUA-003 | Criadas páginas/rotas de Política de Privacidade e Termos de Uso e adicionados links informativos ao checkout; build de produção passou. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
