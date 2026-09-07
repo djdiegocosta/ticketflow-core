@@ -145,7 +145,7 @@ A LGPD (Lei Geral de Proteção de Dados) exige informar a finalidade da coleta 
 ## 4. Ninguém é avisado quando o Pix para de funcionar para os clientes
 
 **ID:** QUA-004
-**Status:** `ABERTO`
+**Status:** `RESOLVIDO` (07/09/2026 00:45 BRT — ChatGPT)
 **Severidade:** MÉDIA-ALTA
 **Descoberta:** 06/09/2026 20:08 BRT
 **Agente:** Claude
@@ -161,6 +161,10 @@ Esse tipo de falha só é percebido se um cliente reclamar ou se alguém for inv
 ### Ação necessária
 
 Um alerta simples (e-mail para o Diego, por exemplo) quando `createMpPix` falhar, ou um indicador visível no Dashboard quando houver falhas recentes de geração de Pix.
+
+### Correção aplicada
+
+Alerta compacto no Dashboard Admin quando existem falhas de geração de Pix nas últimas 24h (stages `mp_rejected`, `missing_qr_code`, `exception` em `sales.mp_debug_response`), com filtro pelo evento operacional e link para `/admin/configuracoes/mercado-pago`. E-mail/WhatsApp seguem pendentes.
 
 ---
 
@@ -264,3 +268,4 @@ QUA-001 e QUA-003 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verific
 | 06/09/2026 | 21:23 | ChatGPT | QUA-003 | Criadas páginas/rotas de Política de Privacidade e Termos de Uso e adicionados links informativos ao checkout; build de produção passou. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
+| 07/09/2026 | 00:45 | ChatGPT | QUA-004 | Alerta de falhas recentes na geração de Pix adicionado ao Dashboard Admin (últimas 24h, escopo do evento atual, link para Mercado Pago); build de produção passou. |
