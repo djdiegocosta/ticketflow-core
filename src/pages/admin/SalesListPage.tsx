@@ -16,11 +16,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado"] as const;
+const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado", "Devolvido"] as const;
 
 function StatusBadge({ sale }: { sale: any }) {
   if (sale.is_courtesy) return <StatusPill tone="warning">Cortesia</StatusPill>;
-  return <StatusPill tone={sale.status === "pago" ? "accent" : sale.status === "pendente" ? "warning" : sale.status === "expirado" ? "neutral" : "error"}>{sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : "Cancelado"}</StatusPill>;
+  return <StatusPill tone={sale.status === "pago" ? "accent" : sale.status === "pendente" ? "warning" : sale.status === "expirado" ? "neutral" : sale.status === "reembolsado" ? "warning" : "error"}>{sale.status === "pago" ? "Pago" : sale.status === "pendente" ? "Pendente" : sale.status === "expirado" ? "Expirado" : sale.status === "reembolsado" ? "Devolvido" : "Cancelado"}</StatusPill>;
 }
 
 export function SalesListPage() {
@@ -42,7 +42,8 @@ export function SalesListPage() {
     const term = search.trim().toLowerCase();
     return sales.filter((sale) => {
       const eventMatch = !operationalEvent || sale.event_id === operationalEvent.id;
-      const statusMatch = statusFilter === "Todos" || sale.status === statusFilter.toLowerCase();
+      const statusValue = statusFilter === "Devolvido" ? "reembolsado" : statusFilter.toLowerCase();
+      const statusMatch = statusFilter === "Todos" || sale.status === statusValue;
       const normalizedPhone = sale.buyer_whatsapp.replace(/\D/g, "");
       const searchMatch = !term || sale.buyer_name.toLowerCase().includes(term) || normalizedPhone.includes(term.replace(/\D/g, "")) || (sale.sale_code || "").toLowerCase().includes(term);
       return eventMatch && statusMatch && searchMatch;
