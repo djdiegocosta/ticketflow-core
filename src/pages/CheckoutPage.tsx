@@ -8,7 +8,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
-import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
+import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail } from 'lucide-react';
