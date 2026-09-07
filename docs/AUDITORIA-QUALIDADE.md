@@ -101,6 +101,8 @@ Decisão (Diego): começar só com e-mail, usando Gmail SMTP (custo zero, sem do
 
 **Pendente:** teste ponta a ponta com uma compra real após o redeploy, pra confirmar que o e-mail chega e o link funciona. Status muda para `RESOLVIDO` só depois dessa validação.
 
+**Nota (07/09/2026, Claude 2):** o teste real revelou uma causa separada e mais grave (`AUD-018` em `AUDITORIA.md`) que impedia QUALQUER confirmação automática de chegar — `notification_url` do Mercado Pago apontava para um domínio inexistente. Corrigido. Falta apenas confirmar visualmente que o e-mail chegou na caixa de entrada do comprador de teste.
+
 **Commits:** `0602af807c419f299a0f742bd1f454ed4935f835` (envio), `a3c743e530609408625332a09c69ee326a98c7a2` (webhook), `89029e05296e6a5d746b0957c2ad5bffdfbdadc4` (dependência).
 
 ---
@@ -258,13 +260,104 @@ Fora do foco principal desta auditoria (que é experiência do cliente), mas reg
 
 ---
 
+## 9. Página de confirmação com resumo em branco e PDF de ingresso quebrado
+
+**ID:** QUA-009
+**Status:** `RESOLVIDO`
+**Severidade:** CRÍTICA
+**Descoberta:** 07/09/2026 12:40 BRT (Diego, durante teste real de compra)
+**Agente da correção:** Claude 2
+
+### Problema
+
+Na tela de confirmação, o resumo (evento, data, quantidade, total pago) aparecia em branco, e o botão "Baixar todos os ingressos (PDF)" falhava com "Não foi possível gerar o PDF do ingresso".
+
+### Causa raiz
+
+Dupla, ambas no mesmo ponto do código (`src/lib/customer-queries.ts`, hook `useSaleByCode`):
+
+1. `get_sale_by_code` e `get_tickets_by_sale_code` são funções `RETURNS TABLE` — o supabase-js sempre entrega o resultado como **array**. O código fazia `{ ...data, tickets }`, um spread direto do array, que produz um objeto com chaves numéricas (`0`, `1`...) em vez dos campos da venda. Todo campo lido depois (`sale.quantity`, `sale.events?.title` etc.) vinha `undefined`.
+2. `get_sale_by_code` nunca retornou `organization_id`/`buyer_whatsapp` (usados no link "Criar minha conta"), e `get_tickets_by_sale_code` nunca retornou o `id` do ingresso — usado para casar o QR Code na hora de montar o PDF (por isso o erro "QR Code não encontrado").
+3. `ConfirmationPage.tsx` também lia um objeto aninhado `sale.events?.title` que nunca existiu — a função sempre devolveu campos soltos (`event_title`, `event_date`).
+
+### Correção aplicada
+
+- `get_sale_by_code`: agora também retorna `organization_id` e `buyer_whatsapp`.
+- `get_tickets_by_sale_code`: agora também retorna `id`.
+- `useSaleByCode`: pega a primeira linha do array (`data[0]`) em vez de espalhar o array inteiro.
+- `ConfirmationPage.tsx`: lê os campos reais (`sale.event_title`, `sale.event_date`, `sale.organization_id`) em vez do objeto `events` inexistente.
+
+**Commits:** migrations Supabase (`fix_confirmation_rpc_return_shape`), `d2bdf6f384ba91f0224872e83951e4bce8aa3807` (customer-queries.ts), `d7b109d497683f4586d97f4210d2fb5575f7d2e1` (ConfirmationPage.tsx).
+
+### Resolução
+
+- **Data:** 07/09/2026
+- **Hora:** 13:35 BRT
+- **Agente:** Claude 2
+- **Evidência:** build de produção `READY` após o deploy. Validação visual final (segunda compra real conferindo resumo e PDF) pendente de confirmação do Diego.
+
+---
+
+## 10. Vendas de teste do admin nunca expiravam
+
+**ID:** QUA-010
+**Status:** `RESOLVIDO`
+**Severidade:** BAIXA
+**Descoberta:** 07/09/2026 13:00 BRT (Diego reportou "vendas pendentes não expiram no tempo configurado")
+**Agente da correção:** Claude 2
+
+### Problema
+
+`create_mp_test_sale` (usada pelo botão "pagamento de teste" da tela Configurações → Mercado Pago) criava a venda com `status = 'pendente'`, mas nunca definia `expires_at`. Como o job de expiração só processa vendas com `expires_at` preenchido, essas vendas de teste ficavam pendentes para sempre.
+
+**Importante:** vendas reais de clientes (via checkout) sempre definiram `expires_at` corretamente e expiram no prazo configurado — confirmado com dados reais (vendas expiraram exatamente aos 32 minutos, valor configurado da organização). O problema era isolado à ferramenta de teste do admin.
+
+### Correção aplicada
+
+`create_mp_test_sale` agora calcula `expires_at` da mesma forma que `create_pending_sale` (usa `pending_sale_expiration_minutes` da organização, padrão 30min). As 5 vendas de teste que já estavam presas foram expiradas retroativamente (não afeta estoque — essa função nunca decrementou lote).
+
+### Resolução
+
+- **Data:** 07/09/2026
+- **Hora:** 13:20 BRT
+- **Agente:** Claude 2
+- **Evidência:** migration aplicada no Supabase; 5 vendas `TEST%` marcadas `expirado` retroativamente.
+
+---
+
+## 11. Status "Devolvido" ausente na lista de vendas
+
+**ID:** QUA-011
+**Status:** `RESOLVIDO`
+**Severidade:** BAIXA
+**Descoberta:** 07/09/2026 13:00 BRT (pedido direto de Diego)
+**Agente da correção:** Claude 2
+
+### Problema
+
+O banco já suporta o status `reembolsado` (valor válido do enum `sale_status`), mas a tela de vendas do admin não tinha aba nem rótulo próprio para ele — uma venda devolvida aparecia disfarçada como "Cancelado".
+
+### Correção aplicada
+
+Adicionada aba "Devolvido" em `STATUS_TABS`, com cor e rótulo distintos de "Cancelado" no `StatusBadge`, e ajuste no filtro (`reembolsado` ≠ `"devolvido".toLowerCase()`, precisa de mapeamento explícito).
+
+**Commit:** `e42921875feada92a32bef8216a6d4991e84f600` (`src/pages/admin/SalesListPage.tsx`).
+
+### Resolução
+
+- **Data:** 07/09/2026
+- **Hora:** 13:35 BRT
+- **Agente:** Claude 2
+- **Evidência:** build de produção `READY`.
+
+---
+
 # Prioridade sugerida
 
-1. **QUA-002** — confirmação automática por e-mail/WhatsApp (afeta recuperação de ingresso).
-2. **QUA-004** — alerta de falha no Pix (evita descobrir problema só quando o cliente reclama).
-3. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
+1. **QUA-002** — confirmação automática por e-mail/WhatsApp: falta só a validação visual final do e-mail.
+2. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
 
-QUA-001 e QUA-003 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+QUA-001, QUA-003, QUA-004, QUA-009, QUA-010 e QUA-011 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
 
 ---
 
@@ -278,3 +371,6 @@ QUA-001 e QUA-003 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verific
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
 | 07/09/2026 | 00:45 | ChatGPT | QUA-004 | Alerta de falhas recentes na geração de Pix adicionado ao Dashboard Admin (últimas 24h, escopo do evento atual, link para Mercado Pago); build de produção passou. |
+| 07/09/2026 | 13:35 | Claude 2 | QUA-009 | Resumo em branco e PDF quebrado na confirmação: causa raiz era spread de array da RPC. Corrigido em `get_sale_by_code`, `get_tickets_by_sale_code`, `useSaleByCode` e `ConfirmationPage.tsx`. |
+| 07/09/2026 | 13:20 | Claude 2 | QUA-010 | `create_mp_test_sale` corrigida para definir `expires_at`; vendas de teste presas expiradas retroativamente. |
+| 07/09/2026 | 13:35 | Claude 2 | QUA-011 | Status "Devolvido" adicionado à lista de vendas (aba, cor e rótulo distintos de "Cancelado"). |
