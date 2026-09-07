@@ -196,13 +196,18 @@ export function useSaleByCode(code: string) {
   return useQuery({
     queryKey: ["sale-code", code],
     queryFn: async () => {
+      // get_sale_by_code/get_tickets_by_sale_code são RETURNS TABLE, então
+      // o supabase-js entrega um ARRAY em "data" — sempre pegar a primeira
+      // linha (sale_code é único). Nunca fazer spread do array diretamente.
       const { data, error } = await supabase.rpc("get_sale_by_code", { _code: code });
       if (error) throw error;
-      
+      const sale = Array.isArray(data) ? data[0] : data;
+      if (!sale) return null;
+
       const { data: tickets, error: tError } = await supabase.rpc("get_tickets_by_sale_code", { _code: code });
       if (tError) throw tError;
 
-      return { ...data, tickets };
+      return { ...sale, tickets: tickets ?? [] };
     },
     enabled: !!code
   });
