@@ -117,16 +117,12 @@ export default function CheckoutPage() {
     return () => clearInterval(timer);
   }, [step, expiresAt]);
 
-  useEffect(() => {
-    if (countdown === 0 && step === 'payment' && expiresAt) {
-      toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
-      setStep('info');
-      setCurrentSaleId(null);
-      setCurrentSaleCode(null);
-      setExpiresAt(null);
-      setPixData(null);
-    }
-  }, [countdown, step, expiresAt]);
+  // A confirmação de expiração real vem só do status do banco (useEffect abaixo,
+  // saleStatus === 'expirado'), nunca do countdown local. O countdown existe
+  // apenas para exibir o relógio na tela; ele sempre nasce em 0 até o primeiro
+  // cálculo rodar, e um efeito separado observando "countdown === 0" disparava
+  // o aviso de expiração prematuramente nesse instante inicial, mesmo com a
+  // venda recém-criada e válida por mais 30+ minutos.
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
