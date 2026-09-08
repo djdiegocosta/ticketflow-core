@@ -24,13 +24,35 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
-class AdminContentErrorBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { error: Error | null }> {
-  override state: { error: Error | null } = { error: null };
+class AdminContentErrorBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { error: Error | null; componentStack: string }> {
+  override state: { error: Error | null; componentStack: string } = { error: null, componentStack: "" };
   static getDerivedStateFromError(error: Error) { return { error }; }
-  override componentDidCatch(error: Error, info: { componentStack?: string | null }) { console.error("[TicketFlow] Erro ao renderizar página admin:", error, info.componentStack); }
-  override componentDidUpdate(prevProps: { children: ReactNode }) { if (this.state.error && prevProps.children !== this.props.children) this.setState({ error: null }); }
+  override componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+    console.error("[TicketFlow] Erro ao renderizar página admin:", error, info.componentStack);
+    this.setState({ componentStack: info.componentStack ?? "" });
+  }
+  override componentDidUpdate(prevProps: { children: ReactNode }) { if (this.state.error && prevProps.children !== this.props.children) this.setState({ error: null, componentStack: "" }); }
   override render() {
-    if (this.state.error) return <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center"><h2 className="text-heading-2 text-[var(--text-primary)]">Esta página não carregou</h2><p className="max-w-md text-body text-[var(--text-secondary)]">Ocorreu um erro ao exibir esta seção. Você pode tentar novamente ou navegar para outra página pelo menu.</p><Button onClick={() => { this.setState({ error: null }); this.props.onRetry(); }}>Tentar novamente</Button></div>;
+    if (this.state.error) {
+      const diagnostic = [
+        "TicketFlow — diagnóstico de erro na página admin",
+        `Erro: ${this.state.error.message}`,
+        this.state.error.stack ? `Stack: ${this.state.error.stack}` : "",
+        this.state.componentStack ? `Component stack: ${this.state.componentStack}` : "",
+      ].filter(Boolean).join("\n\n");
+      return <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+        <h2 className="text-heading-2 text-[var(--text-primary)]">Esta página não carregou</h2>
+        <p className="max-w-md text-body text-[var(--text-secondary)]">Ocorreu um erro ao exibir esta seção. Você pode tentar novamente ou navegar para outra página pelo menu.</p>
+        <details className="w-full max-w-2xl text-left">
+          <summary className="cursor-pointer text-small font-medium text-[var(--text-secondary)]">Ver diagnóstico técnico</summary>
+          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] p-3 text-[11px] text-[var(--text-secondary)]">{diagnostic}</pre>
+        </details>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { void navigator.clipboard?.writeText(diagnostic); }}>Copiar diagnóstico</Button>
+          <Button onClick={() => { this.setState({ error: null, componentStack: "" }); this.props.onRetry(); }}>Tentar novamente</Button>
+        </div>
+      </div>;
+    }
     return this.props.children;
   }
 }
@@ -72,7 +94,7 @@ function AdminLayoutContent() {
     <aside className={["flex h-full w-60 shrink-0 flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--bg-secondary)] transition-transform duration-300", isMobile ? "fixed left-0 top-0 z-50 transform" : "relative translate-x-0", isMobile && !isSidebarOpen ? "-translate-x-full" : "translate-x-0"].join(" ")}>
       <div className="flex h-16 shrink-0 items-center justify-between px-6"><Brandmark size="sm" />{isMobile && <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-[var(--text-secondary)]"><X className="h-5 w-5" /></Button>}</div>
       <nav className="min-h-0 flex-1 overflow-hidden px-3 py-2"><div className="flex flex-col gap-0.5">{filteredMenu.map((item) => { const active = isActive(item.to, item.exact); return <Link key={item.to} to={item.to} className={["flex items-center gap-3 rounded-none border-l-[3px] px-3 py-2 text-body transition-colors", active ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent-text)] dark:border-l-4" : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"].join(" ")}><item.icon className="h-4 w-4" /><span>{item.label}</span></Link>; })}</div></nav>
-      <div className="shrink-0 border-t border-[var(--border-subtle)] px-3 pt-2 pb-5"><button type="button" onClick={toggleTheme} className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}<span>{theme === "dark" ? "Tema claro" : "Tema escuro"}</span></button><button type="button" onClick={logout} className="mt-0.5 flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--error)]"><LogOut className="h-4 w-4" /><span>Sair</span></button></div>
+      <div className="shrink-0 border-t border-[var(--border-subtle)] px-3 pt-2 pb-5"><button type="button" onClick={toggleTheme} className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}<span>{theme === "dark" ? "Tema claro" : "Tema escuro"}</span></button><button type="button" onClick={logout} className="mt-0.5 flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"><LogOut className="h-4 w-4" /><span>Sair</span></button></div>
     </aside>
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6"><div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)} className="text-[var(--text-secondary)] lg:hidden"><Menu className="h-5 w-5" /></Button><span className="truncate text-heading-2 text-[var(--text-primary)]">{getPageTitle()}</span></div><div className="flex shrink-0 items-center">{pageAction}</div></header>
