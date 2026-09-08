@@ -160,29 +160,23 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // Limpeza única de Service Workers e caches antigos no carregamento
+  // Registro do Service Worker — habilita a instalação do PWA (Área do
+  // Cliente e demais páginas). O arquivo público/sw.js não tem listener de
+  // 'fetch': não guarda nada em cache, então não corre o risco de servir uma
+  // versão antiga do site depois de um novo deploy. Ele também usa
+  // skipWaiting/clients.claim, então substitui de imediato qualquer versão
+  // anterior do Service Worker que ainda esteja ativa no navegador de algum
+  // cliente — inclusive a versão com cache que motivou desativar o registro
+  // em 29/08/2026 (ver docs/PROJECT-MAP.md, seção PWA).
   useEffect(() => {
-    (async () => {
-      try {
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const reg of registrations) {
-            await reg.unregister();
-          }
-        }
-      } catch (_) {
-        // Silencioso — SW pode não estar disponível em alguns contextos
-      }
+    if (!("serviceWorker" in navigator)) return;
+    if (window.location.hostname === "localhost" || window.location.hostname.includes("127.0.0.1"))
+      return;
 
-      try {
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
-        }
-      } catch (_) {
-        // Silencioso — Cache Storage pode não estar disponível
-      }
-    })();
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
+      // Silencioso — o site continua funcionando normalmente sem o Service
+      // Worker; apenas a instalação como app fica indisponível.
+    });
   }, []);
 
   return (

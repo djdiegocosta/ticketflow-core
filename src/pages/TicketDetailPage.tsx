@@ -1,4 +1,5 @@
 import { MobileLayout } from '@/components/layouts/MobileLayout';
+import { InstallAppButton } from '@/components/cliente/InstallAppButton';
 import { Button } from '@/components/ui/button';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2, Ticket } from 'lucide-react';
@@ -158,6 +159,8 @@ export default function TicketDetailPage() {
             <li>Aumente o brilho da tela do celular para facilitar a leitura.</li>
           </ul>
         </div>
+
+        <InstallAppButton />
       </div>
     </MobileLayout>
   );

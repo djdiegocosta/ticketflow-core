@@ -337,6 +337,23 @@ Implementado:
 - remoção do campo Instagram e do indicador de completude;
 - preservação de dados antigos de Instagram no banco.
 
+### PWA / instalação (implementado em 07/09/2026)
+
+O app é instalável (Adicionar à Tela de Início / botão "Instalar app") a partir da Área do Cliente e de telas públicas de compra.
+
+Arquivos:
+- `public/manifest.json` — nome, ícones, `display: standalone`. Global (cobre Admin + Cliente + Público, mesmo domínio/manifest — decisão já registrada em `docs/TPS.md` §13.2).
+- `public/sw.js` — Service Worker mínimo, **sem listener de `fetch`** (não guarda nada em cache, de propósito). `skipWaiting` + `clients.claim` no install/activate.
+- `src/routes/__root.tsx` — registra o Service Worker (fora de localhost) dentro do `RootComponent`.
+- `src/hooks/use-pwa-install.ts` — detecta `display-mode: standalone`/`navigator.standalone` (já instalado), detecta iOS, escuta `beforeinstallprompt`/`appinstalled`, guarda dispensa do banner em `localStorage`.
+- `src/components/cliente/InstallAppButton.tsx` — componente do botão + instruções de iOS (Drawer com 2 passos: Compartilhar → Adicionar à Tela de Início). Android/Chrome usa o prompt nativo (`deferredPrompt.prompt()`).
+
+Onde o botão aparece: `src/routes/cliente.index.tsx` (Início da Área do Cliente), `src/pages/TicketDetailPage.tsx` (visualização de ingresso), `src/pages/ConfirmationPage.tsx` (pós-compra). Nunca no Admin.
+
+Histórico importante: entre 29/08/2026 e 07/09/2026 o registro do Service Worker ficou desativado de propósito (commit `5a6289e`), com limpeza ativa de qualquer SW/cache antigo a cada carregamento — decisão tomada em meio a uma sessão de vários bugs de carregamento. A versão de `sw.js` religada em 07/09/2026 é a mesma versão "vazia" que já existia (sem `fetch`, sem cache), então o risco que motivou a desativação não se repete; o `skipWaiting`/`clients.claim` garante que qualquer instalação antiga e problemática seja substituída no primeiro carregamento seguinte.
+
+Fora de escopo (deliberado, não implementado): notificação push, sincronização/uso offline completo, cache de rotas, publicação nas lojas Apple/Google.
+
 ## 16. Público / privacidade
 
 Superfícies públicas intencionais:

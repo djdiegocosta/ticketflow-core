@@ -75,6 +75,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Correção: nova migration (`20260905231500_restore_checkin_ticket_correct_definition.sql`) recria a função com a definição real e funcional hoje em produção. Nenhuma mudança de comportamento — só reconciliação entre repositório e banco.
 - Arquivo criado: `supabase/migrations/20260905231500_restore_checkin_ticket_correct_definition.sql`.
 
+### PWA — Área do Cliente instalável
+- A Área do Cliente e as telas públicas de compra passam a ser instaláveis como app (Android/Chrome com prompt nativo; iOS/Safari com instrução guiada "Compartilhar → Adicionar à Tela de Início"). Abre em modo `standalone` (sem barra do navegador).
+- Reaproveitado o manifest e o Service Worker que já existiam no projeto (sem cache, só habilitam a instalação) — estavam prontos, mas o registro do Service Worker tinha sido desativado de propósito em 29/08/2026 após bugs de carregamento pós-deploy. Religado com `skipWaiting`/`clients.claim`, que substitui automaticamente qualquer versão antiga/problemática ainda ativa no navegador de algum cliente.
+- Botão "Instalar aplicativo" (componente `InstallAppButton`) adicionado em 3 pontos: Início da Área do Cliente, visualização de um ingresso, e confirmação de compra. Discreto, dispensável, nunca aparece no Admin.
+- Corrigido de passagem: o ícone `icon-192x192.png` estava salvo internamente como 512×512 (tamanho errado dentro do arquivo).
+- Arquivos novos: `src/hooks/use-pwa-install.ts`, `src/components/cliente/InstallAppButton.tsx`.
+- Arquivos alterados: `public/sw.js`, `public/icons/icon-192x192.png`, `src/routes/__root.tsx`, `src/routes/cliente.index.tsx`, `src/pages/TicketDetailPage.tsx`, `src/pages/ConfirmationPage.tsx`.
+- Fora de escopo (deliberado): notificação push, uso offline, publicação nas lojas Apple/Google — ver `docs/PROJECT-MAP.md` §15 para detalhe técnico completo.
+
 ---
 
 ## Pendências conhecidas

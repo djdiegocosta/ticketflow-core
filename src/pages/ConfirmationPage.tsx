@@ -1,4 +1,5 @@
 import { MobileLayout } from '@/components/layouts/MobileLayout';
+import { InstallAppButton } from '@/components/cliente/InstallAppButton';
 import { Button } from '@/components/ui/button';
 import { useParams, Link } from '@tanstack/react-router';
 import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
@@ -229,6 +230,8 @@ export default function ConfirmationPage() {
               </Link>
             </Button>
           </div>
+
+          <InstallAppButton />
         </div>
       </div>
     </MobileLayout>

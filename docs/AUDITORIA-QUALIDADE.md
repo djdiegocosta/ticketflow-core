@@ -352,12 +352,40 @@ Adicionada aba "Devolvido" em `STATUS_TABS`, com cor e rótulo distintos de "Can
 
 ---
 
+## 12. Service Worker desativado impedia instalar o app (PWA)
+
+**ID:** QUA-012
+**Status:** `RESOLVIDO`
+**Severidade:** MÉDIA
+**Descoberta:** 07/09/2026 08:07 BRT
+**Agente:** Claude
+
+### Problema
+
+O projeto já tinha manifest, ícones e um Service Worker prontos para tornar a Área do Cliente instalável como app — mas o registro do Service Worker estava desativado de propósito desde 29/08/2026 (`src/routes/__root.tsx` desregistrava ativamente qualquer Service Worker e limpava todo o cache a cada carregamento). Sem ele, nenhum navegador oferece a instalação. Além disso, `public/icons/icon-192x192.png` estava salvo internamente como 512×512 (tamanho errado dentro do próprio arquivo), o que pode fazer o navegador rejeitar ou distorcer o ícone na instalação.
+
+### Impacto
+
+Cliente não conseguia instalar o TicketFlow como app, mesmo tendo toda a infraestrutura já pronta no projeto.
+
+### Correção aplicada
+
+`public/sw.js` religado em `src/routes/__root.tsx`, mantendo a versão sem `fetch`/sem cache que já existia (não guarda nenhuma resposta de rede — não repete o tipo de risco que motivou a desativação em 29/08). Adicionado `skipWaiting`/`clients.claim` no próprio `sw.js`, para substituir de imediato qualquer versão antiga eventualmente ainda ativa no navegador de algum cliente. Ícone `icon-192x192.png` regenerado no tamanho correto a partir do master 512×512. Criado o botão "Instalar aplicativo" (`InstallAppButton`) com instruções de iOS, em 3 pontos da experiência do cliente — ver `docs/PROJECT-MAP.md` §15 para detalhe técnico completo.
+
+**Arquivos:** `public/sw.js`, `public/icons/icon-192x192.png`, `src/routes/__root.tsx`, `src/hooks/use-pwa-install.ts` (novo), `src/components/cliente/InstallAppButton.tsx` (novo), `src/routes/cliente.index.tsx`, `src/pages/TicketDetailPage.tsx`, `src/pages/ConfirmationPage.tsx`.
+
+### Validação pós-correção
+
+Build de produção (`npx vite build`) passou sem erros; manifest, `sw.js` e os dois ícones (agora nos tamanhos corretos) confirmados na pasta de saída final. Lint limpo nos arquivos novos. Comportamento de instalação em navegador/dispositivo real ainda não testado — depende de deploy no Vercel (Android/Chrome e iOS/Safari não são simuláveis neste ambiente).
+
+---
+
 # Prioridade sugerida
 
 1. **QUA-002** — confirmação automática por e-mail/WhatsApp: falta só a validação visual final do e-mail.
 2. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
 
-QUA-001, QUA-003, QUA-004, QUA-009, QUA-010 e QUA-011 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+QUA-001, QUA-003, QUA-004, QUA-009, QUA-010, QUA-011 e QUA-012 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
 
 ---
 
@@ -369,8 +397,10 @@ QUA-001, QUA-003, QUA-004, QUA-009, QUA-010 e QUA-011 já foram corrigidos. QUA-
 | 06/09/2026 | 20:38 | Claude | QUA-001 | Meta tags dinâmicas implementadas (título, descrição e og:image reais do evento) nas 3 páginas públicas; build e deploy validados. |
 | 06/09/2026 | 21:23 | ChatGPT | QUA-003 | Criadas páginas/rotas de Política de Privacidade e Termos de Uso e adicionados links informativos ao checkout; build de produção passou. |
 
-**Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
 | 07/09/2026 | 00:45 | ChatGPT | QUA-004 | Alerta de falhas recentes na geração de Pix adicionado ao Dashboard Admin (últimas 24h, escopo do evento atual, link para Mercado Pago); build de produção passou. |
 | 07/09/2026 | 13:35 | Claude 2 | QUA-009 | Resumo em branco e PDF quebrado na confirmação: causa raiz era spread de array da RPC. Corrigido em `get_sale_by_code`, `get_tickets_by_sale_code`, `useSaleByCode` e `ConfirmationPage.tsx`. |
 | 07/09/2026 | 13:20 | Claude 2 | QUA-010 | `create_mp_test_sale` corrigida para definir `expires_at`; vendas de teste presas expiradas retroativamente. |
 | 07/09/2026 | 13:35 | Claude 2 | QUA-011 | Status "Devolvido" adicionado à lista de vendas (aba, cor e rótulo distintos de "Cancelado"). |
+| 07/09/2026 | 08:07 | Claude | QUA-012 | Service Worker religado (sem cache, com skipWaiting/clients.claim) e botão "Instalar aplicativo" implementado na Área do Cliente; ícone 192x192 corrigido; build de produção passou. |
+
+**Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
