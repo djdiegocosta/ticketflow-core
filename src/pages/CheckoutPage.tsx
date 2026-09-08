@@ -13,8 +13,10 @@ import { toast } from 'sonner';
 
 import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
-import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign, useAvailableBatches, useMyCustomerRecords } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
+import { useAuth } from '@/lib/auth-context';
+import { buildCheckoutPrefill } from '@/lib/checkout-prefill';
 import { supabase } from '@/integrations/supabase/client';
 import { setLastVisitedOrg } from '@/lib/org-context';
 import { captureRef, getStoredRef } from '@/lib/attribution';
@@ -36,8 +38,10 @@ export default function CheckoutPage() {
   const qtyInput = parseInt(search.qty || '1');
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   
+  const { user } = useAuth();
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
   const { data: availableBatches } = useAvailableBatches(event?.id);
+  const { data: customerRecords } = useMyCustomerRecords();
   useApplyPublicDesign(slug);
   const createPendingSale = useCreatePendingSale();
   const generateSalePix = useGenerateSalePix();
@@ -57,6 +61,7 @@ export default function CheckoutPage() {
   
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
+  const prefillAppliedKey = useRef<string | null>(null);
 
   // Retomar uma compra pendente (veio do card "Aguardando pagamento" em Meus Ingressos).
   // O Pix já foi gerado antes e fica salvo na própria venda — não gera um novo.
@@ -104,6 +109,26 @@ export default function CheckoutPage() {
     control: form.control,
     name: "participants"
   });
+
+  useEffect(() => {
+    if (!user || !event || !customerRecords) return;
+
+    const customer = customerRecords.find((record) => record.organization_id === event.organization_id) ?? null;
+    const key = `${user.id}:${event.id}:${customer?.id ?? 'no-customer'}`;
+    if (prefillAppliedKey.current === key) return;
+
+    const prefill = buildCheckoutPrefill(customer, user.email);
+    const setIfPristine = (field: keyof CheckoutFormValues, value?: string) => {
+      if (value && !form.getFieldState(field).isDirty) {
+        form.setValue(field, value, { shouldValidate: true });
+      }
+    };
+
+    setIfPristine('buyerName', prefill.buyerName);
+    setIfPristine('buyerWhatsApp', prefill.buyerWhatsApp ? maskWhatsApp(prefill.buyerWhatsApp) : undefined);
+    setIfPristine('buyerEmail', prefill.buyerEmail?.toLowerCase());
+    prefillAppliedKey.current = key;
+  }, [user, event, customerRecords, form]);
 
   useEffect(() => {
     return () => {
@@ -169,8 +194,8 @@ export default function CheckoutPage() {
     try {
       let customerId: string | undefined;
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
         const { data: customerData } = await supabase.rpc('get_or_create_customer', { 
           _organization_id: event.organization_id 
         });
