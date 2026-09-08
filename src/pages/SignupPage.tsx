@@ -127,7 +127,7 @@ export default function SignupPage() {
   };
 
   return (
-    <MobileLayout showFooter={false}>
+    <MobileLayout showFooter={false} hideAuthCta>
       <div className="flex flex-col items-center justify-center p-4 py-8">
         <Card className="w-full max-w-[440px] bg-bg-secondary border-border-default shadow-md rounded-lg">
           <CardHeader className="pb-2">

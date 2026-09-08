@@ -1,7 +1,19 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Check, Home, LogOut, Menu, Moon, Sun, Ticket, User, X } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  Home,
+  LogOut,
+  Menu,
+  Moon,
+  Sun,
+  Ticket,
+  User,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { Brandmark } from "@/components/Brandmark";
 import { useApplyCustomerDesign } from "@/lib/customer-queries";
 import { useAuth } from "@/lib/auth-context";
@@ -12,6 +24,9 @@ interface MobileLayoutProps {
   children?: ReactNode;
   headerContent?: ReactNode;
   showFooter?: boolean;
+  /** Esconde o botão "Criar conta" para visitante sem cadastro. Usar só na
+   * própria tela de cadastro, onde o botão seria redundante. */
+  hideAuthCta?: boolean;
 }
 
 const menuItems: { to: string; label: string; icon: typeof Home; exact?: boolean }[] = [
@@ -22,12 +37,24 @@ const menuItems: { to: string; label: string; icon: typeof Home; exact?: boolean
   { to: "/cliente/perfil", label: "Perfil", icon: User },
 ];
 
-export function MobileLayout({ children, headerContent, showFooter = true }: MobileLayoutProps) {
+export function MobileLayout({
+  children,
+  headerContent,
+  showFooter = true,
+  hideAuthCta = false,
+}: MobileLayoutProps) {
   useApplyCustomerDesign();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Visitante sem conta: nunca mostra o menu com as áreas do Cliente (todas
+  // exigem login) — mostra "Criar conta" no lugar. Enquanto a sessão ainda
+  // está sendo verificada, não mostra nenhum dos dois, pra não piscar o
+  // errado na tela por uma fração de segundo.
+  const showMenuButton = authLoading ? false : isAuthenticated;
+  const showAuthCta = authLoading ? false : !isAuthenticated && !hideAuthCta;
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -112,20 +139,40 @@ export function MobileLayout({ children, headerContent, showFooter = true }: Mob
 
       <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4">
         <div className="flex w-full items-center justify-between gap-4">
-          <Link to="/cliente" className="flex items-center gap-2">
-            <Brandmark size="sm" />
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/cliente" className="flex items-center gap-2">
+              <Brandmark size="sm" />
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Brandmark size="sm" />
+            </div>
+          )}
           <div className="flex min-w-0 items-center gap-2">
             {headerContent && <div className="min-w-0">{headerContent}</div>}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMenuOpen(true)}
-              className="h-9 w-9 shrink-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              aria-label="Abrir menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            {showMenuButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(true)}
+                className="h-9 w-9 shrink-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                aria-label="Abrir menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
+            {showAuthCta && (
+              <Button
+                asChild
+                size="sm"
+                className="shrink-0 bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]"
+              >
+                <Link to="/cadastro" className="flex items-center gap-1.5">
+                  <UserPlus className="h-4 w-4" />
+                  Criar conta
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
