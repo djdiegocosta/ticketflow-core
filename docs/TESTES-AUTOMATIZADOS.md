@@ -12,12 +12,12 @@ Este documento registra a estratégia e o estado real dos testes automatizados d
 
 Antes desta implementação, o repositório não possuía arquivos `.test.`/`.spec.` nem um runner de testes.
 
-Foi criada a primeira camada de testes com **Vitest**, escolhido por ser integrado ao Vite e oferecer suporte nativo a TypeScript. A documentação oficial confirma que Vitest reutiliza a configuração do Vite e executa arquivos `.test.ts` sem uma etapa separada de compilação. citeturn0search1turn0search2
+Foi criada a primeira camada de testes com **Vitest**, escolhido por ser integrado ao Vite e oferecer suporte nativo a TypeScript.
 
 ### Implementado nesta etapa
 
 - `vitest` adicionado como dependência de desenvolvimento.
-- `npm test` equivalente do projeto: `bun run test` → `vitest run`.
+- `bun run test` → `vitest run`.
 - `bun run test:watch` → execução em modo de observação.
 - `vitest.config.ts` criado.
 - Primeiro conjunto de testes criado em `tests/checkout-prefill.test.ts`.
