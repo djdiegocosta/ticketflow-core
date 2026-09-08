@@ -40,6 +40,12 @@ describe('buildCheckoutPrefill', () => {
     });
   });
 
+  it('uses the authenticated email even when no customer profile exists yet', () => {
+    expect(buildCheckoutPrefill(null, 'novo@example.com')).toEqual({
+      buyerEmail: 'novo@example.com',
+    });
+  });
+
   it('does not invent missing profile fields', () => {
     expect(
       buildCheckoutPrefill(
