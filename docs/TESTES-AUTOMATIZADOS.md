@@ -12,17 +12,16 @@ Este documento registra a estratégia e o estado real dos testes automatizados d
 
 Antes desta implementação, o repositório não possuía arquivos `.test.`/`.spec.` nem um runner de testes.
 
-Foi criada a primeira camada de testes com **Vitest**, escolhido por ser integrado ao Vite e oferecer suporte nativo a TypeScript.
+Foi criada a primeira camada de testes usando o **Bun Test Runner**, que já faz parte do ambiente de desenvolvimento do projeto e evita adicionar uma nova dependência ao `package.json` e ao `bun.lock` apenas para testes unitários.
 
 ### Implementado nesta etapa
 
-- `vitest` adicionado como dependência de desenvolvimento.
-- `bun run test` → `vitest run`.
-- `bun run test:watch` → execução em modo de observação.
-- `vitest.config.ts` criado.
+- `bun run test` → `bun test`.
+- `bun run test:watch` → `bun test --watch`.
 - Primeiro conjunto de testes criado em `tests/checkout-prefill.test.ts`.
 - Pipeline GitHub Actions criado em `.github/workflows/quality.yml` para executar testes e build de produção a cada push na `main` e pull request para `main`.
 - Criado `src/lib/checkout-prefill.ts` para centralizar uma regra pura e testável do checkout.
+- Nenhuma dependência de produção foi alterada para criar esta camada de testes.
 
 ## Regra testada
 
