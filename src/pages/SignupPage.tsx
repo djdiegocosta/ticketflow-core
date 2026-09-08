@@ -96,8 +96,18 @@ export default function SignupPage() {
     }
 
     if (result.session) {
-      if (org_id) {
-        await supabase.rpc("get_or_create_customer", { _organization_id: org_id });
+      // Não depende do parâmetro org_id da URL (link de cadastro compartilhado
+      // pode não ter esse parâmetro) — resolve a organização única da mesma
+      // forma que a área /cliente já faz, e aguarda o resultado antes de
+      // navegar, pra garantir que o perfil de cliente existe.
+      const { data: organizationId } = await supabase.rpc("get_single_organization_id");
+      if (organizationId) {
+        const { error: customerError } = await supabase.rpc("get_or_create_customer", {
+          _organization_id: organizationId,
+        });
+        if (customerError) {
+          console.error("Falha ao criar perfil de cliente no cadastro", customerError);
+        }
       }
       localStorage.setItem("is_new_registration", "true");
       toast.success("Conta criada com sucesso!");
