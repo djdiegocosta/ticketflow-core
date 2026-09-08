@@ -32,7 +32,7 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
   const { slug } = useParams({ from: '/e/$slug/checkout' });
-  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string, ref?: string };
+  const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string, ref?: string, resume?: string };
   const qtyInput = parseInt(search.qty || '1');
   const qty = isNaN(qtyInput) ? 1 : qtyInput;
   
@@ -53,9 +53,40 @@ export default function CheckoutPage() {
   const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string } | null>(null);
   
   const { data: saleStatus } = useSaleStatus(currentSaleId);
+  const [isResuming, setIsResuming] = useState(!!search.resume);
   
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
+
+  // Retomar uma compra pendente (veio do card "Aguardando pagamento" em Meus Ingressos).
+  // O Pix já foi gerado antes e fica salvo na própria venda — não gera um novo.
+  useEffect(() => {
+    if (!search.resume) return;
+    let cancelled = false;
+    (async () => {
+      const { data: sale, error } = await supabase
+        .from('sales')
+        .select('id, sale_code, status, expires_at, mp_qr_code, mp_qr_code_base64')
+        .eq('id', search.resume)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error || !sale || sale.status !== 'pendente' || !sale.mp_qr_code || (sale.expires_at && new Date(sale.expires_at) <= new Date())) {
+        toast.error("Essa reserva não está mais disponível.");
+        navigate({ to: '/e/$slug', params: { slug }, replace: true });
+        return;
+      }
+
+      setCurrentSaleId(sale.id);
+      setCurrentSaleCode(sale.sale_code);
+      setExpiresAt(sale.expires_at);
+      setPixData({ qr_code: sale.mp_qr_code, qr_code_base64: sale.mp_qr_code_base64 });
+      setStep('payment');
+      setIsResuming(false);
+    })();
+    return () => { cancelled = true; };
+  }, [search.resume, navigate, slug]);
 
   const batch = availableBatches?.find(b => b.id === search.batchId) || availableBatches?.[0];
 
@@ -219,7 +250,7 @@ export default function CheckoutPage() {
     setTimeout(() => setPixCopied(false), 2000);
   };
 
-  if (isLoadingEvent) {
+  if (isLoadingEvent || isResuming) {
     return (
       <MobileLayout showFooter={false}>
         <div className="flex min-h-[60vh] items-center justify-center">
