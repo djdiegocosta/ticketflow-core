@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCheckoutPrefill } from '@/lib/checkout-prefill';
+import { buildCheckoutPrefill } from '../src/lib/checkout-prefill';
 
 describe('buildCheckoutPrefill', () => {
   it('returns empty defaults for a guest checkout', () => {
