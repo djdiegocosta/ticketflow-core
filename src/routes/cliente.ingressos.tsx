@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState, useMemo } from "react";
 import { offlineDB } from "@/lib/offline-db";
-import { Database, Loader2 } from "lucide-react";
+import { Database, Loader2, Clock } from "lucide-react";
 import { useCustomerSales, ticketStatusMeta } from "@/lib/customer-queries";
 import { Link } from "@tanstack/react-router";
 import { StatusPill } from "@/components/admin/DataTable";
@@ -39,6 +39,11 @@ export function Page_cliente_ingressos() {
       window.removeEventListener('offline', checkStatus);
     };
   }, []);
+
+  const pendingSales = useMemo(() => {
+    if (isOfflineMode) return [];
+    return (sales as any[]).filter((s) => s.status === 'pendente');
+  }, [sales, isOfflineMode]);
 
   const allTickets = useMemo(() => {
     if (isOfflineMode) return offlineTickets;
@@ -98,6 +103,37 @@ export function Page_cliente_ingressos() {
           </button>
         ))}
       </div>
+
+      {pendingSales.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-small font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Aguardando pagamento</h2>
+          {pendingSales.map((s: any) => {
+            const minutesLeft = s.expires_at
+              ? Math.max(0, Math.round((new Date(s.expires_at).getTime() - Date.now()) / 60000))
+              : null;
+            return (
+              <div
+                key={s.id}
+                className="bg-[var(--bg-secondary)] border border-dashed border-[var(--accent)] p-4 rounded-[var(--radius-md)] flex justify-between items-center"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <p className="font-semibold text-body">{s.events?.title}</p>
+                  <p className="text-small text-[var(--text-secondary)]">
+                    {s.quantity}x ingresso{s.quantity > 1 ? 's' : ''} · R$ {Number(s.total_amount || 0).toFixed(2)}
+                  </p>
+                  {minutesLeft !== null && (
+                    <p className="flex items-center gap-1 text-micro text-[var(--text-disabled)]">
+                      <Clock className="h-3 w-3" />
+                      {minutesLeft > 0 ? `Expira em ${minutesLeft} min` : 'Expirando...'}
+                    </p>
+                  )}
+                </div>
+                <StatusPill tone="warning">Aguardando pagamento</StatusPill>
+              </div>
+            );
+          })}
+        </div>
+      )}
       
       <div className="space-y-3">
         {filteredTickets.length > 0 ? (
