@@ -35,6 +35,11 @@ const signupSchema = z
       .refine((val) => onlyDigits(val).length >= 11, "WhatsApp deve ter 11 dígitos"),
     email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
     city: z.string().min(1, "Cidade obrigatória"),
+    birthDate: z
+      .string()
+      .min(1, "Data de nascimento obrigatória")
+      .refine((val) => !isNaN(new Date(val).getTime()), "Data inválida")
+      .refine((val) => new Date(val) <= new Date(), "Data não pode ser no futuro"),
     sexo: z.enum(["masculino", "feminino", "prefiro_nao_informar"]).optional(),
     password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirmação de senha obrigatória"),
@@ -63,6 +68,7 @@ export default function SignupPage() {
       whatsapp: whatsapp || "",
       email: "",
       city: "",
+      birthDate: "",
       sexo: undefined,
       password: "",
       confirmPassword: "",
@@ -81,6 +87,7 @@ export default function SignupPage() {
           full_name: formatName(data.name),
           whatsapp: data.whatsapp,
           cidade: data.city,
+          data_nascimento: data.birthDate,
           sexo: data.sexo || null,
         },
       },
@@ -205,6 +212,25 @@ export default function SignupPage() {
                       </FormItem>
                     );
                   }}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de nascimento</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          max={new Date().toISOString().split("T")[0]}
+                          {...field}
+                          className="bg-bg-secondary border-border-default focus-visible:ring-accent"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-small text-error" />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
