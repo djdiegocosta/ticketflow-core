@@ -98,8 +98,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // a aba volta a ficar visível, mesmo sem nenhuma ação da pessoa), o
       // usuário era jogado de volta pro dashboard, perdendo a página em que
       // estava.
+      // "/redefinir-senha" NUNCA pode disparar esse redirecionamento: o link
+      // de recuperação de senha do e-mail já estabelece uma sessão válida
+      // sozinho, e esse mesmo listener via onAuthStateChange tirava a pessoa
+      // dessa tela antes de ela conseguir digitar a nova senha.
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-      const isEntryPage = ["/", "/login", "/cadastro", "/recuperar-senha", "/redefinir-senha"].includes(currentPath);
+      if (currentPath === "/redefinir-senha") {
+        return;
+      }
+      const isEntryPage = ["/", "/login", "/cadastro", "/recuperar-senha"].includes(currentPath);
       const isPublicArea =
         currentPath.startsWith("/e/") || currentPath.startsWith("/meus-ingressos") || currentPath.startsWith("/ingresso/");
       const alreadyOnOwnArea =
