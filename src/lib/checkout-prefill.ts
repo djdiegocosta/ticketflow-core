@@ -18,13 +18,11 @@ export function buildCheckoutPrefill(
   customer: CheckoutPrefillCustomer | null | undefined,
   authEmail?: string | null,
 ): CheckoutPrefill {
-  if (!customer) return {};
-
-  const buyerEmail = customer.email?.trim() || authEmail?.trim() || undefined;
+  const buyerEmail = customer?.email?.trim() || authEmail?.trim() || undefined;
 
   return {
-    buyerName: customer.full_name?.trim() || undefined,
-    buyerWhatsApp: customer.whatsapp?.trim() || undefined,
+    buyerName: customer?.full_name?.trim() || undefined,
+    buyerWhatsApp: customer?.whatsapp?.trim() || undefined,
     buyerEmail,
   };
 }
