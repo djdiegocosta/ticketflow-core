@@ -12,4 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // The current iPhone test device runs iOS/Safari 15.8.
+    // Vite 8 defaults to Safari/iOS 16.4+, so explicitly lower the production
+    // syntax target to keep the admin route chunks parseable on iOS 15.
+    build: {
+      target: "safari15",
+    },
+  },
 });
