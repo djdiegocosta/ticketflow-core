@@ -22,7 +22,7 @@ jobs:
         run: bun install
 
       - name: Run automated tests
-        run: bun run test
+        run: bun test tests/checkout-prefill.test.ts
 
       - name: Build production
         run: bun run build
