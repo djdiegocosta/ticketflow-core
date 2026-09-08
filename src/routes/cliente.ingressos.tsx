@@ -112,9 +112,12 @@ export function Page_cliente_ingressos() {
               ? Math.max(0, Math.round((new Date(s.expires_at).getTime() - Date.now()) / 60000))
               : null;
             return (
-              <div
+              <Link
                 key={s.id}
-                className="bg-[var(--bg-secondary)] border border-dashed border-[var(--accent)] p-4 rounded-[var(--radius-md)] flex justify-between items-center"
+                to="/e/$slug/checkout"
+                params={{ slug: s.events?.slug }}
+                search={{ resume: s.id }}
+                className="bg-[var(--bg-secondary)] border border-dashed border-[var(--accent)] p-4 rounded-[var(--radius-md)] flex justify-between items-center active:scale-[0.98] transition-transform"
               >
                 <div className="flex flex-col gap-0.5">
                   <p className="font-semibold text-body">{s.events?.title}</p>
@@ -124,12 +127,12 @@ export function Page_cliente_ingressos() {
                   {minutesLeft !== null && (
                     <p className="flex items-center gap-1 text-micro text-[var(--text-disabled)]">
                       <Clock className="h-3 w-3" />
-                      {minutesLeft > 0 ? `Expira em ${minutesLeft} min` : 'Expirando...'}
+                      {minutesLeft > 0 ? `Expira em ${minutesLeft} min · toque para pagar` : 'Expirando...'}
                     </p>
                   )}
                 </div>
                 <StatusPill tone="warning">Aguardando pagamento</StatusPill>
-              </div>
+              </Link>
             );
           })}
         </div>
