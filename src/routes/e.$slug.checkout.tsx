@@ -7,7 +7,8 @@ export const Route = createFileRoute("/e/$slug/checkout")({
   validateSearch: (search) => z.object({
     batchId: z.string().optional(),
     qty: z.string().optional(),
-    ref: z.string().optional()
+    ref: z.string().optional(),
+    resume: z.string().uuid().optional()
   }).parse(search),
   loader: ({ params }) => fetchEventMeta(params.slug),
   head: ({ loaderData }) => ({
