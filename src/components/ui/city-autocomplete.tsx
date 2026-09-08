@@ -39,7 +39,12 @@ export function CityAutocomplete({
   const [isCustom, setIsCustom] = React.useState(false);
   const [customValue, setCustomValue] = React.useState("");
 
-  const cities = React.useMemo(() => getCitiesByUF("RJ"), []);
+  // Nunca cair no fallback de "todas as cidades do Brasil" (getCitiesByUF(null)
+  // devolve ~5.570 itens de uma vez, sem paginação/virtualização na lista) —
+  // isso é o suficiente pra travar o navegador em celulares mais fracos.
+  // Enquanto o estado (uf) não é conhecido, mostra uma lista pequena seguindo
+  // a mesma região da organização, em vez do país inteiro.
+  const cities = React.useMemo(() => getCitiesByUF(uf || "RJ"), [uf]);
 
   // Sync state if value is external
   React.useEffect(() => {
