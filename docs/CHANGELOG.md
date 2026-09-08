@@ -84,6 +84,12 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Arquivos alterados: `public/sw.js`, `public/icons/icon-192x192.png`, `src/routes/__root.tsx`, `src/routes/cliente.index.tsx`, `src/pages/TicketDetailPage.tsx`, `src/pages/ConfirmationPage.tsx`.
 - Fora de escopo (deliberado): notificação push, uso offline, publicação nas lojas Apple/Google — ver `docs/PROJECT-MAP.md` §15 para detalhe técnico completo.
 
+### Visitante sem conta não vê mais o menu do módulo Cliente
+- Antes, qualquer pessoa nas telas públicas de compra (evento, checkout, confirmação, ingresso) via o menu hambúrguer com links para Início/Eventos/Ingressos/Pontos/Perfil — todos exigem login, então clicar levava direto a uma tela de login, sem aviso.
+- Agora, sem sessão: o botão de menu some e aparece um botão "Criar conta" no lugar (leva para `/cadastro`). Com sessão: nada muda. Automático via `useAuth()`, vale pra qualquer tela que use `MobileLayout`, sem precisar marcar rota por rota.
+- Objetivo: não criar atrito pra quem só quer comprar um ingresso, mas induzir a criação de conta pra quem quiser acesso completo ao módulo.
+- Arquivos alterados: `src/components/layouts/MobileLayout.tsx`, `src/pages/SignupPage.tsx` (nova prop `hideAuthCta`, usada só ali).
+
 ---
 
 ## Pendências conhecidas

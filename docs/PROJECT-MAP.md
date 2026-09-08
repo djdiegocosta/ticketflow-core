@@ -354,6 +354,19 @@ Histórico importante: entre 29/08/2026 e 07/09/2026 o registro do Service Worke
 
 Fora de escopo (deliberado, não implementado): notificação push, sincronização/uso offline completo, cache de rotas, publicação nas lojas Apple/Google.
 
+### Menu escondido para visitante sem conta (implementado em 07/09/2026)
+
+`MobileLayout` é usado tanto pela Área do Cliente (sempre autenticada) quanto por telas públicas de compra (evento, checkout, confirmação, ingresso, cadastro, recuperação de senha) — essas últimas não exigem login. Antes, o menu hambúrguer aparecia igual pra todo mundo; um visitante sem conta que clicasse em qualquer item (Ingressos, Perfil etc.) caía direto numa tela de login, sem aviso.
+
+Comportamento agora:
+- Sem sessão: some o botão de menu (☰) e o menu lateral; aparece um botão "Criar conta" no lugar, levando para `/cadastro`. O logo no topo também deixa de linkar para `/cliente` (mesmo destino trancado).
+- Com sessão: comportamento inalterado (menu normal).
+- Enquanto a sessão ainda está sendo verificada (`useAuth().isLoading`): não mostra nem o menu nem o botão, pra evitar um "pisca" do estado errado.
+
+A checagem é automática, via `useAuth().isAuthenticated` dentro do próprio `MobileLayout` — não precisa marcar rota por rota. Única exceção: a prop `hideAuthCta` (usada em `src/pages/SignupPage.tsx`) esconde o botão "Criar conta" na própria tela de cadastro, onde seria redundante.
+
+Controle de acesso ao módulo em si (bloquear a navegação de verdade, não só escondê-la) já existia antes desta mudança, via `beforeLoad: requireSession()` na rota `/cliente`.
+
 ## 16. Público / privacidade
 
 Superfícies públicas intencionais:
