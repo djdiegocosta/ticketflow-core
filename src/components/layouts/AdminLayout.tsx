@@ -24,45 +24,10 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
-class AdminContentErrorBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { error: Error | null; componentStack: string }> {
-  override state: { error: Error | null; componentStack: string } = { error: null, componentStack: "" };
-  static getDerivedStateFromError(error: Error) { return { error }; }
-  override componentDidCatch(error: Error, info: { componentStack?: string | null }) {
-    console.error("[TicketFlow] Erro ao renderizar página admin:", error, info.componentStack);
-    this.setState({ componentStack: info.componentStack ?? "" });
-  }
-  override componentDidUpdate(prevProps: { children: ReactNode }) { if (this.state.error && prevProps.children !== this.props.children) this.setState({ error: null, componentStack: "" }); }
-  override render() {
-    if (this.state.error) {
-      const diagnostic = [
-        "TicketFlow — diagnóstico de erro na página admin",
-        `Erro: ${this.state.error.message}`,
-        this.state.error.stack ? `Stack: ${this.state.error.stack}` : "",
-        this.state.componentStack ? `Component stack: ${this.state.componentStack}` : "",
-      ].filter(Boolean).join("\n\n");
-      return <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-        <h2 className="text-heading-2 text-[var(--text-primary)]">Esta página não carregou</h2>
-        <p className="max-w-md text-body text-[var(--text-secondary)]">Ocorreu um erro ao exibir esta seção. Você pode tentar novamente ou navegar para outra página pelo menu.</p>
-        <details className="w-full max-w-2xl text-left">
-          <summary className="cursor-pointer text-small font-medium text-[var(--text-secondary)]">Ver diagnóstico técnico</summary>
-          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] p-3 text-[11px] text-[var(--text-secondary)]">{diagnostic}</pre>
-        </details>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { void navigator.clipboard?.writeText(diagnostic); }}>Copiar diagnóstico</Button>
-          <Button onClick={() => { this.setState({ error: null, componentStack: "" }); this.props.onRetry(); }}>Tentar novamente</Button>
-        </div>
-      </div>;
-    }
-    return this.props.children;
-  }
-}
-
 function AdminLayoutContent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const location = useLocation();
-  let userRole: string | null = null;
-  let logout: () => Promise<void> = async () => {};
-  try { const auth = useAuth(); userRole = auth.userRole; logout = auth.logout; } catch {}
+  const { userRole, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const router = useRouter();
@@ -98,7 +63,7 @@ function AdminLayoutContent() {
     </aside>
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6"><div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)} className="text-[var(--text-secondary)] lg:hidden"><Menu className="h-5 w-5" /></Button><span className="truncate text-heading-2 text-[var(--text-primary)]">{getPageTitle()}</span></div><div className="flex shrink-0 items-center">{pageAction}</div></header>
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin"><AdminContentErrorBoundary key={pathname} onRetry={() => router.invalidate()}><Outlet /></AdminContentErrorBoundary></main>
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin"><Outlet /></main>
     </div>
   </div>;
 }
