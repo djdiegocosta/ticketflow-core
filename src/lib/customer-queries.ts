@@ -93,6 +93,7 @@ export function useCustomerSales() {
           quantity,
           status,
           created_at,
+          expires_at,
           events (
             id,
             title,
@@ -125,7 +126,13 @@ export function useCustomerSales() {
 
       return data;
     },
-    enabled: !!customers && customers.length > 0
+    enabled: !!customers && customers.length > 0,
+    // Enquanto houver alguma compra "aguardando pagamento", verifica com mais
+    // frequência pra ela sumir da tela assim que expirar de verdade no banco.
+    refetchInterval: (query) => {
+      const data = query.state.data as any[] | undefined;
+      return data?.some((s) => s.status === "pendente") ? 15000 : false;
+    },
   });
 }
 
