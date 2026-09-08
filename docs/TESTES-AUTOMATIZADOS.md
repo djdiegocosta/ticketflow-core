@@ -1,7 +1,7 @@
 # TicketFlow — Testes automatizados
 
-**Atualizado:** 08/09/2026 BRT
-**Agente:** ChatGPT
+**Atualizado:** 08/09/2026 BRT  
+**Agente:** ChatGPT  
 **Branch:** `main`
 
 ## Objetivo
@@ -12,16 +12,16 @@ Este documento registra a estratégia e o estado real dos testes automatizados d
 
 Antes desta implementação, o repositório não possuía arquivos `.test.`/`.spec.` nem um runner de testes.
 
-Foi criada a primeira camada de testes usando o **Bun Test Runner**, que já faz parte do ambiente de desenvolvimento do projeto e evita adicionar uma nova dependência ao `package.json` e ao `bun.lock` apenas para testes unitários.
+Foi criada a primeira camada de testes usando o **Bun Test Runner**, evitando adicionar uma nova dependência de produção ou um novo framework ao projeto.
 
 ### Implementado nesta etapa
 
-- `bun run test` → `bun test`.
-- `bun run test:watch` → `bun test --watch`.
-- Primeiro conjunto de testes criado em `tests/checkout-prefill.test.ts`.
-- Pipeline GitHub Actions criado em `.github/workflows/quality.yml` para executar testes e build de produção a cada push na `main` e pull request para `main`.
-- Criado `src/lib/checkout-prefill.ts` para centralizar uma regra pura e testável do checkout.
-- Nenhuma dependência de produção foi alterada para criar esta camada de testes.
+- Primeiro conjunto de testes em `tests/checkout-prefill.test.ts`.
+- Regra isolada em `src/lib/checkout-prefill.ts` para permitir teste unitário sem renderizar a aplicação.
+- Pipeline GitHub Actions em `.github/workflows/quality.yml` para executar os testes e o build de produção a cada push na `main` e pull request para `main`.
+- O pipeline executa `bun test tests/checkout-prefill.test.ts` diretamente.
+- O `package.json` não recebeu script `test`; portanto, `bun test` é executado diretamente pelo CI.
+- Nenhuma dependência de produção foi adicionada para criar esta camada.
 
 ## Regra testada
 
@@ -32,7 +32,13 @@ A função `buildCheckoutPrefill()` representa a regra definida para o produto:
 - e-mail do cadastro de autenticação serve como fallback quando o registro `customers` não possui e-mail;
 - campos ausentes não são inventados.
 
-**Importante:** esta etapa criou e testou a regra isolada. A integração visual dessa regra dentro de `CheckoutPage.tsx` será feita em uma etapa própria, porque o arquivo atual concentra o formulário, criação da venda, Pix e retomada de compra e deve ser alterado sem risco de regressão no fluxo já validado.
+**Importante:** esta etapa criou e testou a regra isolada. A integração visual dessa regra dentro do checkout será feita em uma etapa própria, porque o arquivo atual concentra formulário, criação da venda, Pix e retomada de compra e deve ser alterado sem risco de regressão no fluxo já validado.
+
+## Validação executada
+
+O ambiente de execução desta sessão não possui Bun instalado, portanto os testes unitários não foram executados localmente. O pipeline do GitHub Actions foi criado para fazer essa validação em ambiente limpo.
+
+O build de produção também é executado pelo pipeline. A versão de produção foi previamente validada no Vercel após a correção da versão inválida de `@radix-ui/react-menubar`.
 
 ## O que ainda NÃO está coberto
 
@@ -68,7 +74,7 @@ Fluxos críticos no navegador: evento → checkout → venda pendente → Pix si
 
 Antes de alterar uma regra crítica, primeiro procure o teste correspondente. Se a regra ainda não tiver teste, o agente deve adicionar o teste na mesma alteração sempre que possível.
 
-Testes não substituem validação manual de Mercado Pago, navegador móvel ou operação de check-in. Eles reduzem regressões e devem complementar esses testes reais.
+Testes não substituem validação manual de Mercado Pago, navegador móvel ou operação de check-in. Eles devem complementar esses testes reais.
 
 ## Próxima etapa
 
