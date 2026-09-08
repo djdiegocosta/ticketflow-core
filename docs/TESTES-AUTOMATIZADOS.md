@@ -10,18 +10,28 @@ Este documento registra a estratégia e o estado real dos testes automatizados d
 
 ## Estado atual
 
-Antes desta implementação, o repositório não possuía arquivos `.test.`/`.spec.` nem um runner de testes.
+O projeto agora possui uma primeira camada unitária usando o **Bun Test Runner**, sem adicionar um framework de testes à aplicação.
 
-Foi criada a primeira camada de testes usando o **Bun Test Runner**, evitando adicionar uma nova dependência de produção ou um novo framework ao projeto.
+### Implementado
 
-### Implementado nesta etapa
-
-- Primeiro conjunto de testes em `tests/checkout-prefill.test.ts`.
-- Regra isolada em `src/lib/checkout-prefill.ts` para permitir teste unitário sem renderizar a aplicação.
-- Pipeline GitHub Actions em `.github/workflows/quality.yml` para executar os testes e o build de produção a cada push na `main` e pull request para `main`.
+- `tests/checkout-prefill.test.ts` cobre a regra de preenchimento do checkout.
+- `src/lib/checkout-prefill.ts` centraliza essa regra em uma função pura.
+- `src/pages/CheckoutPage.tsx` agora usa os dados do cliente autenticado para preencher automaticamente nome, WhatsApp e e-mail.
+- O cadastro é procurado pela organização do evento, evitando usar por engano um registro de outra organização.
+- O e-mail autenticado é usado como fallback quando o cadastro do cliente não possui e-mail, inclusive quando o registro de cliente ainda não existe.
+- O usuário continua podendo editar os campos. O prefill não sobrescreve um campo que já tenha sido alterado pelo usuário.
+- Checkout guest continua sem exigir autenticação ou cadastro.
+- `.github/workflows/quality.yml` executa testes e build a cada push na `main` e pull request para `main`.
 - O pipeline executa `bun test tests/checkout-prefill.test.ts` diretamente.
-- O `package.json` não recebeu script `test`; portanto, `bun test` é executado diretamente pelo CI.
-- Nenhuma dependência de produção foi adicionada para criar esta camada.
+- O `package.json` não recebeu script `test` nem nova dependência de testes.
+
+## Validação executada
+
+O GitHub Actions executou com sucesso o run `34273320014` após esta documentação: instalação de dependências, testes automatizados e build de produção concluíram sem erro.
+
+O Vercel também concluiu com sucesso o build da versão anterior após a correção de `@radix-ui/react-menubar`. Uma nova implantação é disparada pelos commits desta etapa e deve ser considerada válida somente após estado `READY`.
+
+O ambiente local desta sessão não possui Bun, portanto a suíte não foi executada localmente. A validação efetiva desta etapa foi feita pelo CI.
 
 ## Regra testada
 
@@ -32,17 +42,11 @@ A função `buildCheckoutPrefill()` representa a regra definida para o produto:
 - e-mail do cadastro de autenticação serve como fallback quando o registro `customers` não possui e-mail;
 - campos ausentes não são inventados.
 
-**Importante:** esta etapa criou e testou a regra isolada. A integração visual dessa regra dentro do checkout será feita em uma etapa própria, porque o arquivo atual concentra formulário, criação da venda, Pix e retomada de compra e deve ser alterado sem risco de regressão no fluxo já validado.
-
-## Validação executada
-
-O ambiente de execução desta sessão não possui Bun instalado, portanto os testes unitários não foram executados localmente. O pipeline do GitHub Actions foi criado para fazer essa validação em ambiente limpo.
-
-O build de produção também é executado pelo pipeline. A versão de produção foi previamente validada no Vercel após a correção da versão inválida de `@radix-ui/react-menubar`.
+A integração foi feita no checkout sem alterar a criação da venda, geração do Pix ou retomada de compra existente.
 
 ## O que ainda NÃO está coberto
 
-Os testes unitários acima não comprovam o comportamento real do banco. Para isso serão necessários testes de integração em ambiente isolado, principalmente para:
+Os testes atuais não comprovam o comportamento real do banco. Para isso serão necessários testes de integração em ambiente isolado, principalmente para:
 
 1. `create_pending_sale` e reserva concorrente de estoque.
 2. Expiração de venda e liberação do estoque.
@@ -78,4 +82,4 @@ Testes não substituem validação manual de Mercado Pago, navegador móvel ou o
 
 ## Próxima etapa
 
-A próxima implementação deve ser a integração do prefill no checkout e, em paralelo, a primeira suíte de integração das RPCs críticas em ambiente isolado. Depois disso, implementar a recuperação segura de compra guest (`AUD-008`) com os testes de segurança correspondentes.
+A próxima implementação é a primeira suíte de integração das RPCs críticas em ambiente isolado. Depois disso, implementar a recuperação segura de compra guest (`AUD-008`) com testes de segurança correspondentes.
