@@ -7,53 +7,46 @@ export const Route = createFileRoute("/api/public/tickets/pdf")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const saleCode = url.searchParams.get("sale_code")?.trim();
+        const saleCode = url.searchParams.get("sale_code");
+        if (!saleCode) return new Response("sale_code obrigatório", { status: 400 });
 
-        if (!saleCode) {
-          return new Response("Código da compra não informado", { status: 400 });
-        }
+        const { data: sale, error: saleError } = await supabaseAdmin
+          .from("sales")
+          .select("created_at, events(title, event_date, location, organizations(name))")
+          .eq("sale_code", saleCode.toUpperCase())
+          .maybeSingle();
 
-        try {
-          const { data: sale, error: saleError } = await supabaseAdmin
-            .from("sales")
-            .select("id, sale_code, buyer_name, status, total_amount, events(title, event_date)")
-            .eq("sale_code", saleCode)
-            .eq("status", "pago")
-            .maybeSingle();
+        if (saleError || !sale) return new Response("Venda não encontrada", { status: 404 });
 
-          if (saleError) throw saleError;
-          if (!sale) return new Response("Ingresso não encontrado", { status: 404 });
+        const { data: tickets, error: ticketsError } = await supabaseAdmin
+          .from("tickets")
+          .select("ticket_code, participant_name, ticket_batches(name), sales!inner(sale_code)")
+          .eq("sales.sale_code", saleCode.toUpperCase());
 
-          const { data: tickets, error: ticketsError } = await supabaseAdmin
-            .from("tickets")
-            .select("ticket_code, participant_name")
-            .eq("sale_id", sale.id)
-            .order("created_at", { ascending: true });
+        if (ticketsError || !tickets?.length) return new Response("Nenhum ingresso encontrado para essa venda", { status: 404 });
 
-          if (ticketsError) throw ticketsError;
-          if (!tickets?.length) return new Response("Ingressos não encontrados", { status: 404 });
+        const event = (sale as any).events;
+        const pdfBuffer = await generateTicketsPdf({
+          eventTitle: event?.title || "Evento",
+          eventDate: event?.event_date || null,
+          eventLocation: event?.location || null,
+          organizationName: event?.organizations?.name || null,
+          saleCode,
+          purchasedAt: sale.created_at,
+          tickets: tickets.map((t: any) => ({
+            ticket_code: t.ticket_code,
+            participant_name: t.participant_name,
+            batch_name: t.ticket_batches?.name ?? null,
+          })),
+        });
 
-          const event = (sale as unknown as { events?: { title?: string; event_date?: string | null } }).events;
-          const pdf = await generateTicketsPdf({
-            eventTitle: event?.title ?? "Evento",
-            eventDate: event?.event_date ?? null,
-            buyerName: sale.buyer_name ?? "",
-            saleCode: sale.sale_code ?? saleCode,
-            tickets,
-          });
-
-          return new Response(pdf, {
-            status: 200,
-            headers: {
-              "Content-Type": "application/pdf",
-              "Content-Disposition": `attachment; filename="ingressos-${sale.sale_code ?? saleCode}.pdf"`,
-              "Cache-Control": "private, no-store",
-            },
-          });
-        } catch (error) {
-          console.error("Ticket PDF generation error", error);
-          return new Response("Não foi possível gerar o PDF", { status: 500 });
-        }
+        return new Response(pdfBuffer, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `inline; filename="ingressos-${saleCode}.pdf"`,
+          },
+        });
       },
     },
   },
