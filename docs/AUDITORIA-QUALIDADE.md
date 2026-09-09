@@ -385,7 +385,42 @@ Build de produção (`npx vite build`) passou sem erros; manifest, `sw.js` e os 
 1. **QUA-002** — confirmação automática por e-mail/WhatsApp: falta só a validação visual final do e-mail.
 2. **QUA-008** — testes automatizados (proteção de longo prazo, menor urgência).
 
-QUA-001, QUA-003, QUA-004, QUA-009, QUA-010, QUA-011 e QUA-012 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+QUA-001, QUA-003, QUA-004, QUA-009, QUA-010, QUA-011, QUA-012 e QUA-013 já foram corrigidos. QUA-005, QUA-006 e QUA-007 foram verificados e não precisam de ação.
+
+---
+
+## 13. Notificações push — ativação falhava com erro de decodificação/chave inválida
+
+**ID:** QUA-013
+**Status:** `RESOLVIDO`
+**Severidade:** MÉDIA
+**Descoberta:** 09/09/2026 (Diego, ao testar a ativação de notificações push)
+**Agente da correção:** Claude 2
+
+### Problema
+
+Ao clicar em "Ativar notificações" no admin, dois erros em sequência:
+1. `Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded`
+2. Após a correção do primeiro: `Failed to execute 'subscribe' on 'PushManager': The provided applicationServerKey is not valid.`
+
+### Causa raiz
+
+Dupla:
+1. `PushNotificationButton.tsx` somava um padding fixo (`"=="`) à chave pública VAPID antes de decodificar em base64, em vez de calcular quantos caracteres de padding a string realmente precisava. Uma chave VAPID válida (65 bytes) gera uma string de 87 caracteres — precisa de exatamente 1 `"="`, não 2. Isso quebrava a decodificação para **qualquer** chave, mesmo correta.
+2. Depois de corrigir a decodificação, o valor de `VAPID_PUBLIC_KEY` configurado na Vercel não correspondia a uma chave pública P-256 válida (65 bytes, iniciando em `0x04`) — provável erro de cópia/formato na configuração original.
+
+### Correção aplicada
+
+- `PushNotificationButton.tsx`: padding calculado dinamicamente (`"=".repeat((4 - (len % 4)) % 4)`).
+- Novo par de chaves VAPID gerado e validado matematicamente (65 bytes / byte inicial `0x04` para a pública, 32 bytes para a privada) antes de serem coladas na Vercel, eliminando qualquer erro de geração/cópia anterior.
+
+**Commit:** `20f8888dab65b53abd72cf68ff5396dd2df1303f`
+
+### Resolução
+
+- **Data:** 09/09/2026
+- **Agente:** Claude 2
+- **Evidência:** validação matemática do par de chaves antes da configuração; aguardando confirmação final de Diego após o redeploy.
 
 ---
 
@@ -402,5 +437,6 @@ QUA-001, QUA-003, QUA-004, QUA-009, QUA-010, QUA-011 e QUA-012 já foram corrigi
 | 07/09/2026 | 13:20 | Claude 2 | QUA-010 | `create_mp_test_sale` corrigida para definir `expires_at`; vendas de teste presas expiradas retroativamente. |
 | 07/09/2026 | 13:35 | Claude 2 | QUA-011 | Status "Devolvido" adicionado à lista de vendas (aba, cor e rótulo distintos de "Cancelado"). |
 | 07/09/2026 | 08:07 | Claude | QUA-012 | Service Worker religado (sem cache, com skipWaiting/clients.claim) e botão "Instalar aplicativo" implementado na Área do Cliente; ícone 192x192 corrigido; build de produção passou. |
+| 09/09/2026 | — | Claude 2 | QUA-013 | Ativação de notificações push corrigida: padding base64 calculado dinamicamente e par de chaves VAPID novo, validado matematicamente. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado, com data, hora, agente e evidência.
