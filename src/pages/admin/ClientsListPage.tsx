@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Check, Copy, Eye, MessageCircle, MoreHorizontal, Trash2, UsersRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Cake, Check, Copy, Eye, MessageCircle, MoreHorizontal, Trash2, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { whatsappLink } from "@/lib/clients-data";
@@ -27,18 +27,7 @@ function escapeCsv(value: string) {
 }
 
 function exportClientsForMetaAds(clients: any[]) {
-  const headers = [
-    "First Name",
-    "Last Name",
-    "Phone",
-    "Email",
-    "Work Phone",
-    "Work Email",
-    "Company",
-    "Notes",
-    "Additional Info (Duplicate to other columns and rename as needed)",
-  ];
-
+  const headers = ["First Name", "Last Name", "Phone", "Email", "Work Phone", "Work Email", "Company", "Notes", "Additional Info (Duplicate to other columns and rename as needed)"];
   const rows = clients
     .map((client) => {
       const fullName = String(client.full_name || "").trim();
@@ -47,21 +36,10 @@ function exportClientsForMetaAds(clients: any[]) {
       const lastName = nameParts.join(" ");
       const phone = normalizeMetaPhone(String(client.whatsapp || ""));
       const email = String(client.email || "").trim().toLowerCase();
-
       return { firstName, lastName, phone, email };
     })
     .filter((client) => client.phone || client.email)
-    .map((client) => [
-      client.firstName,
-      client.lastName,
-      client.phone,
-      client.email,
-      "",
-      "",
-      "",
-      "",
-      "",
-    ]);
+    .map((client) => [client.firstName, client.lastName, client.phone, client.email, "", "", "", "", ""]);
 
   if (rows.length === 0) {
     toast.error("Nenhum cliente possui telefone ou e-mail para exportação");
@@ -83,7 +61,34 @@ function exportClientsForMetaAds(clients: any[]) {
 
 function CopyWhatsapp({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
-  return <button type="button" aria-label={`Copiar WhatsApp ${value}`} title="Copiar número" onClick={async (e) => { e.stopPropagation(); try { await navigator.clipboard.writeText(value); setCopied(true); toast.success("Número copiado"); setTimeout(() => setCopied(false), 1500); } catch { toast.error("Não foi possível copiar"); } }} className="rounded-[var(--radius-sm)] p-1 text-text-disabled transition-colors hover:bg-bg-tertiary hover:text-text-primary">{copied ? <Check className="h-3.5 w-3.5 text-accent-text" /> : <Copy className="h-3.5 w-3.5" />}</button>;
+  return (
+    <button type="button" aria-label={`Copiar WhatsApp ${value}`} title="Copiar número" onClick={async (e) => {
+      e.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopied(true);
+        toast.success("Número copiado");
+        setTimeout(() => setCopied(false), 1500);
+      } catch {
+        toast.error("Não foi possível copiar");
+      }
+    }} className="rounded-[var(--radius-sm)] p-1 text-text-disabled transition-colors hover:bg-bg-tertiary hover:text-text-primary">
+      {copied ? <Check className="h-3.5 w-3.5 text-accent-text" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+function ClientMetricCard({ title, value, subtitle, icon: Icon }: { title: string; value: string | number; subtitle: string; icon: typeof UsersRound }) {
+  return (
+    <div className="flex h-full flex-col rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-sm">
+      <div className="mb-2 flex items-start justify-between">
+        <span className="text-small text-text-secondary">{title}</span>
+        <Icon className="h-5 w-5 text-icon-brand" />
+      </div>
+      <div className="text-heading-1 text-text-primary">{value}</div>
+      <div className="mt-1 text-small text-text-secondary">{subtitle}</div>
+    </div>
+  );
 }
 
 export function ClientsListPage() {
@@ -100,6 +105,14 @@ export function ClientsListPage() {
 
   useAdminPageAction(<PrimaryActionButton onClick={() => setIsPanelOpen(true)}>Novo Cliente</PrimaryActionButton>);
 
+  const averageAge = useMemo(() => {
+    const validAges = clients
+      .map((client) => Number(client.age))
+      .filter((age) => Number.isFinite(age) && age > 0);
+    if (validAges.length === 0) return null;
+    return validAges.reduce((sum, age) => sum + age, 0) / validAges.length;
+  }, [clients]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const digits = term.replace(/\D/g, "");
@@ -107,7 +120,10 @@ export function ClientsListPage() {
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "name") return a.full_name.localeCompare(b.full_name, "pt-BR") * dir;
-      if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt") { const key = sortKey === "registeredAt" ? "created_at" : "last_purchase_at"; return (new Date((a as any)[key] || 0).getTime() - new Date((b as any)[key] || 0).getTime()) * dir; }
+      if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt") {
+        const key = sortKey === "registeredAt" ? "created_at" : "last_purchase_at";
+        return (new Date((a as any)[key] || 0).getTime() - new Date((b as any)[key] || 0).getTime()) * dir;
+      }
       return (((a as any)[sortKey] as number) - ((b as any)[sortKey] as number)) * dir;
     });
   }, [clients, search, sortKey, sortDir]);
@@ -116,23 +132,26 @@ export function ClientsListPage() {
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
-  const toggleSort = (key: SortKey) => { if (key === sortKey) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(key); setSortDir(key === "name" ? "asc" : "desc"); } setPage(1); };
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) setSortDir((d) => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir(key === "name" ? "asc" : "desc"); }
+    setPage(1);
+  };
   const confirmDelete = () => { if (!toDelete) return; deleteMutation.mutate(toDelete.id, { onSuccess: () => setToDelete(null) }); };
   const columns: { key: SortKey | null; label: string }[] = [{ key: "name", label: "Nome" }, { key: null, label: "WhatsApp" }, { key: "age", label: "Idade" }, { key: "totalEvents", label: "Eventos" }, { key: "totalTickets", label: "Ingressos" }, { key: "registeredAt", label: "Cadastro" }, { key: null, label: "Último evento" }, { key: null, label: "Ações" }];
 
   return <div className="space-y-5">
+    <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+      <ClientMetricCard title="Clientes cadastrados" value={clients.length} subtitle="total de clientes na base" icon={UsersRound} />
+      <ClientMetricCard title="Idade média" value={averageAge === null ? "—" : `${averageAge.toFixed(1).replace(".", ",")} anos`} subtitle={averageAge === null ? "nenhum cliente com idade válida" : "considerando apenas idades maiores que 0"} icon={Cake} />
+    </div>
     <FilterBar>
       <FilterSearch value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar por nome ou WhatsApp" />
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              type="button"
-              onClick={() => exportClientsForMetaAds(clients)}
-              className="h-9 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-3 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover"
-            >
-              <UsersRound className="h-4 w-4" />
-              <span>CSV</span>
+            <Button type="button" onClick={() => exportClientsForMetaAds(clients)} className="h-9 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-3 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover">
+              <UsersRound className="h-4 w-4" /><span>CSV</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>Exportar clientes para Meta Ads</TooltipContent>
