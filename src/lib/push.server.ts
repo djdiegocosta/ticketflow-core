@@ -154,11 +154,7 @@ function encryptWebPush(subscription: StoredSubscription, payload: PushPayload) 
     ciphertext,
   ]);
 
-  return {
-    body,
-    salt,
-    serverPublic,
-  };
+  return { body, salt, serverPublic };
 }
 
 export async function sendPushSubscription(subscription: StoredSubscription, payload: PushPayload) {
@@ -187,7 +183,7 @@ async function sendToSubscriptions(subscriptions: StoredSubscription[], payload:
     subscriptions.map(async (subscription) => {
       const response = await sendPushSubscription(subscription, payload);
       if (response.status === 404 || response.status === 410) {
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from("push_subscriptions")
           .update({ active: false, updated_at: new Date().toISOString() })
           .eq("id", subscription.id);
@@ -205,7 +201,7 @@ async function sendToSubscriptions(subscriptions: StoredSubscription[], payload:
 }
 
 export async function sendPushToOrganization(organizationId: string, payload: PushPayload) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await (supabaseAdmin as any)
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth, active")
     .eq("organization_id", organizationId)
@@ -217,7 +213,7 @@ export async function sendPushToOrganization(organizationId: string, payload: Pu
 }
 
 export async function sendPushToUser(userId: string, payload: PushPayload) {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await (supabaseAdmin as any)
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth, active")
     .eq("user_id", userId)
