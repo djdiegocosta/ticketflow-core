@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./auth-context";
 
 import { useServerFn } from "@tanstack/react-start";
 import { createMpPix } from "./mp/mercado-pago.functions";
@@ -55,20 +56,26 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
 }
 
 export function useSales() {
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId;
+
   return useQuery<Sale[]>({
-    queryKey: ["sales"],
+    queryKey: ["sales", "list", organizationId, user?.id],
+    enabled,
     queryFn: async () => {
-      const { data: orgData } = await supabase.rpc("get_single_organization_id");
-      const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
-      if (!orgId) throw new Error("Organização não encontrada");
-      return fetchSales(orgId as string);
+      if (!organizationId) throw new Error("Organização não encontrada");
+      return fetchSales(organizationId);
     },
   });
 }
 
 export function useCourtesies() {
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId;
+
   return useQuery({
-    queryKey: ["tickets", "courtesies"],
+    queryKey: ["tickets", "courtesies", organizationId, user?.id],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tickets")
@@ -97,8 +104,12 @@ export function useCourtesies() {
 }
 
 export function useCourtesiesStats() {
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId;
+
   return useQuery({
-    queryKey: ["courtesies", "stats"],
+    queryKey: ["courtesies", "stats", organizationId, user?.id],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("event_ticket_stats")
@@ -115,8 +126,11 @@ export function useCourtesiesStats() {
 }
 
 export function useSale(id: string) {
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId && !!id;
+
   return useQuery<Sale>({
-    queryKey: ["sales", id],
+    queryKey: ["sales", id, organizationId, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sales")
@@ -146,19 +160,21 @@ export function useSale(id: string) {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled,
   });
 }
 
 export function useSalesStats(eventId?: string) {
-  return useQuery({
-    queryKey: ["sales", "stats", eventId],
-    queryFn: async () => {
-      const { data: orgData } = await supabase.rpc("get_single_organization_id");
-      const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
-      if (!orgId) throw new Error("Organização não encontrada");
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId;
 
-      let statsQuery = supabase.from("event_ticket_stats").select("*").eq("organization_id", orgId);
+  return useQuery({
+    queryKey: ["sales", "stats", organizationId, user?.id, eventId],
+    enabled,
+    queryFn: async () => {
+      if (!organizationId) throw new Error("Organização não encontrada");
+
+      let statsQuery = supabase.from("event_ticket_stats").select("*").eq("organization_id", organizationId);
       if (eventId && eventId !== "overview") statsQuery = statsQuery.eq("event_id", eventId);
 
       const { data: viewData, error: viewError } = await statsQuery;
@@ -174,7 +190,7 @@ export function useSalesStats(eventId?: string) {
           event_id,
           organization_id
         )
-      `).eq("sales.organization_id", orgId);
+      `).eq("sales.organization_id", organizationId);
 
       if (eventId && eventId !== "overview") ticketsQuery = ticketsQuery.eq("sales.event_id", eventId);
 
@@ -184,7 +200,7 @@ export function useSalesStats(eventId?: string) {
       let pendingQuery = supabase
         .from("sales")
         .select("id, total_amount")
-        .eq("organization_id", orgId)
+        .eq("organization_id", organizationId)
         .eq("status", "pendente")
         .eq("is_courtesy", false);
       if (eventId && eventId !== "overview") pendingQuery = pendingQuery.eq("event_id", eventId);
@@ -294,14 +310,17 @@ export function useGenerateSalePix() {
 }
 
 export function useSaleStatus(saleId: string | null) {
+  const { user, organizationId, loading: authLoading } = useAuth();
+  const enabled = !authLoading && !!user && !!organizationId && !!saleId;
+
   return useQuery({
-    queryKey: ["sales", "status", saleId],
+    queryKey: ["sales", "status", saleId, organizationId, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.from("sales").select("status").eq("id", saleId!).single();
       if (error) throw error;
       return data.status;
     },
-    enabled: !!saleId,
+    enabled,
     refetchInterval: (query) => query.state.data === "pago" ? false : 2000,
   });
 }
