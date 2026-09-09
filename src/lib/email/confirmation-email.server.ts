@@ -44,7 +44,7 @@ export async function sendPurchaseConfirmationEmail(input: ConfirmationEmailInpu
     if (!input.buyerEmail || input.tickets.length === 0) return;
 
     const fromUser = process.env["GMAIL_USER"];
-    const pdf = generateTicketsPdf(input);
+    const pdf = await generateTicketsPdf(input);
 
     await t.sendMail({
       from: `TicketFlow <${fromUser}>`,
