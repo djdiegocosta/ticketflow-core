@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, FileText, QrCode, X, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, QrCode, X, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSale, formatCurrency } from "@/lib/sales-queries";
@@ -63,6 +63,27 @@ export function SaleDetailPage({ id }: { id: string }) {
   const [refundAmount, setRefundAmount] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [refunding, setRefunding] = useState(false);
+
+  const sendTicketViaWhatsapp = () => {
+    if (!sale.buyer_whatsapp) {
+      toast.error("Este cliente não tem WhatsApp cadastrado nesta venda.");
+      return;
+    }
+    // wa.me só aceita texto pré-preenchido — não existe forma de anexar um
+    // arquivo automaticamente por link. Por isso a mensagem já leva o link
+    // direto do PDF (endpoint público, sem necessidade de login), pra quem
+    // receber conseguir abrir e baixar o ingresso com um toque, direto do
+    // WhatsApp, sem precisar checar e-mail.
+    let digits = String(sale.buyer_whatsapp).replace(/\D/g, "");
+    if (digits.length === 10 || digits.length === 11) digits = "55" + digits;
+    const pdfUrl = `${window.location.origin}/api/public/tickets/pdf?sale_code=${sale.sale_code}`;
+    const eventTitle = sale.events?.title || "seu evento";
+    const message =
+      `Olá, ${sale.buyer_name}! Aqui está o seu ingresso para *${eventTitle}*.\n\n` +
+      `Baixe o PDF do seu ingresso neste link:\n${pdfUrl}\n\n` +
+      `Guarde o PDF ou tire um print e apresente na entrada do evento.`;
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(message)}`, "_blank");
+  };
 
   if (isLoading) {
     return (
@@ -226,6 +247,14 @@ export function SaleDetailPage({ id }: { id: string }) {
                 >
                   <QrCode className="h-4 w-4" />
                   Ver QR Code
+                </button>
+                <button
+                  type="button"
+                  onClick={sendTicketViaWhatsapp}
+                  className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-3 py-1.5 text-small text-text-primary transition-colors hover:border-accent"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Enviar ingresso manualmente
                 </button>
               </div>
             </div>
