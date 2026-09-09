@@ -11,7 +11,7 @@ import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-for
 import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail, RefreshCw } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches, useMyCustomerRecords } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
@@ -56,15 +56,13 @@ export default function CheckoutPage() {
   const [currentSaleCode, setCurrentSaleCode] = useState<string | null>(null);
   const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string } | null>(null);
   
-  const { data: saleStatus } = useSaleStatus(currentSaleId);
+  const { data: saleStatus, refetch: refetchSaleStatus, isFetching: isCheckingPayment } = useSaleStatus(currentSaleId);
   const [isResuming, setIsResuming] = useState(!!search.resume);
   
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
   const prefillAppliedKey = useRef<string | null>(null);
 
-  // Retomar uma compra pendente (veio do card "Aguardando pagamento" em Meus Ingressos).
-  // O Pix já foi gerado antes e fica salvo na própria venda — não gera um novo.
   useEffect(() => {
     if (!search.resume) return;
     let cancelled = false;
@@ -173,13 +171,6 @@ export default function CheckoutPage() {
     return () => clearInterval(timer);
   }, [step, expiresAt]);
 
-  // A confirmação de expiração real vem só do status do banco (useEffect abaixo,
-  // saleStatus === 'expirado'), nunca do countdown local. O countdown existe
-  // apenas para exibir o relógio na tela; ele sempre nasce em 0 até o primeiro
-  // cálculo rodar, e um efeito separado observando "countdown === 0" disparava
-  // o aviso de expiração prematuramente nesse instante inicial, mesmo com a
-  // venda recém-criada e válida por mais 30+ minutos.
-
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -267,12 +258,16 @@ export default function CheckoutPage() {
     }
   };
 
-  const copyPix = () => {
+  const copyPix = async () => {
     if (!pixData) return;
-    navigator.clipboard.writeText(pixData.qr_code);
-    setPixCopied(true);
-    toast.success("Código Pix copiado!");
-    setTimeout(() => setPixCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(pixData.qr_code);
+      setPixCopied(true);
+      toast.success("Código Pix copiado!");
+      setTimeout(() => setPixCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar automaticamente. Selecione o código e copie manualmente.");
+    }
   };
 
   if (isLoadingEvent || isResuming) {
@@ -289,7 +284,7 @@ export default function CheckoutPage() {
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
         {step === 'info' && (
- <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
+          <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
             <div className="flex flex-col gap-1">
               <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
               <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
@@ -325,7 +320,7 @@ export default function CheckoutPage() {
               
               <div className="space-y-4">
                 {fields.map((field, index) => (
- <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
+                  <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
                     <Label>Nome do Participante {qty > 1 ? index + 1 : ''}</Label>
                     <Input 
                       placeholder="Nome Sobrenome"
@@ -379,22 +374,39 @@ export default function CheckoutPage() {
                 )}
               </div>
               <div className="flex w-full flex-col gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  type="button"
                   disabled={countdown === 0 || !pixData}
-                  className="flex h-12 w-full items-center justify-between border-[var(--border-default)] px-4 disabled:opacity-50"
+                  className="h-12 w-full bg-[var(--accent)] text-[#111111] font-bold hover:bg-[var(--accent-hover)]"
                   onClick={copyPix}
                 >
-                  <span className="truncate pr-4 text-xs font-mono text-[var(--text-secondary)]">
-                    {pixData ? pixData.qr_code.substring(0, 30) : "Gerando código..."}...
-                  </span>
-                  {pixCopied ? <CheckCircle2 className="h-5 w-5 text-success" /> : <Copy className="h-5 w-5" />}
+                  {pixCopied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                  {pixCopied ? "Código Pix copiado" : "COPIAR CÓDIGO PIX"}
                 </Button>
-                <p className="text-center text-body font-bold text-[var(--accent-text)]">Copie o código acima e pague no app do seu banco</p>
+                <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+                  Copie o código e pague pelo aplicativo do seu banco. Depois do pagamento, aguarde a confirmação nesta tela.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!pixData || isCheckingPayment}
+                  className="h-11 w-full border-[var(--border-default)]"
+                  onClick={async () => {
+                    const result = await refetchSaleStatus();
+                    if (result.data === 'pago') {
+                      toast.success("Pagamento confirmado! Abrindo seus ingressos...");
+                    } else {
+                      toast.info("Pagamento ainda não confirmado. Se você acabou de pagar, aguarde alguns segundos e tente novamente.");
+                    }
+                  }}
+                >
+                  {isCheckingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  {isCheckingPayment ? "Verificando pagamento..." : "Já paguei — verificar pagamento"}
+                </Button>
               </div>
             </div>
 
- <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
+            <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
               <div className="flex flex-col gap-1">
                 <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
                 <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
