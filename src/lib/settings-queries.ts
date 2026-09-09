@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { useAuth } from "./auth-context";
 import {
   saveMpCredentials,
   validateMpCredentials,
@@ -10,20 +11,13 @@ import {
 } from "./mp/mercado-pago.functions";
 
 export function useOrganization() {
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
-    queryKey: ["organization"],
+    queryKey: ["organization", organizationId, user?.id],
+    enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      const { data: roleRow, error: roleError } = await supabase
-        .from("user_roles")
-        .select("organization_id")
-        .limit(1)
-        .single();
-      if (roleError) throw roleError;
-      const { data, error } = await supabase
-        .from("organizations")
-        .select("*")
-        .eq("id", roleRow.organization_id)
-        .single();
+      if (!organizationId) throw new Error("Organização não encontrada");
+      const { data, error } = await supabase.from("organizations").select("*").eq("id", organizationId).single();
       if (error) throw error;
       return data;
     },
@@ -32,14 +26,14 @@ export function useOrganization() {
 
 export function useUpdateOrganization() {
   const queryClient = useQueryClient();
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useMutation({
     mutationFn: async (vars: { name: string; email?: string; phone?: string; logo_url?: string }) => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      if (!roleRow) throw new Error("Não autorizado");
+      if (authLoading || !user || !organizationId) throw new Error("Não autorizado");
       const { data, error } = await supabase
         .from("organizations")
         .update({ name: vars.name, contact_email: vars.email || null, contact_phone: vars.phone || null, logo_url: vars.logo_url || null })
-        .eq("id", roleRow.organization_id)
+        .eq("id", organizationId)
         .select()
         .single();
       if (error) throw error;
@@ -56,17 +50,17 @@ export function useUpdateOrganization() {
 
 export function useUpdateDesignSettings() {
   const queryClient = useQueryClient();
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useMutation({
     mutationFn: async (vars: { accent_color?: string; corner_style?: string }) => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      if (!roleRow) throw new Error("Não autorizado");
+      if (authLoading || !user || !organizationId) throw new Error("Não autorizado");
       const updateData: any = {};
       if (vars.accent_color !== undefined) updateData.accent_color = vars.accent_color;
       if (vars.corner_style !== undefined) updateData.corner_style = vars.corner_style;
       const { data, error } = await supabase
         .from("organizations")
         .update(updateData)
-        .eq("id", roleRow.organization_id)
+        .eq("id", organizationId)
         .select()
         .single();
       if (error) throw error;
@@ -96,14 +90,15 @@ const DEFAULT_OPERATIONAL_PREFERENCES: OperationalPreferences = {
 };
 
 export function useOperationalPreferences() {
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery<OperationalPreferences>({
-    queryKey: ["organization", "operational-preferences"],
+    queryKey: ["organization", "operational-preferences", organizationId, user?.id],
+    enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      const { data: orgId, error: orgError } = await supabase.rpc("get_single_organization_id");
-      if (orgError || !orgId) throw orgError || new Error("Organização não encontrada");
+      if (!organizationId) throw new Error("Organização não encontrada");
       const { data, error } = await (supabase.from("organizations") as any)
         .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day")
-        .eq("id", orgId)
+        .eq("id", organizationId)
         .single();
       if (error) throw error;
       return { ...DEFAULT_OPERATIONAL_PREFERENCES, ...(data || {}) };
@@ -113,13 +108,13 @@ export function useOperationalPreferences() {
 
 export function useUpdateOperationalPreferences() {
   const queryClient = useQueryClient();
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useMutation({
     mutationFn: async (vars: Partial<OperationalPreferences>) => {
-      const { data: orgId, error: orgError } = await supabase.rpc("get_single_organization_id");
-      if (orgError || !orgId) throw orgError || new Error("Organização não encontrada");
+      if (authLoading || !user || !organizationId) throw new Error("Não autorizado");
       const { data, error } = await (supabase.from("organizations") as any)
         .update(vars)
-        .eq("id", orgId)
+        .eq("id", organizationId)
         .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day")
         .single();
       if (error) throw error;
@@ -135,12 +130,13 @@ export function useUpdateOperationalPreferences() {
 }
 
 export function useMpConfig() {
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
-    queryKey: ["mp_config"],
+    queryKey: ["mp_config", organizationId, user?.id],
+    enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      const organization_id = roleRow?.organization_id || "";
-      const { data, error } = await supabase.from("mp_config").select("*").eq("organization_id", organization_id).order("updated_at", { ascending: false }).limit(1).maybeSingle();
+      if (!organizationId) throw new Error("Organização não encontrada");
+      const { data, error } = await supabase.from("mp_config").select("*").eq("organization_id", organizationId).order("updated_at", { ascending: false }).limit(1).maybeSingle();
       if (error) throw error;
       return data || { status: "nao_configurado", sandbox_public_key: "", prod_public_key: "" };
     },
@@ -149,12 +145,12 @@ export function useMpConfig() {
 
 export function useUpdateMpConfig() {
   const queryClient = useQueryClient();
+  const { user, organizationId, loading: authLoading } = useAuth();
   const saveFn = useServerFn(saveMpCredentials);
   return useMutation({
     mutationFn: async (vars: { environment: "sandbox" | "producao"; public_key: string; access_token: string; webhook_secret?: string }) => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      if (!roleRow) throw new Error("Não autorizado");
-      return await saveFn({ data: { organization_id: roleRow.organization_id, environment: vars.environment, public_key: vars.public_key, access_token: vars.access_token, webhook_secret: vars.webhook_secret } });
+      if (authLoading || !user || !organizationId) throw new Error("Não autorizado");
+      return await saveFn({ data: { organization_id: organizationId, environment: vars.environment, public_key: vars.public_key, access_token: vars.access_token, webhook_secret: vars.webhook_secret } });
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["mp_config"] }); toast.success("Configuração do Mercado Pago salva com segurança"); },
     onError: (error) => toast.error(error.message || "Erro ao salvar credenciais"),
@@ -189,12 +185,13 @@ export function useCreateTestPix() {
 }
 
 export function useBanners() {
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
-    queryKey: ["banners"],
+    queryKey: ["banners", organizationId, user?.id],
+    enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      if (!roleRow) throw new Error("Não autorizado");
-      const { data, error } = await supabase.from("client_banners").select("*").eq("organization_id", roleRow.organization_id).order("created_at", { ascending: false });
+      if (!organizationId) throw new Error("Não autorizado");
+      const { data, error } = await supabase.from("client_banners").select("*").eq("organization_id", organizationId).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -203,11 +200,11 @@ export function useBanners() {
 
 export function useCreateBanner() {
   const queryClient = useQueryClient();
+  const { user, organizationId, loading: authLoading } = useAuth();
   return useMutation({
     mutationFn: async (vars: { title: string; text_content?: string; image_url?: string; link_url?: string; is_active?: boolean }) => {
-      const { data: roleRow } = await supabase.from("user_roles").select("organization_id").limit(1).single();
-      if (!roleRow) throw new Error("Não autorizado");
-      const { data, error } = await supabase.from("client_banners").insert([{ ...vars, organization_id: roleRow.organization_id }]).select().single();
+      if (authLoading || !user || !organizationId) throw new Error("Não autorizado");
+      const { data, error } = await supabase.from("client_banners").insert([{ ...vars, organization_id: organizationId }]).select().single();
       if (error) throw error;
       return data;
     },
