@@ -97,6 +97,12 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - A média é exibida com uma casa decimal e formatação brasileira.
 - Arquivo alterado: `src/pages/admin/ClientsListPage.tsx`.
 
+### Reserva de ingresso presa por até 1 hora em compra abandonada
+- Diego reportou: clientes não conseguiam comprar (botão desabilitado, "R$ 0,00") mesmo com ingressos ainda não vendidos de verdade — precisava editar a quantidade manualmente pra destravar.
+- Causa raiz 1: o tempo de reserva (`organizations.pending_sale_expiration_minutes`) estava em 60 minutos. Toda compra iniciada e não paga prendia o estoque por até 1h antes do job (`expire_pending_sales_job`, já rodava certinho a cada minuto) devolver. Ajustado para 15 minutos — tempo de sobra pra quem realmente vai pagar via Pix.
+- Causa raiz 2 (bug real, corrigido em código): `src/pages/PublicEventPage.tsx` não tratava o caso de "nenhum lote disponível" — em vez de avisar "esgotado", mostrava a seção de seleção vazia e o botão de compra com "R$ 0,00" desabilitado, sem nenhuma explicação. Agora mostra "Ingressos esgotados no momento" com aviso de que pode ser temporário.
+- Decisão registrada: não removemos a reserva de estoque (só dar baixa após pagamento confirmado, como cogitado inicialmente) porque isso abriria brecha pra venda duplicada em ingressos com pouca sobra — mantivemos a reserva, só encurtamos a janela.
+
 ---
 
 ## Pendências conhecidas

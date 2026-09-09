@@ -60,6 +60,10 @@ export default function EventPage() {
 
   const selectedBatch = availableBatches?.find(b => b.id === selectedBatchId) || availableBatches?.[0];
   const totalPrice = (selectedBatch?.price || 0) * quantity;
+  // availableBatches undefined = ainda carregando; array vazio = carregou e não achou
+  // nenhum lote (esgotado agora, ou preso em reservas pendentes de outros clientes —
+  // nesse caso volta sozinho em pouco tempo).
+  const soldOut = availableBatches !== undefined && availableBatches.length === 0;
 
   const handleBuy = () => {
     if (!selectedBatchId) return;
@@ -115,6 +119,12 @@ export default function EventPage() {
 
           <div className="flex flex-col gap-4">
             <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Selecione o ingresso</h3>
+            {soldOut ? (
+              <div className="flex flex-col items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-5 text-center">
+                <span className="font-semibold text-[var(--text-primary)]">Ingressos esgotados no momento</span>
+                <span className="text-small text-[var(--text-secondary)]">Pode ser temporário — outros clientes com compra em andamento têm prioridade por alguns minutos. Tente novamente daqui a pouco.</span>
+              </div>
+            ) : (
             <div className="flex flex-col gap-3">
               {availableBatches?.map((batch) => (
                 <button
@@ -138,6 +148,7 @@ export default function EventPage() {
                 </button>
               ))}
             </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-4 pt-4">
@@ -172,7 +183,7 @@ export default function EventPage() {
           disabled={!selectedBatchId}
           className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] transition-all active:scale-[0.98]"
         >
-          <span>Comprar agora • R$ {totalPrice.toFixed(2)}</span>
+          <span>{soldOut ? 'Esgotado' : `Comprar agora • R$ ${totalPrice.toFixed(2)}`}</span>
         </Button>
       </div>
     </MobileLayout>
