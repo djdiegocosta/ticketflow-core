@@ -90,6 +90,13 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Objetivo: não criar atrito pra quem só quer comprar um ingresso, mas induzir a criação de conta pra quem quiser acesso completo ao módulo.
 - Arquivos alterados: `src/components/layouts/MobileLayout.tsx`, `src/pages/SignupPage.tsx` (nova prop `hideAuthCta`, usada só ali).
 
+### Clientes — métricas no dashboard administrativo
+- Adicionados dois cards no topo da página Admin → Clientes: **Clientes cadastrados** e **Idade média**.
+- "Clientes cadastrados" considera todos os clientes retornados pela base da organização.
+- "Idade média" ignora clientes sem idade válida e qualquer idade igual a `0`; o cálculo considera somente valores numéricos maiores que zero.
+- A média é exibida com uma casa decimal e formatação brasileira.
+- Arquivo alterado: `src/pages/admin/ClientsListPage.tsx`.
+
 ---
 
 ## Pendências conhecidas
@@ -103,4 +110,3 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 ### Estado real (06/09/2026)
 
 Para o estado operacional atual — o que está funcionando, o que está pendente e por quê — a fonte de verdade é `docs/AUDITORIA.md`. Este changelog registra decisões de produto ao longo do tempo; `AUDITORIA.md` registra o estado técnico vivo (segurança, integridade de dados, performance).
-
