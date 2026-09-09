@@ -33,10 +33,6 @@ export interface Customer {
   points_ledger?: any[];
 }
 
-
-/**
- * Hook para buscar todos os registros de customer associados ao usuário logado
- */
 export function useMyCustomerRecords() {
   return useQuery({
     queryKey: ["my-customer-records"],
@@ -59,21 +55,14 @@ export function useMyCustomerRecords() {
   });
 }
 
-/**
- * Hook para buscar dados do cliente logado (customer) - Retorna o mais recente
- */
 export function useCurrentCustomer() {
   const { data: customers } = useMyCustomerRecords();
-  
   return {
     data: customers?.[0] || null,
     isLoading: !customers,
   };
 }
 
-/**
- * Hook para buscar as vendas/ingressos do cliente logado
- */
 export function useCustomerSales() {
   const { data: customers } = useMyCustomerRecords();
 
@@ -114,7 +103,6 @@ export function useCustomerSales() {
 
       if (error) throw error;
 
-      // Cache para offline
       if (typeof window !== "undefined" && data) {
         await offlineDB.saveMyTickets(data.flatMap(s => s.tickets.map(t => ({
           ...t,
@@ -127,8 +115,6 @@ export function useCustomerSales() {
       return data;
     },
     enabled: !!customers && customers.length > 0,
-    // Enquanto houver alguma compra "aguardando pagamento", verifica com mais
-    // frequência pra ela sumir da tela assim que expirar de verdade no banco.
     refetchInterval: (query) => {
       const data = query.state.data as any[] | undefined;
       return data?.some((s) => s.status === "pendente") ? 15000 : false;
@@ -136,9 +122,6 @@ export function useCustomerSales() {
   });
 }
 
-/**
- * Hook para buscar as estatísticas resumidas do cliente
- */
 export function useCustomerStats() {
   const { data: customer } = useCurrentCustomer();
   const { data: sales = [] } = useCustomerSales();
@@ -148,16 +131,9 @@ export function useCustomerStats() {
   const totalTickets = paidSales.reduce((acc, s) => acc + (s.tickets?.length || 0), 0);
   const points = customer?.points || 0;
 
-  return {
-    totalEvents,
-    totalTickets,
-    points
-  };
+  return { totalEvents, totalTickets, points };
 }
 
-/**
- * Hook para buscar um evento pelo slug (Página do Evento)
- */
 export function usePublicEvent(slug: string) {
   return useQuery({
     queryKey: ["public-event", slug],
@@ -179,15 +155,12 @@ export function usePublicEvent(slug: string) {
   });
 }
 
-/**
- * Hook para buscar lotes disponíveis para compra
- */
 export function useAvailableBatches(eventId: string | undefined) {
   return useQuery({
     queryKey: ["available-batches", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_available_batches", { 
-        _event_id: eventId as any 
+      const { data, error } = await supabase.rpc("get_available_batches", {
+        _event_id: eventId as any
       });
       if (error) throw error;
       return data as any[];
@@ -196,16 +169,10 @@ export function useAvailableBatches(eventId: string | undefined) {
   });
 }
 
-/**
- * Hook para buscar uma venda pelo código (Confirmação/Detalhe)
- */
 export function useSaleByCode(code: string) {
   return useQuery({
     queryKey: ["sale-code", code],
     queryFn: async () => {
-      // get_sale_by_code/get_tickets_by_sale_code são RETURNS TABLE, então
-      // o supabase-js entrega um ARRAY em "data" — sempre pegar a primeira
-      // linha (sale_code é único). Nunca fazer spread do array diretamente.
       const { data, error } = await supabase.rpc("get_sale_by_code", { _code: code });
       if (error) throw error;
       const sale = Array.isArray(data) ? data[0] : data;
@@ -220,9 +187,6 @@ export function useSaleByCode(code: string) {
   });
 }
 
-/**
- * Hook para buscar um ticket individual pelo código
- */
 export function useTicketByCode(code: string) {
   return useQuery({
     queryKey: ["ticket-code", code],
@@ -253,21 +217,18 @@ export function useTicketByCode(code: string) {
   });
 }
 
-/**
- * Hook para atualizar o perfil do cliente
- */
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   const { data: customer } = useCurrentCustomer();
 
   return useMutation({
-    mutationFn: async (vars: { 
-      full_name: string; 
-      email: string; 
-      whatsapp: string; 
-      cidade: string; 
-      data_nascimento?: string | null | undefined; 
-      instagram?: string | null | undefined; 
+    mutationFn: async (vars: {
+      full_name: string;
+      email: string;
+      whatsapp: string;
+      cidade: string;
+      data_nascimento?: string | null | undefined;
+      instagram?: string | null | undefined;
       sexo?: string | null | undefined;
     }) => {
       if (!customer?.id) throw new Error("Cliente não identificado");
@@ -285,8 +246,11 @@ export function useUpdateProfile() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["current-customer"] });
+    onSuccess: async () => {
+      // A query real usada por useCurrentCustomer é "my-customer-records".
+      // A chave "current-customer" não existe, então a invalidação anterior
+      // não buscava os dados novamente após o salvamento.
+      await queryClient.invalidateQueries({ queryKey: ["my-customer-records"] });
       toast.success("Perfil atualizado com sucesso");
     },
     onError: (error) => {
@@ -321,7 +285,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
     const accent = design.accent_color as AccentColor;
     const isDark = theme === "dark";
 
-    // Apply Colors
     if (ACCENT_COLORS[accent]) {
       const colorSet = ACCENT_COLORS[accent][isDark ? "dark" : "light"];
       root.style.setProperty("--accent", colorSet.accent);
@@ -333,7 +296,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
       root.style.setProperty("--ring", colorSet.accent);
     }
 
-    // Apply full theme (background/text/border/charts), quando o tema tiver um definido
     const override = FULL_THEME_OVERRIDES[accent];
     if (override) {
       const vars = isDark ? override.dark : override.light;
@@ -342,9 +304,6 @@ export function useApplyPublicDesign(slug: string | undefined) {
   }, [design, theme]);
 }
 
-/**
- * Hook para buscar o design da organização vinculada ao cliente logado
- */
 export function useCustomerOrgDesign() {
   return useQuery({
     queryKey: ["customer_org_design"],
@@ -358,9 +317,6 @@ export function useCustomerOrgDesign() {
   });
 }
 
-/**
- * Hook para aplicar o design da organização na área do cliente
- */
 export function useApplyCustomerDesign() {
   const { data: design } = useCustomerOrgDesign();
   const { theme } = useTheme();
@@ -372,7 +328,6 @@ export function useApplyCustomerDesign() {
     const accent = design.accent_color as AccentColor;
     const isDark = theme === "dark";
 
-    // Aplica Cores
     if (ACCENT_COLORS[accent]) {
       const colorSet = ACCENT_COLORS[accent][isDark ? "dark" : "light"];
       root.style.setProperty("--accent", colorSet.accent);
@@ -384,7 +339,6 @@ export function useApplyCustomerDesign() {
       root.style.setProperty("--ring", colorSet.accent);
     }
 
-    // Aplica tema completo (fundo/texto/bordas/gráficos), quando definido
     const override = FULL_THEME_OVERRIDES[accent];
     if (override) {
       const vars = isDark ? override.dark : override.light;
@@ -393,9 +347,6 @@ export function useApplyCustomerDesign() {
   }, [design, theme]);
 }
 
-/**
- * Hook para buscar o banner ativo da organização do cliente
- */
 export function useActiveBanner() {
   return useQuery({
     queryKey: ["active-banner"],
@@ -426,9 +377,6 @@ export function useActiveBanner() {
   });
 }
 
-/**
- * Hook para buscar eventos ativos da organização do cliente
- */
 export function useOrgActiveEvents() {
   return useQuery({
     queryKey: ["org-active-events"],
@@ -460,6 +408,3 @@ export function useOrgActiveEvents() {
     enabled: true,
   });
 }
-
-
-
