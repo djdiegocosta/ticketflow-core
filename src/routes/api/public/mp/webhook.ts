@@ -83,7 +83,14 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             if (ticketError) throw ticketError;
           }
 
-          // Envio de e-mail de confirmação (QUA-002). A função nunca lança erro:
+          const { data: tickets, error: ticketsError } = await supabaseAdmin
+            .from("tickets")
+            .select("ticket_code, participant_name")
+            .eq("sale_id", saleId)
+            .order("created_at", { ascending: true });
+          if (ticketsError) throw ticketsError;
+
+          // Envio de e-mail de confirmação. A função nunca lança erro:
           // se o envio falhar, a venda já está confirmada e os ingressos já existem.
           const eventTitle = (sale as unknown as { events?: { title?: string } }).events?.title ?? "seu evento";
           await sendPurchaseConfirmationEmail({
@@ -91,6 +98,10 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             buyerEmail: sale.buyer_email ?? "",
             eventTitle,
             saleCode: sale.sale_code ?? "",
+            tickets: (tickets || []).map((ticket) => ({
+              ticket_code: ticket.ticket_code,
+              participant_name: ticket.participant_name,
+            })),
           });
 
           return new Response("ok", { status: 200 });
