@@ -69,11 +69,17 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             return new Response("Payment amount mismatch", { status: 400 });
           }
 
-          const { error: confirmError } = await supabaseAdmin.rpc("confirm_sale_paid", {
+          const { data: confirmationResult, error: confirmError } = await supabaseAdmin.rpc("confirm_sale_paid", {
             _sale_id: saleId,
             _mp_payment_id: String(mpData.id),
           });
           if (confirmError) throw confirmError;
+
+          // O RPC é idempotente. Quando um webhook repetido chega depois da
+          // confirmação original, ele retorna false e não deve reenviar e-mail.
+          if (confirmationResult !== true) {
+            return new Response("ok", { status: 200 });
+          }
 
           if (sale.pending_participant_names) {
             const { error: ticketError } = await supabaseAdmin.rpc("create_locked_tickets", {
@@ -90,8 +96,6 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             .order("created_at", { ascending: true });
           if (ticketsError) throw ticketsError;
 
-          // Envio de e-mail de confirmação. A função nunca lança erro:
-          // se o envio falhar, a venda já está confirmada e os ingressos já existem.
           const eventTitle = (sale as unknown as { events?: { title?: string } }).events?.title ?? "seu evento";
           await sendPurchaseConfirmationEmail({
             buyerName: sale.buyer_name ?? "",
