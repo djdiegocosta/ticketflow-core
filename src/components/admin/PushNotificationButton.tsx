@@ -9,6 +9,18 @@ import {
   sendPushTest,
 } from "@/lib/push.functions";
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  // O padding do base64 precisa ser calculado, não fixo — chaves VAPID
+  // reais quase nunca precisam de exatamente "==". Somar um padding fixo
+  // (como estava antes) gera uma string de tamanho inválido e o atob()
+  // lança "The string to be decoded is not correctly encoded" para toda
+  // chave, mesmo as corretas.
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from(rawData, (char) => char.charCodeAt(0));
+}
+
 function isPushSupported() {
   return typeof window !== "undefined"
     && "Notification" in window
@@ -52,7 +64,7 @@ export function PushNotificationButton() {
       const existing = await registration.pushManager.getSubscription();
       const subscription = existing ?? await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: Uint8Array.from(atob(publicKey.replace(/-/g, "+").replace(/_/g, "/") + "=="), (char) => char.charCodeAt(0)),
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
 
       await savePushSubscription({
