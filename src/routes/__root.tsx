@@ -65,7 +65,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
 
-    // Log completo para diagnóstico
     console.error("[TicketFlow Error]", {
       message: error.message,
       stack: error.stack,
@@ -134,7 +133,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico?v=2", type: "image/x-icon" },
-
     ],
   }),
   shellComponent: RootShell,
@@ -160,36 +158,27 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // Registro do Service Worker — habilita a instalação do PWA (Área do
-  // Cliente e demais páginas). O arquivo público/sw.js não tem listener de
-  // 'fetch': não guarda nada em cache, então não corre o risco de servir uma
-  // versão antiga do site depois de um novo deploy. Ele também usa
-  // skipWaiting/clients.claim, então substitui de imediato qualquer versão
-  // anterior do Service Worker que ainda esteja ativa no navegador de algum
-  // cliente — inclusive a versão com cache que motivou desativar o registro
-  // em 29/08/2026 (ver docs/PROJECT-MAP.md, seção PWA).
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     if (window.location.hostname === "localhost" || window.location.hostname.includes("127.0.0.1"))
       return;
 
     navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
-      // Silencioso — o site continua funcionando normalmente sem o Service
-      // Worker; apenas a instalação como app fica indisponível.
+      // Silencioso — o site continua funcionando normalmente sem o Service Worker.
     });
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <DesignProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <DesignProvider>
             <PublicDataProvider>
               <Outlet />
               <Toaster position="top-right" richColors />
             </PublicDataProvider>
-          </AuthProvider>
-        </DesignProvider>
+          </DesignProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
