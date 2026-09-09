@@ -38,7 +38,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   .inputValidator(subscriptionSchema.parse)
   .handler(async ({ data, context }) => {
     const organizationId = await getUserOrganization(context.userId);
-    const { error } = await supabaseAdmin.from("push_subscriptions").upsert(
+    const { error } = await (supabaseAdmin as any).from("push_subscriptions").upsert(
       {
         user_id: context.userId,
         organization_id: organizationId,
@@ -60,7 +60,7 @@ export const removePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ endpoint: z.string().url() }).parse)
   .handler(async ({ data, context }) => {
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from("push_subscriptions")
       .update({ active: false, updated_at: new Date().toISOString() })
       .eq("endpoint", data.endpoint)
