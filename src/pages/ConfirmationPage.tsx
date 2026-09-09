@@ -78,13 +78,22 @@ export default function ConfirmationPage() {
           </div>
         </div>
 
+        <Button
+          type="button"
+          onClick={downloadAllTicketsPdf}
+          disabled={isGeneratingPdf || !sale.tickets?.length}
+          className="h-12 w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] flex items-center justify-center gap-2"
+        >
+          {isGeneratingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+          {isGeneratingPdf ? 'Gerando PDF...' : 'Baixar ingresso'}
+        </Button>
+
         <div className="rounded-[var(--radius-lg)] border border-[var(--accent)] bg-[var(--accent-muted)] p-5">
-          <h3 className="text-heading-3 font-bold text-[var(--text-primary)]">Guarde seu ingresso</h3>
+          <h3 className="text-heading-3 font-bold text-[var(--text-primary)]">Como usar seu ingresso</h3>
           <div className="mt-3 space-y-2 text-small leading-5 text-[var(--text-primary)]">
-            <p>• Baixe o PDF e mantenha o ingresso salvo no celular.</p>
-            <p>• Apresente o QR Code do ingresso na entrada do evento.</p>
-            <p>• Não envie, publique ou repasse seu ingresso para outra pessoa.</p>
-            <p>• Cada ingresso é válido para um único acesso e será validado na entrada.</p>
+            <p>1. Guarde o PDF baixado ou tire um print da tela.</p>
+            <p>2. Apresente o PDF ou o print na entrada do evento.</p>
+            <p>3. Não repasse seu ingresso para outra pessoa — ele é válido para um único acesso.</p>
           </div>
         </div>
 
@@ -141,17 +150,7 @@ export default function ConfirmationPage() {
         </div>
 
         <div className="flex flex-col gap-3 pt-4">
-          <Button
-            type="button"
-            onClick={downloadAllTicketsPdf}
-            disabled={isGeneratingPdf || !sale.tickets?.length}
-            className="h-12 w-full bg-[var(--bg-secondary)] border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] flex items-center justify-center gap-2"
-          >
-            {isGeneratingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-            {isGeneratingPdf ? 'Gerando PDF...' : 'Baixar todos os ingressos (PDF)'}
-          </Button>
-          
-          <div className="mt-4 rounded-[var(--radius-lg)] bg-[var(--accent-muted)] p-5 border border-[var(--accent)] border-dashed text-center">
+          <div className="rounded-[var(--radius-lg)] bg-[var(--accent-muted)] p-5 border border-[var(--accent)] border-dashed text-center">
             <p className="text-small text-[var(--text-primary)] mb-3 leading-snug">
               Quer acompanhar seus ingressos e pontuar em compras futuras?
             </p>
