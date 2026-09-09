@@ -1,4 +1,5 @@
 import {
+  createCipheriv,
   createECDH,
   createHmac,
   createPrivateKey,
@@ -137,7 +138,7 @@ function encryptWebPush(subscription: StoredSubscription, payload: PushPayload) 
 
   const plaintext = Buffer.from(JSON.stringify(payload), "utf8");
   const record = Buffer.concat([plaintext, Buffer.from([2])]);
-  const cipher = require("node:crypto").createCipheriv("aes-128-gcm", cek, nonce);
+  const cipher = createCipheriv("aes-128-gcm", cek, nonce);
   const ciphertext = Buffer.concat([cipher.update(record), cipher.final(), cipher.getAuthTag()]);
   const recordSize = 4096;
   const body = Buffer.concat([
@@ -166,7 +167,7 @@ export async function sendPushSubscription(subscription: StoredSubscription, pay
   const jwt = createVapidJwt(endpointUrl.origin);
   const encrypted = encryptWebPush(subscription, payload);
 
-  const response = await fetch(subscription.endpoint, {
+  return fetch(subscription.endpoint, {
     method: "POST",
     headers: {
       TTL: "60",
@@ -179,8 +180,6 @@ export async function sendPushSubscription(subscription: StoredSubscription, pay
     },
     body: encrypted.body,
   });
-
-  return response;
 }
 
 async function sendToSubscriptions(subscriptions: StoredSubscription[], payload: PushPayload) {
@@ -205,10 +204,7 @@ async function sendToSubscriptions(subscriptions: StoredSubscription[], payload:
   return results;
 }
 
-export async function sendPushToOrganization(
-  organizationId: string,
-  payload: PushPayload,
-) {
+export async function sendPushToOrganization(organizationId: string, payload: PushPayload) {
   const { data, error } = await supabaseAdmin
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth, active")
