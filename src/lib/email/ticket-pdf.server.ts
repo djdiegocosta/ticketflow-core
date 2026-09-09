@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 
 export interface TicketPdfInput {
   eventTitle: string;
@@ -11,77 +12,65 @@ export interface TicketPdfInput {
   }>;
 }
 
+function formatEventDate(eventDate?: string | null): string {
+  if (!eventDate) return "—";
+  const parsed = new Date(eventDate);
+  if (Number.isNaN(parsed.getTime())) return "—";
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(parsed);
+}
+
+async function qrCodeDataUrl(value: string): Promise<string> {
+  return QRCode.toDataURL(value, {
+    width: 512,
+    margin: 0,
+    errorCorrectionLevel: "L",
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+}
+
 /**
- * Gera o PDF oficial enviado no e-mail de confirmação.
- * Cada ingresso ocupa uma página para facilitar o uso no celular e na entrada.
+ * Gera o PDF oficial do ingresso.
+ * Este é o único renderer usado tanto pelo download do cliente quanto pelo
+ * anexo enviado por e-mail, garantindo que ambos sejam o mesmo arquivo.
  */
-export function generateTicketsPdf(input: TicketPdfInput): Buffer {
+export async function generateTicketsPdf(input: TicketPdfInput): Promise<Buffer> {
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
   const tickets = input.tickets;
+  const eventDate = formatEventDate(input.eventDate);
 
-  tickets.forEach((ticket, index) => {
+  for (let index = 0; index < tickets.length; index += 1) {
+    const ticket = tickets[index];
     if (index > 0) pdf.addPage();
 
-    const eventDate = input.eventDate
-      ? new Date(input.eventDate).toLocaleDateString("pt-BR")
-      : "Data não informada";
+    const qrDataUrl = await qrCodeDataUrl(ticket.ticket_code);
 
-    pdf.setFillColor(20, 20, 20);
-    pdf.roundedRect(15, 15, 180, 255, 6, 6, "F");
-
-    pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(22);
-    pdf.text("TicketFlow", 25, 35);
+    pdf.setFontSize(20);
+    pdf.text("TicketFlow", 20, 25);
 
-    pdf.setFontSize(11);
-    pdf.setFont("helvetica", "normal");
-    pdf.text("INGRESSO OFICIAL", 25, 44);
-
-    pdf.setFillColor(35, 35, 35);
-    pdf.roundedRect(25, 58, 160, 78, 4, 4, "F");
-
-    pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(17);
-    const eventLines = pdf.splitTextToSize(input.eventTitle, 145);
-    pdf.text(eventLines, 32, 76);
+    pdf.setFontSize(16);
+    pdf.text("Ingresso", 20, 40);
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(11);
-    pdf.text(`Data: ${eventDate}`, 32, 98);
-    pdf.text(`Participante: ${ticket.participant_name || input.buyerName || "Não informado"}`, 32, 108);
-    pdf.text(`Ingresso ${index + 1} de ${tickets.length}`, 32, 118);
+    pdf.text(input.eventTitle, 20, 50);
+    pdf.text(`Data: ${eventDate}`, 20, 58);
+    pdf.text(`Participante: ${ticket.participant_name || "Não informado"}`, 20, 66);
+    pdf.text(`Ingresso ${index + 1} de ${tickets.length}`, 20, 74);
 
-    pdf.setFillColor(255, 255, 255);
-    pdf.roundedRect(25, 148, 160, 48, 4, 4, "F");
-
-    pdf.setTextColor(20, 20, 20);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(9);
-    pdf.text("CÓDIGO DO INGRESSO", 105, 160, { align: "center" });
+    pdf.setDrawColor(220, 220, 220);
+    pdf.roundedRect(20, 84, 170, 125, 4, 4, "S");
+    pdf.addImage(qrDataUrl, "PNG", 62, 94, 86, 86);
 
     pdf.setFont("courier", "bold");
-    pdf.setFontSize(20);
-    pdf.text(ticket.ticket_code, 105, 177, { align: "center" });
+    pdf.setFontSize(12);
+    pdf.text(ticket.ticket_code, 105, 195, { align: "center" });
 
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
-    pdf.text(`Compra: ${input.saleCode}`, 105, 188, { align: "center" });
-
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(12);
-    pdf.text("APRESENTE ESTE INGRESSO NA ENTRADA DO EVENTO", 105, 218, { align: "center" });
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    const instructions = pdf.splitTextToSize(
-      "Mantenha este ingresso guardado no seu celular. Não compartilhe o código com outra pessoa. O ingresso é pessoal e deve ser apresentado na entrada para validação.",
-      145,
-    );
-    pdf.text(instructions, 105, 232, { align: "center" });
-  });
+    pdf.text("Apresente este QR Code na entrada do evento.", 105, 201, { align: "center" });
+  }
 
   return Buffer.from(pdf.output("arraybuffer"));
 }
