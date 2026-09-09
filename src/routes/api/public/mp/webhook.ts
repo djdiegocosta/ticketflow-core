@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { decrypt } from "@/lib/mp/utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendPurchaseConfirmationEmail } from "@/lib/email/confirmation-email.server";
+import { sendPushToOrganization } from "@/lib/push.server";
 
 export const Route = createFileRoute("/api/public/mp/webhook")({
   server: {
@@ -76,7 +77,8 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           if (confirmError) throw confirmError;
 
           // O RPC é idempotente. Quando um webhook repetido chega depois da
-          // confirmação original, ele retorna false e não deve reenviar e-mail.
+          // confirmação original, ele retorna false e não deve reenviar e-mail
+          // nem push.
           if (confirmationResult !== true) {
             return new Response("ok", { status: 200 });
           }
@@ -98,6 +100,14 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
 
           const event = (sale as unknown as { events?: { title?: string; event_date?: string | null; location?: string | null; organizations?: { name?: string | null } } }).events;
           const eventTitle = event?.title ?? "seu evento";
+
+          await sendPushToOrganization(orgId, {
+            title: "Venda concluída",
+            body: `Venda ${sale.sale_code ?? ""} paga. Pagamento de R$ ${saleAmount.toFixed(2).replace(".", ",")} confirmado.`,
+            url: "/admin/vendas",
+            tag: `sale-paid-${sale.id}`,
+          }).catch((pushError) => console.error("Push de venda paga falhou:", pushError));
+
           await sendPurchaseConfirmationEmail({
             buyerName: sale.buyer_name ?? "",
             buyerEmail: sale.buyer_email ?? "",
