@@ -68,12 +68,14 @@ export function PushNotificationButton() {
       });
 
       await savePushSubscription({
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
-          auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+        data: {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+            auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+          },
+          userAgent: navigator.userAgent,
         },
-        userAgent: navigator.userAgent,
       });
 
       setEnabled(true);
@@ -91,7 +93,7 @@ export function PushNotificationButton() {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
-        await removePushSubscription({ endpoint: subscription.endpoint });
+        await removePushSubscription({ data: { endpoint: subscription.endpoint } });
         await subscription.unsubscribe();
       }
       setEnabled(false);
