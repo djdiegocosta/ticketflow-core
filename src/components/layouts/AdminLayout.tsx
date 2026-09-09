@@ -1,4 +1,4 @@
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useRouterState, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
 import { CalendarDays, Gift, LayoutDashboard, Receipt, Settings, ShieldCheck, Ticket, Users, UsersRound, Wrench, Menu, X, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTheme } from "@/lib/theme";
 import { AdminPageActionProvider, useAdminPageActionValue } from "@/components/layouts/AdminPageActionContext";
+import { PushNotificationButton } from "@/components/admin/PushNotificationButton";
 
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard", "/admin/eventos": "Eventos", "/admin/vendas": "Vendas", "/admin/cortesias": "Cortesias", "/admin/clientes": "Clientes", "/checkin": "Check-in", "/admin/relatorios": "Relatórios", "/admin/ferramentas": "Ferramentas", "/admin/ferramentas/vitrine": "Vitrine", "/admin/historico": "Histórico de Eventos", "/admin/usuarios": "Usuários", "/admin/configuracoes": "Configurações", "/admin/checklist": "Checklist", "/admin/remarketing": "Remarketing", "/admin/simulador": "Simulador",
@@ -62,7 +63,7 @@ function AdminLayoutContent() {
       <div className="shrink-0 border-t border-[var(--border-subtle)] px-3 pt-2 pb-5"><button type="button" onClick={toggleTheme} className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}<span>{theme === "dark" ? "Tema claro" : "Tema escuro"}</span></button><button type="button" onClick={logout} className="mt-0.5 flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-body text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"><LogOut className="h-4 w-4" /><span>Sair</span></button></div>
     </aside>
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6"><div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)} className="text-[var(--text-secondary)] lg:hidden"><Menu className="h-5 w-5" /></Button><span className="truncate text-heading-2 text-[var(--text-primary)]">{getPageTitle()}</span></div><div className="flex shrink-0 items-center">{pageAction}</div></header>
+      <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 md:px-6"><div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)} className="text-[var(--text-secondary)] lg:hidden"><Menu className="h-5 w-5" /></Button><span className="truncate text-heading-2 text-[var(--text-primary)]">{getPageTitle()}</span></div><div className="flex shrink-0 items-center gap-2"><PushNotificationButton />{pageAction}</div></header>
       <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin"><Outlet /></main>
     </div>
   </div>;

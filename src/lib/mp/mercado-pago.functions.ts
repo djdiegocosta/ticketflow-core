@@ -3,6 +3,7 @@ import { z } from "zod";
 import { encrypt, decrypt } from "./utils.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sendPushToOrganization } from "@/lib/push.server";
 
 async function assertOrgAdmin(userId: string, organizationId: string) {
   const { data, error } = await supabaseAdmin
@@ -123,8 +124,19 @@ export const createMpPix = createServerFn({ method: "POST" })
         throw new Error("O Mercado Pago não retornou o QR Code do Pix");
       }
       const mpPaymentId = String(mpData.id);
+      const isFirstPixCreation = !sale.mp_payment_id;
       const { error: updateError } = await supabaseAdmin.from("sales").update({ mp_payment_id: mpPaymentId, mp_qr_code: qrCode, mp_qr_code_base64: qrCodeBase64 }).eq("id", sale.id).eq("status", "pendente");
       if (updateError) throw new Error(updateError.message);
+
+      if (isFirstPixCreation) {
+        await sendPushToOrganization(orgId, {
+          title: "Nova venda aguardando PIX",
+          body: `Venda ${sale.sale_code ?? ""} criada. Aguardando pagamento de R$ ${Number(sale.total_amount).toFixed(2).replace(".", ",")}.`,
+          url: "/admin/vendas",
+          tag: `sale-pending-${sale.id}`,
+        }).catch((pushError) => console.error("Push de venda pendente falhou:", pushError));
+      }
+
       return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId };
     } catch (err: any) {
       await supabaseAdmin.from("sales").update({
