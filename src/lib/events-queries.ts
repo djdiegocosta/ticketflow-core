@@ -10,6 +10,25 @@ export interface EventWithStats extends EventRow {
   sold: number;
 }
 
+/**
+ * TicketFlow operates in the event's local timezone (Brazil/Sao_Paulo).
+ * datetime-local inputs have no timezone, so they must not be passed to
+ * new Date(value) and implicitly interpreted as UTC/server time.
+ */
+const EVENT_TIMEZONE_OFFSET = "-03:00";
+
+export function localDateTimeToISOString(value: string | null) {
+  if (!value) return null;
+  return new Date(`${value}:00${EVENT_TIMEZONE_OFFSET}`).toISOString();
+}
+
+export function isoToLocalDateTime(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export const eventStatusLabel = (event: EventRow) =>
   event.status === "cancelado" ? "Cancelado" : (event.is_closed ? "Encerrado" : (event.status === "publicado" ? "Publicado" : "Rascunho"));
 
@@ -158,29 +177,26 @@ export async function upsertBatch(
   eventId: string,
   batch: BatchInput & { id?: string },
 ) {
-  if (batch.id) {
-    const { error } = await supabase
-      .from("ticket_batches")
-      .update({
-        name: batch.name,
-        price: batch.price,
-        quantity: batch.quantity,
-        starts_at: batch.starts_at,
-        ends_at: batch.ends_at,
-        is_courtesy: !!batch.is_courtesy,
-      })
-      .eq("id", batch.id);
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase.from("ticket_batches").insert({
+  const normalizedBatch = {
     name: batch.name,
     price: batch.price,
     quantity: batch.quantity,
     starts_at: batch.starts_at,
     ends_at: batch.ends_at,
     is_courtesy: !!batch.is_courtesy,
+  };
+
+  if (batch.id) {
+    const { error } = await supabase
+      .from("ticket_batches")
+      .update(normalizedBatch)
+      .eq("id", batch.id);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase.from("ticket_batches").insert({
+    ...normalizedBatch,
     event_id: eventId,
     organization_id: organizationId,
   });
