@@ -29,16 +29,23 @@ A página de confirmação informa explicitamente:
 - orientação para manter o ingresso salvo no celular;
 - orientação para não compartilhar ou repassar o ingresso.
 
+## PDF oficial do ingresso
+
+O PDF é gerado por um único renderer server-side em `src/lib/email/ticket-pdf.server.ts`.
+
+O mesmo arquivo é usado para:
+
+- download na página de confirmação;
+- anexo do e-mail de confirmação.
+
+Isso garante paridade funcional e visual entre o PDF baixado e o PDF recebido por e-mail.
+
+Cada ingresso ocupa uma página e contém o mesmo QR Code baseado no `ticket_code`, além de evento, data, participante, posição do ingresso e instrução para apresentação na entrada.
+
 ## E-mail
 
 O e-mail de confirmação não depende mais de um link para recuperar o ingresso.
 
-O ingresso é anexado como PDF com um arquivo por compra, contendo uma página por ingresso e o código do ingresso.
+O PDF oficial é anexado diretamente ao e-mail.
 
 O envio de e-mail continua desacoplado da confirmação financeira: uma falha no SMTP não desfaz o pagamento nem a criação dos ingressos.
-
-## Observação técnica
-
-A geração de PDF no navegador já utiliza o QR Code visual do ingresso. O PDF anexado pelo servidor utiliza o gerador `ticket-pdf.server.ts` e mantém os dados essenciais do ingresso e seu código.
-
-Uma evolução futura pode unificar completamente o renderer visual do PDF do navegador e do anexo de e-mail, evitando qualquer diferença estética entre as duas versões.
