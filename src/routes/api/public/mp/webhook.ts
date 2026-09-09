@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           if (!saleId) return new Response("Invalid payment reference", { status: 400 });
           const { data: sale, error: saleError } = await supabaseAdmin
             .from("sales")
-            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title)")
+            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title, event_date)")
             .eq("id", saleId)
             .single();
           if (saleError || !sale) return new Response("Sale not found", { status: 404 });
@@ -96,11 +96,13 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             .order("created_at", { ascending: true });
           if (ticketsError) throw ticketsError;
 
-          const eventTitle = (sale as unknown as { events?: { title?: string } }).events?.title ?? "seu evento";
+          const event = (sale as unknown as { events?: { title?: string; event_date?: string | null } }).events;
+          const eventTitle = event?.title ?? "seu evento";
           await sendPurchaseConfirmationEmail({
             buyerName: sale.buyer_name ?? "",
             buyerEmail: sale.buyer_email ?? "",
             eventTitle,
+            eventDate: event?.event_date ?? null,
             saleCode: sale.sale_code ?? "",
             tickets: (tickets || []).map((ticket) => ({
               ticket_code: ticket.ticket_code,
