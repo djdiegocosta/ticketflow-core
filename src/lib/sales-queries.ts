@@ -181,7 +181,6 @@ export function useSalesStats(eventId?: string) {
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) throw ticketsError;
 
-      // Vendas pendentes ainda não possuem ingressos, então precisam ser lidas direto da tabela sales.
       let pendingQuery = supabase
         .from("sales")
         .select("id, total_amount")
@@ -303,6 +302,6 @@ export function useSaleStatus(saleId: string | null) {
       return data.status;
     },
     enabled: !!saleId,
-    refetchInterval: (query) => query.state.data === "pago" ? false : 4000,
+    refetchInterval: (query) => query.state.data === "pago" ? false : 2000,
   });
 }

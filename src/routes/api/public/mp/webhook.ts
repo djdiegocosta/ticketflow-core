@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           if (!saleId) return new Response("Invalid payment reference", { status: 400 });
           const { data: sale, error: saleError } = await supabaseAdmin
             .from("sales")
-            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title)")
+            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title, event_date)")
             .eq("id", saleId)
             .single();
           if (saleError || !sale) return new Response("Sale not found", { status: 404 });
@@ -69,11 +69,17 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             return new Response("Payment amount mismatch", { status: 400 });
           }
 
-          const { error: confirmError } = await supabaseAdmin.rpc("confirm_sale_paid", {
+          const { data: confirmationResult, error: confirmError } = await supabaseAdmin.rpc("confirm_sale_paid", {
             _sale_id: saleId,
             _mp_payment_id: String(mpData.id),
           });
           if (confirmError) throw confirmError;
+
+          // O RPC é idempotente. Quando um webhook repetido chega depois da
+          // confirmação original, ele retorna false e não deve reenviar e-mail.
+          if (confirmationResult !== true) {
+            return new Response("ok", { status: 200 });
+          }
 
           if (sale.pending_participant_names) {
             const { error: ticketError } = await supabaseAdmin.rpc("create_locked_tickets", {
@@ -83,14 +89,25 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
             if (ticketError) throw ticketError;
           }
 
-          // Envio de e-mail de confirmação (QUA-002). A função nunca lança erro:
-          // se o envio falhar, a venda já está confirmada e os ingressos já existem.
-          const eventTitle = (sale as unknown as { events?: { title?: string } }).events?.title ?? "seu evento";
+          const { data: tickets, error: ticketsError } = await supabaseAdmin
+            .from("tickets")
+            .select("ticket_code, participant_name")
+            .eq("sale_id", saleId)
+            .order("created_at", { ascending: true });
+          if (ticketsError) throw ticketsError;
+
+          const event = (sale as unknown as { events?: { title?: string; event_date?: string | null } }).events;
+          const eventTitle = event?.title ?? "seu evento";
           await sendPurchaseConfirmationEmail({
             buyerName: sale.buyer_name ?? "",
             buyerEmail: sale.buyer_email ?? "",
             eventTitle,
+            eventDate: event?.event_date ?? null,
             saleCode: sale.sale_code ?? "",
+            tickets: (tickets || []).map((ticket) => ({
+              ticket_code: ticket.ticket_code,
+              participant_name: ticket.participant_name,
+            })),
           });
 
           return new Response("ok", { status: 200 });

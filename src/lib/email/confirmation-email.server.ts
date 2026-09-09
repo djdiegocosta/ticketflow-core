@@ -1,14 +1,10 @@
 import nodemailer from "nodemailer";
+import { generateTicketsPdf } from "./ticket-pdf.server";
 
 /**
- * Envio de e-mail de confirmação de compra (QUA-002).
- *
- * Usa uma conta Gmail comum + "senha de app" como transporte SMTP —
- * opção de custo zero, sem depender de domínio próprio verificado.
- * Credenciais (GMAIL_USER/GMAIL_APP_PASSWORD) configuradas na Vercel em 06/09/2026.
- * Se as credenciais não estiverem configuradas, ou o envio falhar por
- * qualquer motivo, a função nunca lança erro: a confirmação de pagamento
- * e a criação dos ingressos NUNCA podem ser bloqueadas por causa do e-mail.
+ * Envio de e-mail de confirmação de compra.
+ * O ingresso é entregue como PDF anexado ao e-mail; o e-mail não depende
+ * de um link externo para permitir que o cliente apresente o ingresso.
  */
 
 let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
@@ -30,7 +26,12 @@ export interface ConfirmationEmailInput {
   buyerName: string;
   buyerEmail: string;
   eventTitle: string;
+  eventDate?: string | null;
   saleCode: string;
+  tickets: Array<{
+    ticket_code: string;
+    participant_name: string | null;
+  }>;
 }
 
 export async function sendPurchaseConfirmationEmail(input: ConfirmationEmailInput): Promise<void> {
@@ -40,11 +41,10 @@ export async function sendPurchaseConfirmationEmail(input: ConfirmationEmailInpu
       console.warn("sendPurchaseConfirmationEmail: GMAIL_USER/GMAIL_APP_PASSWORD não configurados, envio ignorado.");
       return;
     }
-    if (!input.buyerEmail) return;
+    if (!input.buyerEmail || input.tickets.length === 0) return;
 
-    const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
-    const ticketsUrl = `${siteUrl}/meus-ingressos?codigo=${encodeURIComponent(input.saleCode)}`;
     const fromUser = process.env["GMAIL_USER"];
+    const pdf = await generateTicketsPdf(input);
 
     await t.sendMail({
       from: `TicketFlow <${fromUser}>`,
@@ -53,15 +53,23 @@ export async function sendPurchaseConfirmationEmail(input: ConfirmationEmailInpu
       text:
         `Oi, ${input.buyerName}!\n\n` +
         `Seu pagamento foi confirmado para o evento "${input.eventTitle}".\n\n` +
-        `Código da sua compra: ${input.saleCode}\n` +
-        `Acesse seu(s) ingresso(s) aqui: ${ticketsUrl}\n\n` +
-        `Guarde este e-mail — ele é a forma mais fácil de recuperar seu ingresso caso precise.`,
+        `O(s) seu(s) ingresso(s) estão anexados a este e-mail em PDF.\n\n` +
+        `Mantenha o PDF guardado no celular e não compartilhe o ingresso ou seu código com outra pessoa. ` +
+        `O ingresso deve ser apresentado na entrada do evento para validação.\n\n` +
+        `Código da compra: ${input.saleCode}`,
       html:
         `<p>Oi, ${escapeHtml(input.buyerName)}!</p>` +
         `<p>Seu pagamento foi confirmado para o evento <strong>${escapeHtml(input.eventTitle)}</strong>.</p>` +
-        `<p>Código da sua compra: <strong>${escapeHtml(input.saleCode)}</strong></p>` +
-        `<p><a href="${ticketsUrl}">Clique aqui para acessar seu(s) ingresso(s)</a></p>` +
-        `<p style="color:#666;font-size:13px">Guarde este e-mail — ele é a forma mais fácil de recuperar seu ingresso caso precise.</p>`,
+        `<p>Seu(s) ingresso(s) estão anexados a este e-mail em <strong>PDF</strong>.</p>` +
+        `<p><strong>Importante:</strong> mantenha o PDF guardado no celular e não compartilhe o ingresso ou seu código com outra pessoa. O ingresso deve ser apresentado na entrada do evento para validação.</p>` +
+        `<p style="color:#666;font-size:13px">Código da compra: ${escapeHtml(input.saleCode)}</p>`,
+      attachments: [
+        {
+          filename: `ingressos-${input.saleCode}.pdf`,
+          content: pdf,
+          contentType: "application/pdf",
+        },
+      ],
     });
   } catch (err) {
     // Nunca deixar o envio de e-mail derrubar o fluxo de confirmação de pagamento.
