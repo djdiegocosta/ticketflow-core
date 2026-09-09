@@ -103,6 +103,12 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Causa raiz 2 (bug real, corrigido em código): `src/pages/PublicEventPage.tsx` não tratava o caso de "nenhum lote disponível" — em vez de avisar "esgotado", mostrava a seção de seleção vazia e o botão de compra com "R$ 0,00" desabilitado, sem nenhuma explicação. Agora mostra "Ingressos esgotados no momento" com aviso de que pode ser temporário.
 - Decisão registrada: não removemos a reserva de estoque (só dar baixa após pagamento confirmado, como cogitado inicialmente) porque isso abriria brecha pra venda duplicada em ingressos com pouca sobra — mantivemos a reserva, só encurtamos a janela.
 
+### Admin agora pode editar o cadastro de um cliente
+- Objetivo: corrigir erros de digitação do próprio cliente (e-mail errado, ano de nascimento errado, etc.) sem precisar excluir e recriar o cadastro.
+- Botão "Editar cadastro" na ficha do cliente (`/admin/clientes/:id`), abre painel com Nome, WhatsApp, E-mail, Cidade, Data de nascimento, Instagram e Sexo — mesmos campos que o próprio cliente edita no perfil dele.
+- Achado durante a implementação: a função do banco (`update_customer`) e o hook (`useUpdateCustomer`) já existiam prontos, com checagem de permissão (só admin da mesma organização pode editar cliente que não é ele mesmo) — só faltava a tela. Nenhuma mudança de banco foi necessária.
+- Arquivos: `src/components/admin/clients/EditClientPanel.tsx` (novo), `src/pages/admin/ClientDetailPage.tsx`, `src/lib/customers-queries.ts` (hook passou a enviar também cidade/instagram/sexo, que a função já suportava).
+
 ---
 
 ## Pendências conhecidas

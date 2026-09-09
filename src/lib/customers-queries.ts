@@ -136,13 +136,25 @@ export function useCreateCustomer() {
 export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; full_name: string; email?: string; whatsapp: string; birth_date?: string }) => {
+    mutationFn: async (vars: {
+      id: string;
+      full_name: string;
+      email?: string;
+      whatsapp: string;
+      birth_date?: string;
+      cidade?: string;
+      instagram?: string;
+      sexo?: string;
+    }) => {
       const { error } = await supabase.rpc("update_customer", {
         _customer_id: vars.id as any || null,
         _full_name: vars.full_name,
         _email: vars.email || "",
         _whatsapp: vars.whatsapp,
-        _data_nascimento: (vars.birth_date || null) as any
+        _cidade: (vars.cidade || null) as any,
+        _data_nascimento: (vars.birth_date || null) as any,
+        _instagram: (vars.instagram || null) as any,
+        _sexo: (vars.sexo || null) as any,
       });
       if (error) throw error;
     },

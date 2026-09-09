@@ -1,11 +1,12 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User, Gift } from "lucide-react";
+import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User, Gift, Pencil } from "lucide-react";
 import { getInitials, whatsappLink } from "@/lib/clients-data";
 import { formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { useCustomerDetail } from "@/lib/customers-queries";
 import { StatusPill } from "@/components/admin/DataTable";
 import { QuickCourtesyPanel } from "@/components/admin/clients/QuickCourtesyPanel";
+import { EditClientPanel } from "@/components/admin/clients/EditClientPanel";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -39,6 +40,7 @@ function StatCard({
 export function ClientDetailPage({ id }: { id: string }) {
   const { data: client, isLoading, refetch } = useCustomerDetail(id);
   const [courtesyPanelOpen, setCourtesyPanelOpen] = React.useState(false);
+  const [editPanelOpen, setEditPanelOpen] = React.useState(false);
 
   if (isLoading) {
     return <div className="p-8 text-center text-body text-text-secondary">Carregando dados do cliente...</div>;
@@ -132,6 +134,14 @@ export function ClientDetailPage({ id }: { id: string }) {
           </a>
           <button
             type="button"
+            onClick={() => setEditPanelOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent"
+          >
+            <Pencil className="h-4 w-4" />
+            Editar cadastro
+          </button>
+          <button
+            type="button"
             onClick={() => setCourtesyPanelOpen(true)}
             className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent"
           >
@@ -154,6 +164,10 @@ export function ClientDetailPage({ id }: { id: string }) {
           <InfoRow label="Nome" value={client.full_name} />
           <InfoRow label="WhatsApp" value={client.whatsapp} />
           <InfoRow label="E-mail" value={client.email ?? "—"} />
+          <InfoRow
+            label="Data de nascimento"
+            value={client.data_nascimento ? new Date(client.data_nascimento + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
+          />
           <InfoRow label="Último evento" value={lastEvent} />
           <InfoRow label="Última compra" value={lastPurchaseAt} />
         </div>
@@ -221,6 +235,13 @@ export function ClientDetailPage({ id }: { id: string }) {
         customerId={id}
         customerName={client.full_name}
         onSuccess={() => refetch()}
+      />
+
+      <EditClientPanel
+        open={editPanelOpen}
+        onClose={() => setEditPanelOpen(false)}
+        onSave={() => refetch()}
+        client={client}
       />
     </div>
   );
