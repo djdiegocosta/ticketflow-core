@@ -50,6 +50,7 @@ import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
 import { Route as ESlugCheckoutRouteImport } from './routes/e.$slug.checkout'
 import { Route as ApiPublicMpWebhookRouteImport } from './routes/api/public/mp/webhook'
+import { Route as ApiPublicTicketsPdfRouteImport } from './routes/api/public/tickets/pdf'
 import { Route as ESlugConfirmacaoSale_codeRouteImport } from './routes/e.$slug.confirmacao.$sale_code'
 
 const IndexRoute = IndexRouteImport.update({
@@ -259,6 +260,11 @@ const ApiPublicMpWebhookRoute = ApiPublicMpWebhookRouteImport.update({
   path: '/api/public/mp/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTicketsPdfRoute = ApiPublicTicketsPdfRouteImport.update({
+  id: '/api/public/tickets/pdf',
+  path: '/api/public/tickets/pdf',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ESlugConfirmacaoSale_codeRoute =
   ESlugConfirmacaoSale_codeRouteImport.update({
     id: '/e/$slug/confirmacao/$sale_code',
@@ -308,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
+  '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesByTo {
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/admin/vendas': typeof AdminVendasIndexRoute
   '/e/$slug': typeof ESlugIndexRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
+  '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRoutesById {
@@ -395,6 +403,7 @@ export interface FileRoutesById {
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
+  '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
 }
 export interface FileRouteTypes {
@@ -441,6 +450,7 @@ export interface FileRouteTypes {
     | '/admin/vendas/'
     | '/e/$slug/'
     | '/api/public/mp/webhook'
+    | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/admin/vendas'
     | '/e/$slug'
     | '/api/public/mp/webhook'
+    | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
   id:
     | '__root__'
@@ -527,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/vendas/'
     | '/e/$slug/'
     | '/api/public/mp/webhook'
+    | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
   fileRoutesById: FileRoutesById
 }
@@ -547,6 +559,7 @@ export interface RootRouteChildren {
   ESlugCheckoutRoute: typeof ESlugCheckoutRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
   ApiPublicMpWebhookRoute: typeof ApiPublicMpWebhookRoute
+  ApiPublicTicketsPdfRoute: typeof ApiPublicTicketsPdfRoute
   ESlugConfirmacaoSale_codeRoute: typeof ESlugConfirmacaoSale_codeRoute
 }
 
@@ -839,6 +852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMpWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/tickets/pdf': {
+      id: '/api/public/tickets/pdf'
+      path: '/api/public/tickets/pdf'
+      fullPath: '/api/public/tickets/pdf'
+      preLoaderRoute: typeof ApiPublicTicketsPdfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/e/$slug/confirmacao/$sale_code': {
       id: '/e/$slug/confirmacao/$sale_code'
       path: '/e/$slug/confirmacao/$sale_code'
@@ -935,6 +955,7 @@ const rootRouteChildren: RootRouteChildren = {
   ESlugCheckoutRoute: ESlugCheckoutRoute,
   ESlugIndexRoute: ESlugIndexRoute,
   ApiPublicMpWebhookRoute: ApiPublicMpWebhookRoute,
+  ApiPublicTicketsPdfRoute: ApiPublicTicketsPdfRoute,
   ESlugConfirmacaoSale_codeRoute: ESlugConfirmacaoSale_codeRoute,
 }
 export const routeTree = rootRouteImport

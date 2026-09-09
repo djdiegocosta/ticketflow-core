@@ -13,9 +13,11 @@ interface SmartFieldProps {
   inputMode?: React.InputHTMLAttributes<HTMLInputElement>["inputMode"];
   error?: string;
   forceLowercase?: boolean;
+  /** Sugestão não-bloqueante (ex: "quis dizer @gmail.com?"), mostrada só quando não há erro. */
+  hint?: React.ReactNode;
 }
 
-export function SmartField({ label, icon: Icon, value, onChange, isValid, placeholder, type, inputMode, error, forceLowercase }: SmartFieldProps) {
+export function SmartField({ label, icon: Icon, value, onChange, isValid, placeholder, type, inputMode, error, forceLowercase, hint }: SmartFieldProps) {
   return (
     <div className="space-y-1">
       <label className="text-micro font-bold uppercase">{label}</label>
@@ -35,6 +37,7 @@ export function SmartField({ label, icon: Icon, value, onChange, isValid, placeh
         <CheckCircle2 className={cn("absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-[var(--accent)] transition-opacity duration-200", isValid ? "opacity-100" : "opacity-0")} />
       </div>
       {error && <p className="text-micro text-[var(--error)]">{error}</p>}
+      {!error && hint}
     </div>
   );
 }

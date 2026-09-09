@@ -8,6 +8,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
+import { suggestEmailCorrection } from '@/lib/email-typo-check';
 import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
@@ -107,6 +108,10 @@ export default function CheckoutPage() {
     control: form.control,
     name: "participants"
   });
+
+  // Sugere correção quando o e-mail parece ter erro de digitação (ex:
+  // icloud.con em vez de icloud.com) — evita falha de Pix por e-mail errado.
+  const emailSuggestion = suggestEmailCorrection(form.watch('buyerEmail'));
 
   useEffect(() => {
     if (!user || !event || !customerRecords) return;
@@ -303,7 +308,26 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
                 <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
-                <SmartField label="E-mail" icon={Mail} value={form.watch('buyerEmail')} onChange={(v) => form.setValue('buyerEmail', v, { shouldValidate: true })} isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch('buyerEmail'))} placeholder="seuemail@exemplo.com" inputMode="email" error={form.formState.errors.buyerEmail?.message as string} forceLowercase />
+                <SmartField
+                  label="E-mail"
+                  icon={Mail}
+                  value={form.watch('buyerEmail')}
+                  onChange={(v) => form.setValue('buyerEmail', v, { shouldValidate: true })}
+                  isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.watch('buyerEmail'))}
+                  placeholder="seuemail@exemplo.com"
+                  inputMode="email"
+                  error={form.formState.errors.buyerEmail?.message as string}
+                  forceLowercase
+                  hint={emailSuggestion && (
+                    <button
+                      type="button"
+                      onClick={() => form.setValue('buyerEmail', emailSuggestion, { shouldValidate: true })}
+                      className="text-micro text-[var(--warning)] underline decoration-dotted"
+                    >
+                      Você quis dizer {emailSuggestion}? Toque para corrigir
+                    </button>
+                  )}
+                />
               </div>
             </div>
 
