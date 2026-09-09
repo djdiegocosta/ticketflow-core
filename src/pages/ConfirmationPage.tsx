@@ -5,37 +5,7 @@ import { useParams, Link } from '@tanstack/react-router';
 import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSaleByCode, useApplyPublicDesign } from '@/lib/customer-queries';
-import { jsPDF } from 'jspdf';
 import { useState } from 'react';
-
-async function svgToPngDataUrl(svg: SVGSVGElement): Promise<string> {
-  const serializedSvg = new XMLSerializer().serializeToString(svg);
-  const svgBlob = new Blob([serializedSvg], { type: 'image/svg+xml;charset=utf-8' });
-  const svgUrl = URL.createObjectURL(svgBlob);
-
-  try {
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = svgUrl;
-    await image.decode();
-
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      throw new Error('Não foi possível preparar o QR Code para o PDF.');
-    }
-
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/png');
-  } finally {
-    URL.revokeObjectURL(svgUrl);
-  }
-}
 
 export default function ConfirmationPage() {
   const { slug, sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
@@ -49,58 +19,22 @@ export default function ConfirmationPage() {
     setIsGeneratingPdf(true);
 
     try {
-      const tickets = sale.tickets as any[];
-      const eventTitle = (sale as any).event_title || 'Evento';
-      const eventDate = (sale as any).event_date
-        ? new Date((sale as any).event_date).toLocaleDateString('pt-BR')
-        : '—';
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-
-      for (let index = 0; index < tickets.length; index += 1) {
-        const ticket = tickets[index];
-        if (index > 0) pdf.addPage();
-
-        const qrElement = document.querySelector<SVGSVGElement>(
-          `[data-ticket-qr="${ticket.id}"]`,
-        );
-
-        if (!qrElement) {
-          throw new Error(`QR Code não encontrado para o ingresso ${ticket.ticket_code}.`);
-        }
-
-        const qrDataUrl = await svgToPngDataUrl(qrElement);
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(20);
-        pdf.text('TicketFlow', 20, 25);
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
-        pdf.text('Ingresso', 20, 40);
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(11);
-        pdf.text(eventTitle, 20, 50);
-        pdf.text(`Data: ${eventDate}`, 20, 58);
-        pdf.text(`Participante: ${ticket.participant_name || 'Não informado'}`, 20, 66);
-        pdf.text(`Ingresso ${index + 1} de ${tickets.length}`, 20, 74);
-
-        pdf.setDrawColor(220, 220, 220);
-        pdf.roundedRect(20, 84, 170, 125, 4, 4, 'S');
-        pdf.addImage(qrDataUrl, 'PNG', 62, 94, 86, 86);
-
-        pdf.setFont('courier', 'bold');
-        pdf.setFontSize(12);
-        pdf.text(ticket.ticket_code, 105, 195, { align: 'center' });
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.text('Apresente este QR Code na entrada do evento.', 105, 201, { align: 'center' });
+      const response = await fetch(`/api/public/tickets/pdf?sale_code=${encodeURIComponent(sale_code)}`);
+      if (!response.ok) {
+        throw new Error(`Falha ao gerar PDF (${response.status}).`);
       }
 
-      pdf.save(`ingressos-${sale_code}.pdf`);
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      anchor.download = `ingressos-${sale_code}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(downloadUrl);
     } catch (error) {
-      console.error('Erro ao gerar PDF dos ingressos:', error);
+      console.error('Erro ao baixar PDF dos ingressos:', error);
       window.alert('Não foi possível gerar o PDF dos ingressos. Tente novamente.');
     } finally {
       setIsGeneratingPdf(false);
