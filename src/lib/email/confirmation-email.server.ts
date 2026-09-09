@@ -27,10 +27,14 @@ export interface ConfirmationEmailInput {
   buyerEmail: string;
   eventTitle: string;
   eventDate?: string | null;
+  eventLocation?: string | null;
+  organizationName?: string | null;
   saleCode: string;
+  purchasedAt?: string | null;
   tickets: Array<{
     ticket_code: string;
     participant_name: string | null;
+    batch_name?: string | null;
   }>;
 }
 
