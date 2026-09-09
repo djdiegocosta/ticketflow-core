@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           if (!saleId) return new Response("Invalid payment reference", { status: 400 });
           const { data: sale, error: saleError } = await supabaseAdmin
             .from("sales")
-            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, events(title, event_date)")
+            .select("id, organization_id, total_amount, pending_participant_names, buyer_name, buyer_email, sale_code, created_at, events(title, event_date, location, organizations(name))")
             .eq("id", saleId)
             .single();
           if (saleError || !sale) return new Response("Sale not found", { status: 404 });
@@ -91,22 +91,26 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
 
           const { data: tickets, error: ticketsError } = await supabaseAdmin
             .from("tickets")
-            .select("ticket_code, participant_name")
+            .select("ticket_code, participant_name, ticket_batches(name)")
             .eq("sale_id", saleId)
             .order("created_at", { ascending: true });
           if (ticketsError) throw ticketsError;
 
-          const event = (sale as unknown as { events?: { title?: string; event_date?: string | null } }).events;
+          const event = (sale as unknown as { events?: { title?: string; event_date?: string | null; location?: string | null; organizations?: { name?: string | null } } }).events;
           const eventTitle = event?.title ?? "seu evento";
           await sendPurchaseConfirmationEmail({
             buyerName: sale.buyer_name ?? "",
             buyerEmail: sale.buyer_email ?? "",
             eventTitle,
             eventDate: event?.event_date ?? null,
+            eventLocation: event?.location ?? null,
+            organizationName: event?.organizations?.name ?? null,
             saleCode: sale.sale_code ?? "",
-            tickets: (tickets || []).map((ticket) => ({
+            purchasedAt: sale.created_at ?? null,
+            tickets: (tickets || []).map((ticket: any) => ({
               ticket_code: ticket.ticket_code,
               participant_name: ticket.participant_name,
+              batch_name: ticket.ticket_batches?.name ?? null,
             })),
           });
 
