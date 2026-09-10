@@ -208,12 +208,13 @@ export function useSalesStats(eventId?: string) {
       };
 
       const saleIds = new Set<string>();
-      const now = new Date();
       const dailyMap = new Map<string, number>();
+      // Fuso explícito e aritmética por época (não por getDate()/setDate(),
+      // que dependem do fuso do dispositivo): sem isso, o dia de corte
+      // muda dependendo de onde/qual aparelho está vendo o dashboard.
       for (let i = 0; i < 14; i++) {
-        const d = new Date();
-        d.setDate(now.getDate() - i);
-        dailyMap.set(d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), 0);
+        const d = new Date(Date.now() - i * 86_400_000);
+        dailyMap.set(d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }), 0);
       }
 
       (ticketsData || []).forEach((t) => {
@@ -230,7 +231,7 @@ export function useSalesStats(eventId?: string) {
         }
 
         if (!s.is_courtesy && s.status === "pago") {
-          const dateStr = new Date(t.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+          const dateStr = new Date(t.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" });
           if (dailyMap.has(dateStr)) dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
         }
       });
