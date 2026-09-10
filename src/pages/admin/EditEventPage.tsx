@@ -30,6 +30,7 @@ import {
   cancelEvent,
   deleteEvent,
 } from "@/lib/events-queries";
+import { brtInputToUtcIso, utcIsoToBrtInput, formatBrtDateTime } from "@/lib/br-datetime";
 
 type BatchDraft = {
   id?: string;
@@ -41,15 +42,13 @@ type BatchDraft = {
   is_courtesy?: boolean;
 };
 
-const toLocalInput = (iso: string | null) => (iso ? new Date(iso).toISOString().slice(0, 16) : "");
-
 const batchToDraft = (b: BatchRow): BatchDraft => ({
   id: b.id,
   nome: b.name,
   preco: String(b.price),
   quantidade: b.quantity !== null ? String(b.quantity) : "",
-  inicio: toLocalInput(b.starts_at),
-  fim: toLocalInput(b.ends_at),
+  inicio: utcIsoToBrtInput(b.starts_at),
+  fim: utcIsoToBrtInput(b.ends_at),
   is_courtesy: !!b.is_courtesy,
 });
 
@@ -80,15 +79,17 @@ export function EditEventPage() {
 
   useEffect(() => {
     if (!event) return;
-    const d = new Date(event.event_date);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const localDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    // event.event_date é UTC; precisamos exibir nos campos de data/hora
+    // como horário de Brasília, não no fuso do navegador de quem estiver
+    // editando (o admin pode não estar com o computador configurado assim).
+    const brtValue = utcIsoToBrtInput(event.event_date); // "YYYY-MM-DDTHH:mm" em BRT
+    const [localDate, localTime] = brtValue.split("T");
     setTitle(event.title);
     setSlug(event.slug);
     setDescription(event.description ?? "");
     setImageUrl(event.image_url ?? "");
-    setDate(localDate);
-    setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    setDate(localDate || "");
+    setTime(localTime || "");
     setLocation(event.location);
     setStatus(event.status);
   }, [event]);
@@ -107,7 +108,7 @@ export function EditEventPage() {
         slug: slugify(slug || title),
         description: description.trim() || null,
         image_url: imageUrl.trim() || null,
-        event_date: new Date(`${date}T${time}`).toISOString(),
+        event_date: brtInputToUtcIso(`${date}T${time}`),
         location: location.trim(),
         status,
       });
@@ -133,8 +134,8 @@ export function EditEventPage() {
         name: draft.nome.trim(),
         price: draft.is_courtesy ? 0 : Number(draft.preco || 0),
         quantity: draft.quantidade ? Number(draft.quantidade) : null,
-        starts_at: draft.inicio ? new Date(draft.inicio).toISOString() : null,
-        ends_at: draft.fim ? new Date(draft.fim).toISOString() : null,
+        starts_at: brtInputToUtcIso(draft.inicio),
+        ends_at: brtInputToUtcIso(draft.fim),
         is_courtesy: !!draft.is_courtesy,
       });
       setDraft(null);
@@ -611,7 +612,7 @@ export function EditEventPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-small font-medium text-text-secondary">Início das vendas</label>
+                    <label className="text-small font-medium text-text-secondary">Início das vendas (horário de Brasília)</label>
                     <input
                       type="datetime-local"
                       value={draft.inicio}
@@ -620,7 +621,7 @@ export function EditEventPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-small font-medium text-text-secondary">Fim das vendas</label>
+                    <label className="text-small font-medium text-text-secondary">Fim das vendas (horário de Brasília)</label>
                     <input
                       type="datetime-local"
                       value={draft.fim}
@@ -660,7 +661,7 @@ export function EditEventPage() {
                 <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                 <div className="text-body font-bold">{title}</div>
                 <div className="text-small text-text-secondary">
-                  {location} • {date && time ? new Date(`${date}T${time}`).toLocaleString("pt-BR") : "—"}
+                  {location} • {date && time ? formatBrtDateTime(brtInputToUtcIso(`${date}T${time}`)) : "—"}
                 </div>
               </div>
  <div className="p-4 bg-bg-primary rounded-md space-y-2">
