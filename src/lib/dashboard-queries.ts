@@ -43,12 +43,12 @@ export function useTemperature(eventId?: string) {
   const salesPerDayQuery = useQuery({
     queryKey: ["sales", "temperature", organizationId, user?.id, eventId],
     queryFn: async () => {
-      let query = supabase.from("sales").select("created_at, status, is_courtesy").eq("status", "pago").eq("is_courtesy", false);
+      let query = supabase.from("sales").select("created_at, status, is_courtesy, quantity").eq("status", "pago").eq("is_courtesy", false);
       if (eventId) query = query.eq("event_id", eventId);
       const since = new Date(Date.now() - 24 * 3600_000).toISOString();
       const { data, error } = await query.gte("created_at", since);
       if (error) throw error;
-      return (data || []).length;
+      return (data || []).reduce((sum, s) => sum + (s.quantity || 0), 0);
     },
     enabled: !authLoading && !!user && !!organizationId && !preferencesLoading,
   });
