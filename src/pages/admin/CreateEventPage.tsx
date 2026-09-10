@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { createEventWithBatches, slugify, type BatchInput } from "@/lib/events-queries";
+import { brtInputToUtcIso, formatBrtDateTime } from "@/lib/br-datetime";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -92,8 +93,8 @@ export function CreateEventPage() {
       name: l.nome,
       price: l.is_courtesy ? 0 : Number(l.preco || 0),
       quantity: l.quantidade ? Number(l.quantidade) : null,
-      starts_at: l.inicio ? new Date(l.inicio).toISOString() : null,
-      ends_at: l.fim ? new Date(l.fim).toISOString() : null,
+      starts_at: brtInputToUtcIso(l.inicio),
+      ends_at: brtInputToUtcIso(l.fim),
       is_courtesy: l.is_courtesy,
     }));
   };
@@ -131,7 +132,7 @@ export function CreateEventPage() {
           title: name.trim(),
           description: description.trim() || null,
           image_url: imageUrl.trim() || null,
-          event_date: new Date(`${date}T${time}`).toISOString(),
+          event_date: brtInputToUtcIso(`${date}T${time}`),
           location: location.trim(),
           slug: slug,
           status,
@@ -460,7 +461,7 @@ export function CreateEventPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-small font-medium text-text-secondary">Início das vendas</label>
+                        <label className="text-small font-medium text-text-secondary">Início das vendas (horário de Brasília)</label>
                         <input
                           type="datetime-local"
                           value={draft.inicio}
@@ -469,7 +470,7 @@ export function CreateEventPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-small font-medium text-text-secondary">Fim das vendas</label>
+                        <label className="text-small font-medium text-text-secondary">Fim das vendas (horário de Brasília)</label>
                         <input
                           type="datetime-local"
                           value={draft.fim}
@@ -522,7 +523,7 @@ export function CreateEventPage() {
                   <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                   <div className="text-body font-bold">{name || "Nome não definido"}</div>
                   <div className="text-small text-text-secondary">
-                    {date && time ? `${new Date(`${date}T${time}`).toLocaleString("pt-BR")}` : "Data pendente"}
+                    {date && time ? formatBrtDateTime(brtInputToUtcIso(`${date}T${time}`)) : "Data pendente"}
                     {location ? ` · ${location}` : ""}
                   </div>
                 </div>
