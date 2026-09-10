@@ -58,7 +58,8 @@ export function useSales() {
   return useQuery<Sale[]>({
     queryKey: ["sales"],
     queryFn: async () => {
-      const { data: orgData } = await supabase.rpc("get_single_organization_id");
+      const { data: orgData, error: orgError } = await supabase.rpc("get_single_organization_id");
+      if (orgError) throw orgError;
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
       if (!orgId) throw new Error("Organização não encontrada");
       return fetchSales(orgId as string);
@@ -154,7 +155,8 @@ export function useSalesStats(eventId?: string) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
-      const { data: orgData } = await supabase.rpc("get_single_organization_id");
+      const { data: orgData, error: orgError } = await supabase.rpc("get_single_organization_id");
+      if (orgError) throw orgError;
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
       if (!orgId) throw new Error("Organização não encontrada");
 

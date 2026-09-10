@@ -16,6 +16,10 @@ type AuthContextValue = {
   loading: boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** Preenchido quando a última tentativa de carregar papel/organização falhou
+   * (ex: instabilidade momentânea da sessão). Não é "sem organização" de
+   * verdade — é "não consegui confirmar agora". */
+  contextError: string | null;
   refreshProfile: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
@@ -31,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userName, setUserName] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [organizationStatus, setOrganizationStatus] = useState<string | null>(null);
+  const [contextError, setContextError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Evita execução concorrente de loadContext
@@ -48,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserName(null);
         setOrganizationId(null);
         setOrganizationStatus(null);
+        setContextError(null);
         setSession(null);
         setLoading(false);
         return;
@@ -55,19 +61,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userId = currentSession.user.id;
 
-      // Busca papel do usuário em user_roles (tabela de permissão)
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Busca papel do usuário em user_roles (tabela de permissão). Se a
+      // consulta falhar (ex: sessão momentaneamente inválida durante um
+      // refresh de token), tenta mais uma vez antes de desistir — sem isso,
+      // uma falha passageira fazia o código assumir silenciosamente "sem
+      // papel" (vira "cliente") em vez de tentar de novo.
+      const roleQuery = () => supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
+      let roleData = await roleQuery();
+      if (roleData.error) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        roleData = await roleQuery();
+      }
+      if (roleData.error) {
+        console.error("[AuthContext] Falha ao buscar papel do usuário:", roleData.error);
+      }
 
-      const role: AppRole = roleData?.role ?? "cliente";
+      const role: AppRole = roleData.data?.role ?? "cliente";
 
       // ORGANIZAÇÃO ÚNICA: busca sempre pela mesma org, via RPC
       // Não usa mais organization_id de user_roles — funciona para todos os papéis
-      const { data: orgData } = await supabase.rpc("get_single_organization_id");
-      const orgId: string | null = (orgData as string) || null;
+      // Mesmo cuidado aqui: uma falha na consulta (não "organização
+      // inexistente") não pode virar silenciosamente organizationId = null,
+      // ou toda tela que depende dele (Dashboard, Vendas, Clientes,
+      // Usuários, Configurações) trava com "Organização não encontrada"
+      // mesmo a organização existindo — só a consulta que falhou.
+      let orgResult = await supabase.rpc("get_single_organization_id");
+      if (orgResult.error) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        orgResult = await supabase.rpc("get_single_organization_id");
+      }
+      if (orgResult.error) {
+        console.error("[AuthContext] Falha ao buscar organização:", orgResult.error);
+      }
+      const orgId: string | null = (orgResult.data as string) || null;
+      setContextError(
+        orgResult.error || roleData.error ? "Não foi possível confirmar sua sessão agora. Tente novamente em instantes." : null
+      );
 
       // Busca status da organização
       let orgStatus: string | null = null;
@@ -180,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserName(null);
     setOrganizationId(null);
     setOrganizationStatus(null);
+    setContextError(null);
     navigate({ to: "/login", replace: true });
   };
 
@@ -195,6 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         isLoading: loading,
         isAuthenticated: !!session?.user,
+        contextError,
         refreshProfile,
         login,
         logout,

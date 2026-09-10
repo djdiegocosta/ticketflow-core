@@ -109,6 +109,13 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Achado durante a implementação: a função do banco (`update_customer`) e o hook (`useUpdateCustomer`) já existiam prontos, com checagem de permissão (só admin da mesma organização pode editar cliente que não é ele mesmo) — só faltava a tela. Nenhuma mudança de banco foi necessária.
 - Arquivos: `src/components/admin/clients/EditClientPanel.tsx` (novo), `src/pages/admin/ClientDetailPage.tsx`, `src/lib/customers-queries.ts` (hook passou a enviar também cidade/instagram/sexo, que a função já suportava).
 
+### "Organização não encontrada" travava Dashboard/Vendas/Clientes/Usuários/Configurações numa aba
+- Diego reportou: às vezes, numa aba/perfil do navegador, todas essas telas paravam de mostrar dados com a mensagem "Organização não encontrada" — só resolvia trocando de conta. A tela de Eventos continuava funcionando normal.
+- Causa raiz: em `src/lib/auth-context.tsx`, as consultas que buscam o papel do usuário e a organização (rodadas uma vez ao logar/revalidar sessão) ignoravam qualquer erro de consulta — se uma falhasse por instabilidade momentânea (ex: token passando por renovação), o código assumia silenciosamente "organização não existe" e essa informação errada ficava presa na sessão daquela aba até um recarregamento com sorte de dar certo. "Eventos" não tem esse problema por não depender dessa informação.
+- Corrigido: as duas consultas agora tentam de novo automaticamente uma vez se falharem, em vez de desistir. Também corrigidos 2 outros lugares (`src/lib/sales-queries.ts`) que tinham o mesmo padrão de ignorar erro de consulta.
+- O botão "Tentar novamente" do Dashboard agora também reconfirma a sessão (`refreshProfile()`) antes de repetir as consultas — antes só repetia as mesmas consultas já quebradas, então nunca resolvia sozinho.
+- Arquivos: `src/lib/auth-context.tsx`, `src/lib/sales-queries.ts`, `src/pages/AdminDashboard.tsx`.
+
 ---
 
 ## Pendências conhecidas
