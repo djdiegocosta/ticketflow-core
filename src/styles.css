@@ -320,6 +320,40 @@ input[type="datetime-local"] {
    Semantic status icons (warning/error/success) keep their own meaning. */
 svg.text-accent { color: var(--icon-brand); }
 
+/* Barra de rolagem com a identidade visual do sistema, em vez do padrão
+   cinza do navegador — vale pra toda a aplicação, claro ou escuro (as
+   variáveis já trocam sozinhas com o tema). Firefox usa
+   scrollbar-width/scrollbar-color; os demais navegadores usam as
+   pseudo-classes ::-webkit-scrollbar-*. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @keyframes progress-indeterminate {
   0% { transform: translateX(-100%) scaleX(0.2); }
   50% { transform: translateX(0%) scaleX(0.5); }
