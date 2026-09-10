@@ -43,12 +43,12 @@ export function useTemperature(eventId?: string) {
   const salesPerDayQuery = useQuery({
     queryKey: ["sales", "temperature", organizationId, user?.id, eventId],
     queryFn: async () => {
-      let query = supabase.from("sales").select("created_at, status, is_courtesy, quantity").eq("status", "pago").eq("is_courtesy", false);
+      let query = supabase.from("sales").select("created_at, status, is_courtesy").eq("status", "pago").eq("is_courtesy", false);
       if (eventId) query = query.eq("event_id", eventId);
       const since = new Date(Date.now() - 24 * 3600_000).toISOString();
       const { data, error } = await query.gte("created_at", since);
       if (error) throw error;
-      return (data || []).reduce((sum, s) => sum + (s.quantity || 0), 0);
+      return (data || []).length;
     },
     enabled: !authLoading && !!user && !!organizationId && !preferencesLoading,
   });
@@ -69,18 +69,21 @@ export function useAudienceStats(eventId?: string) {
       if (salesError) throw salesError;
       const customerIds = Array.from(new Set((paidSales ?? []).map((s) => s.customer_id).filter(Boolean))) as string[];
       const customersQuery = eventId
-        ? customerIds.length > 0 ? supabase.from("customers").select("id, data_nascimento, cidade, created_at").in("id", customerIds) : null
-        : supabase.from("customers").select("id, data_nascimento, cidade, created_at");
+        ? customerIds.length > 0 ? supabase.from("customers").select("id, data_nascimento, cidade, sexo, created_at").in("id", customerIds) : null
+        : supabase.from("customers").select("id, data_nascimento, cidade, sexo, created_at");
       const { data: customers, error } = customersQuery ? await customersQuery : { data: [], error: null };
       if (error) throw error;
       const now = new Date(); const ages: number[] = []; const cityMap = new Map<string, number>(); let newCustomers = 0;
-      (customers ?? []).forEach((c) => { if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); } if (c.cidade) cityMap.set(c.cidade, (cityMap.get(c.cidade) ?? 0) + 1); if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++; });
+      let femaleCount = 0; let maleCount = 0;
+      (customers ?? []).forEach((c) => { if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); } if (c.cidade) cityMap.set(c.cidade, (cityMap.get(c.cidade) ?? 0) + 1); if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++; if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++; });
+      const genderTotal = femaleCount + maleCount;
+      const genderSplit = genderTotal > 0 ? { femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100) } : null;
       const purchases = new Map<string, number>(); (paidSales ?? []).forEach((s) => { if (s.customer_id) purchases.set(s.customer_id, (purchases.get(s.customer_id) ?? 0) + 1); });
       const recurringCustomers = Array.from(purchases.values()).filter((n) => n > 1).length;
       const brackets = [{ label: "18-24", min: 18, max: 24 }, { label: "25-34", min: 25, max: 34 }, { label: "35-44", min: 35, max: 44 }, { label: "45+", min: 45, max: 200 }]; let topBracket: string | null = null; let topBracketCount = 0;
       brackets.forEach((b) => { const count = ages.filter((a) => a >= b.min && a <= b.max).length; if (count > topBracketCount) { topBracketCount = count; topBracket = b.label; } });
       const topCities = Array.from(cityMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([city, count]) => ({ city, count }));
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, topBracket, newCustomers, recurringCustomers, topCities };
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, topBracket, genderSplit, newCustomers, recurringCustomers, topCities };
     },
   });
 }
