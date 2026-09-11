@@ -1,20 +1,42 @@
+import { useEffect, useState } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { InstallAppButton } from '@/components/cliente/InstallAppButton';
 import { Button } from '@/components/ui/button';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
-import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2, Ticket } from 'lucide-react';
+import { Calendar, MapPin, User, ChevronLeft, Share2, Loader2, Ticket, Database } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useTicketByCode, ticketStatusMeta } from '@/lib/customer-queries';
+import { useTicketByCode, getOfflineTicketByCode, ticketStatusMeta } from '@/lib/customer-queries';
 import { StatusPill } from '@/components/admin/DataTable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function TicketDetailPage() {
   const { ticket_code } = useParams({ from: '/ingresso/$ticket_code' });
-  const { data: ticket, isLoading, error } = useTicketByCode(ticket_code);
+  const { data: onlineTicket, isLoading, error } = useTicketByCode(ticket_code);
   const navigate = useNavigate();
 
-  if (isLoading) {
+  // Ingresso salvo localmente (IndexedDB) na última vez que "Meus Ingressos"
+  // foi aberto com internet — usado só como plano B: pra exibição, quando o
+  // servidor não responde. O servidor continua sendo a única autoridade
+  // sobre a validade real do ingresso; isso nunca altera status/dados reais.
+  const [offlineTicket, setOfflineTicket] = useState<any>(null);
+  const [checkedOffline, setCheckedOffline] = useState(false);
+
+  useEffect(() => {
+    if (!ticket_code) return;
+    getOfflineTicketByCode(ticket_code)
+      .then(setOfflineTicket)
+      .catch(() => setOfflineTicket(null))
+      .finally(() => setCheckedOffline(true));
+  }, [ticket_code]);
+
+  // Usa o dado online assim que chegar; se a consulta falhar (offline ou
+  // instabilidade de rede) e existir uma cópia local, usa ela no lugar.
+  const usingOfflineFallback = !onlineTicket && !!error && !!offlineTicket;
+  const ticket = onlineTicket || (usingOfflineFallback ? offlineTicket : null);
+  const stillResolving = isLoading || !checkedOffline;
+
+  if (stillResolving) {
     return (
       <MobileLayout showFooter={false}>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -24,7 +46,7 @@ export default function TicketDetailPage() {
     );
   }
 
-  if (error || !ticket) {
+  if (!ticket) {
     return (
       <MobileLayout showFooter={false}>
         <div className="flex flex-col items-center justify-center gap-4 px-5 py-20 text-center">
@@ -49,7 +71,15 @@ export default function TicketDetailPage() {
           <Link to="/cliente/ingressos" className="p-2 -ml-2 text-[var(--text-secondary)]">
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <div className="text-center font-semibold text-small">Visualizar Ingresso</div>
+          <div className="flex items-center gap-2">
+            <div className="text-center font-semibold text-small">Visualizar Ingresso</div>
+            {usingOfflineFallback && (
+              <div className="flex items-center gap-1 rounded-md bg-[var(--bg-tertiary)] px-1.5 py-0.5">
+                <Database className="h-3 w-3 text-[var(--text-secondary)]" />
+                <span className="text-[9px] font-medium uppercase text-[var(--text-secondary)]">Offline</span>
+              </div>
+            )}
+          </div>
           <button className="p-2 -mr-2 text-[var(--text-secondary)]">
             <Share2 className="h-5 w-5" />
           </button>
@@ -122,6 +152,11 @@ export default function TicketDetailPage() {
                 <QRCodeSVG value={ticket.ticket_code} size={200} />
               </div>
             </div>
+            {usingOfflineFallback && (
+              <div className="text-center text-[10px] text-[var(--text-secondary)] mt-3 pb-1">
+                Disponível offline neste dispositivo
+              </div>
+            )}
           </div>
 
           {/* Colored Bottom Strip */}

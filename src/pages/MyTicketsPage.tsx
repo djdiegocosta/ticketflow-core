@@ -1,19 +1,46 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth-context';
 import { useCustomerSales, useSaleByCode } from '@/lib/customer-queries';
-import { Search, Ticket, Calendar, QrCode, Loader2 } from 'lucide-react';
+import { offlineDB } from '@/lib/offline-db';
+import { Search, Ticket, Calendar, QrCode, Loader2, Database } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
 export default function MyTicketsPage() {
   const [saleCode, setSaleCode] = useState('');
   const [manualSearchCode, setManualSearchCode] = useState<string | null>(null);
-  
+
   const { isAuthenticated } = useAuth();
   const { data: customerSales = [], isLoading: isLoadingCustomer } = useCustomerSales();
   const { data: manualSale, isLoading: isLoadingManual, isError: manualError } = useSaleByCode(manualSearchCode || '');
+
+  // Plano B pra exibição, quando não há internet: ingressos salvos
+  // localmente da última vez que "Meus Ingressos" carregou com sucesso.
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [offlineTickets, setOfflineTickets] = useState<any[]>([]);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!navigator.onLine) {
+        const cached = await offlineDB.getMyTickets();
+        setOfflineTickets(cached);
+        setIsOfflineMode(true);
+      } else {
+        setIsOfflineMode(false);
+      }
+    };
+
+    checkStatus();
+    window.addEventListener('online', checkStatus);
+    window.addEventListener('offline', checkStatus);
+
+    return () => {
+      window.removeEventListener('online', checkStatus);
+      window.removeEventListener('offline', checkStatus);
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +48,7 @@ export default function MyTicketsPage() {
     setManualSearchCode(saleCode.trim().toUpperCase());
   };
 
-  if (isLoadingCustomer && isAuthenticated) {
+  if (isLoadingCustomer && isAuthenticated && !isOfflineMode) {
     return (
       <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -34,10 +61,52 @@ export default function MyTicketsPage() {
   // Se logado, exibe todos os ingressos automaticamente
   if (isAuthenticated) {
     return (
-      <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Meus Ingressos</div>}>
+      <MobileLayout
+        showFooter={false}
+        headerContent={
+          <div className="flex items-center justify-center gap-2 w-full">
+            <div className="text-center font-semibold text-small">Meus Ingressos</div>
+            {isOfflineMode && (
+              <div className="flex items-center gap-1 rounded-md bg-[var(--bg-tertiary)] px-1.5 py-0.5">
+                <Database className="h-3 w-3 text-[var(--text-secondary)]" />
+                <span className="text-[9px] font-medium uppercase text-[var(--text-secondary)]">Offline</span>
+              </div>
+            )}
+          </div>
+        }
+      >
         <div className="flex flex-col gap-6 px-5 py-8">
           <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Suas Compras</h2>
-          {customerSales.length === 0 ? (
+          {isOfflineMode && (
+            <p className="text-small text-[var(--text-secondary)] -mt-4">
+              Disponível offline neste dispositivo. Sem internet, novas compras não aparecem aqui até reconectar.
+            </p>
+          )}
+          {isOfflineMode ? (
+            offlineTickets.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-20 text-center text-[var(--text-secondary)]">
+                <Ticket className="h-12 w-12 opacity-20" />
+                <p>Nenhum ingresso salvo neste dispositivo ainda. Abra "Meus Ingressos" com internet uma vez antes de usar offline.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {offlineTickets.map((t: any) => (
+                  <Link
+                    key={t.id}
+                    to="/ingresso/$ticket_code"
+                    params={{ ticket_code: t.ticket_code }}
+                    className="flex items-center justify-between p-4 rounded-[var(--radius-md)] bg-[var(--bg-secondary)] hover:border-[var(--accent)] transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-small font-bold text-[var(--text-primary)]">{t.event_name}</span>
+                      <span className="text-[10px] font-mono text-[var(--text-secondary)]">{t.participant_name} · {t.ticket_code}</span>
+                    </div>
+                    <QrCode className="h-5 w-5 text-[var(--text-secondary)]" />
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : customerSales.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 py-20 text-center text-[var(--text-secondary)]">
               <Ticket className="h-12 w-12 opacity-20" />
               <p>Nenhum ingresso encontrado na sua conta.</p>

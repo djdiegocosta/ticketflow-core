@@ -116,6 +116,16 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - O botão "Tentar novamente" do Dashboard agora também reconfirma a sessão (`refreshProfile()`) antes de repetir as consultas — antes só repetia as mesmas consultas já quebradas, então nunca resolvia sozinho.
 - Arquivos: `src/lib/auth-context.tsx`, `src/lib/sales-queries.ts`, `src/pages/AdminDashboard.tsx`.
 
+### Ingresso e QR Code disponíveis offline (V1)
+- Objetivo: cliente conseguir mostrar o ingresso/QR Code na portaria mesmo sem internet.
+- Auditoria prévia (pedida por Diego) encontrou: a rota real usada pelo menu do cliente é `/cliente/ingressos`, não `/meus-ingressos` (essa é uma tela separada, de busca por código, sem exigir login) — `/cliente/ingressos` já tinha um fallback offline funcional para a *lista*; faltava só na tela do ingresso individual (`/ingresso/$ticket_code`), que é a que ambas as listas abrem.
+- O QR Code não depende de nada online — é gerado 100% no navegador a partir do `ticket_code` (biblioteca `qrcode.react`), então bastou garantir que o `ticket_code` e os dados de exibição estivessem salvos localmente.
+- `useCustomerSales` (já salvava ingressos no IndexedDB) passou a incluir também nome do lote e da produtora, que faltavam para a tela do ingresso individual.
+- `TicketDetailPage` (tela do ingresso) e `MyTicketsPage` (`/meus-ingressos`) ganharam o mesmo fallback offline que `/cliente/ingressos` já tinha, com aviso "Offline"/"Disponível offline neste dispositivo".
+- Isso é só uma cópia local para EXIBIÇÃO — o servidor continua sendo a única autoridade sobre a validade do ingresso; nada muda em autenticação, Mercado Pago, webhook, geração de ingresso ou validação de check-in.
+- **Limite encontrado, decisão pendente:** o Service Worker atual não guarda nada em cache (de propósito, ver seção PWA acima). Isso significa que abrir o app do zero (ícone, sem tê-lo aberto recentemente) totalmente offline pode falhar antes mesmo do React carregar. Andando dentro do app (tocar em "Ingressos" → tocar no ingresso) funciona normalmente, porque não baixa nada novo da rede nessa navegação. Resolver o caso "abrir do zero, offline" exigiria voltar a interceptar requisições no Service Worker — a mesma área que já causou um incidente em produção antes. Não implementado nesta v1 sem confirmação explícita.
+- Arquivos: `src/lib/customer-queries.ts`, `src/pages/TicketDetailPage.tsx`, `src/pages/MyTicketsPage.tsx`.
+
 ---
 
 ## Pendências conhecidas
