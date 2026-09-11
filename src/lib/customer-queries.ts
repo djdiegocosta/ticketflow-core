@@ -72,6 +72,66 @@ export function useCurrentCustomer() {
 }
 
 /**
+ * Hook de XP/Patente do cliente logado (gamificação Fase 1).
+ * Fonte: customer_xp_totals (soma) e customer_xp_events (extrato).
+ */
+const XP_TIERS = [
+  { patente: "Novato", min: 0 },
+  { patente: "Frequente", min: 500 },
+  { patente: "VIP", min: 1500 },
+  { patente: "Elite", min: 3500 },
+  { patente: "Lenda", min: 7500 },
+] as const;
+
+const XP_REASON_LABELS: Record<string, string> = {
+  criar_conta: "Criou a conta",
+  primeira_compra: "Primeira compra",
+  compra_ingresso: "Compra de ingresso",
+  comparecimento: "Compareceu ao evento",
+  primeiro_comprador: "Primeiro comprador do evento",
+  compra_primeiro_dia: "Comprou no primeiro dia de vendas",
+};
+
+export function useCustomerXp() {
+  const { data: customers } = useMyCustomerRecords();
+  const customerId = customers?.[0]?.id;
+
+  return useQuery({
+    queryKey: ["customer-xp", customerId],
+    queryFn: async () => {
+      const { data: totals } = await supabase
+        .from("customer_xp_totals")
+        .select("total_xp, patente")
+        .eq("customer_id", customerId)
+        .maybeSingle();
+
+      const { data: events, error } = await supabase
+        .from("customer_xp_events")
+        .select("amount, reason, created_at")
+        .eq("customer_id", customerId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      const totalXp = totals?.total_xp ?? 0;
+      const currentTierIndex = XP_TIERS.findIndex((t, i) => totalXp >= t.min && (i === XP_TIERS.length - 1 || totalXp < XP_TIERS[i + 1].min));
+      const currentTier = XP_TIERS[Math.max(currentTierIndex, 0)];
+      const nextTier = XP_TIERS[Math.max(currentTierIndex, 0) + 1] ?? null;
+      const progressPct = nextTier ? Math.min(100, Math.round(((totalXp - currentTier.min) / (nextTier.min - currentTier.min)) * 100)) : 100;
+
+      return {
+        totalXp,
+        patente: totals?.patente ?? currentTier.patente,
+        currentTierIndex: Math.max(currentTierIndex, 0),
+        nextTier,
+        progressPct,
+        history: (events ?? []).map((e) => ({ ...e, label: XP_REASON_LABELS[e.reason] ?? e.reason })),
+      };
+    },
+    enabled: !!customerId,
+  });
+}
+
+/**
  * Hook para buscar as vendas/ingressos do cliente logado
  */
 export function useCustomerSales() {
@@ -99,16 +159,14 @@ export function useCustomerSales() {
             title,
             event_date,
             location,
-            slug,
-            organizations ( name )
+            slug
           ),
           tickets (
             id,
             ticket_code,
             participant_name,
             status,
-            checked_in_at,
-            ticket_batches ( name )
+            checked_in_at
           )
         `)
         .in("customer_id", customerIds)
@@ -116,20 +174,13 @@ export function useCustomerSales() {
 
       if (error) throw error;
 
-      // Cache para offline — inclui tudo que a tela do ingresso individual
-      // (/ingresso/$ticket_code) precisa pra renderizar sem consultar o
-      // Supabase de novo (nome do evento, do lote, da produtora, data da
-      // compra). O QR Code em si não depende de nada além do ticket_code,
-      // que já é salvo.
+      // Cache para offline
       if (typeof window !== "undefined" && data) {
         await offlineDB.saveMyTickets(data.flatMap(s => s.tickets.map(t => ({
           ...t,
           event_name: (s.events as any)?.title,
           event_date: (s.events as any)?.event_date,
           event_location: (s.events as any)?.location,
-          event_organization_name: (s.events as any)?.organizations?.name,
-          ticket_batch_name: (t as any).ticket_batches?.name,
-          sale_created_at: s.created_at,
         }))));
       }
 
@@ -260,36 +311,6 @@ export function useTicketByCode(code: string) {
     },
     enabled: !!code
   });
-}
-
-/**
- * Busca um ingresso salvo offline (IndexedDB) pelo ticket_code, e remonta no
- * mesmo formato aninhado que useTicketByCode retorna — assim a tela do
- * ingresso (TicketDetailPage) não precisa saber se o dado veio do Supabase
- * ou do cache local. Usado só para EXIBIÇÃO; o servidor continua sendo a
- * única autoridade sobre a validade real do ingresso.
- */
-export async function getOfflineTicketByCode(code: string): Promise<any | null> {
-  const cached = await offlineDB.getMyTickets();
-  const ticket = cached.find((t) => t.ticket_code === code);
-  if (!ticket) return null;
-
-  return {
-    ticket_code: ticket.ticket_code,
-    participant_name: ticket.participant_name,
-    status: ticket.status,
-    checked_in_at: ticket.checked_in_at,
-    ticket_batches: { name: ticket.ticket_batch_name },
-    sales: {
-      created_at: ticket.sale_created_at,
-      events: {
-        title: ticket.event_name,
-        event_date: ticket.event_date,
-        location: ticket.event_location,
-        organizations: { name: ticket.event_organization_name },
-      },
-    },
-  };
 }
 
 /**
