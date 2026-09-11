@@ -126,6 +126,14 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - **Limite encontrado, decisão pendente:** o Service Worker atual não guarda nada em cache (de propósito, ver seção PWA acima). Isso significa que abrir o app do zero (ícone, sem tê-lo aberto recentemente) totalmente offline pode falhar antes mesmo do React carregar. Andando dentro do app (tocar em "Ingressos" → tocar no ingresso) funciona normalmente, porque não baixa nada novo da rede nessa navegação. Resolver o caso "abrir do zero, offline" exigiria voltar a interceptar requisições no Service Worker — a mesma área que já causou um incidente em produção antes. Não implementado nesta v1 sem confirmação explícita.
 - Arquivos: `src/lib/customer-queries.ts`, `src/pages/TicketDetailPage.tsx`, `src/pages/MyTicketsPage.tsx`.
 
+### Painel de Remarketing (leads em potencial)
+- Objetivo: Diego conseguir ver quem gerou Pix e não pagou (cadastrado ou visitante), pra contato manual (WhatsApp). Achado durante a conversa: já existia um card "Remarketing" na tela de Ferramentas apontando para `/admin/remarketing` — a página em si nunca tinha sido criada (link quebrado).
+- Somente leitura: lista vendas com status `pendente` ou `expirado` (exclui cortesias). Não envia nada sozinho — cada linha tem um botão que abre o WhatsApp do comprador pra contato manual.
+- Filtro por evento, métricas resumidas no topo (total de leads, aguardando pagamento, expirados, valor potencial somado).
+- Simplificação deliberada da v1: não tenta detectar se a pessoa já comprou depois por outra tentativa — Diego confere antes de chamar.
+- Não toca em checkout, Pix, webhook, autenticação ou geração de ingresso — só lê a tabela `sales`, do mesmo jeito que a tela de Vendas já lê.
+- Arquivos: `src/lib/remarketing-queries.ts` (novo), `src/pages/admin/RemarketingPage.tsx` (novo), `src/routes/admin.remarketing.tsx` (novo).
+
 ---
 
 ## Pendências conhecidas
