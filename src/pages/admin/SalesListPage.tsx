@@ -55,14 +55,47 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
-  const generatePdf = () => {
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const generatePdf = async () => {
     // Lista de check-in substitui o check-in automático quando ele falha,
     // por isso só pode conter vendas realmente válidas (pagas) e cortesias
     // (cortesias já nascem com status "pago" — ver create_courtesy).
     // Nunca incluir pendente/expirado/cancelado/reembolsado.
-    const names = filtered.filter((s) => s.status === "pago" || s.is_courtesy).map((s) => s.buyer_name);
-    if (names.length === 0) { toast.error("Nenhum participante para gerar a lista"); return; }
-    generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names); toast.success("Lista PDF gerada");
+    const qualifyingSaleIds = filtered.filter((s) => s.status === "pago" || s.is_courtesy).map((s) => s.id);
+    if (qualifyingSaleIds.length === 0) { toast.error("Nenhum participante para gerar a lista"); return; }
+
+    // Um nome por INGRESSO (participante real), não por venda — uma venda
+    // de 3 ingressos tem 3 nomes diferentes, não só o do comprador.
+    setIsGeneratingPdf(true);
+    try {
+      const { data: ticketRows, error } = await supabase
+        .from("tickets")
+        .select("participant_name, sale_id")
+        .in("sale_id", qualifyingSaleIds);
+      if (error) throw error;
+
+      const namesBySale = new Map<string, string[]>();
+      (ticketRows ?? []).forEach((t: any) => {
+        const list = namesBySale.get(t.sale_id) ?? [];
+        list.push(t.participant_name || "—");
+        namesBySale.set(t.sale_id, list);
+      });
+
+      // Cortesias e vendas antigas podem não ter ingressos gerados ainda —
+      // nesse caso, usa o nome do comprador como fallback pra não sumir da lista.
+      const names = qualifyingSaleIds.flatMap((id) => {
+        const sale = filtered.find((s) => s.id === id);
+        return namesBySale.get(id) ?? [sale?.buyer_name ?? "—"];
+      });
+
+      generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names);
+      toast.success("Lista PDF gerada");
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível gerar o PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleCancelSale = async (sale: any) => {
@@ -81,10 +114,11 @@ export function SalesListPage() {
             <Button
               type="button"
               onClick={generatePdf}
+              disabled={isGeneratingPdf}
               className="h-9 shrink-0 gap-2 rounded-[var(--radius-sm)] bg-accent px-3 text-body font-semibold leading-none text-[#111111] hover:bg-accent-hover"
             >
               <Download className="h-4 w-4" />
-              <span>PDF</span>
+              <span>{isGeneratingPdf ? "Gerando..." : "PDF"}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>Gerar lista PDF</TooltipContent>
