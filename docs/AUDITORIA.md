@@ -294,16 +294,24 @@ As políticas RLS afetadas passaram a encapsular `auth.uid()` em uma subconsulta
 ## 10. Performance — chaves estrangeiras sem índices de cobertura
 
 **ID:** AUD-010  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** BAIXA/MÉDIA
 
 ### Problema
 
 Existem FKs sem índices de cobertura em várias relações.
 
-### Ação necessária
+### Correção aplicada
 
-Revisar as consultas reais e criar índices somente onde trouxerem benefício comprovado.
+Criados 19 índices, um para cada FK sem cobertura apontada pelo Performance Advisor (`user_roles`, `events`, `ticket_batches`, `sales`, `tickets`, `event_checklist_items`, `raffles`, `raffle_winners`, `pending_invites`, `checkin_log`, `diagnostic_logs`, `sales_links` e `customer_xp_events`, esta última criada hoje mesmo na Fase 1 de gamificação).
+
+De brinde: corrigidas as duas políticas de RLS de `customer_xp_events` (criadas hoje) que chamavam `auth.uid()` diretamente em vez de `(select auth.uid())` — reavaliava a função a cada linha em vez de uma vez por consulta (mesmo padrão do AUD-011).
+
+### Resolução
+
+- **Data:** 11/09/2026
+- **Agente:** Claude 2
+- **Evidência:** Performance Advisor re-executado após a migration — o aviso de FK sem índice não aparece mais.
 
 ---
 
@@ -598,10 +606,9 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 
 # Prioridade atual
 
-1. **AUD-010** — revisar índices de FKs.
-2. **AUD-015** — QA funcional.
+1. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-008, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016, AUD-017 e AUD-018 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004 a AUD-014, AUD-016, AUD-017 e AUD-018 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
@@ -626,6 +633,8 @@ AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano
 | 06/09/2026 | 15:58 | Claude 2 | AUD-014 | Criados `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` apontando para `PROJECT-MAP.md`/`TPS.md`/`AUDITORIA.md` como fonte real. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
+
+| 11/09/2026 | — | Claude 2 | AUD-010 | 19 índices de FK criados; corrigidas de brinde as policies de customer_xp_events com auth.uid() não otimizado. |
 
 | 11/09/2026 | — | Claude 2 | AUD-008 | Vínculo retroativo de compra guest implementado via WhatsApp normalizado; XP retroativo passa a contar também nesse caso. |
 
