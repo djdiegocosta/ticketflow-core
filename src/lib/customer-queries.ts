@@ -23,14 +23,12 @@ export interface Customer {
   email: string | null;
   whatsapp: string;
   cidade: string | null;
-  points: number;
   user_id: string;
   organization_id: string;
   updated_at: string;
   instagram: string | null;
   data_nascimento: string | null;
   sexo: string | null;
-  points_ledger?: any[];
 }
 
 
@@ -46,10 +44,7 @@ export function useMyCustomerRecords() {
 
       const { data, error } = await supabase
         .from("customers")
-        .select(`
-          *,
-          points_ledger (*)
-        `)
+        .select("*")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
 
@@ -209,18 +204,15 @@ export function useCustomerSales() {
  * Hook para buscar as estatísticas resumidas do cliente
  */
 export function useCustomerStats() {
-  const { data: customer } = useCurrentCustomer();
   const { data: sales = [] } = useCustomerSales();
 
   const paidSales = (sales as any[]).filter(s => s.status === 'pago');
   const totalEvents = new Set(paidSales.map(s => (s.events as any)?.id)).size;
   const totalTickets = paidSales.reduce((acc, s) => acc + (s.tickets?.length || 0), 0);
-  const points = customer?.points || 0;
 
   return {
     totalEvents,
-    totalTickets,
-    points
+    totalTickets
   };
 }
 
