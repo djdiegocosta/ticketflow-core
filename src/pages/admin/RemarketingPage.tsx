@@ -9,7 +9,7 @@ import {
   DataTableShell,
   StatusPill,
 } from "@/components/admin/DataTable";
-import { getInitials, whatsappLink } from "@/lib/clients-data";
+import { getInitials } from "@/lib/clients-data";
 import { formatCurrency } from "@/lib/sales-queries";
 import { useEvents, useOperationalEvent } from "@/lib/events-queries";
 import { useAbandonedCheckouts } from "@/lib/remarketing-queries";
@@ -22,6 +22,24 @@ function timeAgo(iso: string): string {
   if (hours < 24) return `há ${hours}h`;
   const days = Math.floor(hours / 24);
   return `há ${days}d`;
+}
+
+function firstName(fullName: string): string {
+  return fullName.trim().split(/\s+/)[0] || fullName;
+}
+
+function remarketingWhatsappLink(lead: {
+  buyer_name: string;
+  buyer_whatsapp: string;
+  events: { title: string; slug: string } | null;
+}): string {
+  const eventUrl = lead.events?.slug
+    ? `${window.location.origin}/e/${lead.events.slug}`
+    : window.location.origin;
+  const message =
+    `Oi ${firstName(lead.buyer_name)}! Seus ingressos pro evento ${lead.events?.title ?? "que você estava vendo"} ainda estão te esperando! Bora!? ` +
+    `Vou deixar aqui o link novamente pra você solicitar sua compra novamente: ${eventUrl}`;
+  return `https://wa.me/55${lead.buyer_whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
 }
 
 export function RemarketingPage() {
@@ -129,7 +147,7 @@ export function RemarketingPage() {
                   </DataTableCell>
                   <DataTableCell>
                     <a
-                      href={whatsappLink(lead.buyer_whatsapp)}
+                      href={remarketingWhatsappLink(lead)}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[#111111] transition-colors hover:bg-accent-hover"

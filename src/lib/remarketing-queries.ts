@@ -19,7 +19,7 @@ export interface AbandonedCheckout {
   expires_at: string | null;
   customer_id: string | null;
   event_id: string;
-  events: { title: string; event_date: string } | null;
+  events: { title: string; event_date: string; slug: string } | null;
 }
 
 export function useAbandonedCheckouts(eventId?: string) {
@@ -41,7 +41,7 @@ export function useAbandonedCheckouts(eventId?: string) {
           expires_at,
           customer_id,
           event_id,
-          events ( title, event_date )
+          events ( title, event_date, slug )
         `,
         )
         .in("status", ["pendente", "expirado"])
@@ -52,7 +52,34 @@ export function useAbandonedCheckouts(eventId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as unknown as AbandonedCheckout[];
+      const leads = (data ?? []) as unknown as AbandonedCheckout[];
+      if (leads.length === 0) return leads;
+
+      // Não faz sentido oferecer remarketing pra quem já resolveu sozinho —
+      // busca vendas PAGAS do mesmo evento e cruza por WhatsApp (guia
+      // principal, já que nem todo mundo tem cadastro) e por customer_id
+      // (quando existe). Quem já converteu sai da lista.
+      const eventIds = Array.from(new Set(leads.map((l) => l.event_id)));
+      const { data: paidSales, error: paidError } = await supabase
+        .from("sales")
+        .select("event_id, buyer_whatsapp, customer_id")
+        .eq("status", "pago")
+        .in("event_id", eventIds);
+      if (paidError) throw paidError;
+
+      const paidByWhatsapp = new Set(
+        (paidSales ?? []).map((s) => `${s.event_id}|${s.buyer_whatsapp}`),
+      );
+      const paidByCustomer = new Set(
+        (paidSales ?? []).filter((s) => s.customer_id).map((s) => `${s.event_id}|${s.customer_id}`),
+      );
+
+      return leads.filter((lead) => {
+        const alreadyPaidByWhatsapp = paidByWhatsapp.has(`${lead.event_id}|${lead.buyer_whatsapp}`);
+        const alreadyPaidByCustomer =
+          !!lead.customer_id && paidByCustomer.has(`${lead.event_id}|${lead.customer_id}`);
+        return !alreadyPaidByWhatsapp && !alreadyPaidByCustomer;
+      });
     },
   });
 }
