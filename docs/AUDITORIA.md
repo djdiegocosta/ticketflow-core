@@ -233,16 +233,29 @@ A geração usa os QR Codes já renderizados na confirmação. O botão apresent
 ## 8. Integridade de dados — vínculo retroativo de compra guest com conta
 
 **ID:** AUD-008  
-**Status:** `ABERTO`  
+**Status:** `RESOLVIDO`  
 **Severidade:** MÉDIA
 
 ### Problema
 
 Compras feitas como visitante antes da criação da conta não são vinculadas automaticamente à conta criada posteriormente.
 
-### Ação necessária
+### Causa raiz adicional encontrada
 
-Implementar vínculo seguro por WhatsApp, respeitando organização e evitando associação indevida.
+`customers.whatsapp` guarda o texto cru digitado no formulário (com máscara, ex: `(22) 99923-2744`), enquanto `sales.buyer_whatsapp` guarda só dígitos com código do país (ex: `5522999232744`). Uma comparação direta nunca teria funcionado — os dois lados precisam ser normalizados antes de comparar.
+
+### Correção aplicada
+
+- Nova função `normalize_whatsapp(text)`: extrai só os dígitos e adiciona o código do país (55) quando ausente — mesma regra já usada em `create_pending_sale`.
+- `get_or_create_customer`: ao criar a conta, busca vendas pagas de convidado (`customer_id IS NULL`) na mesma organização com o WhatsApp normalizado igual, e vincula automaticamente.
+- `grant_xp_on_sale_paid` (gatilho de XP): ampliado para também disparar quando uma venda já paga ganha um `customer_id` pela primeira vez (vínculo retroativo) — assim a compra vinculada gera XP normalmente, sem lógica duplicada.
+- Backfill aplicado às contas já existentes (1 venda encontrada e vinculada).
+
+### Resolução
+
+- **Data:** 11/09/2026
+- **Agente:** Claude 2
+- **Evidência:** vínculo e XP retroativo confirmados em `customer_xp_events` após a migration.
 
 ---
 
@@ -585,11 +598,10 @@ Filtro alterado para incluir apenas `status === 'pago'` ou `is_courtesy === true
 
 # Prioridade atual
 
-1. **AUD-008** — corrigir pendência funcional do cliente (vínculo retroativo guest).
-2. **AUD-010** — revisar índices de FKs.
-3. **AUD-015** — QA funcional.
+1. **AUD-010** — revisar índices de FKs.
+2. **AUD-015** — QA funcional.
 
-AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016, AUD-017 e AUD-018 estão fora da fila de correção por já estarem resolvidos.  
+AUD-001, AUD-002, AUD-004, AUD-005, AUD-006, AUD-007, AUD-008, AUD-009, AUD-011, AUD-012, AUD-013, AUD-014, AUD-016, AUD-017 e AUD-018 estão fora da fila de correção por já estarem resolvidos.  
 AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano pago do Supabase).
 
 ---
@@ -614,5 +626,7 @@ AUD-003 está fora da fila ativa por estar `ADIADO` (depende de upgrade de plano
 | 06/09/2026 | 15:58 | Claude 2 | AUD-014 | Criados `docs/CLAUDE.md` e `docs/skills/ticketflow-development.md` apontando para `PROJECT-MAP.md`/`TPS.md`/`AUDITORIA.md` como fonte real. |
 
 **Regra permanente:** problemas resolvidos não devem ser apagados deste documento. Apenas seu status é alterado para `RESOLVIDO`, com data, hora, agente e evidência.
+
+| 11/09/2026 | — | Claude 2 | AUD-008 | Vínculo retroativo de compra guest implementado via WhatsApp normalizado; XP retroativo passa a contar também nesse caso. |
 
 | 07/09/2026 | 13:10 | Claude 2 | AUD-018 | `VITE_SITE_URL` ausente causava `notification_url` do Mercado Pago apontando para domínio inexistente em todo Pix criado — nenhum pagamento confirmava automaticamente. Variável configurada na Vercel, URLs corrigidas nas duas aplicações do Mercado Pago. |
