@@ -140,6 +140,13 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Nota de segurança encontrada de passagem (não é deste código, é pré-existente e já registrada como resolvida — AUD-018): dois arquivos usam `ticketflow2.lovable.app` como *fallback* caso a variável `VITE_SITE_URL` não esteja configurada na Vercel. Não mexi nisso agora — fora do escopo desta tarefa — mas como o site antigo será despublicado, vale conferir se `VITE_SITE_URL` está mesmo configurada na Vercel, se não já estiver.
 - Arquivos: `src/lib/remarketing-queries.ts`, `src/pages/admin/RemarketingPage.tsx`.
 
+### Data de nascimento: 3 seletores (Dia/Mês/Ano) no lugar do calendário nativo
+- Diego reportou (com print) que no Perfil (mobile), o campo "Data de Nascimento" aparecia como uma caixa pequena, desalinhada, na mesma linha do rótulo. Causa: bug conhecido do Safari/iOS, que ignora `width: 100%` em `<input type="date">` vazio — mesma classe de bug já visto nos ajustes de compatibilidade iOS 15 anteriores.
+- Diego trouxe uma sugestão de solução (componente de calendário com biblioteca `@ark-ui/react`). Optamos por não usar: exigiria uma dependência nova nunca usada no projeto, estilo totalmente fora do sistema de temas (precisaria reescrever do zero mesmo assim), e um calendário completo tende a ser **mais** lento pra digitar uma data de nascimento do que escolher direto dia/mês/ano — o oposto do "sem barreiras" pedido.
+- Solução escolhida (confirmada com Diego): 3 seletores simples — Dia, Mês, Ano — sem biblioteca nova, com o mesmo visual dos outros campos. Ajusta sozinho o dia se o mês escolhido tiver menos dias (ex: 31 → fevereiro vira 28/29).
+- Aplicado nos dois lugares que pedem data de nascimento: Perfil (`/cliente/perfil`) e Cadastro (`/cadastro`).
+- Arquivos: `src/components/ui/birthdate-select.tsx` (novo), `src/routes/cliente.perfil.tsx`, `src/pages/SignupPage.tsx`.
+
 ---
 
 ## Pendências conhecidas

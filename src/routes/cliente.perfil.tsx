@@ -4,6 +4,7 @@ import { formatName, maskWhatsApp, onlyDigits, isFullName } from "@/lib/form-for
 import { SmartField } from "@/components/ui/smart-field";
 import { User, Phone, Mail } from "lucide-react";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
+import { BirthdateSelect } from "@/components/ui/birthdate-select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCurrentCustomer, useUpdateProfile } from "@/lib/customer-queries";
@@ -99,10 +100,12 @@ export function Page_cliente_perfil() {
 
         <div className="space-y-1">
           <label className="text-micro font-bold uppercase">Data de Nascimento</label>
-          <input
-            {...form.register("data_nascimento")}
-            type="date"
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)]"
+          <Controller
+            control={form.control}
+            name="data_nascimento"
+            render={({ field }) => (
+              <BirthdateSelect value={field.value || ""} onChange={field.onChange} />
+            )}
           />
         </div>
 

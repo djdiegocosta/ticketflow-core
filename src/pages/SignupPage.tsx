@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from "@/lib/form-format";
 import { SmartField } from "@/components/ui/smart-field";
+import { BirthdateSelect } from "@/components/ui/birthdate-select";
 import { CityAutocomplete } from "@/components/ui/city-autocomplete";
 import { getUFByDDD } from "@/lib/ibge-data";
 
@@ -221,12 +222,7 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Data de nascimento</FormLabel>
                       <FormControl>
-                        <Input
-                          type="date"
-                          max={new Date().toISOString().split("T")[0]}
-                          {...field}
-                          className="bg-bg-secondary border-border-default focus-visible:ring-accent"
-                        />
+                        <BirthdateSelect value={field.value} onChange={field.onChange} maxYear={new Date().getFullYear()} />
                       </FormControl>
                       <FormMessage className="text-small text-error" />
                     </FormItem>
