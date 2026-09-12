@@ -6,6 +6,7 @@ import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { setLastVisitedOrg } from '@/lib/org-context';
 import { captureRef } from '@/lib/attribution';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
@@ -33,6 +34,17 @@ export default function EventPage() {
       setLastVisitedOrg(event.organization_id);
     }
   }, [event?.organization_id]);
+
+  // Conta 1 visita por carregamento de página real (roda só no navegador,
+  // depois do React montar) — não conta pré-visualizações de link do
+  // WhatsApp/Instagram, que só buscam a página no servidor pra ler as tags
+  // de imagem/título, sem executar nada aqui.
+  useEffect(() => {
+    if (!event?.id) return;
+    supabase.rpc("track_event_view" as any, { _event_id: event.id }).then(({ error }) => {
+      if (error) console.error("[PublicEventPage] Falha ao registrar visita:", error);
+    });
+  }, [event?.id]);
 
   if (isLoading) {
     return (

@@ -80,10 +80,15 @@ export function useAudienceStats(eventId?: string) {
       const genderSplit = genderTotal > 0 ? { femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100) } : null;
       const purchases = new Map<string, number>(); (paidSales ?? []).forEach((s) => { if (s.customer_id) purchases.set(s.customer_id, (purchases.get(s.customer_id) ?? 0) + 1); });
       const recurringCustomers = Array.from(purchases.values()).filter((n) => n > 1).length;
-      const brackets = [{ label: "18-24", min: 18, max: 24 }, { label: "25-34", min: 25, max: 34 }, { label: "35-44", min: 35, max: 44 }, { label: "45+", min: 45, max: 200 }]; let topBracket: string | null = null; let topBracketCount = 0;
-      brackets.forEach((b) => { const count = ages.filter((a) => a >= b.min && a <= b.max).length; if (count > topBracketCount) { topBracketCount = count; topBracket = b.label; } });
+      const ageRange = ages.length ? { min: Math.min(...ages), max: Math.max(...ages) } : null;
       const topCities = Array.from(cityMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([city, count]) => ({ city, count }));
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, topBracket, genderSplit, newCustomers, recurringCustomers, topCities };
+
+      let viewsQuery = supabase.from("event_page_views" as any).select("id", { count: "exact", head: true });
+      if (eventId) viewsQuery = viewsQuery.eq("event_id", eventId);
+      else viewsQuery = viewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
+      const { count: totalViews } = await viewsQuery;
+
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, topCities, totalViews: totalViews ?? 0 };
     },
   });
 }

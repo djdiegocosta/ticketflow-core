@@ -147,6 +147,17 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Aplicado nos dois lugares que pedem data de nascimento: Perfil (`/cliente/perfil`) e Cadastro (`/cadastro`).
 - Arquivos: `src/components/ui/birthdate-select.tsx` (novo), `src/routes/cliente.perfil.tsx`, `src/pages/SignupPage.tsx`.
 
+### Incidente: histórico do GitHub revertido de propósito (force-push) apagou 4 entregas
+- Outro agente, tentando corrigir um build quebrado (`0a771b9`/`469bc2e`, gamificação de XP com erro), reverteu o histórico do zero em vez de corrigir só o que estava errado — isso arrastou junto e apagou do GitHub (e da Vercel) a correção de sessão, o painel de Remarketing completo e a correção da Data de Nascimento, todos já entregues e aprovados por Diego antes disso.
+- Nada foi perdido de verdade: estava tudo salvo no histórico local. Restaurado com `git rebase --onto` por cima do estado atual do GitHub (preservando o que tinha sido feito de válido depois da reversão) e publicado com push normal — sem forçar nada por cima de novo.
+- Lição registrada: ao encontrar um build quebrado, a correção deve ser feita **avançando** (corrigir o commit problemático ou reverter só ele), nunca resetando o histórico inteiro pra um ponto anterior — isso apaga trabalho de todo mundo que aconteceu depois, não só o problema.
+
+### "Dados do público": Visitas ao evento + Idade média/Faixa etária numa linha só
+- Nova métrica "Visitas ao evento": não existia nenhum rastreamento de acesso à página do evento antes — criada a tabela `event_page_views` (só `event_id` + data/hora, sem dado pessoal) e a função `track_event_view`, no mesmo padrão de segurança já usado em `track_checkout_abandonment` (escrita só pela função, nunca direto na tabela).
+- Contagem roda no navegador (depois do React montar), não no servidor — assim não conta pré-visualização de link do WhatsApp/Instagram, que só lê as tags da página sem carregar nada.
+- "Idade média" e "Faixa etária predominante" (que mostrava uma faixa fixa tipo "25-34") viraram uma linha só: "24 Anos / 18 - 39" — a faixa agora é a idade real do comprador mais novo até o mais velho, não mais uma faixa pré-definida.
+- Arquivos: migration `create_event_page_views`, `src/lib/dashboard-queries.ts`, `src/pages/AdminDashboard.tsx`, `src/pages/PublicEventPage.tsx`.
+
 ---
 
 ## Pendências conhecidas
