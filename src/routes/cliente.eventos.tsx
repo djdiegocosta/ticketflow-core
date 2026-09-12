@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useOrgActiveEvents } from "@/lib/customer-queries";
 import { Loader2, Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute('/cliente/eventos')({
   component: Page_cliente_eventos,
@@ -10,16 +11,33 @@ export const Route = createFileRoute('/cliente/eventos')({
 const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function getPriceRange(batches: { price: number; is_courtesy: boolean }[] | null | undefined) {
-  const prices = (batches || [])
-    .filter((b) => !b.is_courtesy && typeof b.price === "number")
-    .map((b) => b.price);
-  if (prices.length === 0) return null;
-  return { min: Math.min(...prices), max: Math.max(...prices) };
+function getCurrentBatches(
+  batches:
+    | { id: string; name: string; price: number; is_courtesy: boolean; starts_at: string; ends_at: string }[]
+    | null
+    | undefined,
+  now: number,
+) {
+  return (batches || []).filter((batch) => {
+    if (batch.is_courtesy || typeof batch.price !== "number") return false;
+
+    const startsAt = new Date(batch.starts_at).getTime();
+    const endsAt = new Date(batch.ends_at).getTime();
+
+    return startsAt <= now && now < endsAt;
+  });
 }
 
 export function Page_cliente_eventos() {
   const { data: events = [], isLoading } = useOrgActiveEvents();
+  const [now, setNow] = useState(() => Date.now());
+
+  // Mantém a exibição sincronizada com a virada automática de lote
+  // enquanto a tela permanecer aberta.
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   if (isLoading) {
     return (
@@ -38,13 +56,13 @@ export function Page_cliente_eventos() {
       <div className="grid grid-cols-1 gap-4">
         {events.length > 0 ? (
           events.map((event: any) => {
-            const range = getPriceRange(event.ticket_batches);
+            const currentBatches = getCurrentBatches(event.ticket_batches, now);
             return (
             <Link 
               key={event.id} 
               to="/e/$slug" 
               params={{ slug: event.slug }}
- className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] overflow-hidden flex flex-col active:scale-[0.98] transition-transform"
+              className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] overflow-hidden flex flex-col active:scale-[0.98] transition-transform"
             >
               <div className="aspect-video w-full bg-[var(--bg-tertiary)] overflow-hidden">
                 {event.image_url ? (
@@ -75,14 +93,23 @@ export function Page_cliente_eventos() {
                 </div>
 
                 <div className="flex items-end justify-between gap-3 pt-1">
-                  {range ? (
-                    <div className="min-w-0">
-                      <p className="text-micro uppercase tracking-wide text-[var(--text-disabled)]">Faixa de Preço</p>
-                      <p className="text-body font-bold text-[var(--text-primary)]">
-                        {range.min === range.max
-                          ? formatCurrency(range.min)
-                          : `${formatCurrency(range.min)} - ${formatCurrency(range.max)}`}
-                      </p>
+                  {currentBatches.length > 0 ? (
+                    <div className="min-w-0 flex-1">
+                      <p className="text-micro uppercase tracking-wide text-[var(--text-disabled)]">Valor do lote atual:</p>
+                      <div className={currentBatches.length > 1 ? "grid grid-cols-2 gap-3 mt-1" : "mt-1"}>
+                        {currentBatches.map((batch) => (
+                          <div key={batch.id} className="min-w-0">
+                            {currentBatches.length > 1 && (
+                              <p className="text-micro font-medium text-[var(--text-secondary)] truncate">
+                                {batch.name}
+                              </p>
+                            )}
+                            <p className="text-body font-bold text-[var(--text-primary)]">
+                              {formatCurrency(batch.price)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : <span />}
 
