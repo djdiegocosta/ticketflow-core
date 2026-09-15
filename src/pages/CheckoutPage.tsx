@@ -109,6 +109,8 @@ export default function CheckoutPage() {
     name: "participants"
   });
 
+  // Sugere correção quando o e-mail parece ter erro de digitação (ex:
+  // icloud.con em vez de icloud.com) — evita falha de Pix por e-mail errado.
   const emailSuggestion = suggestEmailCorrection(form.watch('buyerEmail'));
 
   useEffect(() => {
@@ -180,25 +182,6 @@ export default function CheckoutPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const trackInitiateCheckout = () => {
-    if (!event || !batch || typeof window === 'undefined') return;
-
-    const fbq = (window as typeof window & {
-      fbq?: (...args: unknown[]) => void;
-    }).fbq;
-
-    if (typeof fbq !== 'function') return;
-
-    fbq('track', 'InitiateCheckout', {
-      content_name: event.title,
-      content_type: 'event',
-      content_ids: [event.id],
-      value: Number((batch.price * qty).toFixed(2)),
-      currency: 'BRL',
-      num_items: qty,
-    });
-  };
-
   const onSubmit = async (values: CheckoutFormValues) => {
     if (!event || !batch || isCreatingSale) return;
     
@@ -241,7 +224,6 @@ export default function CheckoutPage() {
           qr_code: pixResult.qr_code,
           qr_code_base64: pixResult.qr_code_base64
         });
-        trackInitiateCheckout();
       } catch (pixErr: any) {
         toast.error("Erro ao gerar o Pix. Por favor, tente novamente.");
         setIsCreatingSale(false);
@@ -355,62 +337,113 @@ export default function CheckoutPage() {
                 {qty === 1 && (
                   <div className="flex items-center gap-2">
                     <Checkbox id="same" onCheckedChange={handleSameAsBuyer} />
-                    <Label htmlFor="same" className="text-small text-[var(--text-secondary)]">Sou eu</Label>
+                    <label htmlFor="same" className="text-xs text-[var(--text-secondary)]">Mesmo do comprador</label>
                   </div>
                 )}
               </div>
+              
               <div className="space-y-4">
                 {fields.map((field, index) => (
-                  <SmartField
-                    key={field.id}
-                    label={`Participante ${index + 1}`}
-                    icon={User}
-                    value={form.watch(`participants.${index}.name`)}
-                    onChange={(v) => form.setValue(`participants.${index}.name`, formatName(v), { shouldValidate: true })}
-                    isValid={isFullName(form.watch(`participants.${index}.name`))}
-                    placeholder="Nome completo"
-                    error={form.formState.errors.participants?.[index]?.name?.message as string}
-                  />
+                  <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
+                    <Label>Nome do Participante {qty > 1 ? index + 1 : ''}</Label>
+                    <Input 
+                      placeholder="Nome Sobrenome"
+                      {...form.register(`participants.${index}.name` as const)}
+                      onInput={(e) => {
+                        const t = e.target as HTMLInputElement;
+                        t.value = formatName(t.value);
+                        form.setValue(`participants.${index}.name`, t.value, { shouldValidate: true });
+                      }}
+                    />
+                    {form.formState.errors.participants?.[index]?.name && <p className="text-xs text-error">{form.formState.errors.participants?.[index]?.name?.message}</p>}
+                  </div>
                 ))}
               </div>
             </div>
 
-            <Button type="submit" disabled={isCreatingSale} className="h-12 w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]">
-              {isCreatingSale ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Continuar para pagamento'}
+            <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+              Ao continuar, você concorda com nossos{" "}
+              <Link to="/termos" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Termos de Uso
+              </Link>{" "}
+              e{" "}
+              <Link to="/privacidade" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                Política de Privacidade
+              </Link>.
+            </p>
+
+            <Button 
+              type="submit"
+              disabled={isCreatingSale}
+              className="mt-4 h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Gerar Pix"}
             </Button>
           </form>
         )}
 
         {step === 'payment' && (
-          <div className="flex flex-col gap-5">
-            <div className="text-center">
-              <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Pagamento via Pix</h2>
-              <p className="mt-1 text-small text-[var(--text-secondary)]">Aponte a câmera do banco para o QR Code ou copie o código abaixo.</p>
+          <div className="flex flex-col gap-6 animate-in slide-in-from-right duration-300">
+            <div className="flex items-center justify-center gap-2 text-center">
+              <Clock className="h-4 w-4 text-[var(--accent)]" />
+              <p className="text-small text-[var(--text-secondary)]">Aguardando Pagamento — expira em <span className="font-mono font-bold text-[var(--accent-text)]">{formatTime(countdown)}</span></p>
             </div>
 
-            {pixData && (
-              <div className="flex flex-col items-center gap-4 rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-5">
-                <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-56 w-56 rounded-lg bg-white p-2" />
-                <Button type="button" onClick={copyPix} className="h-11 w-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]">
+            <div className="flex flex-col items-center gap-4 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
+              <div className="bg-white p-3 rounded-xl shadow-sm min-h-[190px] min-w-[190px] flex items-center justify-center">
+                {pixData ? (
+                  <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-[164px] w-[164px]" />
+                ) : (
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+                )}
+              </div>
+              <div className="flex w-full flex-col gap-3">
+                <Button
+                  type="button"
+                  disabled={countdown === 0 || !pixData}
+                  className="h-12 w-full bg-[var(--accent)] text-[#111111] font-bold hover:bg-[var(--accent-hover)]"
+                  onClick={copyPix}
+                >
                   {pixCopied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                  {pixCopied ? 'Código copiado' : 'Copiar código Pix'}
+                  {pixCopied ? "Código Pix copiado" : "COPIAR CÓDIGO PIX"}
                 </Button>
-                <div className="w-full rounded-md border border-[var(--border-subtle)] bg-[var(--bg-primary)] p-3 text-xs break-all text-[var(--text-secondary)]">
-                  {pixData.qr_code}
+                <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+                  Copie o código e pague pelo aplicativo do seu banco. Depois do pagamento, aguarde a confirmação nesta tela.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!pixData || isCheckingPayment}
+                  className="h-11 w-full border-[var(--border-default)]"
+                  onClick={async () => {
+                    const result = await refetchSaleStatus();
+                    if (result.data === 'pago') {
+                      toast.success("Pagamento confirmado! Abrindo seus ingressos...");
+                    } else {
+                      toast.info("Pagamento ainda não confirmado. Se você acabou de pagar, aguarde alguns segundos e tente novamente.");
+                    }
+                  }}
+                >
+                  {isCheckingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  {isCheckingPayment ? "Verificando pagamento..." : "Já paguei — verificar pagamento"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
+                <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
+                <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
+                  <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
+                  <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
                 </div>
               </div>
-            )}
-
-            <div className="flex items-center justify-center gap-2 text-small text-[var(--text-secondary)]">
-              <Clock className="h-4 w-4" />
-              Reserva válida por {formatTime(countdown)}
             </div>
 
-            <div className="rounded-[var(--radius-lg)] bg-[var(--accent-muted)] p-4 text-center">
-              {isCheckingPayment ? 'Aguardando confirmação do pagamento...' : saleStatus === 'pago' ? 'Pagamento confirmado.' : 'Assim que o Pix for confirmado, seus ingressos serão liberados automaticamente.'}
-            </div>
           </div>
         )}
+
       </div>
     </MobileLayout>
   );
