@@ -292,14 +292,14 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         <div className={!selectedEvent ? "pointer-events-none opacity-50" : ""}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="type" className="flex items-center gap-2 text-small">
-                <Keyboard className="h-4 w-4" /> Digitar
+              <TabsTrigger value="type" className="flex items-center gap-1.5 text-small">
+                <Keyboard className="h-4 w-4 shrink-0" /> Digitar
               </TabsTrigger>
-              <TabsTrigger value="paste" className="flex items-center gap-2 text-small">
-                <FileText className="h-4 w-4" /> Colar lista
+              <TabsTrigger value="paste" className="flex items-center gap-1.5 text-small">
+                <FileText className="h-4 w-4 shrink-0" /> Colar lista
               </TabsTrigger>
-              <TabsTrigger value="import" className="flex items-center gap-2 text-small">
-                <Upload className="h-4 w-4" /> Importar
+              <TabsTrigger value="import" className="flex items-center gap-1.5 text-small">
+                <Upload className="h-4 w-4 shrink-0" /> Importar
               </TabsTrigger>
             </TabsList>
             <TabsContent value="type" className="pt-4">

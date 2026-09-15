@@ -177,6 +177,12 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Unificado: o admin agora usa o mesmo método local (`qrcode.react`), igual ao cliente. Corrige 2 problemas de uma vez: a tela do admin não quebra mais se aquele serviço externo cair, e o código do ingresso deixa de ser enviado pra um servidor de fora sem necessidade.
 - Arquivo: `src/pages/admin/SaleDetailPage.tsx`.
 
+### Ponto 4 da auditoria de design (responsivo — revisão mais profunda)
+- Esse ponto tinha sido registrado como elogio (sidebar colapsável e tabelas com rolagem contida já estavam certas), sem problema pra corrigir. Diego pediu pra ir mais fundo mesmo assim.
+- Varredura completa em todo `src/pages/admin/` e `src/components/admin/` procurando grades de 3+ colunas sem nenhum ajuste pra tela estreita. Quase tudo já estava certo (a primeira varredura tinha alguns falsos positivos, corrigidos na conferência). Achado real único: as 3 abas do painel "Nova Cortesia" (Digitar/Colar lista/Importar) ficavam apertadas em celulares muito estreitos (largura tipo iPhone SE).
+- Corrigido: espaçamento entre ícone e texto reduzido nas 3 abas — cabe confortavelmente mesmo nas telas mais estreitas, sem mudar nada no restante do layout.
+- Arquivo: `src/components/admin/cortesias/CreateCourtesyPanel.tsx`.
+
 ---
 
 ## Pendências conhecidas
