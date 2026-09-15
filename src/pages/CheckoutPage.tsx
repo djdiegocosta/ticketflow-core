@@ -346,8 +346,9 @@ export default function CheckoutPage() {
                 {fields.map((field, index) => (
                   <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
                     <Label>Nome do Participante {qty > 1 ? index + 1 : ''}</Label>
+                    <p className="text-xs leading-5 text-[var(--text-secondary)]">Informe o nome e sobrenome de quem usará este ingresso.</p>
                     <Input 
-                      placeholder="Nome Sobrenome"
+                      placeholder="Ex.: João da Silva"
                       {...form.register(`participants.${index}.name` as const)}
                       onInput={(e) => {
                         const t = e.target as HTMLInputElement;
