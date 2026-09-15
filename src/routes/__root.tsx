@@ -34,7 +34,7 @@ function NotFoundComponent() {
             strokeLinejoin="round"
           >
             <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 5" />
             <path d="M12 17h.01" />
           </svg>
         </div>
@@ -170,6 +170,23 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function MetaPixelNavigationTracker() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+      const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
+      if (!fbq) return;
+
+      fbq("track", "PageView");
+    });
+
+    return unsubscribe;
+  }, [router]);
+
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -189,6 +206,7 @@ function RootComponent() {
         <AuthProvider>
           <DesignProvider>
             <PublicDataProvider>
+              <MetaPixelNavigationTracker />
               <Outlet />
               <Toaster position="top-right" richColors />
             </PublicDataProvider>
