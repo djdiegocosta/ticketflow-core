@@ -174,7 +174,7 @@ function MetaPixelNavigationTracker() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+    const unsubscribe = router.subscribe("onResolved", () => {
       const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
       if (!fbq) return;
 
