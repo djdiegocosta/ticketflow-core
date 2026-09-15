@@ -5,13 +5,37 @@ import { useParams, Link } from '@tanstack/react-router';
 import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSaleByCode, useApplyPublicDesign } from '@/lib/customer-queries';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ConfirmationPage() {
   const { slug, sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
   const { data: sale, isLoading } = useSaleByCode(sale_code);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   useApplyPublicDesign(slug);
+
+  useEffect(() => {
+    if (!sale || sale.status !== 'pago' || !sale.tickets?.length || typeof window === 'undefined') return;
+
+    const storageKey = `ticketflow_meta_purchase:${sale_code}`;
+    if (window.localStorage.getItem(storageKey)) return;
+
+    const fbq = (window as typeof window & {
+      fbq?: (...args: unknown[]) => void;
+    }).fbq;
+
+    if (typeof fbq !== 'function') return;
+
+    fbq('track', 'Purchase', {
+      content_name: (sale as any).event_title || 'Ingresso',
+      content_type: 'event',
+      content_ids: [(sale as any).event_id || sale_code],
+      value: Number(Number((sale as any).total_amount || 0).toFixed(2)),
+      currency: 'BRL',
+      num_items: Number((sale as any).quantity || sale.tickets.length),
+    });
+
+    window.localStorage.setItem(storageKey, '1');
+  }, [sale, sale_code]);
 
   const downloadAllTicketsPdf = async () => {
     if (!sale?.tickets?.length || isGeneratingPdf) return;
