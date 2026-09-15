@@ -48,7 +48,7 @@ export default function CheckoutPage() {
   const generateSalePix = useGenerateSalePix();
   const trackAbandonment = useTrackAbandonment();
   
-  const [step, setStep] = useState<'info' | 'payment'>('info');
+  const [step, setStep] = useState<'buyer' | 'participants' | 'payment'>('buyer');
   const [countdown, setCountdown] = useState(0);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
@@ -182,6 +182,18 @@ export default function CheckoutPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleBuyerContinue = async () => {
+    const valid = await form.trigger(['buyerName', 'buyerWhatsApp', 'buyerEmail']);
+    if (!valid) return;
+    setStep('participants');
+    window.scrollTo(0, 0);
+  };
+
+  const handleBackToBuyer = () => {
+    setStep('buyer');
+    window.scrollTo(0, 0);
+  };
+
   const onSubmit = async (values: CheckoutFormValues) => {
     if (!event || !batch || isCreatingSale) return;
     
@@ -248,7 +260,7 @@ export default function CheckoutPage() {
 
     if (saleStatus === 'expirado' && step === 'payment') {
       toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
-      setStep('info');
+      setStep('buyer');
       setCurrentSaleId(null);
       setCurrentSaleCode(null);
       setExpiresAt(null);
@@ -288,7 +300,15 @@ export default function CheckoutPage() {
   return (
     <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
       <div className="flex flex-col gap-6 px-5 py-6 pb-32 safe-area-bottom">
-        {step === 'info' && (
+        {step !== 'payment' && (
+          <div className="flex items-center justify-center gap-2 text-xs font-medium">
+            <span className={step === 'buyer' ? 'text-[var(--accent-text)]' : 'text-[var(--text-secondary)]'}>1. Dados do comprador</span>
+            <span className="text-[var(--text-secondary)]">→</span>
+            <span className={step === 'participants' ? 'text-[var(--accent-text)]' : 'text-[var(--text-secondary)]'}>2. Quem vai usar</span>
+          </div>
+        )}
+
+        {step !== 'payment' && (
           <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
             <div className="flex flex-col gap-1">
               <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
@@ -301,10 +321,13 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {step === 'info' && (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        {step === 'buyer' && (
+          <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
+              <div>
+                <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
+                <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Preencha seus dados para identificar a compra e receber informações sobre os ingressos.</p>
+              </div>
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
                 <SmartField label="WhatsApp" icon={Phone} value={form.watch('buyerWhatsApp')} onChange={(v) => form.setValue('buyerWhatsApp', maskWhatsApp(v), { shouldValidate: true })} isValid={onlyDigits(form.watch('buyerWhatsApp')).length === 11} placeholder="(00) 00000-0000" inputMode="tel" error={form.formState.errors.buyerWhatsApp?.message as string} />
@@ -331,23 +354,38 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            <Button
+              type="button"
+              onClick={handleBuyerContinue}
+              className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)]"
+            >
+              Continuar
+            </Button>
+          </div>
+        )}
+
+        {step === 'participants' && (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Participantes</h3>
-                {qty === 1 && (
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="same" onCheckedChange={handleSameAsBuyer} />
-                    <label htmlFor="same" className="text-xs text-[var(--text-secondary)]">Mesmo do comprador</label>
-                  </div>
-                )}
+              <div>
+                <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Quem vai usar os ingressos?</h3>
+                <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Informe o nome de quem usará cada ingresso. Se o ingresso for seu, você pode usar o mesmo nome do comprador.</p>
               </div>
-              
+
               <div className="space-y-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="space-y-2 rounded-[var(--radius-md)] p-3">
-                    <Label>Nome do Participante {qty > 1 ? index + 1 : ''}</Label>
-                    <p className="text-xs leading-5 text-[var(--text-secondary)]">Informe o nome e sobrenome de quem usará este ingresso.</p>
-                    <Input 
+                  <div key={field.id} className="space-y-3 rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label className="font-semibold">Ingresso {qty > 1 ? index + 1 : ''}</Label>
+                      {qty === 1 && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox id="same" onCheckedChange={handleSameAsBuyer} />
+                          <label htmlFor="same" className="text-xs text-[var(--text-secondary)]">Sou eu</label>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs leading-5 text-[var(--text-secondary)]">Nome e sobrenome de quem usará este ingresso.</p>
+                    <Input
                       placeholder="Ex.: João da Silva"
                       {...form.register(`participants.${index}.name` as const)}
                       onInput={(e) => {
@@ -373,13 +411,24 @@ export default function CheckoutPage() {
               </Link>.
             </p>
 
-            <Button 
-              type="submit"
-              disabled={isCreatingSale}
-              className="mt-4 h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Gerar Pix"}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                type="submit"
+                disabled={isCreatingSale}
+                className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Gerar Pix"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleBackToBuyer}
+                disabled={isCreatingSale}
+                className="h-11 w-full text-[var(--text-secondary)]"
+              >
+                Voltar para dados do comprador
+              </Button>
+            </div>
           </form>
         )}
 
