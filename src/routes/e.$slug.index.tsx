@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import PublicEventPage from "@/pages/PublicEventPage";
@@ -9,5 +10,28 @@ export const Route = createFileRoute("/e/$slug/")({
   head: ({ loaderData }) => ({
     meta: buildEventMeta(loaderData),
   }),
-  component: PublicEventPage,
+  component: PublicEventRoutePage,
 });
+
+function PublicEventRoutePage() {
+  const event = Route.useLoaderData();
+  const { slug } = Route.useParams();
+
+  useEffect(() => {
+    if (!event || typeof window === "undefined") return;
+
+    const fbq = (window as typeof window & {
+      fbq?: (...args: unknown[]) => void;
+    }).fbq;
+
+    if (typeof fbq !== "function") return;
+
+    fbq("track", "ViewContent", {
+      content_name: event.title,
+      content_type: "event",
+      content_ids: [slug],
+    });
+  }, [event, slug]);
+
+  return <PublicEventPage />;
+}
