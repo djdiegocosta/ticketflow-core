@@ -202,7 +202,7 @@ export function EditEventPage() {
       <div
         className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all",
-          step === number ? "bg-accent text-[#111111]" : "bg-bg-tertiary",
+          step === number ? "bg-accent text-[var(--accent-foreground)]" : "bg-bg-tertiary",
         )}
       >
         {number}
@@ -408,7 +408,7 @@ export function EditEventPage() {
                 
                 <div className="flex items-center gap-2 mt-2">
                   <div className="h-[1px] flex-1 bg-border-subtle"></div>
-                  <span className="text-[10px] text-text-disabled uppercase font-bold tracking-wider">Ou cole uma URL externa</span>
+                  <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">Ou cole uma URL externa</span>
                   <div className="h-[1px] flex-1 bg-border-subtle"></div>
                 </div>
                 <input
@@ -639,7 +639,7 @@ export function EditEventPage() {
                   </button>
                   <button
                     onClick={handleSaveBatch}
-                    className="px-4 py-2 bg-accent text-[#111111] rounded-md font-semibold hover:bg-accent-hover transition-colors"
+                    className="px-4 py-2 bg-accent text-[var(--accent-foreground)] rounded-md font-semibold hover:bg-accent-hover transition-colors"
                   >
                     Salvar lote
                   </button>
@@ -691,7 +691,7 @@ export function EditEventPage() {
           <button
             onClick={step === 4 ? handleSave : () => setStep((s) => Math.min(s + 1, 4))}
             disabled={saving}
-            className="px-8 py-2 bg-accent text-[#111111] rounded-md font-semibold hover:bg-accent-hover transition-colors shadow-sm"
+            className="px-8 py-2 bg-accent text-[var(--accent-foreground)] rounded-md font-semibold hover:bg-accent-hover transition-colors shadow-sm"
           >
             {saving ? "Salvando..." : step === 4 ? "Salvar alterações" : "Continuar"}
           </button>

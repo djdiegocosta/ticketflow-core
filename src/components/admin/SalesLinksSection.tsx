@@ -158,7 +158,7 @@ export function SalesLinksSection({
             type="button"
             onClick={handleAdd}
             disabled={saving}
-            className="flex items-center gap-1 rounded-md bg-accent px-4 py-2 font-semibold text-[#111111] transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="flex items-center gap-1 rounded-md bg-accent px-4 py-2 font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             <Plus className="h-4 w-4" /> {saving ? "Adicionando..." : "Adicionar"}
           </button>

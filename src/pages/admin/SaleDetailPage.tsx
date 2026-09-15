@@ -369,7 +369,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                   }
                 }}
                 disabled={refunding || !refundAmount || Number(refundAmount) <= 0}
-                className="bg-accent px-4 py-2 text-body font-semibold text-[#111111] hover:opacity-90 disabled:opacity-50"
+                className="bg-accent px-4 py-2 text-body font-semibold text-[var(--accent-foreground)] hover:opacity-90 disabled:opacity-50"
               >
                 {refunding ? "Reembolsando..." : "Confirmar reembolso"}
               </button>

@@ -26,6 +26,10 @@
   --accent-hover: #6d28d9;
   --accent-muted: #f0eafa;
   --accent-text: #6d28d9;
+  /* Texto sobre um fundo na cor de destaque (botões, badges). Fixo em
+     ambos os temas porque --accent continua claro/vívido o bastante no
+     escuro pra precisar de texto escuro em cima também. */
+  --accent-foreground: #111111;
 
   /* Standard UI/metric icon color. Semantic icons may override this. */
   --icon-brand: #a78bfa;
@@ -105,6 +109,7 @@
   --accent-hover: #7c3aed;
   --accent-muted: #302344;
   --accent-text: #c4b5fd;
+  --accent-foreground: #111111;
 
   --icon-brand: #c4b5fd;
   --icon-brand-muted: #302344;

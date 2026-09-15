@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 
 /**
  * Botão de ação principal (spec seção 7 do Design System):
- * fundo accent, texto #111111, padding 10px 20px, 14px / peso 600, cantos retos.
+ * fundo accent, texto var(--accent-foreground), padding 10px 20px, 14px / peso 600, cantos retos.
  * A única variação permitida é a largura (conforme o texto).
  */
 export const primaryActionClass =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover rounded-[var(--radius-sm)]";
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover rounded-[var(--radius-sm)]";
 
 export function PrimaryActionButton({
   children,

@@ -158,6 +158,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - "Idade média" e "Faixa etária predominante" (que mostrava uma faixa fixa tipo "25-34") viraram uma linha só: "24 Anos / 18 - 39" — a faixa agora é a idade real do comprador mais novo até o mais velho, não mais uma faixa pré-definida.
 - Arquivos: migration `create_event_page_views`, `src/lib/dashboard-queries.ts`, `src/pages/AdminDashboard.tsx`, `src/pages/PublicEventPage.tsx`.
 
+### Auditoria de design/layout do admin (skill ui-ux-pro-max) + correção dos pontos 1-3
+- Diego pediu uma auditoria de design do módulo admin usando a skill `ui-ux-pro-max`. Aviso registrado: o script de busca da skill (`search.py`) e os arquivos de referência não existem neste ambiente — a auditoria usou a tabela de prioridades do `SKILL.md`, aplicada de verdade sobre o código (evidência por arquivo, não achismo).
+- Relatório completo com 7 pontos entregue a Diego. Ele pediu pra resolver os 3 primeiros:
+  1. **Contraste:** código da venda (`sale.sale_code`) e 3 outros textos/ícones ativos usavam a cor `text-disabled` (2,38:1 de contraste, abaixo do mínimo de 4,5:1) — essa cor é pra elementos genuinamente desativados, não texto que o admin precisa ler. Trocados para `text-secondary` (5:1). Deixados como estavam: usos legítimos em ícones decorativos e botões realmente desabilitados.
+  2. **Área de toque:** botão de menu "..." (ações da linha) em 5 telas diferentes (Clientes, Cortesias, Links de Venda, Vendas, Usuários) usava 32×32px. Aumentado pra 44×44px (padrão mínimo recomendado), mantendo o ícone visualmente do mesmo tamanho — só a área clicável cresceu.
+  3. **Cor sem token:** `#111111` (texto sobre botões na cor de destaque) estava escrito solto em 16 lugares. Criado o token `--accent-foreground`, usado em ambos os temas (claro/escuro).
+- Pontos 4-7 do relatório (responsivo, QR Code duplicado, gráficos, formatação de código) ficaram pendentes, sem ação ainda.
+- Arquivos: `src/styles.css`, e nos 14 arquivos de página/componente do admin listados acima.
+
 ---
 
 ## Pendências conhecidas

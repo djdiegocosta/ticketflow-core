@@ -150,7 +150,7 @@ export function RemarketingPage() {
                       href={remarketingWhatsappLink(lead)}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+                      className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />
                       WhatsApp

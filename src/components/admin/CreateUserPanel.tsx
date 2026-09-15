@@ -122,7 +122,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
                     className={cn(
                       "mt-0.5 rounded-full p-2",
                       role === value
-                        ? "bg-accent text-[#111111]"
+                        ? "bg-accent text-[var(--accent-foreground)]"
                         : "bg-bg-tertiary text-text-secondary",
                     )}
                   >

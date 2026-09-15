@@ -110,7 +110,7 @@ export default function UsersListPage() {
                       <button
                         type="button"
                         aria-label={`Ações de ${user.full_name || user.email}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </button>

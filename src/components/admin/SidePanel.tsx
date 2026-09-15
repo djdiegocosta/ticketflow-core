@@ -137,7 +137,7 @@ export function PanelPrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center justify-center gap-1 bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[#111111] transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 rounded-[var(--radius-sm)]",
+        "inline-flex items-center justify-center gap-1 bg-accent px-5 py-2.5 text-body font-semibold leading-none text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 rounded-[var(--radius-sm)]",
         className,
       )}
     >

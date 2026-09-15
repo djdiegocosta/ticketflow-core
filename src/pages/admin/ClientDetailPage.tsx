@@ -127,7 +127,7 @@ export function ClientDetailPage({ id }: { id: string }) {
             href={whatsappLink(client.whatsapp)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[#111111] transition-colors hover:bg-accent-hover"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-body font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover"
           >
             <MessageCircle className="h-4 w-4" />
             Enviar WhatsApp
