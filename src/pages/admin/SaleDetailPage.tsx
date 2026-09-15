@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FileText, QrCode, X, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -309,12 +310,9 @@ export function SaleDetailPage({ id }: { id: string }) {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <img
-              alt={`QR Code do ingresso ${qrTicket.ticket_code}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrTicket.ticket_code || "")}`}
-              className="mx-auto mt-4 h-[220px] w-[220px] bg-bg-primary"
-              loading="lazy"
-            />
+            <div className="mx-auto mt-4 flex h-[220px] w-[220px] items-center justify-center bg-white p-2">
+              <QRCodeSVG value={qrTicket.ticket_code || ""} size={204} />
+            </div>
             <p className="mt-4 text-body text-text-primary">{qrTicket.participant_name}</p>
             <p className="font-mono-token mt-1 text-text-secondary">{qrTicket.ticket_code}</p>
           </div>

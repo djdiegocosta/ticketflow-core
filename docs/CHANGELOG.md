@@ -172,6 +172,11 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - **Ponto 7 (formatação):** boa parte do código do admin estava com componentes JSX inteiros numa única linha (o pior caso, `SalesListPage.tsx`, tinha uma tela inteira em 1 linha só). Rodada formatação automática (prettier, via `eslint --fix`) em todo `src/pages/admin/` e `src/components/admin/` — 811 dos 905 problemas de formatação corrigidos. **Conferido manualmente:** comparando o conteúdo sem espaços em branco de antes e depois, o resultado é idêntico — só espaçamento, vírgulas finais e quebras de linha mudaram, nenhuma string, lógica ou visual foi alterada. Ficaram só 91 avisos de tipagem (`any`), que não são formatação e não fazem parte deste ponto.
 - Arquivos: `src/pages/AdminDashboard.tsx` (ponto 6) e 28 arquivos de `src/pages/admin/` e `src/components/admin/` (ponto 7, só formatação).
 
+### Ponto 5 da auditoria de design (QR Code duplicado entre admin e cliente)
+- O QR Code do ingresso, na tela de detalhe da venda no admin (`SaleDetailPage.tsx`), era buscado de um serviço externo (`api.qrserver.com`) pela internet. A tela do próprio cliente (`TicketDetailPage.tsx`) já gera o mesmo QR Code localmente, sem depender de internet nem de terceiros.
+- Unificado: o admin agora usa o mesmo método local (`qrcode.react`), igual ao cliente. Corrige 2 problemas de uma vez: a tela do admin não quebra mais se aquele serviço externo cair, e o código do ingresso deixa de ser enviado pra um servidor de fora sem necessidade.
+- Arquivo: `src/pages/admin/SaleDetailPage.tsx`.
+
 ---
 
 ## Pendências conhecidas
