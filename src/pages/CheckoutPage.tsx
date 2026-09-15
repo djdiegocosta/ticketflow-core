@@ -308,7 +308,7 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {step !== 'payment' && (
+        {step === 'buyer' && (
           <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
             <div className="flex flex-col gap-1">
               <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
@@ -384,7 +384,6 @@ export default function CheckoutPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs leading-5 text-[var(--text-secondary)]">Nome e sobrenome de quem usará este ingresso.</p>
                     <Input
                       placeholder="Ex.: João da Silva"
                       {...form.register(`participants.${index}.name` as const)}
@@ -410,6 +409,17 @@ export default function CheckoutPage() {
                 Política de Privacidade
               </Link>.
             </p>
+
+            <div className="rounded-[var(--radius-lg)] bg-[var(--bg-secondary)] p-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
+                <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
+                <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
+                  <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
+                  <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
 
             <div className="flex flex-col gap-3">
               <Button
