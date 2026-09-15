@@ -27,14 +27,14 @@ export function PrimaryActionButton({
   disabled?: boolean;
 }) {
   return (
-    <button 
-      type={type} 
-      onClick={onClick} 
+    <button
+      type={type}
+      onClick={onClick}
       disabled={disabled}
       className={cn(
-        primaryActionClass, 
+        primaryActionClass,
         disabled && "opacity-50 cursor-not-allowed grayscale",
-        className
+        className,
       )}
     >
       {withIcon && <Plus className="h-4 w-4" />}
@@ -71,8 +71,6 @@ export function ListPageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
-      {action}
-    </div>
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">{action}</div>
   );
 }

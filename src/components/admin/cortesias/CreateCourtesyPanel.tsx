@@ -3,11 +3,7 @@ import { Upload, FileText, Keyboard, AlertCircle, Trash2, Loader2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  PanelCancelButton,
-  PanelPrimaryButton,
-  SidePanel,
-} from "@/components/admin/SidePanel";
+import { PanelCancelButton, PanelPrimaryButton, SidePanel } from "@/components/admin/SidePanel";
 import { FilterSelect } from "@/components/admin/FilterBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatName, isFullName } from "@/lib/form-format";
@@ -88,11 +84,14 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
     if (!name.trim()) return;
     const formatted = formatName(name.trim());
     setParticipants((prev) =>
-      [...prev, {
-        id: Math.random().toString(36).slice(2, 11),
-        name: formatted,
-        isValid: isFullName(formatted),
-      }].sort((a, b) => a.name.localeCompare(b.name)),
+      [
+        ...prev,
+        {
+          id: Math.random().toString(36).slice(2, 11),
+          name: formatted,
+          isValid: isFullName(formatted),
+        },
+      ].sort((a, b) => a.name.localeCompare(b.name)),
     );
     setIsDirty(true);
   };
@@ -134,16 +133,19 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
   };
 
   const updateParticipantName = (id: string, newName: string) => {
-    setParticipants((prev) => prev.map((p) => {
-      if (p.id !== id) return p;
-      const formatted = formatName(newName);
-      return { ...p, name: formatted, isValid: isFullName(formatted) };
-    }));
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        const formatted = formatName(newName);
+        return { ...p, name: formatted, isValid: isFullName(formatted) };
+      }),
+    );
   };
 
   const validCount = participants.filter((p) => p.isValid).length;
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const canSubmit = !!selectedEvent && !!selectedBatch && validCount > 0 && !loading && !batchLoading;
+  const canSubmit =
+    !!selectedEvent && !!selectedBatch && validCount > 0 && !loading && !batchLoading;
 
   const handleSubmit = async () => {
     if (!selectedEvent || !selectedBatch) {
@@ -202,7 +204,14 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         <>
           <PanelCancelButton onClick={() => handleClose(false)} />
           <PanelPrimaryButton disabled={!canSubmit} onClick={handleSubmit}>
-            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Emitindo...</> : `Emitir ${validCount} cortesias`}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Emitindo...
+              </>
+            ) : (
+              `Emitir ${validCount} cortesias`
+            )}
           </PanelPrimaryButton>
         </>
       }
@@ -211,33 +220,70 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         <div className="space-y-2">
           <label className="text-small font-medium text-[var(--text-secondary)]">Evento</label>
           {eventsLoading ? (
-            <div className="flex h-9 items-center gap-2 text-small text-[var(--text-tertiary)]"><Loader2 className="h-4 w-4 animate-spin" />Carregando evento...</div>
+            <div className="flex h-9 items-center gap-2 text-small text-[var(--text-tertiary)]">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando evento...
+            </div>
           ) : eventsError ? (
-            <p className="rounded-[var(--radius-sm)] border border-error/20 bg-error-muted p-3 text-small text-error">Não foi possível carregar os eventos.</p>
+            <p className="rounded-[var(--radius-sm)] border border-error/20 bg-error-muted p-3 text-small text-error">
+              Não foi possível carregar os eventos.
+            </p>
           ) : !operationalEvent && !hasMultipleCandidates ? (
-            <p className="rounded-[var(--radius-sm)] border border-warning/20 bg-warning-muted p-3 text-small text-warning">Não há evento operacional disponível para emitir cortesias.</p>
+            <p className="rounded-[var(--radius-sm)] border border-warning/20 bg-warning-muted p-3 text-small text-warning">
+              Não há evento operacional disponível para emitir cortesias.
+            </p>
           ) : showEventSelector ? (
-            <FilterSelect value={selectedEvent} onChange={(e) => setSelectedEvent(e.target.value)} className="w-full">
+            <FilterSelect
+              value={selectedEvent}
+              onChange={(e) => setSelectedEvent(e.target.value)}
+              className="w-full"
+            >
               <option value="">Selecione o evento</option>
-              {events.filter((e: any) => e.status === "publicado" && !e.is_closed).map((e: any) => <option key={e.id} value={e.id}>{e.title}</option>)}
+              {events
+                .filter((e: any) => e.status === "publicado" && !e.is_closed)
+                .map((e: any) => (
+                  <option key={e.id} value={e.id}>
+                    {e.title}
+                  </option>
+                ))}
             </FilterSelect>
           ) : (
- <div className="rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-3 py-2 text-body">{operationalEvent?.title}</div>
+            <div className="rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-3 py-2 text-body">
+              {operationalEvent?.title}
+            </div>
           )}
         </div>
 
         {selectedEvent && (
           <div className="space-y-2">
-            <label className="text-small font-medium text-[var(--text-secondary)]">Lote da Cortesia</label>
+            <label className="text-small font-medium text-[var(--text-secondary)]">
+              Lote da Cortesia
+            </label>
             {batchLoading ? (
-              <div className="flex h-9 items-center gap-2 text-small text-[var(--text-tertiary)]"><Loader2 className="h-4 w-4 animate-spin" />Carregando lotes...</div>
+              <div className="flex h-9 items-center gap-2 text-small text-[var(--text-tertiary)]">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando lotes...
+              </div>
             ) : batchError ? (
-              <p className="rounded-[var(--radius-sm)] border border-error/20 bg-error-muted p-3 text-small text-error">Erro ao carregar lotes: {batchError}</p>
+              <p className="rounded-[var(--radius-sm)] border border-error/20 bg-error-muted p-3 text-small text-error">
+                Erro ao carregar lotes: {batchError}
+              </p>
             ) : batches.length === 0 ? (
-              <p className="rounded-[var(--radius-sm)] border border-warning/20 bg-warning-muted p-3 text-small text-warning">Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia na edição do evento primeiro.</p>
+              <p className="rounded-[var(--radius-sm)] border border-warning/20 bg-warning-muted p-3 text-small text-warning">
+                Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia
+                na edição do evento primeiro.
+              </p>
             ) : (
-              <FilterSelect value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full">
-                {batches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              <FilterSelect
+                value={selectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
+                className="w-full"
+              >
+                {batches.map((b: any) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
               </FilterSelect>
             )}
           </div>
@@ -246,29 +292,77 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         <div className={!selectedEvent ? "pointer-events-none opacity-50" : ""}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="type" className="flex items-center gap-2 text-small"><Keyboard className="h-4 w-4" /> Digitar</TabsTrigger>
-              <TabsTrigger value="paste" className="flex items-center gap-2 text-small"><FileText className="h-4 w-4" /> Colar lista</TabsTrigger>
-              <TabsTrigger value="import" className="flex items-center gap-2 text-small"><Upload className="h-4 w-4" /> Importar</TabsTrigger>
+              <TabsTrigger value="type" className="flex items-center gap-2 text-small">
+                <Keyboard className="h-4 w-4" /> Digitar
+              </TabsTrigger>
+              <TabsTrigger value="paste" className="flex items-center gap-2 text-small">
+                <FileText className="h-4 w-4" /> Colar lista
+              </TabsTrigger>
+              <TabsTrigger value="import" className="flex items-center gap-2 text-small">
+                <Upload className="h-4 w-4" /> Importar
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="type" className="pt-4">
               <div className="space-y-2">
-                <label className="text-small font-medium text-[var(--text-secondary)]">Nome do convidado</label>
-                <Input placeholder="Ex: João Silva (Pressione Enter)" value={singleName} onInput={(e) => { const target = e.target as HTMLInputElement; target.value = formatName(target.value); setSingleName(target.value); }} onKeyDown={handleSingleNameKeyDown} autoFocus />
-                {!isFullName(singleName) && singleName.trim() !== "" && <p className="flex items-center gap-1 text-[10px] text-error"><AlertCircle className="h-3 w-3" />Mínimo 2 palavras</p>}
+                <label className="text-small font-medium text-[var(--text-secondary)]">
+                  Nome do convidado
+                </label>
+                <Input
+                  placeholder="Ex: João Silva (Pressione Enter)"
+                  value={singleName}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    target.value = formatName(target.value);
+                    setSingleName(target.value);
+                  }}
+                  onKeyDown={handleSingleNameKeyDown}
+                  autoFocus
+                />
+                {!isFullName(singleName) && singleName.trim() !== "" && (
+                  <p className="flex items-center gap-1 text-[10px] text-error">
+                    <AlertCircle className="h-3 w-3" />
+                    Mínimo 2 palavras
+                  </p>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="paste" className="pt-4">
               <div className="space-y-2">
-                <label className="text-small font-medium text-[var(--text-secondary)]">Cole a lista (um nome por linha)</label>
-                <Textarea placeholder="Nome Sobrenome\nOutro Nome Sobrenome" className="min-h-[120px]" value={bulkText} onChange={(e) => setBulkText(e.target.value)} />
-                <Button variant="outline" className="w-full" onClick={processBulkText} disabled={!bulkText.trim()}>Processar lista</Button>
+                <label className="text-small font-medium text-[var(--text-secondary)]">
+                  Cole a lista (um nome por linha)
+                </label>
+                <Textarea
+                  placeholder="Nome Sobrenome\nOutro Nome Sobrenome"
+                  className="min-h-[120px]"
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={processBulkText}
+                  disabled={!bulkText.trim()}
+                >
+                  Processar lista
+                </Button>
               </div>
             </TabsContent>
             <TabsContent value="import" className="pt-4">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-[var(--border-subtle)] p-8 text-center cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <div
+                className="flex flex-col items-center justify-center border-2 border-dashed border-[var(--border-subtle)] p-8 text-center cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Upload className="mb-2 h-8 w-8 text-[var(--text-tertiary)]" />
-                <p className="text-small text-[var(--text-secondary)]">Arraste ou clique para selecionar arquivo .txt</p>
-                <input type="file" ref={fileInputRef} className="hidden" accept=".txt" onChange={handleFileUpload} />
+                <p className="text-small text-[var(--text-secondary)]">
+                  Arraste ou clique para selecionar arquivo .txt
+                </p>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".txt"
+                  onChange={handleFileUpload}
+                />
               </div>
             </TabsContent>
           </Tabs>
@@ -277,18 +371,57 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
         <div className="space-y-3 pt-4">
           <div className="flex items-center justify-between">
             <h3 className="text-body font-semibold">{participants.length} nomes adicionados</h3>
-            {participants.length > 0 && <Button variant="ghost" size="sm" className="h-8 text-[var(--text-tertiary)]" onClick={() => { setParticipants([]); setIsDirty(false); }}>Limpar tudo</Button>}
+            {participants.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-[var(--text-tertiary)]"
+                onClick={() => {
+                  setParticipants([]);
+                  setIsDirty(false);
+                }}
+              >
+                Limpar tudo
+              </Button>
+            )}
           </div>
- <div className="divide-y divide-[var(--border-subtle)]">
-            {participants.length === 0 ? <div className="py-8 text-center text-small text-[var(--text-tertiary)]">Nenhum nome adicionado ainda.</div> : participants.map((p) => (
-              <div key={p.id} className="group flex items-center justify-between p-3 hover:bg-[var(--bg-tertiary)]">
-                <div className="flex flex-1 items-center gap-2">
-                  {!p.isValid && <AlertCircle className="h-4 w-4 text-error" />}
-                  <input className={["w-full bg-transparent text-body outline-none", !p.isValid && "text-error"].join(" ")} value={p.name} onInput={(e) => { const target = e.target as HTMLInputElement; target.value = formatName(target.value); updateParticipantName(p.id, target.value); }} />
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--text-tertiary)] opacity-0 hover:text-error group-hover:opacity-100" onClick={() => removeParticipant(p.id)}><Trash2 className="h-4 w-4" /></Button>
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {participants.length === 0 ? (
+              <div className="py-8 text-center text-small text-[var(--text-tertiary)]">
+                Nenhum nome adicionado ainda.
               </div>
-            ))}
+            ) : (
+              participants.map((p) => (
+                <div
+                  key={p.id}
+                  className="group flex items-center justify-between p-3 hover:bg-[var(--bg-tertiary)]"
+                >
+                  <div className="flex flex-1 items-center gap-2">
+                    {!p.isValid && <AlertCircle className="h-4 w-4 text-error" />}
+                    <input
+                      className={[
+                        "w-full bg-transparent text-body outline-none",
+                        !p.isValid && "text-error",
+                      ].join(" ")}
+                      value={p.name}
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.value = formatName(target.value);
+                        updateParticipantName(p.id, target.value);
+                      }}
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-[var(--text-tertiary)] opacity-0 hover:text-error group-hover:opacity-100"
+                    onClick={() => removeParticipant(p.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

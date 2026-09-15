@@ -1,6 +1,15 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, MessageCircle, Receipt, Ticket, User, Gift, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  MessageCircle,
+  Receipt,
+  Ticket,
+  User,
+  Gift,
+  Pencil,
+} from "lucide-react";
 import { getInitials, whatsappLink } from "@/lib/clients-data";
 import { formatCurrency, useSalesStats } from "@/lib/sales-queries";
 import { useCustomerDetail } from "@/lib/customers-queries";
@@ -27,7 +36,7 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
- <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+    <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-micro text-text-secondary">{label}</span>
         <Icon className="h-4 w-4 text-text-secondary" />
@@ -43,7 +52,11 @@ export function ClientDetailPage({ id }: { id: string }) {
   const [editPanelOpen, setEditPanelOpen] = React.useState(false);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-body text-text-secondary">Carregando dados do cliente...</div>;
+    return (
+      <div className="p-8 text-center text-body text-text-secondary">
+        Carregando dados do cliente...
+      </div>
+    );
   }
 
   if (!client) {
@@ -58,15 +71,23 @@ export function ClientDetailPage({ id }: { id: string }) {
   }
 
   const history = (client.sales || []).map((s: any) => {
-    const paidTickets = (s.tickets || []).filter((t: any) => t.status === "valido" || t.status === "utilizado");
-    
+    const paidTickets = (s.tickets || []).filter(
+      (t: any) => t.status === "valido" || t.status === "utilizado",
+    );
+
     return {
       id: s.id,
       eventName: s.events?.title || "Evento removido",
       lotName: s.ticket_batches?.name || "Lote removido",
       quantity: s.quantity,
       amount: Number(s.total_amount),
-      status: s.is_courtesy ? "Cortesia" : s.status === "pago" ? "Pago" : s.status === "cancelado" ? "Cancelado" : "Pendente",
+      status: s.is_courtesy
+        ? "Cortesia"
+        : s.status === "pago"
+          ? "Pago"
+          : s.status === "cancelado"
+            ? "Cancelado"
+            : "Pendente",
       createdAt: new Date(s.created_at).toLocaleDateString("pt-BR"),
     };
   });
@@ -80,9 +101,7 @@ export function ClientDetailPage({ id }: { id: string }) {
     .reduce((sum: number, s: any) => sum + Number(s.total_amount || 0), 0);
 
   const totalEvents = new Set(
-    (client.sales || [])
-      .filter((s: any) => s.status === "pago")
-      .map((s: any) => s.event_id)
+    (client.sales || []).filter((s: any) => s.status === "pago").map((s: any) => s.event_id),
   ).size;
 
   // Cálculo de idade aproximado
@@ -91,13 +110,16 @@ export function ClientDetailPage({ id }: { id: string }) {
     const birth = new Date(client.data_nascimento);
     const now = new Date();
     age = now.getFullYear() - birth.getFullYear();
-    if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {
+    if (
+      now.getMonth() < birth.getMonth() ||
+      (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())
+    ) {
       age--;
     }
   }
 
-  const lastPurchaseAt = history && history.length > 0 ? (history[0]?.createdAt || "—") : "—";
-  const lastEvent = history && history.length > 0 ? (history[0]?.eventName || "—") : "—";
+  const lastPurchaseAt = history && history.length > 0 ? history[0]?.createdAt || "—" : "—";
+  const lastEvent = history && history.length > 0 ? history[0]?.eventName || "—" : "—";
 
   return (
     <div className="space-y-6">
@@ -109,7 +131,7 @@ export function ClientDetailPage({ id }: { id: string }) {
         Clientes
       </Link>
 
- <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-[var(--radius-lg)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <span className="flex h-12 w-12 items-center justify-center rounded-[var(--radius-full)] bg-bg-tertiary text-body font-semibold text-text-primary">
             {getInitials(client.full_name)}
@@ -145,8 +167,7 @@ export function ClientDetailPage({ id }: { id: string }) {
             onClick={() => setCourtesyPanelOpen(true)}
             className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-4 py-2.5 text-body leading-none text-text-primary transition-colors hover:border-accent"
           >
-            <Gift className="h-4 w-4" />
-            + Nova Cortesia
+            <Gift className="h-4 w-4" />+ Nova Cortesia
           </button>
         </div>
       </div>
@@ -158,7 +179,7 @@ export function ClientDetailPage({ id }: { id: string }) {
         <StatCard label="Idade" value={age !== null ? `${age} anos` : "—"} icon={User} />
       </div>
 
- <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+      <div className="rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
         <h2 className="mb-4 text-heading-2 text-text-primary">Dados do cliente</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InfoRow label="Nome" value={client.full_name} />
@@ -166,14 +187,18 @@ export function ClientDetailPage({ id }: { id: string }) {
           <InfoRow label="E-mail" value={client.email ?? "—"} />
           <InfoRow
             label="Data de nascimento"
-            value={client.data_nascimento ? new Date(client.data_nascimento + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
+            value={
+              client.data_nascimento
+                ? new Date(client.data_nascimento + "T00:00:00").toLocaleDateString("pt-BR")
+                : "—"
+            }
           />
           <InfoRow label="Último evento" value={lastEvent} />
           <InfoRow label="Última compra" value={lastPurchaseAt} />
         </div>
       </div>
 
- <div className="overflow-x-auto rounded-[var(--radius-md)] bg-bg-secondary shadow-[var(--shadow-sm)]">
+      <div className="overflow-x-auto rounded-[var(--radius-md)] bg-bg-secondary shadow-[var(--shadow-sm)]">
         <div className="px-5 pt-5">
           <h2 className="text-heading-2 text-text-primary">Histórico de compras</h2>
         </div>
@@ -205,11 +230,15 @@ export function ClientDetailPage({ id }: { id: string }) {
                   {formatCurrency(sale.amount)}
                 </td>
                 <td className="px-5 py-3 text-small text-text-secondary">
-                  <StatusPill 
+                  <StatusPill
                     tone={
-                      sale.status === "Pago" ? "accent" : 
-                      sale.status === "Cortesia" ? "warning" :
-                      sale.status === "Cancelado" ? "error" : "warning"
+                      sale.status === "Pago"
+                        ? "accent"
+                        : sale.status === "Cortesia"
+                          ? "warning"
+                          : sale.status === "Cancelado"
+                            ? "error"
+                            : "warning"
                     }
                   >
                     {sale.status}

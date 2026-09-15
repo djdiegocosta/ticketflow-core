@@ -163,7 +163,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                 <FileText className="h-4 w-4" />
                 Gerar lista PDF
               </button>
-              
+
               {sale.status === "pago" && !sale.is_courtesy && (
                 <button
                   type="button"
@@ -179,7 +179,12 @@ export function SaleDetailPage({ id }: { id: string }) {
 
               <button
                 type="button"
-                disabled={sale.status === "cancelado" || sale.status === "reembolsado" || sale.is_courtesy || cancelling}
+                disabled={
+                  sale.status === "cancelado" ||
+                  sale.status === "reembolsado" ||
+                  sale.is_courtesy ||
+                  cancelling
+                }
                 onClick={() => setConfirmOpen(true)}
                 className="bg-error px-4 py-2 text-body font-semibold text-[#ffffff] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -223,7 +228,7 @@ export function SaleDetailPage({ id }: { id: string }) {
           {(sale.tickets || []).map((ticket: any) => (
             <div
               key={ticket.ticket_code}
- className="flex flex-col gap-3 bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 bg-bg-primary p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-body text-text-primary">{ticket.participant_name}</p>
@@ -264,7 +269,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
- <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Cancelar venda?</h3>
             <p className="mt-2 text-body text-text-secondary">
               Esta ação invalida os {(sale.tickets || []).length} ingresso(s) desta venda.
@@ -292,7 +297,7 @@ export function SaleDetailPage({ id }: { id: string }) {
 
       {qrTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
- <div className="w-full max-w-[360px] bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[360px] bg-bg-primary p-6 text-center shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between">
               <h3 className="text-heading-2 text-text-primary">QR Code</h3>
               <button
@@ -317,11 +322,13 @@ export function SaleDetailPage({ id }: { id: string }) {
       )}
       {refundOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)] p-6">
- <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
+          <div className="w-full max-w-[420px] bg-bg-primary p-6 shadow-[var(--shadow-lg)]">
             <h3 className="text-heading-2 text-text-primary">Reembolsar venda</h3>
             <div className="mt-4 space-y-4">
               <div>
-                <label className="text-small font-medium text-text-secondary">Valor a reembolsar (R$)</label>
+                <label className="text-small font-medium text-text-secondary">
+                  Valor a reembolsar (R$)
+                </label>
                 <input
                   type="number"
                   step="0.01"
@@ -356,7 +363,7 @@ export function SaleDetailPage({ id }: { id: string }) {
                     const { error } = await supabase.rpc("refund_sale", {
                       _sale_id: id,
                       _refund_amount: Number(refundAmount),
-                      _reason: refundReason
+                      _reason: refundReason,
                     });
                     if (error) throw error;
                     toast.success("Venda reembolsada com sucesso");

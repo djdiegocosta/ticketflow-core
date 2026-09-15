@@ -167,6 +167,11 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Pontos 4-7 do relatório (responsivo, QR Code duplicado, gráficos, formatação de código) ficaram pendentes, sem ação ainda.
 - Arquivos: `src/styles.css`, e nos 14 arquivos de página/componente do admin listados acima.
 
+### Pontos 6 e 7 da auditoria de design (gráficos sem reforço visual + formatação de código)
+- **Ponto 6 (gráficos):** os 2 gráficos do Dashboard ("Vendas diárias" e "Picos de venda por horário") são de série única — não há confusão de cores entre séries diferentes, mas os valores só apareciam ao passar o mouse. Adicionado rótulo de valor direto em cima de cada barra do gráfico de picos, e um texto mais claro no tooltip do gráfico de vendas diárias (antes mostrava só o rótulo técnico "value"). "Sexo predominante" já era texto puro, sem gráfico — não precisou de mudança.
+- **Ponto 7 (formatação):** boa parte do código do admin estava com componentes JSX inteiros numa única linha (o pior caso, `SalesListPage.tsx`, tinha uma tela inteira em 1 linha só). Rodada formatação automática (prettier, via `eslint --fix`) em todo `src/pages/admin/` e `src/components/admin/` — 811 dos 905 problemas de formatação corrigidos. **Conferido manualmente:** comparando o conteúdo sem espaços em branco de antes e depois, o resultado é idêntico — só espaçamento, vírgulas finais e quebras de linha mudaram, nenhuma string, lógica ou visual foi alterada. Ficaram só 91 avisos de tipagem (`any`), que não são formatação e não fazem parte deste ponto.
+- Arquivos: `src/pages/AdminDashboard.tsx` (ponto 6) e 28 arquivos de `src/pages/admin/` e `src/components/admin/` (ponto 7, só formatação).
+
 ---
 
 ## Pendências conhecidas

@@ -78,18 +78,21 @@ export function CreateClientPanel({
   const handleSubmit = () => {
     if (!validate()) return;
 
-    createMutation.mutate({
-      full_name: formatName(name),
-      whatsapp: onlyDigits(whatsapp),
-      email: email || "",
-      cidade: city || "",
-    }, {
-      onSuccess: () => {
-        onSave();
-        reset();
-        onClose();
+    createMutation.mutate(
+      {
+        full_name: formatName(name),
+        whatsapp: onlyDigits(whatsapp),
+        email: email || "",
+        cidade: city || "",
       },
-    });
+      {
+        onSuccess: () => {
+          onSave();
+          reset();
+          onClose();
+        },
+      },
+    );
   };
 
   return (
@@ -100,10 +103,7 @@ export function CreateClientPanel({
       footer={
         <>
           <PanelCancelButton onClick={handleClose} />
-          <PanelPrimaryButton
-            onClick={handleSubmit}
-            disabled={createMutation.isPending}
-          >
+          <PanelPrimaryButton onClick={handleSubmit} disabled={createMutation.isPending}>
             {createMutation.isPending ? "Salvando..." : "Salvar cliente"}
           </PanelPrimaryButton>
         </>

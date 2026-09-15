@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Copy, DollarSign, Link2, Loader2, MoreHorizontal, Pencil, Power, Trash2 } from "lucide-react";
+import {
+  Copy,
+  DollarSign,
+  Link2,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Power,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ListPageHeader } from "@/components/admin/PrimaryActionButton";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
@@ -177,9 +186,7 @@ export function SalesLinksPage() {
       ) : (
         <DataTableShell>
           <DataTable className="min-w-[820px]">
-            <DataTableHeadRow
-              columns={["Canal", "Tipo", "Vendas", "Receita", "Status", "Ações"]}
-            />
+            <DataTableHeadRow columns={["Canal", "Tipo", "Vendas", "Receita", "Status", "Ações"]} />
             <tbody>
               <DataTableRow>
                 <DataTableCell variant="primary">

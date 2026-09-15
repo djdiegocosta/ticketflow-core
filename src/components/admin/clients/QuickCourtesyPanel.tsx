@@ -98,7 +98,7 @@ export function QuickCourtesyPanel({
       toast.success("Cortesia emitida com sucesso!");
       onOpenChange(false);
       onSuccess?.();
-      
+
       // Reset local state
       setSelectedEvent("");
       setSelectedBatch("");
@@ -157,7 +157,8 @@ export function QuickCourtesyPanel({
             <label className={panelLabelClass}>Lote de Cortesia</label>
             {hasNoCourtesyBatches ? (
               <p className="text-small text-warning bg-warning-muted p-3 rounded-[var(--radius-sm)] border border-warning/20">
-                Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia na edição do evento primeiro.
+                Este evento ainda não tem um lote de Cortesias. Crie um lote marcado como Cortesia
+                na edição do evento primeiro.
               </p>
             ) : (
               <Select value={selectedBatch} onValueChange={setSelectedBatch}>

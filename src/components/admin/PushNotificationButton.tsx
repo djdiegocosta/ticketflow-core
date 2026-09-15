@@ -22,10 +22,12 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 function isPushSupported() {
-  return typeof window !== "undefined"
-    && "Notification" in window
-    && "serviceWorker" in navigator
-    && "PushManager" in window;
+  return (
+    typeof window !== "undefined" &&
+    "Notification" in window &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window
+  );
 }
 
 export function PushNotificationButton() {
@@ -36,10 +38,12 @@ export function PushNotificationButton() {
   useEffect(() => {
     if (!isPushSupported()) return;
     setSupported(true);
-    navigator.serviceWorker.ready.then(async (registration) => {
-      const subscription = await registration.pushManager.getSubscription();
-      setEnabled(Boolean(subscription) && Notification.permission === "granted");
-    }).catch(() => undefined);
+    navigator.serviceWorker.ready
+      .then(async (registration) => {
+        const subscription = await registration.pushManager.getSubscription();
+        setEnabled(Boolean(subscription) && Notification.permission === "granted");
+      })
+      .catch(() => undefined);
   }, []);
 
   const enable = async () => {
@@ -50,9 +54,8 @@ export function PushNotificationButton() {
 
     setBusy(true);
     try {
-      const permission = Notification.permission === "granted"
-        ? "granted"
-        : await Notification.requestPermission();
+      const permission =
+        Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
 
       if (permission !== "granted") {
         toast.error("Permissão para notificações não concedida.");
@@ -62,17 +65,25 @@ export function PushNotificationButton() {
       const publicKey = await getVapidPublicKey();
       const registration = await navigator.serviceWorker.ready;
       const existing = await registration.pushManager.getSubscription();
-      const subscription = existing ?? await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
+      const subscription =
+        existing ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        }));
 
       await savePushSubscription({
         data: {
           endpoint: subscription.endpoint,
           keys: {
-            p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
-            auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+            p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")!)))
+              .replace(/\+/g, "-")
+              .replace(/\//g, "_")
+              .replace(/=+$/, ""),
+            auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!)))
+              .replace(/\+/g, "-")
+              .replace(/\//g, "_")
+              .replace(/=+$/, ""),
           },
           userAgent: navigator.userAgent,
         },

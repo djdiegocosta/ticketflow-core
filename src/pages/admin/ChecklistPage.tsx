@@ -61,9 +61,9 @@ export function ChecklistPage() {
     }
   };
 
-  const activeTasks = tasks.filter(t => !t.is_completed);
-  const completedTasks = tasks.filter(t => t.is_completed);
-  
+  const activeTasks = tasks.filter((t) => !t.is_completed);
+  const completedTasks = tasks.filter((t) => t.is_completed);
+
   const completedCount = completedTasks.length;
   const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
@@ -78,13 +78,13 @@ export function ChecklistPage() {
           event_id: selectedEventId,
           organization_id: organizationId,
           text: newTaskText.trim(),
-          is_completed: false
+          is_completed: false,
         })
         .select()
         .single();
 
       if (error) throw error;
-      
+
       setTasks([...tasks, data]);
       setNewTaskText("");
       toast.success("Tarefa adicionada");
@@ -98,15 +98,15 @@ export function ChecklistPage() {
     try {
       const { error } = await supabase
         .from("event_checklist_items")
-        .update({ 
+        .update({
           is_completed: !task.is_completed,
-          completed_at: !task.is_completed ? new Date().toISOString() : null
+          completed_at: !task.is_completed ? new Date().toISOString() : null,
         })
         .eq("id", task.id);
 
       if (error) throw error;
-      
-      setTasks(tasks.map(t => t.id === task.id ? { ...t, is_completed: !t.is_completed } : t));
+
+      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, is_completed: !t.is_completed } : t)));
     } catch (error) {
       toast.error("Erro ao atualizar tarefa");
     }
@@ -114,14 +114,11 @@ export function ChecklistPage() {
 
   const removeTask = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("event_checklist_items")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("event_checklist_items").delete().eq("id", id);
 
       if (error) throw error;
-      
-      setTasks(tasks.filter(t => t.id !== id));
+
+      setTasks(tasks.filter((t) => t.id !== id));
       toast.info("Tarefa removida");
     } catch (error) {
       toast.error("Erro ao remover tarefa");
@@ -130,8 +127,8 @@ export function ChecklistPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <ListPageHeader 
-        title="Checklist do Evento" 
+      <ListPageHeader
+        title="Checklist do Evento"
         action={
           <div className="flex gap-3">
             {events.length > 1 && (
@@ -141,8 +138,10 @@ export function ChecklistPage() {
                 value={selectedEventId || ""}
                 onChange={(e) => setSelectedEventId(e.target.value)}
               >
-                {events.map(ev => (
-                  <option key={ev.id} value={ev.id}>{ev.title}</option>
+                {events.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.title}
+                  </option>
                 ))}
               </select>
             )}
@@ -154,22 +153,24 @@ export function ChecklistPage() {
       />
 
       <MiniMetricGrid>
-        <MiniMetricCard 
-          title="Total de Tarefas" 
-          value={tasks.length} 
+        <MiniMetricCard
+          title="Total de Tarefas"
+          value={tasks.length}
           icon={ClipboardList}
           iconColor="text-accent"
         />
-        <MiniMetricCard 
-          title="Concluídas" 
+        <MiniMetricCard
+          title="Concluídas"
           headerRight={<CheckCircle className="w-4 h-4 text-success" />}
           gaugeValue={progress}
         >
-          <div className="text-heading-1 text-text-primary">{completedCount} de {tasks.length}</div>
+          <div className="text-heading-1 text-text-primary">
+            {completedCount} de {tasks.length}
+          </div>
           <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-bg-tertiary">
-            <div 
-              className="h-full bg-success transition-all duration-500" 
-              style={{ width: `${progress}%` }} 
+            <div
+              className="h-full bg-success transition-all duration-500"
+              style={{ width: `${progress}%` }}
             />
           </div>
         </MiniMetricCard>
@@ -182,14 +183,14 @@ export function ChecklistPage() {
       ) : (
         <Tabs defaultValue="tarefas" className="w-full">
           <TabsList className="w-full justify-start rounded-none border-b border-border-subtle bg-transparent p-0 h-auto mb-6">
-            <TabsTrigger 
-              value="tarefas" 
+            <TabsTrigger
+              value="tarefas"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-6 py-3 text-heading-3 text-text-secondary data-[state=active]:text-text-primary transition-all"
             >
               Tarefas ({activeTasks.length})
             </TabsTrigger>
-            <TabsTrigger 
-              value="concluidas" 
+            <TabsTrigger
+              value="concluidas"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent px-6 py-3 text-heading-3 text-text-secondary data-[state=active]:text-text-primary transition-all"
             >
               Concluídas ({completedTasks.length})
@@ -197,29 +198,29 @@ export function ChecklistPage() {
           </TabsList>
 
           <TabsContent value="tarefas" className="space-y-6 outline-none">
- <div className="bg-bg-secondary p-6 space-y-4">
+            <div className="bg-bg-secondary p-6 space-y-4">
               {activeTasks.length === 0 ? (
                 <div className="text-center py-12 text-text-secondary">
                   Nenhuma tarefa pendente.
                 </div>
               ) : (
                 activeTasks.map((task) => (
-                  <div 
-                    key={task.id} 
+                  <div
+                    key={task.id}
                     className="flex items-center justify-between gap-4 p-4 border border-border-subtle hover:border-accent transition-colors group"
                   >
                     <span className="text-heading-3 text-text-primary truncate flex-1">
                       {task.text}
                     </span>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => toggleTask(task)}
                         className="p-2 text-text-secondary hover:text-success transition-colors"
                         title="Concluir"
                       >
                         <Check className="w-5 h-5" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => removeTask(task.id)}
                         className="p-2 text-text-secondary hover:text-error transition-colors"
                         title="Remover"
@@ -234,29 +235,29 @@ export function ChecklistPage() {
           </TabsContent>
 
           <TabsContent value="concluidas" className="outline-none">
- <div className="bg-bg-secondary p-6 space-y-4">
+            <div className="bg-bg-secondary p-6 space-y-4">
               {completedTasks.length === 0 ? (
                 <div className="text-center py-12 text-text-secondary">
                   Nenhuma tarefa concluída ainda.
                 </div>
               ) : (
                 completedTasks.map((task) => (
-                  <div 
-                    key={task.id} 
+                  <div
+                    key={task.id}
                     className="flex items-center justify-between gap-4 p-4 border border-border-subtle hover:border-accent transition-colors group"
                   >
                     <span className="text-heading-3 text-text-disabled truncate flex-1">
                       {task.text}
                     </span>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => toggleTask(task)}
                         className="p-2 text-text-secondary hover:text-accent transition-colors"
                         title="Restaurar"
                       >
                         <RotateCcw className="w-5 h-5" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => removeTask(task.id)}
                         className="p-2 text-text-secondary hover:text-error transition-colors"
                         title="Remover"
@@ -282,8 +283,10 @@ export function ChecklistPage() {
       >
         <form onSubmit={handleAddTask} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-small font-medium text-text-secondary">Descrição da tarefa</label>
-            <Input 
+            <label className="text-small font-medium text-text-secondary">
+              Descrição da tarefa
+            </label>
+            <Input
               value={newTaskText}
               onChange={(e) => setNewTaskText(e.target.value)}
               placeholder="Ex: Checar iluminação do palco"
@@ -297,7 +300,7 @@ export function ChecklistPage() {
             <button
               type="button"
               onClick={() => setIsPanelOpen(false)}
- className="flex-1 rounded-[var(--radius-sm)] px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
+              className="flex-1 rounded-[var(--radius-sm)] px-4 py-2.5 text-body font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
             >
               Cancelar
             </button>

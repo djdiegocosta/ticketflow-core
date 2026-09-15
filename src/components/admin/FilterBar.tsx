@@ -8,10 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Search,
-  FileText as FileTextIcon,
-} from "lucide-react";
+import { Search, FileText as FileTextIcon } from "lucide-react";
 
 // Estilo consistente para selects e inputs de filtro no admin
 import { cn } from "@/lib/utils";
@@ -27,14 +24,8 @@ export interface FilterBarProps {
 export function FilterBar({ children, actions }: FilterBarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="flex flex-1 items-center gap-2 min-w-0">
-        {children}
-      </div>
-      {actions && (
-        <div className="flex items-center gap-2 shrink-0">
-          {actions}
-        </div>
-      )}
+      <div className="flex flex-1 items-center gap-2 min-w-0">{children}</div>
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>
   );
 }

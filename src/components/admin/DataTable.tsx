@@ -17,7 +17,7 @@ export function DataTableShell({
   return (
     <div
       className={cn(
-"w-full overflow-x-auto bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
+        "w-full overflow-x-auto bg-bg-secondary shadow-[var(--shadow-sm)] rounded-[var(--radius-md)]",
         className,
       )}
     >

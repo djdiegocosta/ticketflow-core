@@ -49,29 +49,38 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
       return;
     }
 
-    inviteMutation.mutate({ email, role }, {
-      onSuccess: () => {
-        onInvite();
-        resetForm();
-      }
-    });
+    inviteMutation.mutate(
+      { email, role },
+      {
+        onSuccess: () => {
+          onInvite();
+          resetForm();
+        },
+      },
+    );
   };
 
-  const roleOptions: { value: AppRole; label: string; icon: typeof Shield; description: string }[] = [
-    { value: "admin", label: "Admin", icon: Shield, description: "Acesso completo a todas as áreas do sistema." },
-    {
-      value: "colaborador",
-      label: "Colaborador",
-      icon: Users,
-      description: "Acesso a Vendas (somente leitura) e Check-in.",
-    },
-    {
-      value: "operador_checkin",
-      label: "Operador de Check-in",
-      icon: ShieldCheck,
-      description: "Acesso exclusivo ao Check-in — nenhuma outra área do sistema.",
-    },
-  ];
+  const roleOptions: { value: AppRole; label: string; icon: typeof Shield; description: string }[] =
+    [
+      {
+        value: "admin",
+        label: "Admin",
+        icon: Shield,
+        description: "Acesso completo a todas as áreas do sistema.",
+      },
+      {
+        value: "colaborador",
+        label: "Colaborador",
+        icon: Users,
+        description: "Acesso a Vendas (somente leitura) e Check-in.",
+      },
+      {
+        value: "operador_checkin",
+        label: "Operador de Check-in",
+        icon: ShieldCheck,
+        description: "Acesso exclusivo ao Check-in — nenhuma outra área do sistema.",
+      },
+    ];
 
   return (
     <>
@@ -82,10 +91,7 @@ export function CreateUserPanel({ open, onClose, onInvite }: CreateUserPanelProp
         footer={
           <>
             <PanelCancelButton onClick={handleClose} />
-            <PanelPrimaryButton 
-              onClick={handleSubmit}
-              disabled={inviteMutation.isPending}
-            >
+            <PanelPrimaryButton onClick={handleSubmit} disabled={inviteMutation.isPending}>
               {inviteMutation.isPending ? "Enviando..." : "Enviar convite"}
             </PanelPrimaryButton>
           </>

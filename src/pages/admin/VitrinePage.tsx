@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { ListPageHeader, PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
-import { 
-  DataTable, 
-  DataTableShell, 
-  DataTableHeadRow, 
-  DataTableRow, 
-  DataTableCell 
+import {
+  DataTable,
+  DataTableShell,
+  DataTableHeadRow,
+  DataTableRow,
+  DataTableCell,
 } from "@/components/admin/DataTable";
 
-import { 
-  useBanners, 
-  useCreateBanner, 
-  useUpdateBanner, 
-  useDeleteBanner 
+import {
+  useBanners,
+  useCreateBanner,
+  useUpdateBanner,
+  useDeleteBanner,
 } from "@/lib/settings-queries";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit2, Image as ImageIcon, ExternalLink } from "lucide-react";
@@ -48,7 +48,7 @@ export default function VitrinePage() {
     text_content: "",
     image_url: "",
     link_url: "",
-    is_active: false
+    is_active: false,
   });
 
   const handleOpenPanel = (banner?: any) => {
@@ -59,7 +59,7 @@ export default function VitrinePage() {
         text_content: banner.text_content || "",
         image_url: banner.image_url || "",
         link_url: banner.link_url || "",
-        is_active: banner.is_active
+        is_active: banner.is_active,
       });
     } else {
       setEditingBanner(null);
@@ -68,7 +68,7 @@ export default function VitrinePage() {
         text_content: "",
         image_url: "",
         link_url: "",
-        is_active: false
+        is_active: false,
       });
     }
     setIsPanelOpen(true);
@@ -85,7 +85,7 @@ export default function VitrinePage() {
       if (editingBanner) {
         await updateBanner.mutateAsync({
           id: editingBanner.id,
-          ...formData
+          ...formData,
         });
       } else {
         await createBanner.mutateAsync(formData);
@@ -115,7 +115,9 @@ export default function VitrinePage() {
         const tolerance = 0.1;
 
         if (Math.abs(aspectRatio - targetRatio) > tolerance) {
-          toast.warning("A imagem não está na proporção 4:5 sugerida. Recomendamos 1080x1350px para melhor exibição.");
+          toast.warning(
+            "A imagem não está na proporção 4:5 sugerida. Recomendamos 1080x1350px para melhor exibição.",
+          );
         }
         resolve(null);
       };
@@ -123,21 +125,21 @@ export default function VitrinePage() {
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${organization.id}/banners/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('organization-logos')
+        .from("organization-logos")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('organization-logos')
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("organization-logos").getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      setFormData((prev) => ({ ...prev, image_url: publicUrl }));
       toast.success("Imagem enviada com sucesso");
     } catch (error: any) {
       toast.error(error.message || "Erro ao enviar imagem");
@@ -150,7 +152,7 @@ export default function VitrinePage() {
     try {
       await updateBanner.mutateAsync({
         id: banner.id,
-        is_active: !banner.is_active
+        is_active: !banner.is_active,
       });
     } catch (error) {
       console.error(error);
@@ -163,15 +165,16 @@ export default function VitrinePage() {
       accessorKey: "is_active",
       cell: (row: any) => (
         <div className="flex items-center gap-2">
-          <Switch 
-            checked={row.is_active} 
-            onCheckedChange={() => handleToggleActive(row)}
-          />
-          <span className={row.is_active ? "text-[var(--accent-text)] font-medium" : "text-muted-foreground"}>
-                      {row.is_active ? "Ativo" : "Inativo"}
-                    </span>
+          <Switch checked={row.is_active} onCheckedChange={() => handleToggleActive(row)} />
+          <span
+            className={
+              row.is_active ? "text-[var(--accent-text)] font-medium" : "text-muted-foreground"
+            }
+          >
+            {row.is_active ? "Ativo" : "Inativo"}
+          </span>
         </div>
-      )
+      ),
     },
     {
       header: "Banner",
@@ -188,13 +191,18 @@ export default function VitrinePage() {
           <div>
             <p className="font-medium">{row.title}</p>
             {row.link_url && (
-              <a href={row.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
+              <a
+                href={row.link_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-accent hover:underline flex items-center gap-1"
+              >
                 Link externo <ExternalLink size={10} />
               </a>
             )}
           </div>
         </div>
-      )
+      ),
     },
     {
       header: "Conteúdo",
@@ -203,7 +211,7 @@ export default function VitrinePage() {
         <p className="max-w-[300px] truncate text-sm text-muted-foreground">
           {row.text_content || "-"}
         </p>
-      )
+      ),
     },
     {
       header: "Ações",
@@ -213,9 +221,9 @@ export default function VitrinePage() {
           <Button variant="ghost" size="icon" onClick={() => handleOpenPanel(row)}>
             <Edit2 size={16} />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="text-destructive hover:text-destructive"
             onClick={() => {
               if (confirm("Tem certeza que deseja excluir este banner?")) {
@@ -226,34 +234,38 @@ export default function VitrinePage() {
             <Trash2 size={16} />
           </Button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="flex flex-col gap-6">
       <ListPageHeader
         title="Vitrine de Banners"
-        action={<PrimaryActionButton onClick={() => handleOpenPanel()}>Novo Banner</PrimaryActionButton>}
+        action={
+          <PrimaryActionButton onClick={() => handleOpenPanel()}>Novo Banner</PrimaryActionButton>
+        }
       />
-
-
 
       <DataTableShell>
         <DataTable>
-          <DataTableHeadRow 
-            columns={["Status", "Banner", "Conteúdo", "Ações"]} 
-          />
+          <DataTableHeadRow columns={["Status", "Banner", "Conteúdo", "Ações"]} />
           <tbody>
             {banners?.map((row: any) => (
               <DataTableRow key={row.id}>
                 <DataTableCell>
                   <div className="flex items-center gap-2">
-                    <Switch 
-                      checked={row.is_active} 
+                    <Switch
+                      checked={row.is_active}
                       onCheckedChange={() => handleToggleActive(row)}
                     />
-                    <span className={row.is_active ? "text-[var(--accent-text)] font-medium" : "text-muted-foreground"}>
+                    <span
+                      className={
+                        row.is_active
+                          ? "text-[var(--accent-text)] font-medium"
+                          : "text-muted-foreground"
+                      }
+                    >
                       {row.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
@@ -262,7 +274,11 @@ export default function VitrinePage() {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-16 bg-muted flex items-center justify-center border overflow-hidden">
                       {row.image_url ? (
-                        <img src={row.image_url} alt={row.title || ""} className="w-full h-full object-cover" />
+                        <img
+                          src={row.image_url}
+                          alt={row.title || ""}
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <ImageIcon className="w-6 h-6 text-muted-foreground" />
                       )}
@@ -270,7 +286,12 @@ export default function VitrinePage() {
                     <div>
                       <p className="font-medium">{row.title}</p>
                       {row.link_url && (
-                        <a href={row.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
+                        <a
+                          href={row.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-accent hover:underline flex items-center gap-1"
+                        >
                           Link externo <ExternalLink size={10} />
                         </a>
                       )}
@@ -287,9 +308,9 @@ export default function VitrinePage() {
                     <Button variant="ghost" size="icon" onClick={() => handleOpenPanel(row)}>
                       <Edit2 size={16} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => {
                         if (confirm("Tem certeza que deseja excluir este banner?")) {
@@ -321,7 +342,6 @@ export default function VitrinePage() {
         </DataTable>
       </DataTableShell>
 
-
       <SidePanel
         open={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
@@ -337,35 +357,45 @@ export default function VitrinePage() {
       >
         <div className="flex flex-col gap-6">
           <div className="space-y-2">
-            <Label htmlFor="title" className={panelLabelClass}>Título do Banner</Label>
+            <Label htmlFor="title" className={panelLabelClass}>
+              Título do Banner
+            </Label>
             <Input
               id="title"
               placeholder="Ex: Promoção de Verão"
               value={formData.title}
-              onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               required
               className={panelInputClass}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="text_content" className={panelLabelClass}>Texto Auxiliar (Opcional)</Label>
+            <Label htmlFor="text_content" className={panelLabelClass}>
+              Texto Auxiliar (Opcional)
+            </Label>
             <Textarea
               id="text_content"
               placeholder="Descreva brevemente a promoção ou aviso"
               value={formData.text_content}
-              onChange={e => setFormData(prev => ({ ...prev, text_content: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, text_content: e.target.value }))}
               rows={3}
               className={panelInputClass}
             />
           </div>
 
           <div className="space-y-2">
-            <Label className={panelLabelClass}>Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)</Label>
+            <Label className={panelLabelClass}>
+              Imagem do Banner (Proporção 4:5 - 1080x1350px recomendada)
+            </Label>
             <div className="flex items-start gap-4">
               <div className="w-24 h-30 bg-muted border flex items-center justify-center overflow-hidden">
                 {formData.image_url ? (
-                  <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={formData.image_url}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <ImageIcon className="w-8 h-8 text-muted-foreground" />
                 )}
@@ -386,12 +416,14 @@ export default function VitrinePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="link_url" className={panelLabelClass}>Link de Destino (Opcional)</Label>
+            <Label htmlFor="link_url" className={panelLabelClass}>
+              Link de Destino (Opcional)
+            </Label>
             <Input
               id="link_url"
               placeholder="https://exemplo.com"
               value={formData.link_url}
-              onChange={e => setFormData(prev => ({ ...prev, link_url: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, link_url: e.target.value }))}
               className={panelInputClass}
             />
           </div>
@@ -400,9 +432,13 @@ export default function VitrinePage() {
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={checked => setFormData(prev => ({ ...prev, is_active: checked }))}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({ ...prev, is_active: checked }))
+              }
             />
-            <Label htmlFor="is_active" className="cursor-pointer">Ativar este banner imediatamente</Label>
+            <Label htmlFor="is_active" className="cursor-pointer">
+              Ativar este banner imediatamente
+            </Label>
           </div>
         </div>
       </SidePanel>

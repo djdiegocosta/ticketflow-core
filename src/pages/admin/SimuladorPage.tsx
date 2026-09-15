@@ -50,7 +50,6 @@ const EVENTS: any[] = [
 ];
 import { formatName } from "@/lib/form-format";
 
-
 /* -------------------------------------------------------------------------- */
 /* Primitivas locais                                                          */
 /* -------------------------------------------------------------------------- */
@@ -72,20 +71,12 @@ function StepSection({
         </span>
         <h2 className="text-heading-2 text-text-primary">{title}</h2>
       </div>
- <div className="bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
-        {children}
-      </div>
+      <div className="bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">{children}</div>
     </section>
   );
 }
 
-function BlockSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function BlockSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
       <h2 className="text-heading-2 text-text-primary">{title}</h2>
@@ -334,8 +325,7 @@ export function SimuladorPage() {
   const breakEvenPct = capacity > 0 ? Math.min(100, (breakEvenTickets / capacity) * 100) : 0;
   const breakEvenWithBar =
     avgTicket > 0 ? Math.ceil(Math.max(0, fixedTotal - barProfit) / avgTicket) : 0;
-  const breakEvenWithBarPct =
-    capacity > 0 ? Math.min(100, (breakEvenWithBar / capacity) * 100) : 0;
+  const breakEvenWithBarPct = capacity > 0 ? Math.min(100, (breakEvenWithBar / capacity) * 100) : 0;
   const occupancyPct = capacity > 0 ? Math.min(100, (totalSold / capacity) * 100) : 0;
   const isProfit = result >= 0;
 
@@ -362,7 +352,7 @@ export function SimuladorPage() {
           courtesies: barCourtesies,
           avgSpend: barAvgSpend,
           productsCost: barProductsCost,
-        }
+        },
       };
 
       const result_summary = {
@@ -370,14 +360,14 @@ export function SimuladorPage() {
         totalCosts,
         result,
         margin,
-        breakEvenPct
+        breakEvenPct,
       };
 
-      const { error } = await supabase.from('simulations').insert({
+      const { error } = await supabase.from("simulations").insert({
         organization_id: organizationId,
         event_name: eventName,
         input_data,
-        result_summary
+        result_summary,
       });
 
       if (error) throw error;
@@ -394,10 +384,10 @@ export function SimuladorPage() {
     if (!organizationId) return;
     try {
       const { data, error } = await supabase
-        .from('simulations')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .order('created_at', { ascending: false });
+        .from("simulations")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setHistory(data || []);
@@ -430,13 +420,13 @@ export function SimuladorPage() {
 
   return (
     <div className="animate-in space-y-10 fade-in slide-in-from-bottom-4 duration-500">
-      <ListPageHeader 
-        title="Simulador de Evento" 
+      <ListPageHeader
+        title="Simulador de Evento"
         action={
           <div className="flex gap-3">
             <button
               onClick={fetchHistory}
- className="flex items-center gap-2 bg-bg-secondary px-4 py-2.5 text-body font-medium text-text-primary transition-colors hover:bg-bg-tertiary"
+              className="flex items-center gap-2 bg-bg-secondary px-4 py-2.5 text-body font-medium text-text-primary transition-colors hover:bg-bg-tertiary"
             >
               <History className="h-4 w-4" />
               Histórico
@@ -518,9 +508,7 @@ export function SimuladorPage() {
                       min={0}
                       value={lot.available === 0 ? "" : lot.available}
                       placeholder="0"
-                      onChange={(e) =>
-                        updateLot(lot.id, { available: toNumber(e.target.value) })
-                      }
+                      onChange={(e) => updateLot(lot.id, { available: toNumber(e.target.value) })}
                       className={cn(cellInputClass, "w-[110px]")}
                     />
                   </DataTableCell>
@@ -604,7 +592,7 @@ export function SimuladorPage() {
       <StepSection step={3} title="Bar do evento">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-body text-text-primary">Este evento terá bar próprio?</span>
- <div className="flex">
+          <div className="flex">
             {[
               { label: "Sim", val: true },
               { label: "Não", val: false },
@@ -655,7 +643,7 @@ export function SimuladorPage() {
               />
             </div>
 
- <div className="mt-5 bg-bg-tertiary p-4">
+            <div className="mt-5 bg-bg-tertiary p-4">
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 <div>
                   <span className="text-small text-text-secondary">Público presente (bar)</span>
@@ -810,11 +798,7 @@ export function SimuladorPage() {
               Equipe operacional
             </span>
             <div className="grid grid-cols-2 gap-4">
-              <NumberField
-                label="Quantidade de pessoas"
-                value={staffQty}
-                onChange={setStaffQty}
-              />
+              <NumberField label="Quantidade de pessoas" value={staffQty} onChange={setStaffQty} />
               <NumberField
                 label="Custo por pessoa"
                 prefix="R$"
@@ -854,7 +838,7 @@ export function SimuladorPage() {
 
       {/* Resultado financeiro */}
       <BlockSection title="Resultado Financeiro">
- <div className="bg-[#111111] p-6 shadow-[var(--shadow-sm)]">
+        <div className="bg-[#111111] p-6 shadow-[var(--shadow-sm)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="text-small text-[#9a9a9a]">
@@ -891,7 +875,7 @@ export function SimuladorPage() {
           />
         </MiniMetricGrid>
 
- <div className="bg-bg-secondary shadow-[var(--shadow-sm)]">
+        <div className="bg-bg-secondary shadow-[var(--shadow-sm)]">
           {[
             { label: "Receita de ingressos", value: ticketRevenue },
             ...(hasBar ? [{ label: "(+) Receita bruta do bar", value: barRevenue }] : []),
@@ -934,8 +918,7 @@ export function SimuladorPage() {
               <div
                 className="mt-0.5 text-small"
                 style={{
-                  color:
-                    barRealMargin < barExpectedMargin ? "var(--error)" : "var(--accent-text)",
+                  color: barRealMargin < barExpectedMargin ? "var(--error)" : "var(--accent-text)",
                 }}
               >
                 Margem real calculada: {barRealMargin.toFixed(1)}%
@@ -947,8 +930,10 @@ export function SimuladorPage() {
 
       {/* Ponto de equilíbrio */}
       <BlockSection title="Ponto de Equilíbrio">
- <div className="space-y-6 bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
-          <div className={cn("grid grid-cols-1 gap-6", hasBar ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+        <div className="space-y-6 bg-bg-secondary p-5 shadow-[var(--shadow-sm)]">
+          <div
+            className={cn("grid grid-cols-1 gap-6", hasBar ? "sm:grid-cols-3" : "sm:grid-cols-2")}
+          >
             <div>
               <span className="text-small text-text-secondary">
                 Ingressos mínimos — sem considerar o bar
@@ -1017,10 +1002,7 @@ export function SimuladorPage() {
             return (
               <div
                 key={s.label}
-                className={cn(
-" border-t-2 bg-bg-secondary p-4 shadow-[var(--shadow-sm)]",
-                  s.tone,
-                )}
+                className={cn(" border-t-2 bg-bg-secondary p-4 shadow-[var(--shadow-sm)]", s.tone)}
               >
                 <div className="mb-1.5 flex items-start justify-between gap-2">
                   <span className="text-small text-text-secondary">{s.label}</span>
@@ -1037,8 +1019,8 @@ export function SimuladorPage() {
           })}
         </div>
         <p className="text-micro text-text-disabled">
-          Os cenários consideram apenas a receita de ingressos — a receita do bar depende do
-          público presente estimado na etapa Bar do Evento.
+          Os cenários consideram apenas a receita de ingressos — a receita do bar depende do público
+          presente estimado na etapa Bar do Evento.
         </p>
       </BlockSection>
 
@@ -1071,7 +1053,10 @@ export function SimuladorPage() {
                 </div>
                 <div className="flex justify-between text-small">
                   <span className="text-text-secondary">
-                    Resultado: <span className={sim.result_summary.result >= 0 ? "text-success" : "text-error"}>
+                    Resultado:{" "}
+                    <span
+                      className={sim.result_summary.result >= 0 ? "text-success" : "text-error"}
+                    >
                       {formatCurrency(sim.result_summary.result)}
                     </span>
                   </span>

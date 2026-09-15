@@ -162,7 +162,9 @@ export function EditEventPage() {
   const handleExpressTurn = async () => {
     const now = new Date();
     const ordered = [...batches].sort(
-      (a, b) => new Date(a.starts_at ?? a.created_at).getTime() - new Date(b.starts_at ?? b.created_at).getTime(),
+      (a, b) =>
+        new Date(a.starts_at ?? a.created_at).getTime() -
+        new Date(b.starts_at ?? b.created_at).getTime(),
     );
     const current = ordered.find((b) => !b.ends_at || new Date(b.ends_at) > now);
     const next = current ? ordered[ordered.indexOf(current) + 1] : undefined;
@@ -226,9 +228,7 @@ export function EditEventPage() {
           <h1 className="text-heading-1 text-text-primary">Editar Evento</h1>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-small text-text-secondary">Status:</span>
-            <StatusPill tone={status === 'rascunho' ? 'warning' : 'neutral'}>
-              {status}
-            </StatusPill>
+            <StatusPill tone={status === "rascunho" ? "warning" : "neutral"}>{status}</StatusPill>
           </div>
           <div className="mt-2">
             <a
@@ -254,7 +254,12 @@ export function EditEventPage() {
         <div className="flex gap-2">
           <button
             onClick={async () => {
-              if (!window.confirm("Tem certeza que deseja cancelar este evento? Todos os ingressos serão invalidados e as vendas associadas serão marcadas como canceladas. Esta ação não pode ser desfeita.")) return;
+              if (
+                !window.confirm(
+                  "Tem certeza que deseja cancelar este evento? Todos os ingressos serão invalidados e as vendas associadas serão marcadas como canceladas. Esta ação não pode ser desfeita.",
+                )
+              )
+                return;
               try {
                 await cancelEvent(id);
                 toast.success("Evento cancelado com sucesso");
@@ -267,16 +272,24 @@ export function EditEventPage() {
           >
             Cancelar Evento
           </button>
-          
+
           <button
             onClick={async () => {
-              if (!window.confirm("Tem certeza que deseja excluir permanentemente este evento? Esta ação só é permitida se não houver vendas pagas.")) return;
+              if (
+                !window.confirm(
+                  "Tem certeza que deseja excluir permanentemente este evento? Esta ação só é permitida se não houver vendas pagas.",
+                )
+              )
+                return;
               try {
                 await deleteEvent(id);
                 toast.success("Evento excluído com sucesso");
                 navigate({ to: "/admin/eventos" });
               } catch (err: any) {
-                toast.error("Erro ao excluir evento: " + (err.message || "Verifique se há vendas pagas vinculadas."));
+                toast.error(
+                  "Erro ao excluir evento: " +
+                    (err.message || "Verifique se há vendas pagas vinculadas."),
+                );
               }
             }}
             className="inline-flex items-center gap-2 bg-error text-white px-4 py-2 rounded-md font-semibold hover:opacity-90 transition-opacity"
@@ -287,7 +300,7 @@ export function EditEventPage() {
         </div>
       </div>
 
- <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-lg shadow-sm">
+      <div className="flex justify-center gap-12 py-6 bg-bg-secondary rounded-lg shadow-sm">
         {[
           { n: 1, l: "Básico" },
           { n: 2, l: "Modelo" },
@@ -298,7 +311,7 @@ export function EditEventPage() {
         ))}
       </div>
 
- <div className="bg-bg-secondary rounded-lg p-8 shadow-sm min-h-[400px]">
+      <div className="bg-bg-secondary rounded-lg p-8 shadow-sm min-h-[400px]">
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-heading-2">Informações básicas</h2>
@@ -335,10 +348,10 @@ export function EditEventPage() {
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">Imagem de capa</label>
-                <div 
+                <div
                   className={cn(
                     "relative border-2 border-dashed border-border-default rounded-md p-8 text-center hover:border-accent transition-all cursor-pointer group overflow-hidden min-h-[160px] flex flex-col items-center justify-center",
-                    imageUrl && "border-solid border-accent/20"
+                    imageUrl && "border-solid border-accent/20",
                   )}
                   onClick={() => document.getElementById("event-image-upload-edit")?.click()}
                 >
@@ -349,17 +362,27 @@ export function EditEventPage() {
                     </div>
                   ) : imageUrl ? (
                     <>
-                      <img src={imageUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="absolute inset-0 w-full h-full object-cover opacity-20"
+                      />
                       <div className="relative z-10 flex flex-col items-center gap-1">
                         <Upload className="w-6 h-6 text-accent mb-1" />
-                        <p className="text-small font-bold text-accent">Clique para alterar a imagem</p>
-                        <p className="text-[10px] text-text-secondary">Imagem carregada com sucesso</p>
+                        <p className="text-small font-bold text-accent">
+                          Clique para alterar a imagem
+                        </p>
+                        <p className="text-[10px] text-text-secondary">
+                          Imagem carregada com sucesso
+                        </p>
                       </div>
                     </>
                   ) : (
                     <>
                       <Upload className="w-8 h-8 text-text-disabled mx-auto mb-2 group-hover:text-accent" />
-                      <p className="text-small text-text-secondary font-medium">Clique para fazer upload da imagem de capa</p>
+                      <p className="text-small text-text-secondary font-medium">
+                        Clique para fazer upload da imagem de capa
+                      </p>
                       <p className="text-[10px] text-text-tertiary mt-1 max-w-[280px]">
                         Tamanho recomendado: 1200×675px (16:9), até 2MB, JPG/PNG/WEBP.
                       </p>
@@ -373,7 +396,7 @@ export function EditEventPage() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      
+
                       if (file.size > 2 * 1024 * 1024) {
                         toast.error("A imagem deve ter no máximo 2MB");
                         return;
@@ -381,19 +404,19 @@ export function EditEventPage() {
 
                       setIsUploading(true);
                       try {
-                        const fileExt = file.name.split('.').pop();
+                        const fileExt = file.name.split(".").pop();
                         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
                         const filePath = `events/${fileName}`;
 
                         const { error: uploadError } = await supabase.storage
-                          .from('event-images')
+                          .from("event-images")
                           .upload(filePath, file);
 
                         if (uploadError) throw uploadError;
 
-                        const { data: { publicUrl } } = supabase.storage
-                          .from('event-images')
-                          .getPublicUrl(filePath);
+                        const {
+                          data: { publicUrl },
+                        } = supabase.storage.from("event-images").getPublicUrl(filePath);
 
                         setImageUrl(publicUrl);
                         toast.success("Imagem enviada com sucesso!");
@@ -405,10 +428,12 @@ export function EditEventPage() {
                     }}
                   />
                 </div>
-                
+
                 <div className="flex items-center gap-2 mt-2">
                   <div className="h-[1px] flex-1 bg-border-subtle"></div>
-                  <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">Ou cole uma URL externa</span>
+                  <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">
+                    Ou cole uma URL externa
+                  </span>
                   <div className="h-[1px] flex-1 bg-border-subtle"></div>
                 </div>
                 <input
@@ -444,7 +469,9 @@ export function EditEventPage() {
                 </div>
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-small font-medium text-text-secondary">Local / Endereço</label>
+                <label className="text-small font-medium text-text-secondary">
+                  Local / Endereço
+                </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
                   <input
@@ -531,12 +558,14 @@ export function EditEventPage() {
               {batches.map((b) => (
                 <div
                   key={b.id}
- className="flex items-center justify-between p-4 bg-bg-primary rounded-md"
+                  className="flex items-center justify-between p-4 bg-bg-primary rounded-md"
                 >
                   <div className="min-w-0">
                     <div className="text-body font-bold truncate">{b.name}</div>
                     <div className="text-small text-text-secondary">
-                      R$ {Number(b.price).toFixed(2)} • {b.quantity !== null ? b.quantity : "Sem limite"} unidades {b.is_courtesy && "• Cortesia"}
+                      R$ {Number(b.price).toFixed(2)} •{" "}
+                      {b.quantity !== null ? b.quantity : "Sem limite"} unidades{" "}
+                      {b.is_courtesy && "• Cortesia"}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -559,10 +588,12 @@ export function EditEventPage() {
             </div>
 
             {draft && (
- <div className="p-4 bg-bg-primary rounded-md space-y-4">
+              <div className="p-4 bg-bg-primary rounded-md space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-small font-medium text-text-secondary">Nome do lote</label>
+                    <label className="text-small font-medium text-text-secondary">
+                      Nome do lote
+                    </label>
                     <input
                       type="text"
                       value={draft.nome}
@@ -580,12 +611,14 @@ export function EditEventPage() {
                           setDraft({
                             ...draft,
                             is_courtesy: isChecked,
-                            preco: isChecked ? "0.00" : draft.preco
+                            preco: isChecked ? "0.00" : draft.preco,
                           });
                         }}
                         className="w-4 h-4 text-accent border-border-default rounded focus:ring-accent"
                       />
-                      <span className="text-small font-medium text-text-secondary">Este lote é de Cortesias</span>
+                      <span className="text-small font-medium text-text-secondary">
+                        Este lote é de Cortesias
+                      </span>
                     </label>
                   </div>
                   <div className="space-y-2">
@@ -612,7 +645,9 @@ export function EditEventPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-small font-medium text-text-secondary">Início das vendas (horário de Brasília)</label>
+                    <label className="text-small font-medium text-text-secondary">
+                      Início das vendas (horário de Brasília)
+                    </label>
                     <input
                       type="datetime-local"
                       value={draft.inicio}
@@ -621,7 +656,9 @@ export function EditEventPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-small font-medium text-text-secondary">Fim das vendas (horário de Brasília)</label>
+                    <label className="text-small font-medium text-text-secondary">
+                      Fim das vendas (horário de Brasília)
+                    </label>
                     <input
                       type="datetime-local"
                       value={draft.fim}
@@ -633,7 +670,7 @@ export function EditEventPage() {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() => setDraft(null)}
- className="px-4 py-2 rounded-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
+                    className="px-4 py-2 rounded-md font-semibold text-text-primary hover:bg-bg-secondary transition-colors"
                   >
                     Cancelar
                   </button>
@@ -657,14 +694,15 @@ export function EditEventPage() {
           <div className="space-y-8">
             <h2 className="text-heading-2">Resumo do evento</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div className="p-4 bg-bg-primary rounded-md space-y-2">
+              <div className="p-4 bg-bg-primary rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Geral</div>
                 <div className="text-body font-bold">{title}</div>
                 <div className="text-small text-text-secondary">
-                  {location} • {date && time ? formatBrtDateTime(brtInputToUtcIso(`${date}T${time}`)) : "—"}
+                  {location} •{" "}
+                  {date && time ? formatBrtDateTime(brtInputToUtcIso(`${date}T${time}`)) : "—"}
                 </div>
               </div>
- <div className="p-4 bg-bg-primary rounded-md space-y-2">
+              <div className="p-4 bg-bg-primary rounded-md space-y-2">
                 <div className="text-micro font-bold text-text-disabled uppercase">Vendas</div>
                 <div className="text-body font-bold">
                   {model === "lotes" ? "Modelo por lotes" : "Preço único"}
@@ -684,7 +722,7 @@ export function EditEventPage() {
           <button
             onClick={() => setStep((s) => Math.max(s - 1, 1))}
             disabled={step === 1}
- className="px-6 py-2 rounded-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
+            className="px-6 py-2 rounded-md font-semibold text-text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-secondary transition-colors"
           >
             Voltar
           </button>
