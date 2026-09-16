@@ -183,6 +183,16 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Corrigido: espaçamento entre ícone e texto reduzido nas 3 abas — cabe confortavelmente mesmo nas telas mais estreitas, sem mudar nada no restante do layout.
 - Arquivo: `src/components/admin/cortesias/CreateCourtesyPanel.tsx`.
 
+### Alerta sonoro quando uma venda é confirmada (admin)
+- Objetivo: Diego pediu um som quando uma venda é concluída, só enquanto a tela do admin estiver aberta (sem virar notificação push).
+- Usa o Supabase Realtime (nunca usado antes no projeto) — o admin escuta em tempo real quando uma venda muda pra status "pago" na própria organização, e toca um som curto (sintetizado por código, sem precisar de arquivo de áudio).
+- Ativado em `AdminLayout.tsx`, então funciona em qualquer tela do admin, não só no Dashboard ou em Vendas.
+- Só toca na transição pra "pago" — não em qualquer atualização da venda (ex: check-in de um ingresso também atualiza a linha, mas não deve tocar o som).
+- Também aparece um toast discreto com o nome do comprador (cortesias não geram toast, só o som seria estranho pra elas já que não é uma venda de verdade).
+- Aviso de navegador: o primeiro som pode não tocar se o admin não tiver clicado em nada na página ainda (bloqueio padrão de autoplay dos navegadores) — a partir do primeiro clique em qualquer lugar do sistema, funciona normalmente pelo resto da sessão.
+- Migrations: `enable_realtime_sales` (inclui a tabela `sales` na publicação de tempo real) e `set_sales_replica_identity_full` (necessária pra saber se o status realmente mudou pra "pago", e não outra coisa qualquer da venda).
+- Arquivos: `src/lib/sale-alert-sound.ts` (novo), `src/hooks/use-sale-alert-sound.ts` (novo), `src/components/layouts/AdminLayout.tsx`.
+
 ---
 
 ## Pendências conhecidas

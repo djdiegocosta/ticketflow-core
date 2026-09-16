@@ -8,6 +8,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTheme } from "@/lib/theme";
 import { AdminPageActionProvider, useAdminPageActionValue } from "@/components/layouts/AdminPageActionContext";
 import { PushNotificationButton } from "@/components/admin/PushNotificationButton";
+import { useSaleAlertSound } from "@/hooks/use-sale-alert-sound";
 
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard", "/admin/eventos": "Eventos", "/admin/vendas": "Vendas", "/admin/cortesias": "Cortesias", "/admin/clientes": "Clientes", "/checkin": "Check-in", "/admin/relatorios": "Relatórios", "/admin/ferramentas": "Ferramentas", "/admin/ferramentas/vitrine": "Vitrine", "/admin/historico": "Histórico de Eventos", "/admin/usuarios": "Usuários", "/admin/configuracoes": "Configurações", "/admin/checklist": "Checklist", "/admin/remarketing": "Remarketing", "/admin/simulador": "Simulador",
@@ -28,13 +29,15 @@ const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[
 function AdminLayoutContent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const location = useLocation();
-  const { userRole, logout } = useAuth();
+  const { userRole, logout, organizationId } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pageAction = useAdminPageActionValue();
+
+  useSaleAlertSound(organizationId);
 
   const filteredMenu = menu.filter((item) => userRole === "colaborador" ? ["/admin/vendas", "/checkin"].includes(item.to) : true);
 
