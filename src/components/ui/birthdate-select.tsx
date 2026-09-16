@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 const MESES = [
   "Janeiro",
   "Fevereiro",
@@ -14,8 +16,6 @@ const MESES = [
 ];
 
 function daysInMonth(month: number, year: number): number {
-  // month é 1-12. new Date(year, month, 0) dá o último dia do mês anterior
-  // ao informado, ou seja, o total de dias do mês "month".
   return new Date(year, month, 0).getDate();
 }
 
@@ -30,14 +30,10 @@ const selectClass =
   "w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] p-2 rounded-[var(--radius-sm)] outline-none focus:border-[var(--accent)] text-text-primary";
 
 /**
- * Data de nascimento com 3 seletores simples (Dia / Mês / Ano) em vez de um
- * <input type="date">. Motivos: o input nativo tem um bug conhecido no
- * Safari/iOS que faz a caixa não respeitar largura total (fica pequena e
- * desalinhada); e escolher dia/mês/ano direto é mais rápido do que navegar
- * um calendário até décadas atrás — menos barreira pro cadastro.
+ * Data de nascimento com 3 seletores simples (Dia / Mês / Ano).
  *
- * `value`/`onChange` usam o mesmo formato ISO ("AAAA-MM-DD") já usado em
- * data_nascimento, então funciona como substituto direto do input nativo.
+ * A seleção parcial fica preservada localmente. O valor controlado só é
+ * emitido como ISO (AAAA-MM-DD) quando dia, mês e ano estiverem completos.
  */
 export function BirthdateSelect({
   value,
@@ -50,27 +46,49 @@ export function BirthdateSelect({
   minYear?: number;
   maxYear?: number;
 }) {
-  const { day, month, year } = parseIso(value);
+  const parsed = parseIso(value);
+  const [day, setDay] = useState(parsed.day);
+  const [month, setMonth] = useState(parsed.month);
+  const [year, setYear] = useState(parsed.year);
+
+  useEffect(() => {
+    const next = parseIso(value);
+    if (next.day || next.month || next.year) {
+      setDay(next.day);
+      setMonth(next.month);
+      setYear(next.year);
+    } else if (!value) {
+      // Só limpa a seleção local quando o valor externo realmente for
+      // esvaziado, sem apagar uma seleção parcial durante a interação.
+      setDay("");
+      setMonth("");
+      setYear("");
+    }
+  }, [value]);
+
   const currentYear = new Date().getFullYear();
   const years = Array.from(
     { length: (maxYear ?? currentYear) - (minYear ?? currentYear - 100) + 1 },
     (_, i) => (maxYear ?? currentYear) - i,
   );
 
-  const emitChange = (nextDay: string, nextMonth: string, nextYear: string) => {
-    if (!nextDay || !nextMonth || !nextYear) {
-      onChange("");
-      return;
-    }
-    onChange(`${nextYear}-${nextMonth}-${nextDay}`);
-  };
-
   const maxDay = month && year ? daysInMonth(Number(month), Number(year)) : 31;
   const dayOptions = Array.from({ length: maxDay }, (_, i) => String(i + 1).padStart(2, "0"));
-  // Se o dia selecionado não existe mais no mês novo (ex: estava em 31 e
-  // mudou pra fevereiro), ajusta pro último dia válido em vez de deixar
-  // uma data inválida silenciosa.
   const safeDay = day && Number(day) > maxDay ? String(maxDay).padStart(2, "0") : day;
+
+  const emitChange = (nextDay: string, nextMonth: string, nextYear: string) => {
+    setDay(nextDay);
+    setMonth(nextMonth);
+    setYear(nextYear);
+
+    if (nextDay && nextMonth && nextYear) {
+      onChange(`${nextYear}-${nextMonth}-${nextDay}`);
+    } else {
+      // Mantém o formulário sem data completa até os três campos serem
+      // escolhidos, mas não perde os componentes já selecionados.
+      onChange("");
+    }
+  };
 
   return (
     <div className="grid grid-cols-3 gap-2">
