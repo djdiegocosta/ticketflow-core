@@ -18,6 +18,24 @@ Após o Mercado Pago confirmar uma cobrança Pix como `approved`, o TicketFlow d
 - Também existe a ação `Já paguei — verificar pagamento` para uma verificação manual imediata.
 - A confirmação real depende do status persistido da venda; o contador de expiração não confirma pagamento.
 
+## Layout do checkout
+
+O checkout utiliza um wizard visual de 3 etapas, sempre destacado no topo da página:
+
+1. `DADOS DO COMPRADOR` — ícone de pessoa.
+2. `NOME DO(S) PARTICIPANTE(S)` — ícone de ingresso.
+3. `PAGAMENTO` — ícone de QR Code/Pix.
+
+O progresso utiliza a cor de tema do evento para as etapas já alcançadas e cinza claro para as etapas ainda não alcançadas. As conexões entre os círculos também acompanham esse estado, deixando o avanço visualmente evidente.
+
+O checkout mantém a navegação sequencial existente. O usuário pode avançar após a validação de cada etapa e voltar da etapa de participantes para os dados do comprador. Depois que a reserva e o Pix são gerados, a etapa de pagamento permanece focada no pagamento e na confirmação da venda.
+
+O card `Você está comprando`, com evento, lote, quantidade e valor, é exibido somente na etapa de pagamento. As etapas de dados do comprador e participantes ficam mais limpas e focadas na ação atual.
+
+Na etapa de participantes, a orientação para compra de ingresso próprio é: `Se o ingresso for seu, marque a opção no canto direito abaixo (Sou eu).`
+
+Esta alteração é exclusivamente visual/estrutural no frontend. Não altera backend, banco de dados, RPCs, Mercado Pago ou regras financeiras da venda.
+
 ## Pós-pagamento
 
 A página de confirmação informa explicitamente:
