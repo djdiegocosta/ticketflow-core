@@ -193,6 +193,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Migrations: `enable_realtime_sales` (inclui a tabela `sales` na publicação de tempo real) e `set_sales_replica_identity_full` (necessária pra saber se o status realmente mudou pra "pago", e não outra coisa qualquer da venda).
 - Arquivos: `src/lib/sale-alert-sound.ts` (novo), `src/hooks/use-sale-alert-sound.ts` (novo), `src/components/layouts/AdminLayout.tsx`.
 
+### Ajustes de UX no checkout (wizard, quantidade e textos)
+- **Wizard:** nomes encurtados (`COMPRADOR` / `INGRESSO(S)` / `PAGAMENTO`) e círculos dos ícones reduzidos de 40px pra 32px — estavam grandes demais em telas de celular pequenas.
+- **Step 1 (Comprador):** texto encurtado ("Preencha e confirme seus dados para identificar a compra"). O aviso de Termos de Uso / Política de Privacidade foi movido do Step 2 pra cá, logo abaixo do campo de e-mail — faz mais sentido perto do "Continuar" inicial.
+- **Step 2 (Ingressos):** seletor de quantidade reestruturado — agora aparece logo abaixo do wizard, centralizado, com rótulo "QUANTIDADE" e botões +/− grandes (56px, mesmo peso visual do botão "Gerar Pix"). Texto abaixo encurtado pra "Preencha o nome de quem vai usar cada ingresso". O "Sou eu" e o limite de 10 ingressos foram preservados.
+- **Bug de foco corrigido:** ao aumentar a quantidade, o cursor pulava direto pro campo de nome recém-criado, tirando o cliente do seletor no meio da escolha. Causa: o `append` do react-hook-form foca o campo novo por padrão. Corrigido com `shouldFocus: false` — agora o cliente escolhe a quantidade primeiro e depois preenche os nomes, um a um.
+- **Textos enxugados** (sem mudar nenhum comportamento): botão "Voltar para dados do comprador" → "Voltar"; instrução do Pix; botão "Já paguei — verificar pagamento" → "Já paguei"; aviso de pagamento não confirmado; aviso de dados preenchidos automaticamente.
+- Aproveitado pra trocar os `#111111` restantes do arquivo pelo token `--accent-foreground` (criado na auditoria de design anterior).
+- Arquivo: `src/pages/CheckoutPage.tsx`.
+
 ---
 
 ## Pendências conhecidas

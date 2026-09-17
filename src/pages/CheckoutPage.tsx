@@ -35,8 +35,8 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 type CheckoutStep = 'buyer' | 'participants' | 'payment';
 
 const checkoutSteps: { id: CheckoutStep; label: string; Icon: typeof User }[] = [
-  { id: 'buyer', label: 'DADOS DO COMPRADOR', Icon: User },
-  { id: 'participants', label: 'NOME DO(S) PARTICIPANTE(S)', Icon: Ticket },
+  { id: 'buyer', label: 'COMPRADOR', Icon: User },
+  { id: 'participants', label: 'INGRESSO(S)', Icon: Ticket },
   { id: 'payment', label: 'PAGAMENTO', Icon: QrCode },
 ];
 
@@ -124,7 +124,13 @@ export default function CheckoutPage() {
     const currentCount = form.getValues('participants').length;
 
     if (clampedQty > currentCount) {
-      append(Array.from({ length: clampedQty - currentCount }, () => ({ name: '' })));
+      // shouldFocus: false — sem isso o react-hook-form joga o cursor direto
+      // no campo de nome recém-criado, tirando o cliente da área de seleção
+      // no meio da escolha da quantidade.
+      append(
+        Array.from({ length: clampedQty - currentCount }, () => ({ name: '' })),
+        { shouldFocus: false },
+      );
     } else if (clampedQty < currentCount) {
       remove(Array.from({ length: currentCount - clampedQty }, (_, index) => currentCount - 1 - index));
     }
@@ -335,19 +341,19 @@ export default function CheckoutPage() {
                   {index < checkoutSteps.length - 1 && (
                     <div
                       aria-hidden="true"
-                      className={`absolute left-1/2 right-[-50%] top-5 h-0.5 -translate-y-1/2 ${
+                      className={`absolute left-1/2 right-[-50%] top-4 h-0.5 -translate-y-1/2 ${
                         index < currentStepIndex ? 'bg-[var(--accent)]' : 'bg-[var(--border-subtle)]'
                       }`}
                     />
                   )}
                   <div
-                    className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
+                    className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
                       isActive
-                        ? 'border-[var(--accent)] bg-[var(--accent)] text-[#111111]'
+                        ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-foreground)]'
                         : 'border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--text-secondary)]'
-                    } ${isCurrent ? 'shadow-[0_0_0_4px_var(--accent-muted)]' : ''}`}
+                    } ${isCurrent ? 'shadow-[0_0_0_3px_var(--accent-muted)]' : ''}`}
                   >
-                    <Icon className="h-4 w-4" strokeWidth={2.2} />
+                    <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
                   </div>
                   <span
                     className={`mt-2 max-w-[110px] text-center text-[10px] font-semibold leading-3 tracking-[0.01em] sm:max-w-none sm:text-[11px] sm:leading-4 ${
@@ -367,10 +373,10 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-4">
               <div>
                 <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
-                <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Preencha seus dados para identificar a compra e receber informações sobre os ingressos.</p>
+                <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Preencha e confirme seus dados para identificar a compra.</p>
                 {user && (
                   <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2.5 text-xs leading-5 text-[var(--text-secondary)]">
-                    Seus dados foram preenchidos automaticamente. Confirme se estão corretos antes de continuar.
+                    Dados preenchidos automaticamente. Confirme antes de continuar.
                   </div>
                 )}
               </div>
@@ -398,12 +404,23 @@ export default function CheckoutPage() {
                   )}
                 />
               </div>
+
+              <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
+                Ao continuar, você concorda com nossos{" "}
+                <Link to="/termos" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                  Termos de Uso
+                </Link>{" "}
+                e{" "}
+                <Link to="/privacidade" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
+                  Política de Privacidade
+                </Link>.
+              </p>
             </div>
 
             <Button
               type="button"
               onClick={handleBuyerContinue}
-              className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)]"
+              className="h-14 w-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-lg hover:bg-[var(--accent-hover)]"
             >
               Continuar
             </Button>
@@ -413,17 +430,11 @@ export default function CheckoutPage() {
         {step === 'participants' && (
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <div>
-                <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Quem vai usar os ingressos?</h3>
-                <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Se o ingresso for seu, marque a opção no canto direito abaixo (Sou eu).</p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-3">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-[var(--text-primary)]">Quantidade de ingressos</span>
-                  <span className="text-xs text-[var(--text-secondary)]">Máximo de {MAX_TICKETS} por compra</span>
-                </div>
-                <div className="flex items-center gap-3">
+              <div className="rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-4">
+                <p className="text-center text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Quantidade
+                </p>
+                <div className="mt-3 flex items-center justify-center gap-6">
                   <Button
                     type="button"
                     variant="ghost"
@@ -431,11 +442,13 @@ export default function CheckoutPage() {
                     onClick={() => handleQuantityChange(qty - 1)}
                     disabled={qty <= 1 || isCreatingSale}
                     aria-label="Diminuir quantidade"
-                    className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                    className="h-14 w-14 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
                   >
-                    <Minus className="h-5 w-5" />
+                    <Minus className="h-6 w-6" strokeWidth={2.5} />
                   </Button>
-                  <span className="min-w-6 text-center text-lg font-bold text-[var(--text-primary)]">{qty}</span>
+                  <span className="min-w-[2.5rem] text-center text-4xl font-bold leading-none text-[var(--text-primary)]">
+                    {qty}
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -443,12 +456,19 @@ export default function CheckoutPage() {
                     onClick={() => handleQuantityChange(qty + 1)}
                     disabled={qty >= MAX_TICKETS || isCreatingSale}
                     aria-label="Aumentar quantidade"
-                    className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                    className="h-14 w-14 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] disabled:opacity-40"
                   >
-                    <Plus className="h-5 w-5" />
+                    <Plus className="h-6 w-6" strokeWidth={2.5} />
                   </Button>
                 </div>
+                <p className="mt-3 text-center text-xs text-[var(--text-secondary)]">
+                  Máximo de {MAX_TICKETS} por compra
+                </p>
               </div>
+
+              <p className="text-sm leading-5 text-[var(--text-secondary)]">
+                Preencha o nome de quem vai usar cada ingresso.
+              </p>
 
               <div className="space-y-4">
                 {fields.map((field, index) => (
@@ -477,22 +497,11 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
-              Ao continuar, você concorda com nossos{" "}
-              <Link to="/termos" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
-                Termos de Uso
-              </Link>{" "}
-              e{" "}
-              <Link to="/privacidade" className="font-medium text-[var(--accent-text)] underline underline-offset-4">
-                Política de Privacidade
-              </Link>.
-            </p>
-
             <div className="flex flex-col gap-3">
               <Button
                 type="submit"
                 disabled={isCreatingSale}
-                className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-14 w-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold text-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingSale ? <Loader2 className="h-6 w-6 animate-spin" /> : "Gerar Pix"}
               </Button>
@@ -503,7 +512,7 @@ export default function CheckoutPage() {
                 disabled={isCreatingSale}
                 className="h-11 w-full text-[var(--text-secondary)]"
               >
-                Voltar para dados do comprador
+                Voltar
               </Button>
             </div>
           </form>
@@ -528,14 +537,14 @@ export default function CheckoutPage() {
                 <Button
                   type="button"
                   disabled={countdown === 0 || !pixData}
-                  className="h-12 w-full bg-[var(--accent)] text-[#111111] font-bold hover:bg-[var(--accent-hover)]"
+                  className="h-12 w-full bg-[var(--accent)] text-[var(--accent-foreground)] font-bold hover:bg-[var(--accent-hover)]"
                   onClick={copyPix}
                 >
                   {pixCopied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                   {pixCopied ? "Código Pix copiado" : "COPIAR CÓDIGO PIX"}
                 </Button>
                 <p className="text-center text-xs leading-5 text-[var(--text-secondary)]">
-                  Copie o código e pague pelo aplicativo do seu banco. Depois do pagamento, aguarde a confirmação nesta tela.
+                  Pague pelo app do seu banco e aguarde a confirmação nesta tela.
                 </p>
                 <Button
                   type="button"
@@ -547,12 +556,12 @@ export default function CheckoutPage() {
                     if (result.data === 'pago') {
                       toast.success("Pagamento confirmado! Abrindo seus ingressos...");
                     } else {
-                      toast.info("Pagamento ainda não confirmado. Se você acabou de pagar, aguarde alguns segundos e tente novamente.");
+                      toast.info("Pagamento ainda não confirmado. Aguarde alguns segundos e tente de novo.");
                     }
                   }}
                 >
                   {isCheckingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                  {isCheckingPayment ? "Verificando pagamento..." : "Já paguei — verificar pagamento"}
+                  {isCheckingPayment ? "Verificando..." : "Já paguei"}
                 </Button>
               </div>
             </div>
