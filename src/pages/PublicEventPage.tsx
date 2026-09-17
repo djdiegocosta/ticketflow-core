@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Minus, Plus, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Loader2 } from 'lucide-react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
 import { setLastVisitedOrg } from '@/lib/org-context';
@@ -15,7 +15,6 @@ export default function EventPage() {
   const { data: availableBatches } = useAvailableBatches(event?.id);
   useApplyPublicDesign(slug);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
   // Seleciona o primeiro lote por padrão quando carregar
@@ -71,7 +70,6 @@ export default function EventPage() {
   }
 
   const selectedBatch = availableBatches?.find(b => b.id === selectedBatchId) || availableBatches?.[0];
-  const totalPrice = (selectedBatch?.price || 0) * quantity;
   // availableBatches undefined = ainda carregando; array vazio = carregou e não achou
   // nenhum lote (esgotado agora, ou preso em reservas pendentes de outros clientes —
   // nesse caso volta sozinho em pouco tempo).
@@ -79,9 +77,9 @@ export default function EventPage() {
 
   const handleBuy = () => {
     if (!selectedBatchId) return;
-    navigate({ 
+    navigate({
       to: `/e/${event.slug}/checkout`,
-      search: { batchId: selectedBatchId, qty: String(quantity) }
+      search: { batchId: selectedBatchId, qty: '1' }
     });
   };
 
@@ -91,8 +89,8 @@ export default function EventPage() {
         {/* Cover Image */}
         <div className="relative h-64 w-full bg-[var(--bg-tertiary)]">
           {event.image_url ? (
-            <img 
-              src={event.image_url} 
+            <img
+              src={event.image_url}
               alt={event.title}
               className="h-full w-full object-cover"
             />
@@ -162,29 +160,6 @@ export default function EventPage() {
             </div>
             )}
           </div>
-
-          <div className="flex flex-col gap-4 pt-4">
-            <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Quantidade</h3>
- <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]"
-              >
-                <Minus className="h-5 w-5" />
-              </Button>
-              <span className="text-heading-2 font-bold text-[var(--text-primary)]">{quantity}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -192,10 +167,10 @@ export default function EventPage() {
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 py-4 safe-area-bottom shadow-lg">
         <Button
           onClick={handleBuy}
-          disabled={!selectedBatchId}
+          disabled={!selectedBatchId || soldOut}
           className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] transition-all active:scale-[0.98]"
         >
-          <span>{soldOut ? 'Esgotado' : `Comprar agora • R$ ${totalPrice.toFixed(2)}`}</span>
+          <span>{soldOut ? 'Esgotado' : 'Comprar agora'}</span>
         </Button>
       </div>
     </MobileLayout>
