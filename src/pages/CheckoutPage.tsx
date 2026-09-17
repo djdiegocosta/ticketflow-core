@@ -345,9 +345,9 @@ export default function CheckoutPage() {
                       isActive
                         ? 'border-[var(--accent)] bg-[var(--accent)] text-[#111111]'
                         : 'border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--text-secondary)]'
-                    } ${isCurrent ? 'shadow-[0_0_0_4px_var(--accent-soft)]' : ''}`}
+                    } ${isCurrent ? 'shadow-[0_0_0_4px_var(--accent-muted)]' : ''}`}
                   >
-                    <Icon className="h-4.5 w-4.5" strokeWidth={2.2} />
+                    <Icon className="h-4 w-4" strokeWidth={2.2} />
                   </div>
                   <span
                     className={`mt-2 max-w-[110px] text-center text-[10px] font-semibold leading-3 tracking-[0.01em] sm:max-w-none sm:text-[11px] sm:leading-4 ${
