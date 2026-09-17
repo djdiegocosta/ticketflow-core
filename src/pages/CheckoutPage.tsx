@@ -12,7 +12,7 @@ import { suggestEmailCorrection } from '@/lib/email-typo-check';
 import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail, RefreshCw, Ticket, QrCode } from 'lucide-react';
+import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail, RefreshCw, Ticket, QrCode, Minus, Plus } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches, useMyCustomerRecords } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
@@ -40,11 +40,13 @@ const checkoutSteps: { id: CheckoutStep; label: string; Icon: typeof User }[] = 
   { id: 'payment', label: 'PAGAMENTO', Icon: QrCode },
 ];
 
+const MAX_TICKETS = 10;
+
 export default function CheckoutPage() {
   const { slug } = useParams({ from: '/e/$slug/checkout' });
   const search = useSearch({ from: '/e/$slug/checkout' }) as { batchId?: string, qty?: string, ref?: string, resume?: string };
-  const qtyInput = parseInt(search.qty || '1');
-  const qty = isNaN(qtyInput) ? 1 : qtyInput;
+  const legacyQty = parseInt(search.qty || '1', 10);
+  const initialQty = Number.isFinite(legacyQty) ? Math.min(MAX_TICKETS, Math.max(1, legacyQty)) : 1;
   
   const { user } = useAuth();
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
@@ -56,6 +58,7 @@ export default function CheckoutPage() {
   const trackAbandonment = useTrackAbandonment();
   
   const [step, setStep] = useState<CheckoutStep>('buyer');
+  const [qty, setQty] = useState(initialQty);
   const [countdown, setCountdown] = useState(0);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
@@ -107,14 +110,27 @@ export default function CheckoutPage() {
       buyerName: '',
       buyerWhatsApp: '',
       buyerEmail: '',
-      participants: Array(qty).fill({ name: '' })
+      participants: Array.from({ length: initialQty }, () => ({ name: '' }))
     }
   });
 
-  const { fields } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "participants"
   });
+
+  const handleQuantityChange = (nextQty: number) => {
+    const clampedQty = Math.min(MAX_TICKETS, Math.max(1, nextQty));
+    const currentCount = form.getValues('participants').length;
+
+    if (clampedQty > currentCount) {
+      append(Array.from({ length: clampedQty - currentCount }, () => ({ name: '' })));
+    } else if (clampedQty < currentCount) {
+      remove(Array.from({ length: currentCount - clampedQty }, (_, index) => currentCount - 1 - index));
+    }
+
+    setQty(clampedQty);
+  };
 
   // Sugere correção quando o e-mail parece ter erro de digitação (ex:
   // icloud.con em vez de icloud.com) — evita falha de Pix por e-mail errado.
@@ -177,7 +193,6 @@ export default function CheckoutPage() {
       const remaining = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 1000));
       setCountdown(remaining);
     };
-
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
@@ -353,6 +368,11 @@ export default function CheckoutPage() {
               <div>
                 <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
                 <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Preencha seus dados para identificar a compra e receber informações sobre os ingressos.</p>
+                {user && (
+                  <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2.5 text-xs leading-5 text-[var(--text-secondary)]">
+                    Seus dados foram preenchidos automaticamente. Confirme se estão corretos antes de continuar.
+                  </div>
+                )}
               </div>
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
@@ -396,6 +416,38 @@ export default function CheckoutPage() {
               <div>
                 <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Quem vai usar os ingressos?</h3>
                 <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Se o ingresso for seu, marque a opção no canto direito abaixo (Sou eu).</p>
+              </div>
+
+              <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--bg-secondary)] p-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">Quantidade de ingressos</span>
+                  <span className="text-xs text-[var(--text-secondary)]">Máximo de {MAX_TICKETS} por compra</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleQuantityChange(qty - 1)}
+                    disabled={qty <= 1 || isCreatingSale}
+                    aria-label="Diminuir quantidade"
+                    className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                  >
+                    <Minus className="h-5 w-5" />
+                  </Button>
+                  <span className="min-w-6 text-center text-lg font-bold text-[var(--text-primary)]">{qty}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleQuantityChange(qty + 1)}
+                    disabled={qty >= MAX_TICKETS || isCreatingSale}
+                    aria-label="Aumentar quantidade"
+                    className="h-10 w-10 rounded-full bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-4">
