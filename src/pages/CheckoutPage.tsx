@@ -374,11 +374,6 @@ export default function CheckoutPage() {
               <div>
                 <h3 className="text-heading-3 font-semibold text-[var(--text-primary)]">Dados do comprador</h3>
                 <p className="mt-1 text-sm leading-5 text-[var(--text-secondary)]">Preencha e confirme seus dados para identificar a compra.</p>
-                {user && (
-                  <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-3 py-2.5 text-xs leading-5 text-[var(--text-secondary)]">
-                    Dados preenchidos automaticamente. Confirme antes de continuar.
-                  </div>
-                )}
               </div>
               <div className="space-y-4">
                 <SmartField label="Nome completo" icon={User} value={form.watch('buyerName')} onChange={(v) => form.setValue('buyerName', formatName(v), { shouldValidate: true })} isValid={isFullName(form.watch('buyerName'))} placeholder="Seu nome" error={form.formState.errors.buyerName?.message as string} />
@@ -461,9 +456,6 @@ export default function CheckoutPage() {
                     <Plus className="h-6 w-6" strokeWidth={2.5} />
                   </Button>
                 </div>
-                <p className="mt-3 text-center text-xs text-[var(--text-secondary)]">
-                  Máximo de {MAX_TICKETS} por compra
-                </p>
               </div>
 
               <p className="text-sm leading-5 text-[var(--text-secondary)]">
