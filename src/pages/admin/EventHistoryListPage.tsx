@@ -82,7 +82,7 @@ export function EventHistoryListPage() {
                 <p className="flex items-center gap-1 text-small text-text-secondary">
                   <Users className="h-3.5 w-3.5" /> Público
                 </p>
-                <p className="text-body font-semibold text-text-primary">{event.attendance}</p>
+                <p className="text-body font-semibold text-text-primary">{event.attendancePresent}</p>
               </div>
               <div>
                 <p className="text-small text-text-secondary">Ingressos</p>
