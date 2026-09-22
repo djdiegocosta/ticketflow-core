@@ -48,6 +48,7 @@ export async function preloadEventTickets(eventId: string, eventName: string) {
   const offlineTickets: OfflineTicket[] = (tickets || []).map((t) => ({
     code: t.ticket_code,
     name: t.participant_name,
+    eventId,
     eventName: eventName,
     status: t.status === "utilizado" ? "already_used" : "valid",
   }));
@@ -63,7 +64,7 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
   const time = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   
   // 1. Tentar cache local (IndexedDB)
-  const localTicket = await offlineDB.getTicket(cleanCode);
+  const localTicket = await offlineDB.getTicketForEvent(cleanCode, eventId);
   
   if (localTicket) {
     if (localTicket.status === 'already_used') {
@@ -78,13 +79,14 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
       await offlineDB.addToSyncQueue({
         id: `${Date.now()}-${cleanCode}`,
         code: cleanCode,
+        eventId,
         eventName,
         timestamp: Date.now()
       });
     } else {
       // Se online, tenta sincronizar imediatamente via RPC
       try {
-        await supabase.rpc('checkin_ticket', { _ticket_code: cleanCode });
+        await supabase.rpc('checkin_ticket_for_event' as any, { _ticket_code: cleanCode, _event_id: eventId });
       } catch (e) {
         console.warn("[Checkin] Erro ao sincronizar check-in online, caindo para fila offline", e);
         await offlineDB.addToSyncQueue({
@@ -106,7 +108,7 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
 
   // 3. Tentar validação online via RPC
   try {
-    const { data, error } = await supabase.rpc('checkin_ticket', { _ticket_code: cleanCode });
+    const { data, error } = await supabase.rpc('checkin_ticket_for_event' as any, { _ticket_code: cleanCode, _event_id: eventId });
     
     if (error || !data || data.length === 0) {
       return { status: 'invalid' as CheckinStatus, name: cleanCode, eventName, time, isOffline: false };
@@ -132,13 +134,14 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
   }
 }
 
-export async function processSyncQueue() {
+export async function processSyncQueue(eventId: string) {
   const queue = await offlineDB.getSyncQueue();
   if (queue.length === 0) return;
 
   for (const item of queue) {
     try {
-      await supabase.rpc('checkin_ticket', { _ticket_code: item.code });
+      if (item.eventId !== eventId) continue;
+      await supabase.rpc('checkin_ticket_for_event' as any, { _ticket_code: item.code, _event_id: eventId });
     } catch (e) {
       console.error(`[Checkin] Erro ao sincronizar ticket ${item.code}:`, e);
       // Mantém na fila ou trata erro? Por simplicidade, assumimos que processou ou falhou definitivamente
