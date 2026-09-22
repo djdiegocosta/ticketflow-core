@@ -162,6 +162,7 @@ export function useSalesStats(eventId?: string) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
+      if (eventId === null) return { totalRevenue: 0, totalSales: 0, totalTickets: 0, pendingSales: 0, pendingAmount: 0, checkins: 0, validTickets: 0, cancelledSales: 0, paidSales: 0, courtesies: 0, last14Days: [] as { date: string; value: number }[] };
       const { data: orgData, error: orgError } = await supabase.rpc("get_single_organization_id");
       if (orgError) throw orgError;
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
