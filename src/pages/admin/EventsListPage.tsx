@@ -5,6 +5,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { PrimaryActionLink } from "@/components/admin/PrimaryActionButton";
 import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
 import { useEvents, eventStatusLabel, formatEventDate } from "@/lib/events-queries";
+import { EventClosurePanel } from "@/components/admin/EventClosurePanel";
+import { useEventHistoryList } from "@/lib/event-history-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -37,10 +39,11 @@ const statusStyles: Record<string, { bg: string; text: string; dot: string }> = 
 export function EventsListPage() {
   const [pageSize, setPageSize] = useState(25);
   const { data: events = [], isLoading, error } = useEvents();
+  const { data: history = [] } = useEventHistoryList();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isClosing, setIsClosing] = useState<string | null>(null);
+  const [closingEvent, setClosingEvent] = useState<NonNullable<typeof events>[number] | null>(null);
 
   useAdminPageAction(<PrimaryActionLink to="/admin/eventos/novo">Novo Evento</PrimaryActionLink>);
 
@@ -160,54 +163,20 @@ export function EventsListPage() {
                             <p>Editar evento</p>
                           </TooltipContent>
                         </Tooltip>
-                        {!isClosed && (
+                        {!history.some((item) => item.eventId === event.id) && status !== "Cancelado" && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                disabled={isClosing === event.id}
-                                onClick={async () => {
-                                  if (
-                                    !window.confirm(
-                                      `Encerrar o evento "${event.title}"? Os dados serão preservados para o futuro Histórico de Eventos.`,
-                                    )
-                                  )
-                                    return;
-                                  setIsClosing(event.id);
-                                  try {
-                                    const { error } = await supabase
-                                      .from("events")
-                                      .update({ is_closed: true })
-                                      .eq("id", event.id);
-                                    if (error) throw error;
-                                    toast.success(
-                                      "Evento encerrado e preparado para o Histórico de Eventos",
-                                    );
-                                    await queryClient.invalidateQueries({ queryKey: ["events"] });
-                                    await queryClient.invalidateQueries({
-                                      queryKey: ["events", event.id],
-                                    });
-                                  } catch (err: any) {
-                                    toast.error(
-                                      "Erro ao encerrar evento: " +
-                                        (err.message || "Tente novamente."),
-                                    );
-                                  } finally {
-                                    setIsClosing(null);
-                                  }
-                                }}
-                                className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--accent)] disabled:opacity-50"
+                                onClick={() => setClosingEvent(event)}
+                                className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--accent)]"
                               >
-                                {isClosing === event.id ? (
-                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                ) : (
-                                  <Archive className="h-4 w-4" />
-                                )}
+                                <Archive className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
-                              <p>Encerrar evento e preparar para o histórico</p>
+                              <p>{isClosed ? "Completar encerramento do evento" : "Encerrar evento e salvar no histórico"}</p>
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -346,6 +315,11 @@ export function EventsListPage() {
           </div>
         </>
       )}
+      <EventClosurePanel
+        event={closingEvent}
+        open={!!closingEvent}
+        onClose={() => setClosingEvent(null)}
+      />
     </div>
   );
 }
