@@ -26,7 +26,7 @@ import { generateCheckinListPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
 import { useCourtesies } from "@/lib/sales-queries";
-import { getOperationalEvent, useEvents } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,10 +38,9 @@ const CreateCourtesyPanelLazy = lazy(() =>
 );
 
 export function CourtesiesListPage() {
-  const { data: courtesies = [], isLoading } = useCourtesies();
-  const { data: events = [] } = useEvents();
+  const { event: operationalEvent, isLoading: eventLoading } = useOperationalEvent();
+  const { data: courtesies = [], isLoading } = useCourtesies(operationalEvent?.id ?? null);
   const queryClient = useQueryClient();
-  const operationalEvent = getOperationalEvent(events);
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [pageSize, setPageSize] = React.useState("25");
@@ -53,7 +52,7 @@ export function CourtesiesListPage() {
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   useAdminPageAction(
-    <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>Nova Cortesia</PrimaryActionButton>,
+    operationalEvent ? <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>Nova Cortesia</PrimaryActionButton> : null,
   );
 
   React.useEffect(() => {
@@ -66,10 +65,9 @@ export function CourtesiesListPage() {
   const filteredData = React.useMemo(
     () =>
       (courtesies as any[]).filter((item) => {
-        const eventMatch = !operationalEvent || item.sales?.event_id === operationalEvent.id;
-        return eventMatch && item.participant_name.toLowerCase().includes(search.toLowerCase());
+        return item.participant_name.toLowerCase().includes(search.toLowerCase());
       }),
-    [courtesies, search, operationalEvent],
+    [courtesies, search],
   );
 
   const totalCortesias = filteredData.length;
@@ -84,7 +82,7 @@ export function CourtesiesListPage() {
   const totalPages = Math.ceil(filteredData.length / parseInt(pageSize));
   const handleExportPdf = () => {
     const names = filteredData.map((c: any) => c.participant_name);
-    generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names);
+    generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
     toast.success("PDF gerado com sucesso!");
   };
   const handleCreateSuccess = () => {
@@ -94,6 +92,9 @@ export function CourtesiesListPage() {
   };
   const size = parseInt(pageSize);
   const startIndex = (currentPage - 1) * size;
+
+  if (!eventLoading && !operationalEvent)
+    return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a></div>;
 
   if (isLoading)
     return (
