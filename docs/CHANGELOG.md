@@ -202,6 +202,13 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Aproveitado pra trocar os `#111111` restantes do arquivo pelo token `--accent-foreground` (criado na auditoria de design anterior).
 - Arquivo: `src/pages/CheckoutPage.tsx`.
 
+### Histórico de Eventos (Admin → Ferramentas)
+- Nova ferramenta para consultar resultados de eventos encerrados: público, ingressos, bar, financeiro, indicadores e observações do produtor.
+- Etapa 1 (visual): telas de lista e detalhe construídas com dados mock, reaproveitando os cards de KPI do Dashboard (`DashboardMetricCard`, extraído de `AdminDashboard.tsx` sem mudar seu comportamento) e uma única página de resultado, sem abas.
+- Ajuste em recurso já existente: o card "Histórico de Eventos" em Ferramentas apontava, por engano, para o histórico de check-in (`CheckinHistoryPage`) — foi redirecionado para a nova ferramenta, e um card "Histórico de Check-in" foi criado à parte para preservar esse acesso.
+- Etapa 2 (dados reais): tabela `event_closures` e RPC `close_event` (migration `20260922230000_create_event_closures.sql`, aplicada ao Supabase de produção em 22/09/2026). O encerramento consolida vendas pagas do TicketFlow (lotes, receita de ingressos) com dados informados manualmente pelo produtor (bilheteria, cortesias presentes, público presente, bar, custo do evento) num snapshot imutável em `jsonb` — a tela de histórico lê o snapshot, não o estado atual do evento. Encerramento iniciado em Admin → Eventos.
+- Ver `docs/HISTORICO-DE-EVENTOS.md` para a definição de cada indicador, o que é automático vs. manual, e o estado de validação funcional.
+
 ---
 
 ## Pendências conhecidas

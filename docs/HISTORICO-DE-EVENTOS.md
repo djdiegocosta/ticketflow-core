@@ -1,6 +1,6 @@
 # Histórico de Eventos
 
-**Status:** 🟡 Implementação funcional — encerramento + snapshot histórico. A interface visual aprovada foi conectada aos dados reais e o formulário de encerramento foi implementado. A migration do banco está versionada neste branch, mas precisa ser aplicada ao Supabase antes do uso em produção.
+**Status:** 🟢 Implementação funcional — encerramento + snapshot histórico. A interface visual aprovada foi conectada aos dados reais, o formulário de encerramento foi implementado e a migration do banco já foi aplicada ao Supabase de produção (22/09/2026).
 
 ---
 
@@ -302,7 +302,7 @@ O arquivo de mock permanece no repositório apenas como referência da etapa vis
 
 Antes de considerar a entrega concluída:
 
-1. aplicar a migration no Supabase de produção;
+1. ~~aplicar a migration no Supabase de produção~~ — **feito em 22/09/2026** (tabela `event_closures` e RPC `close_event` confirmadas no projeto `ywcdopjqfhisopipqxgq`);
 2. validar build/CI;
 3. abrir **Eventos → Encerrar evento**;
 4. conferir dados automáticos de um evento real;
@@ -313,4 +313,4 @@ Antes de considerar a entrega concluída:
 9. abrir o detalhe e conferir os cálculos;
 10. confirmar que alterações posteriores na configuração do evento não alteram o snapshot.
 
-**Importante:** nesta etapa a migration foi criada e versionada no repositório, mas a aplicação remota no Supabase ainda precisa ser executada antes do primeiro uso em produção.
+**Importante:** a migration já foi aplicada ao Supabase de produção. Os itens 2 a 10 (validação funcional ponta a ponta com um evento real) ainda não foram confirmados.
