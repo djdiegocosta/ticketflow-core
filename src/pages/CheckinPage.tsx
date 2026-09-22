@@ -59,7 +59,7 @@ export function CheckinPage() {
       const online = navigator.onLine;
       setIsOnline(online);
       
-      if (online) {
+      if (online && selectedEvent?.id) {
         const queue = await offlineDB.getSyncQueue();
         if (queue.length > 0) {
           toast.promise(
@@ -184,7 +184,7 @@ export function CheckinPage() {
 
   // Câmera
   useEffect(() => {
-    if (showManual) return;
+    if (!selectedEvent || showManual) return;
     let cancelled = false;
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let videoWatch: ReturnType<typeof setInterval> | null = null;
