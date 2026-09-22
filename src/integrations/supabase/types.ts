@@ -298,6 +298,75 @@ export type Database = {
           },
         ]
       }
+      event_closures: {
+        Row: {
+          attendance_present: number
+          bar_product_cost: number
+          bar_revenue: number
+          box_office_quantity: number
+          box_office_revenue: number
+          closed_at: string
+          closed_by: string | null
+          courtesies_present: number
+          created_at: string
+          event_id: string
+          event_cost: number
+          id: string
+          notes: string | null
+          organization_id: string
+          snapshot: Json
+        }
+        Insert: {
+          attendance_present?: number
+          bar_product_cost?: number
+          bar_revenue?: number
+          box_office_quantity?: number
+          box_office_revenue?: number
+          closed_at?: string
+          closed_by?: string | null
+          courtesies_present?: number
+          created_at?: string
+          event_id: string
+          event_cost?: number
+          id?: string
+          notes?: string | null
+          organization_id: string
+          snapshot: Json
+        }
+        Update: {
+          attendance_present?: number
+          bar_product_cost?: number
+          bar_revenue?: number
+          box_office_quantity?: number
+          box_office_revenue?: number
+          closed_at?: string
+          closed_by?: string | null
+          courtesies_present?: number
+          created_at?: string
+          event_id?: string
+          event_cost?: number
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_closures_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_closures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_checklist_items: {
         Row: {
           completed_at: string | null
@@ -1170,6 +1239,20 @@ export type Database = {
       confirm_sale_paid: {
         Args: { _mp_payment_id: string; _sale_id: string }
         Returns: boolean
+      }
+      close_event: {
+        Args: {
+          _attendance_present: number
+          _bar_product_cost: number
+          _bar_revenue: number
+          _box_office_quantity: number
+          _box_office_revenue: number
+          _courtesies_present: number
+          _event_cost: number
+          _event_id: string
+          _notes?: string | null
+        }
+        Returns: Json
       }
       create_courtesy: {
         Args: {

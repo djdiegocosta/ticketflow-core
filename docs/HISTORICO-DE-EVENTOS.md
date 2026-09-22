@@ -1,14 +1,18 @@
 # Histórico de Eventos
 
-**Status:** 🟡 Etapa visual (protótipo de interface), rodada 2 — refinamento. Sem dados reais, sem persistência, sem regras de negócio.
+**Status:** 🟡 Implementação funcional — encerramento + snapshot histórico. A interface visual aprovada foi conectada aos dados reais e o formulário de encerramento foi implementado. A migration do banco está versionada neste branch, mas precisa ser aplicada ao Supabase antes do uso em produção.
 
 ---
 
 ## 1. Objetivo
 
-Ferramenta para consultar os resultados e indicadores de eventos já encerrados: público, ingressos, receita, custos e resultado financeiro consolidado.
+Ferramenta para consultar os resultados e indicadores de eventos já encerrados: público, ingressos, receita, custos, bar e resultado financeiro consolidado.
 
-Fica dentro de **Admin → Ferramentas**, reaproveitando o card "Histórico de Eventos" que já existia ali (antes apontava, por engano, para o histórico de check-in — ver seção 6).
+Fica dentro de **Admin → Ferramentas**.
+
+Princípio da ferramenta:
+
+> O TicketFlow registra automaticamente o que aconteceu dentro do sistema; no encerramento, o produtor informa o que aconteceu fora dele; o sistema consolida tudo em um resultado histórico congelado.
 
 ---
 
@@ -21,150 +25,292 @@ ADMIN
              └── Detalhe do evento → /admin/ferramentas/historico-eventos/:id
 ```
 
-Nenhum item novo no menu lateral. Único ponto de entrada: o card já existente em Ferramentas, com a descrição "Consulte os resultados, indicadores e dados históricos dos eventos realizados."
+Nenhum item novo foi adicionado ao menu lateral.
 
 ---
 
-## 3. Telas
+## 3. Encerramento do evento
 
-### 3.1 Lista (`EventHistoryListPage`)
-Busca por nome do evento, local ou cidade. Cada linha mostra: evento (com miniatura), data, local, público presente, ingressos, receita e resultado.
+O encerramento é iniciado em **Admin → Eventos**, pelo botão de arquivamento/encerramento do evento.
 
-### 3.2 Detalhe (`EventHistoryDetailPage`)
-**Uma única página, sem abas.** Cabeçalho simplificado (sem imagem do evento): "Voltar", nome do evento, selo "Encerrado em [data]" e data/local/cidade.
+O botão abre um painel/modal grande, com 4 etapas:
 
-Os 4 KPIs do topo (Público, Ingressos, Receita, Resultado) usam o **mesmo componente dos cards do Dashboard** (`DashboardMetricCard`, extraído de `AdminDashboard.tsx` para `src/components/admin/DashboardMetricCard.tsx` — o Dashboard passou a importar esse componente em vez de definir o card localmente, sem mudança de comportamento). O KPI "Resultado" usa a cor de destaque (verde/erro) no ícone e no valor, igual ao restante do TicketFlow — sem criar um estilo novo.
+1. **Público e bilheteria**
+2. **Bar**
+3. **Custos**
+4. **Revisão**
 
-Abaixo dos KPIs, seções empilhadas verticalmente, nesta ordem:
-1. **Público**
-2. **Vendas de ingressos**
-3. **Bar**
-4. **Financeiro**
-5. **Indicadores**
-6. **Observações do produtor**
+### 3.1 Dados automáticos do TicketFlow
 
-Bar e Indicadores usam cards compactos (`Tile`), 2 por linha, evitando 6 números apertados numa linha só.
+São carregados automaticamente e não podem ser editados:
+
+- ingressos pagos antecipadamente pelo TicketFlow;
+- receita dos ingressos pagos pelo TicketFlow;
+- vendas antecipadas agrupadas por lote;
+- check-ins de ingressos;
+- check-ins de cortesias, usados apenas como referência.
+
+### 3.2 Dados informados manualmente
+
+O produtor informa:
+
+**Público e bilheteria**
+- ingressos vendidos na bilheteria;
+- receita da bilheteria;
+- cortesias presentes;
+- público presente.
+
+**Bar**
+- venda total do bar;
+- custo dos produtos do bar.
+
+**Custos**
+- custo total do evento, sem incluir o custo dos produtos do bar.
+
+**Revisão**
+- observações do produtor.
+
+O campo de custo do bar existe somente na etapa **Bar**. Não há duplicação na etapa de custos.
 
 ---
 
-## 4. Público × ingressos × cortesias × presença real
+## 4. Definição de público
 
-São quatro números diferentes, sem confundir:
+Os números são tratados separadamente:
 
-- **Ingressos antecipados** e **ingressos bilheteria** — pagos.
-- **Cortesias** — emitidas, não pagas.
-- **Público presente** — quem realmente compareceu. Será informado manualmente no encerramento do evento; nesta etapa é MOCK.
+- **Ingressos antecipados:** ingressos pagos pelo TicketFlow.
+- **Ingressos bilheteria:** ingressos pagos vendidos fora do TicketFlow, informados manualmente.
+- **Cortesias presentes:** cortesias que efetivamente compareceram.
+- **Público presente:** total real de pessoas que compareceram ao evento, informado manualmente.
 
-O percentual "antecipado × bilheteria" considera **apenas os ingressos pagos** (antecipados + bilheteria), sem incluir cortesias:
+Público presente não é calculado como ingressos + cortesias, porque pode haver no-show e também pessoas presentes que não se enquadram nesses dois grupos.
+
+Os check-ins do TicketFlow aparecem somente como referência para ajudar o produtor a informar o número final.
+
+---
+
+## 5. Vendas antecipadas × bilheteria
+
+O percentual de venda antecipada considera somente ingressos pagos:
 
 ```
-% antecipado = antecipados ÷ (antecipados + bilheteria)
+Venda antecipada =
+  ingressos antecipados /
+  (ingressos antecipados + ingressos bilheteria)
 ```
 
----
+Cortesias nunca entram nesse denominador.
 
-## 5. Vendas por lote × bilheteria (dado manual)
-
-A tabela de vendas por lote (colunas: **Lote | Qtd. | Valor | Receita**) mostra só os lotes vendidos pelo TicketFlow.
-
-A **bilheteria não é um lote do TicketFlow** — é um dado que o produtor informa manualmente no encerramento (quantidade + receita). Por isso aparece separada, num bloco próprio, com a nota "Dado informado manualmente no encerramento".
+A bilheteria não é tratada como lote do TicketFlow.
 
 ---
 
-## 6. Ajuste no card existente de Ferramentas
+## 6. Financeiro
 
-O card "Histórico de Eventos" em Ferramentas já existia, mas apontava para `/admin/historico` (o **registro de check-ins**, `CheckinHistoryPage`), não para resultados de evento. Para não perder essa funcionalidade:
-1. O card existente passou a apontar para a nova ferramenta e teve a descrição revisada.
-2. Um card **"Histórico de Check-in"** foi adicionado em Ferramentas, apontando para `/admin/historico`, preservando o acesso que já existia.
-
-Nenhum card foi criado a mais para o Histórico de Eventos nem movido de posição.
-
----
-
-## 7. Bar: venda, custo e resultado bruto
-
-A receita do bar não é lucro. Custo dos produtos é um valor **informado manualmente** pelo produtor — nunca calculado como um percentual fixo (não existe regra "custo = 50% da venda").
+### Receitas
 
 ```
-Venda total do bar        R$ 10.000
-Custo dos produtos          R$ 5.000
-Resultado bruto              R$ 5.000  (= venda − custo)
-Custo sobre venda                 50%  (= custo ÷ venda × 100, só um indicador)
+Receita de ingressos =
+  receita TicketFlow + receita bilheteria
+
+Receita do bar =
+  venda total informada no encerramento
+
+Receita total =
+  receita de ingressos + receita do bar
 ```
 
-Layout: 2 cards por linha (venda total / custo dos produtos, resultado bruto / custo sobre venda, público presente / consumo médio).
+### Custos
+
+```
+Custo do evento =
+  valor único informado manualmente
+
+Custo do bar =
+  custo real dos produtos informado manualmente
+
+Custos totais =
+  custo do evento + custo do bar
+```
+
+### Resultado
+
+```
+Resultado líquido =
+  receita total - custos totais
+
+Margem =
+  resultado líquido / receita total × 100
+```
+
+Se a receita total for zero, a margem é 0%.
+
+O custo do bar nunca é assumido como 50% ou qualquer outro percentual fixo.
 
 ---
 
-## 8. Financeiro simplificado
+## 7. Bar
 
-Sem detalhamento por categoria de custo (atrações, espaço, som, staff etc.). No encerramento, o produtor informa apenas dois números de custo:
+Indicadores:
+
+- Venda total;
+- Custo dos produtos;
+- Resultado bruto;
+- Custo sobre venda;
+- Público presente;
+- Consumo médio.
+
+Fórmulas:
 
 ```
-RECEITAS
-Receita de ingressos     R$ XX.XXX
-Receita do bar           R$ XX.XXX
-Receita total             R$ XX.XXX
+Resultado bruto =
+  venda do bar - custo dos produtos
 
-CUSTOS
-Custo do evento           R$ XX.XXX   (valor único, informado manualmente)
-Custo do bar               R$ X.XXX   (idem)
-Custos totais              R$ XX.XXX
+Custo sobre venda =
+  custo dos produtos / venda do bar × 100
 
-RESULTADO
-Resultado líquido          R$ X.XXX   (destaque com a cor temática do TicketFlow)
-Margem                        XX,X%
+Consumo médio =
+  venda do bar / público presente
 ```
+
+Divisão por zero retorna 0.
 
 ---
 
-## 9. Indicadores — definição de cada um
+## 8. Indicadores
 
-Cálculo de apresentação feito em tela a partir do mock (`deriveDisplayNumbers` em `EventHistoryDetailPage.tsx`). É a fórmula que a etapa de dados reais deverá seguir:
+O detalhe histórico apresenta:
 
-| Indicador | Fórmula |
-|---|---|
-| Ticket médio | receita de ingressos ÷ ingressos pagos |
-| Receita por pessoa | receita total ÷ público presente |
-| Consumo médio | receita do bar ÷ público presente |
-| Venda antecipada | ingressos antecipados ÷ ingressos pagos |
-| Cortesias | cortesias presentes ÷ público presente |
-| Custo do bar | custo dos produtos do bar ÷ receita do bar |
+- Ticket médio = receita de ingressos / ingressos pagos;
+- Receita por pessoa = receita total / público presente;
+- Consumo médio = receita do bar / público presente;
+- Venda antecipada = ingressos antecipados / ingressos pagos;
+- Cortesias = cortesias presentes / público presente;
+- Custo do bar = custo dos produtos / receita do bar.
 
-Apresentados em cards compactos, 2 por linha — mesmo estilo da seção Bar.
-
-**Observação sobre o mock:** por simplicidade, o mock assume que todas as cortesias emitidas compareceram (não existe ainda o campo "cortesias presentes" separado de "cortesias emitidas"). Isso deve ser revisto quando a lógica real for implementada.
+Divisões por zero retornam 0.
 
 ---
 
-## 10. O que é MOCK nesta etapa
+## 9. Snapshot histórico
 
-- Toda a lista e o detalhe vêm de `src/lib/mocks/historico-eventos.mock.ts` — 4 eventos fictícios, isolados nesse arquivo, incluindo um caso de valores pequenos, médios e grandes (até R$ 1.245.800,00 de receita) para validar o layout dos KPIs com números grandes.
-- Indicadores são aritmética de apresentação sobre os números mock, não uma regra de negócio validada.
-- Observações do produtor: texto fixo de exemplo.
+Ao finalizar o encerramento, o banco executa uma única operação transacional:
 
-## 11. O que NÃO foi implementado nesta etapa
+1. valida que o usuário é administrador;
+2. bloqueia o evento para evitar fechamento concorrente;
+3. consolida as vendas pagas existentes;
+4. consolida os lotes vendidos;
+5. combina os dados automáticos com os dados manuais;
+6. calcula os totais;
+7. grava um snapshot JSON completo em `event_closures.snapshot`;
+8. grava os campos manuais;
+9. marca `events.is_closed = true`;
+10. grava `events.closed_at`.
 
-- Banco de dados, tabelas, migrations ou RPCs
-- Formulário funcional de encerramento
-- Integração com vendas, pagamentos, bar ou simulador
-- Cálculo real dos indicadores a partir de dados de venda
-- Campo separado de "cortesias presentes"
+A tela do Histórico lê o **snapshot**, não recalcula o passado a partir da configuração atual do evento.
 
-## 12. Dados que serão informados manualmente no encerramento (preparação conceitual)
+Isso é importante: alterar lotes, preços ou outros dados do evento depois do encerramento não modifica o histórico já fechado.
 
-Ainda sem tela funcional, mas a interface já foi pensada considerando que estes dados virão do formulário de encerramento (etapa futura):
+O registro de encerramento é único por evento.
 
-- **Público:** ingressos vendidos na bilheteria, receita da bilheteria, cortesias, público presente
-- **Bar:** venda total do bar, custo dos produtos do bar
-- **Financeiro:** custo total do evento
-- **Observações:** observações do produtor
+---
 
-Os demais dados (ingressos por lote, receita de ingressos, check-ins) devem vir automaticamente do TicketFlow.
+## 10. Banco de dados
 
-## 13. Próximos passos previstos
+Migration:
 
-1. Tela funcional de encerramento de evento (formulário para os dados manuais da seção 12).
-2. Estrutura de banco para fechamento de evento.
-3. RPC/lógica de fechamento que consolida vendas do TicketFlow + dados informados pelo produtor.
-4. Trocar os mocks em `historico-eventos.mock.ts` por dados reais, mantendo os mesmos componentes de tela.
+`supabase/migrations/20260922230000_create_event_closures.sql`
+
+Tabela:
+
+`public.event_closures`
+
+Campos principais:
+
+- `organization_id`
+- `event_id`
+- `closed_by`
+- `closed_at`
+- `box_office_quantity`
+- `box_office_revenue`
+- `courtesies_present`
+- `attendance_present`
+- `bar_revenue`
+- `bar_product_cost`
+- `event_cost`
+- `notes`
+- `snapshot`
+
+RPC:
+
+`public.close_event(...)`
+
+A RPC é `SECURITY DEFINER`, restringida a administradores, com `search_path = ''` e objetos explicitamente qualificados.
+
+A tabela possui RLS e leitura somente para administradores da organização.
+
+---
+
+## 11. Código
+
+Consultas e mutações:
+
+`src/lib/event-history-queries.ts`
+
+Formulário de encerramento:
+
+`src/components/admin/EventClosurePanel.tsx`
+
+Lista real:
+
+`src/pages/admin/EventHistoryListPage.tsx`
+
+Detalhe real:
+
+`src/pages/admin/EventHistoryDetailPage.tsx`
+
+Entrada do encerramento:
+
+`src/pages/admin/EventsListPage.tsx`
+
+Tipos Supabase:
+
+`src/integrations/supabase/types.ts`
+
+---
+
+## 12. MOCK
+
+O Histórico de Eventos não usa mais os dados de `historico-eventos.mock.ts` para exibição.
+
+O arquivo de mock permanece no repositório apenas como referência da etapa visual anterior e pode ser removido em uma limpeza posterior, depois da validação da implementação real.
+
+---
+
+## 13. Segurança e permissões
+
+- Apenas administradores podem finalizar eventos.
+- Colaboradores continuam sem acesso à ferramenta de Histórico, conforme as rotas existentes.
+- A escrita do encerramento ocorre pela RPC.
+- A tabela histórica não aceita INSERT/UPDATE/DELETE direto pelo cliente autenticado.
+- O snapshot fica vinculado à organização e ao evento.
+- Um evento não pode receber dois encerramentos.
+
+---
+
+## 14. Próximas validações
+
+Antes de considerar a entrega concluída:
+
+1. aplicar a migration no Supabase de produção;
+2. validar build/CI;
+3. abrir **Eventos → Encerrar evento**;
+4. conferir dados automáticos de um evento real;
+5. preencher bilheteria, cortesias presentes, público presente, bar e custos;
+6. revisar o resumo;
+7. finalizar;
+8. confirmar que o evento aparece em **Ferramentas → Histórico de Eventos**;
+9. abrir o detalhe e conferir os cálculos;
+10. confirmar que alterações posteriores na configuração do evento não alteram o snapshot.
+
+**Importante:** nesta etapa a migration foi criada e versionada no repositório, mas a aplicação remota no Supabase ainda precisa ser executada antes do primeiro uso em produção.
