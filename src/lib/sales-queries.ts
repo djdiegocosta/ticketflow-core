@@ -158,7 +158,7 @@ export function useSale(id: string) {
   });
 }
 
-export function useSalesStats(eventId?: string) {
+export function useSalesStats(eventId?: string | null) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
