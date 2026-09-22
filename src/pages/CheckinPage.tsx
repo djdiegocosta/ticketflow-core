@@ -269,7 +269,7 @@ export function CheckinPage() {
         }
       }
     };
-  }, [showManual, processCheckin]);
+  }, [showManual, processCheckin, selectedEvent?.id]);
 
   const requestFullscreen = () => {
     const elem = document.documentElement;
