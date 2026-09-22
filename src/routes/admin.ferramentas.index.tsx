@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, BarChart3, Link2 } from "lucide-react";
+import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, ScanLine, BarChart3, Link2 } from "lucide-react";
 
 const tools = [
   {
     name: "Histórico de Eventos",
-    description: "Consulte o histórico de check-ins de todos os eventos.",
+    description: "Consulte os resultados, indicadores e dados históricos dos eventos realizados.",
     icon: History,
-    href: "/admin/historico",
+    href: "/admin/ferramentas/historico-eventos",
   },
   {
     name: "Relatórios",
@@ -43,6 +43,12 @@ const tools = [
     description: "Organize as tarefas do dia do evento para não esquecer nada",
     icon: CheckSquare,
     href: "/admin/checklist",
+  },
+  {
+    name: "Histórico de Check-in",
+    description: "Consulte o registro de check-ins realizados nos eventos.",
+    icon: ScanLine,
+    href: "/admin/historico",
   },
 ];
 

@@ -50,6 +50,8 @@ import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.inde
 import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
 import { Route as ESlugCheckoutRouteImport } from './routes/e.$slug.checkout'
+import { Route as AdminFerramentasHistoricoEventosIndexRouteImport } from './routes/admin.ferramentas.historico-eventos.index'
+import { Route as AdminFerramentasHistoricoEventosIdRouteImport } from './routes/admin.ferramentas.historico-eventos.$id'
 import { Route as ApiPublicMpWebhookRouteImport } from './routes/api/public/mp/webhook'
 import { Route as ApiPublicTicketsPdfRouteImport } from './routes/api/public/tickets/pdf'
 import { Route as ESlugConfirmacaoSale_codeRouteImport } from './routes/e.$slug.confirmacao.$sale_code'
@@ -261,6 +263,18 @@ const ESlugCheckoutRoute = ESlugCheckoutRouteImport.update({
   path: '/e/$slug/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminFerramentasHistoricoEventosIndexRoute =
+  AdminFerramentasHistoricoEventosIndexRouteImport.update({
+    id: '/ferramentas/historico-eventos/',
+    path: '/ferramentas/historico-eventos/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
+const AdminFerramentasHistoricoEventosIdRoute =
+  AdminFerramentasHistoricoEventosIdRouteImport.update({
+    id: '/ferramentas/historico-eventos/$id',
+    path: '/ferramentas/historico-eventos/$id',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const ApiPublicMpWebhookRoute = ApiPublicMpWebhookRouteImport.update({
   id: '/api/public/mp/webhook',
   path: '/api/public/mp/webhook',
@@ -320,9 +334,11 @@ export interface FileRoutesByFullPath {
   '/admin/ferramentas/': typeof AdminFerramentasIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
+  '/admin/ferramentas/historico-eventos/$id': typeof AdminFerramentasHistoricoEventosIdRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
+  '/admin/ferramentas/historico-eventos/': typeof AdminFerramentasHistoricoEventosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -364,9 +380,11 @@ export interface FileRoutesByTo {
   '/admin/ferramentas': typeof AdminFerramentasIndexRoute
   '/admin/vendas': typeof AdminVendasIndexRoute
   '/e/$slug': typeof ESlugIndexRoute
+  '/admin/ferramentas/historico-eventos/$id': typeof AdminFerramentasHistoricoEventosIdRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
+  '/admin/ferramentas/historico-eventos': typeof AdminFerramentasHistoricoEventosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -411,9 +429,11 @@ export interface FileRoutesById {
   '/admin/ferramentas/': typeof AdminFerramentasIndexRoute
   '/admin/vendas/': typeof AdminVendasIndexRoute
   '/e/$slug/': typeof ESlugIndexRoute
+  '/admin/ferramentas/historico-eventos/$id': typeof AdminFerramentasHistoricoEventosIdRoute
   '/api/public/mp/webhook': typeof ApiPublicMpWebhookRoute
   '/api/public/tickets/pdf': typeof ApiPublicTicketsPdfRoute
   '/e/$slug/confirmacao/$sale_code': typeof ESlugConfirmacaoSale_codeRoute
+  '/admin/ferramentas/historico-eventos/': typeof AdminFerramentasHistoricoEventosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -459,9 +479,11 @@ export interface FileRouteTypes {
     | '/admin/ferramentas/'
     | '/admin/vendas/'
     | '/e/$slug/'
+    | '/admin/ferramentas/historico-eventos/$id'
     | '/api/public/mp/webhook'
     | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
+    | '/admin/ferramentas/historico-eventos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -503,9 +525,11 @@ export interface FileRouteTypes {
     | '/admin/ferramentas'
     | '/admin/vendas'
     | '/e/$slug'
+    | '/admin/ferramentas/historico-eventos/$id'
     | '/api/public/mp/webhook'
     | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
+    | '/admin/ferramentas/historico-eventos'
   id:
     | '__root__'
     | '/'
@@ -549,9 +573,11 @@ export interface FileRouteTypes {
     | '/admin/ferramentas/'
     | '/admin/vendas/'
     | '/e/$slug/'
+    | '/admin/ferramentas/historico-eventos/$id'
     | '/api/public/mp/webhook'
     | '/api/public/tickets/pdf'
     | '/e/$slug/confirmacao/$sale_code'
+    | '/admin/ferramentas/historico-eventos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -864,6 +890,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ESlugCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/ferramentas/historico-eventos/': {
+      id: '/admin/ferramentas/historico-eventos/'
+      path: '/ferramentas/historico-eventos'
+      fullPath: '/admin/ferramentas/historico-eventos/'
+      preLoaderRoute: typeof AdminFerramentasHistoricoEventosIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/ferramentas/historico-eventos/$id': {
+      id: '/admin/ferramentas/historico-eventos/$id'
+      path: '/ferramentas/historico-eventos/$id'
+      fullPath: '/admin/ferramentas/historico-eventos/$id'
+      preLoaderRoute: typeof AdminFerramentasHistoricoEventosIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/api/public/mp/webhook': {
       id: '/api/public/mp/webhook'
       path: '/api/public/mp/webhook'
@@ -910,6 +950,8 @@ interface AdminRouteRouteChildren {
   AdminEventosIndexRoute: typeof AdminEventosIndexRoute
   AdminFerramentasIndexRoute: typeof AdminFerramentasIndexRoute
   AdminVendasIndexRoute: typeof AdminVendasIndexRoute
+  AdminFerramentasHistoricoEventosIdRoute: typeof AdminFerramentasHistoricoEventosIdRoute
+  AdminFerramentasHistoricoEventosIndexRoute: typeof AdminFerramentasHistoricoEventosIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
@@ -934,6 +976,10 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminEventosIndexRoute: AdminEventosIndexRoute,
   AdminFerramentasIndexRoute: AdminFerramentasIndexRoute,
   AdminVendasIndexRoute: AdminVendasIndexRoute,
+  AdminFerramentasHistoricoEventosIdRoute:
+    AdminFerramentasHistoricoEventosIdRoute,
+  AdminFerramentasHistoricoEventosIndexRoute:
+    AdminFerramentasHistoricoEventosIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

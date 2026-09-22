@@ -73,6 +73,8 @@ TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/
 - `/admin/clientes/:id`
 - `/admin/checkin` → **alias/redirect** para `/checkin`
 - `/admin/ferramentas`
+- `/admin/ferramentas/historico-eventos` — **etapa visual, dados MOCK** (ver `/docs/HISTORICO-DE-EVENTOS.md`)
+- `/admin/ferramentas/historico-eventos/:id` — **etapa visual, dados MOCK**
 - `/admin/checklist`
 - `/admin/ferramentas/links-de-venda` (quando presente na árvore atual)
 - `/admin/configuracoes`
