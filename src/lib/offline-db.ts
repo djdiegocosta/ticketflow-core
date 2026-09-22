@@ -61,6 +61,7 @@ export class OfflineDB {
       const transaction = db.transaction(['event_tickets'], 'readwrite');
       const store = transaction.objectStore('event_tickets');
       
+      store.clear();
       tickets.forEach(ticket => store.put(ticket));
       
       transaction.oncomplete = () => resolve();
@@ -78,6 +79,11 @@ export class OfflineDB {
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
+  }
+
+  async getTicketForEvent(code: string, eventId: string): Promise<OfflineTicket | null> {
+    const ticket = await this.getTicket(code);
+    return ticket?.eventId === eventId ? ticket : null;
   }
 
   async updateTicketStatus(code: string, status: OfflineTicket['status']): Promise<void> {
