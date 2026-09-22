@@ -189,5 +189,5 @@ BEGIN
 END;
 $function$;
 
-REVOKE EXECUTE ON FUNCTION public.checkin_ticket_for_event(uuid, uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.checkin_ticket_for_event(text, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.checkin_ticket_for_event(text, uuid) TO authenticated;
