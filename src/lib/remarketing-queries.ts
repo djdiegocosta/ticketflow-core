@@ -26,6 +26,7 @@ export function useAbandonedCheckouts(eventId?: string) {
   return useQuery({
     queryKey: ["remarketing", "abandoned-checkouts", eventId],
     queryFn: async () => {
+      if (eventId === null) return [];
       let query = supabase
         .from("sales")
         .select(
