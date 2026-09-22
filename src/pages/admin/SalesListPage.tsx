@@ -34,8 +34,6 @@ const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado", "Devo
 
 function StatusBadge({ sale }: { sale: any }) {
   if (sale.is_courtesy) return <StatusPill tone="warning">Cortesia</StatusPill>;
-  if (!operationalEvent && !isLoading) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><Link to="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</Link></div>;
-
   return (
     <StatusPill
       tone={
@@ -237,7 +235,9 @@ export function SalesListPage() {
             {pageRows.map((sale) => {
               const canCancel =
                 sale.status !== "cancelado" && sale.status !== "reembolsado" && !sale.is_courtesy;
-              return (
+              if (!operationalEvent && !isLoading) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><Link to="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</Link></div>;
+
+  return (
                 <DataTableRow key={sale.id}>
                   <DataTableCell variant="primary">
                     <div className="min-w-0">
