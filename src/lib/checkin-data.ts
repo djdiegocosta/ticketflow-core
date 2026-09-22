@@ -148,5 +148,5 @@ export async function processSyncQueue(eventId: string) {
     }
   }
   
-  await offlineDB.clearSyncQueue();
+  await offlineDB.removeSyncItemsForEvent(eventId);
 }
