@@ -74,7 +74,7 @@ export function SalesListPage() {
   const [cancellingSale, setCancellingSale] = useState<string | null>(null);
 
   useAdminPageAction(
-    !isColab ? (
+    !isColab && operationalEvent ? (
       <PrimaryActionButton onClick={() => setModalOpen(true)}>Nova Venda</PrimaryActionButton>
     ) : null,
   );
