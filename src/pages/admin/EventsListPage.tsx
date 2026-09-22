@@ -146,23 +146,25 @@ export function EventsListPage() {
                             </TooltipContent>
                           </Tooltip>
                         )}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                navigate({ to: "/admin/eventos/$id", params: { id: event.id } })
-                              }
-                              className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--accent)]"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom">
-                            <p>Editar evento</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        {!isClosed && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  navigate({ to: "/admin/eventos/$id", params: { id: event.id } })
+                                }
+                                className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--accent)]"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p>Editar evento</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         {!history.some((item) => item.eventId === event.id) && status !== "Cancelado" && status !== "Rascunho" && (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -180,49 +182,51 @@ export function EventsListPage() {
                             </TooltipContent>
                           </Tooltip>
                         )}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={isDeleting === event.id}
-                              onClick={async () => {
-                                if (
-                                  !window.confirm(
-                                    `Tem certeza que deseja excluir o evento "${event.title}"?`,
+                        {!isClosed && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={isDeleting === event.id}
+                                onClick={async () => {
+                                  if (
+                                    !window.confirm(
+                                      `Tem certeza que deseja excluir o evento "${event.title}"?`,
+                                    )
                                   )
-                                )
-                                  return;
-                                setIsDeleting(event.id);
-                                try {
-                                  const { error } = await supabase.rpc("delete_event", {
-                                    _event_id: event.id,
-                                  });
-                                  if (error) throw error;
-                                  toast.success("Evento excluído com sucesso");
-                                  queryClient.invalidateQueries({ queryKey: ["events"] });
-                                } catch (err: any) {
-                                  toast.error(
-                                    "Erro ao excluir: " +
-                                      (err.message || "Verifique se há vendas pagas vinculadas."),
-                                  );
-                                } finally {
-                                  setIsDeleting(null);
-                                }
-                              }}
-                              className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--error)] disabled:opacity-50"
-                            >
-                              {isDeleting === event.id ? (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom">
-                            <p>Excluir evento</p>
-                          </TooltipContent>
-                        </Tooltip>
+                                    return;
+                                  setIsDeleting(event.id);
+                                  try {
+                                    const { error } = await supabase.rpc("delete_event", {
+                                      _event_id: event.id,
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Evento excluído com sucesso");
+                                    queryClient.invalidateQueries({ queryKey: ["events"] });
+                                  } catch (err: any) {
+                                    toast.error(
+                                      "Erro ao excluir: " +
+                                        (err.message || "Verifique se há vendas pagas vinculadas."),
+                                    );
+                                  } finally {
+                                    setIsDeleting(null);
+                                  }
+                                }}
+                                className="rounded-[var(--radius-sm)] border border-border-default bg-[var(--bg-primary)]/90 p-2 text-[var(--text-secondary)] backdrop-blur-sm transition-colors hover:bg-[var(--bg-primary)] hover:text-[var(--error)] disabled:opacity-50"
+                              >
+                                {isDeleting === event.id ? (
+                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p>Excluir evento</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </TooltipProvider>
                     </div>
                   </div>
