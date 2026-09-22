@@ -163,7 +163,7 @@ export function EventsListPage() {
                             <p>Editar evento</p>
                           </TooltipContent>
                         </Tooltip>
-                        {!history.some((item) => item.eventId === event.id) && status !== "Cancelado" && (
+                        {!history.some((item) => item.eventId === event.id) && status !== "Cancelado" && status !== "Rascunho" && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
