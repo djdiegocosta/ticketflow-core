@@ -330,11 +330,15 @@ export function EventHistoryDetailPage({ id }: { id: string }) {
       </div>
 
       <div className="space-y-5">
-        <AudienceSection event={event} nums={nums} />
-        <TicketSalesSection event={event} />
-        <BarSection event={event} nums={nums} />
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <AudienceSection event={event} nums={nums} />
+          <TicketSalesSection event={event} />
+        </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <BarSection event={event} nums={nums} />
+          <IndicatorsSection nums={nums} />
+        </div>
         <FinanceSection event={event} nums={nums} />
-        <IndicatorsSection nums={nums} />
         <NotesSection event={event} />
       </div>
     </div>
