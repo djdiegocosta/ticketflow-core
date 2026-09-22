@@ -124,6 +124,20 @@ export class OfflineDB {
     });
   }
 
+  async removeSyncItemsForEvent(eventId: string): Promise<void> {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(["checkin_sync_queue"], "readwrite");
+      const store = transaction.objectStore("checkin_sync_queue");
+      const request = store.getAll();
+      request.onsuccess = () => {
+        (request.result as SyncItem[]).filter((item) => item.eventId === eventId).forEach((item) => store.delete(item.id));
+      };
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
   async clearSyncQueue(): Promise<void> {
     const db = await this.init();
     return new Promise((resolve, reject) => {
