@@ -310,5 +310,5 @@ $$;
 revoke execute on function public.close_event(uuid, integer, numeric, integer, integer, numeric, numeric, numeric, text)
   from public, anon;
 
-grant execute on function public.close_event(uuid, integer, numeric, integer, numeric, numeric, numeric, numeric, text)
+grant execute on function public.close_event(uuid, integer, numeric, integer, integer, numeric, numeric, numeric, text)
   to authenticated;
