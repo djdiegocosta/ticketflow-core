@@ -22,7 +22,6 @@ const Panel = ({ title, children, action }: { title: string; children: ReactNode
 export function AdminDashboard() {
   const { loading: authLoading, refreshProfile } = useAuth();
   const { isLoading: eventsLoading, error: eventsError, event: operationalEvent, refetch: refetchEvents } = useOperationalEvent();
-  const eventId = operationalEvent?.id;
   const operationalEventId = operationalEvent?.id ?? null;
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useSalesStats(operationalEventId);
   const { data: sales = [], isLoading: salesLoading, error: salesError, refetch: refetchSales } = useSales(operationalEventId);
