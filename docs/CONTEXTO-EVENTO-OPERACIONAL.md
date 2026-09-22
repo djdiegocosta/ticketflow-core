@@ -207,3 +207,44 @@ Se for histórico:
 - src/pages/admin/RemarketingPage.tsx
 - src/pages/PublicEventPage.tsx
 - src/pages/admin/EventsListPage.tsx
+
+
+## Implementação da primeira etapa
+
+A primeira etapa foi implementada na branch `feat/contexto-evento-operacional`.
+
+Já coberto nesta entrega:
+
+- Dashboard sem fallback para dados históricos;
+- Vendas restritas ao Evento Operacional;
+- Cortesias e métricas operacionais com contexto explícito;
+- Remarketing restrito ao Evento Operacional;
+- página pública rejeitando eventos encerrados;
+- Check-in usando exclusivamente o Evento Operacional;
+- cache offline do Check-in isolado por evento;
+- sincronização offline preservando filas de outros eventos;
+- bloqueio de edição/exclusão de eventos encerrados na interface;
+- bloqueio no banco de alterações em eventos encerrados e seus lotes;
+- teste da seleção do Evento Operacional.
+
+### Proteções adicionais do Check-in
+
+O cliente passou a chamar uma RPC específica por evento: `checkin_ticket_for_event`.
+
+Essa função deve:
+
+- aceitar somente evento pertencente à organização do operador;
+- aceitar somente evento publicado e não encerrado;
+- aceitar somente ticket pertencente ao `event_id` informado;
+- impedir que um QR Code de evento encerrado ou de outro evento seja validado durante a operação corrente.
+
+A migration `20260922235500_add_event_scoped_checkin.sql` precisa estar aplicada no Supabase antes do novo fluxo de Check-in ser usado em produção.
+
+### Validação de produção
+
+A aplicação do código desta branch ainda deve passar pela validação automatizada e pela aplicação das duas novas migrations no Supabase:
+
+- `20260922235500_add_event_scoped_checkin.sql`
+- `20260922235600_protect_closed_events.sql`
+
+Não considerar a etapa concluída em produção antes dessas verificações.
