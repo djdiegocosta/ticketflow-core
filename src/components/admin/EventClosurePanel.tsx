@@ -163,7 +163,7 @@ export function EventClosurePanel({
 
   if (!open || !event) return null;
 
-  const canFinish = parsed.attendancePresent >= 0;
+  const canFinish = attendancePresent.trim() !== "" && parsed.attendancePresent >= 0;
 
   const nextStep = () => setStep((current) => Math.min(current + 1, STEPS.length));
   const previousStep = () => setStep((current) => Math.max(current - 1, 1));
