@@ -4,6 +4,7 @@ const DB_VERSION = 1;
 
 export interface OfflineTicket {
   code: string;
+  eventId: string;
   name: string;
   eventName: string;
   status: 'valid' | 'already_used' | 'invalid';
@@ -12,6 +13,7 @@ export interface OfflineTicket {
 
 export interface SyncItem {
   id: string;
+  eventId: string;
   code: string;
   eventName: string;
   timestamp: number;
