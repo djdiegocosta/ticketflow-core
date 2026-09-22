@@ -18,7 +18,7 @@ import {
 import { FilterBar, FilterSearch, FilterTabs } from "@/components/admin/FilterBar";
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { useAuth } from "@/lib/auth-context";
-import { getOperationalEvent, useEvents } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 import { useAdminPageAction } from "@/components/layouts/AdminPageActionContext";
 import {
   DropdownMenu,
@@ -34,6 +34,8 @@ const STATUS_TABS = ["Todos", "Pago", "Pendente", "Expirado", "Cancelado", "Devo
 
 function StatusBadge({ sale }: { sale: any }) {
   if (sale.is_courtesy) return <StatusPill tone="warning">Cortesia</StatusPill>;
+  if (!operationalEvent && !isLoading) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><Link to="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</Link></div>;
+
   return (
     <StatusPill
       tone={
@@ -62,11 +64,10 @@ function StatusBadge({ sale }: { sale: any }) {
 }
 
 export function SalesListPage() {
-  const { data: sales = [], isLoading, refetch } = useSales();
-  const { data: events = [] } = useEvents();
+  const { event: operationalEvent } = useOperationalEvent();
+  const { data: sales = [], isLoading, refetch } = useSales(operationalEvent?.id ?? null);
   const { userRole } = useAuth();
   const isColab = userRole === "colaborador";
-  const operationalEvent = getOperationalEvent(events);
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
@@ -83,7 +84,7 @@ export function SalesListPage() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return sales.filter((sale) => {
-      const eventMatch = !operationalEvent || sale.event_id === operationalEvent.id;
+      const eventMatch = !!operationalEvent && sale.event_id === operationalEvent.id;
       const statusValue = statusFilter === "Devolvido" ? "reembolsado" : statusFilter.toLowerCase();
       const statusMatch = statusFilter === "Todos" || sale.status === statusValue;
       const normalizedPhone = sale.buyer_whatsapp.replace(/\D/g, "");
@@ -139,7 +140,7 @@ export function SalesListPage() {
         return namesBySale.get(id) ?? [sale?.buyer_name ?? "—"];
       });
 
-      generateCheckinListPdf(operationalEvent?.title ?? "Todos os eventos", names);
+      generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
       toast.success("Lista PDF gerada");
     } catch (err) {
       console.error(err);
