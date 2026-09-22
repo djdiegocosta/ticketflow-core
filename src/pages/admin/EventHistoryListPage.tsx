@@ -18,7 +18,6 @@ export function EventHistoryListPage() {
       [
         snapshot.event.title,
         snapshot.event.venue,
-        snapshot.event.location,
       ]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(term)),
