@@ -143,6 +143,7 @@ export function ChecklistPage() {
           <a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a>
         </div>
       ) : (
+        <>
       <MiniMetricGrid>
         <MiniMetricCard
           title="Total de Tarefas"
@@ -263,7 +264,7 @@ export function ChecklistPage() {
           </TabsContent>
         </Tabs>
       )}
-
+      </>
       )}
 
       <SidePanel
