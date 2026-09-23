@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { useEvents } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 
 interface Task {
   id: string;
@@ -19,20 +19,13 @@ interface Task {
 
 export function ChecklistPage() {
   const { organizationId } = useAuth();
-  const { data: events = [] } = useEvents();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const { event: operationalEvent, isLoading: eventLoading } = useOperationalEvent();
+  const selectedEventId = operationalEvent?.id ?? null;
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (events.length > 0 && !selectedEventId) {
-      const firstEvent = events[0];
-      if (firstEvent) setSelectedEventId(firstEvent.id);
-    }
-  }, [events, selectedEventId]);
 
   useEffect(() => {
     if (selectedEventId && organizationId) {
@@ -130,28 +123,27 @@ export function ChecklistPage() {
       <ListPageHeader
         title="Checklist do Evento"
         action={
-          <div className="flex gap-3">
-            {events.length > 1 && (
-              <select
-                aria-label="Selecionar evento"
-                className="border border-border-default bg-bg-secondary px-3 py-2 text-small outline-none focus:border-accent"
-                value={selectedEventId || ""}
-                onChange={(e) => setSelectedEventId(e.target.value)}
-              >
-                {events.map((ev) => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.title}
-                  </option>
-                ))}
-              </select>
-            )}
-            <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
-              Nova Tarefa
-            </PrimaryActionButton>
-          </div>
+          operationalEvent ? (
+            <div className="flex items-center gap-3">
+              <span className="text-small text-text-secondary">{operationalEvent.title}</span>
+              <PrimaryActionButton onClick={() => setIsPanelOpen(true)}>
+                Nova Tarefa
+              </PrimaryActionButton>
+            </div>
+          ) : undefined
         }
       />
 
+      {!eventLoading && !operationalEvent ? (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center">
+          <div>
+            <h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2>
+            <p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p>
+          </div>
+          <a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a>
+        </div>
+      ) : (
+        <>
       <MiniMetricGrid>
         <MiniMetricCard
           title="Total de Tarefas"
@@ -271,6 +263,8 @@ export function ChecklistPage() {
             </div>
           </TabsContent>
         </Tabs>
+      )}
+      </>
       )}
 
       <SidePanel

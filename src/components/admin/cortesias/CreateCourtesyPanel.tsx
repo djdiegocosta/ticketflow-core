@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatName, isFullName } from "@/lib/form-format";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useOperationalEvent, useEvents } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 
 interface CreateCourtesyPanelProps {
   open: boolean;
@@ -24,8 +24,7 @@ interface ParticipantEntry {
 }
 
 export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCourtesyPanelProps) {
-  const { data: events = [], isLoading: eventsLoading, error: eventsError } = useEvents();
-  const { event: operationalEvent, hasMultipleCandidates } = useOperationalEvent();
+  const { event: operationalEvent, isLoading: eventsLoading, error: eventsError } = useOperationalEvent();
   const [selectedEvent, setSelectedEvent] = React.useState("");
   const [selectedBatch, setSelectedBatch] = React.useState("");
   const [batches, setBatches] = React.useState<any[]>([]);
@@ -40,9 +39,8 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
 
   React.useEffect(() => {
     if (!open) return;
-    if (hasMultipleCandidates) return;
     setSelectedEvent(operationalEvent?.id ?? "");
-  }, [open, operationalEvent?.id, hasMultipleCandidates]);
+  }, [open, operationalEvent?.id]);
 
   React.useEffect(() => {
     if (!selectedEvent) {
@@ -193,7 +191,6 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
     onOpenChange(open);
   };
 
-  const showEventSelector = hasMultipleCandidates;
 
   return (
     <SidePanel
@@ -228,28 +225,13 @@ export function CreateCourtesyPanel({ open, onOpenChange, onSuccess }: CreateCou
             <p className="rounded-[var(--radius-sm)] border border-error/20 bg-error-muted p-3 text-small text-error">
               Não foi possível carregar os eventos.
             </p>
-          ) : !operationalEvent && !hasMultipleCandidates ? (
+          ) : !operationalEvent ? (
             <p className="rounded-[var(--radius-sm)] border border-warning/20 bg-warning-muted p-3 text-small text-warning">
               Não há evento operacional disponível para emitir cortesias.
             </p>
-          ) : showEventSelector ? (
-            <FilterSelect
-              value={selectedEvent}
-              onChange={(e) => setSelectedEvent(e.target.value)}
-              className="w-full"
-            >
-              <option value="">Selecione o evento</option>
-              {events
-                .filter((e: any) => e.status === "publicado" && !e.is_closed)
-                .map((e: any) => (
-                  <option key={e.id} value={e.id}>
-                    {e.title}
-                  </option>
-                ))}
-            </FilterSelect>
           ) : (
             <div className="rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] px-3 py-2 text-body">
-              {operationalEvent?.title}
+              {operationalEvent.title}
             </div>
           )}
         </div>

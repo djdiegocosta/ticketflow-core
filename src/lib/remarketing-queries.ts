@@ -22,10 +22,11 @@ export interface AbandonedCheckout {
   events: { title: string; event_date: string; slug: string } | null;
 }
 
-export function useAbandonedCheckouts(eventId?: string) {
+export function useAbandonedCheckouts(eventId?: string | null) {
   return useQuery({
     queryKey: ["remarketing", "abandoned-checkouts", eventId],
     queryFn: async () => {
+      if (eventId === null) return [];
       let query = supabase
         .from("sales")
         .select(

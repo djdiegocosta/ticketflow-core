@@ -231,6 +231,7 @@ export function usePublicEvent(slug: string) {
         `)
         .eq("slug", slug)
         .eq("status", "publicado")
+        .eq("is_closed", false)
         .maybeSingle();
 
       if (error) throw error;

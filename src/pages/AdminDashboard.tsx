@@ -22,14 +22,14 @@ const Panel = ({ title, children, action }: { title: string; children: ReactNode
 export function AdminDashboard() {
   const { loading: authLoading, refreshProfile } = useAuth();
   const { isLoading: eventsLoading, error: eventsError, event: operationalEvent, refetch: refetchEvents } = useOperationalEvent();
-  const eventId = operationalEvent?.id;
-  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useSalesStats(eventId);
-  const { data: sales = [], isLoading: salesLoading, error: salesError, refetch: refetchSales } = useSales();
-  const { data: hourlyData = [], isLoading: hourlyLoading, error: hourlyError, refetch: refetchHourly } = useHourlySalesStats(eventId);
-  const { data: audience, error: audienceError, refetch: refetchAudience } = useAudienceStats(eventId);
-  const { data: pixFailures, error: pixFailuresError, refetch: refetchPixFailures } = usePixFailures(eventId);
+  const operationalEventId = operationalEvent?.id ?? null;
+  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useSalesStats(operationalEventId);
+  const { data: sales = [], isLoading: salesLoading, error: salesError, refetch: refetchSales } = useSales(operationalEventId);
+  const { data: hourlyData = [], isLoading: hourlyLoading, error: hourlyError, refetch: refetchHourly } = useHourlySalesStats(operationalEventId);
+  const { data: audience, error: audienceError, refetch: refetchAudience } = useAudienceStats(operationalEventId);
+  const { data: pixFailures, error: pixFailuresError, refetch: refetchPixFailures } = usePixFailures(operationalEventId);
   const { data: preferences, isLoading: preferencesLoading, error: preferencesError, refetch: refetchPreferences } = useOperationalPreferences();
-  const scopedSales = operationalEvent ? sales.filter((sale: any) => sale.event_id === operationalEvent.id) : sales;
+  const scopedSales = sales;
   const lastSales = scopedSales.filter((sale: any) => !sale.is_courtesy).slice(0, 8);
   const eventStarted = operationalEvent ? new Date(operationalEvent.event_date).getTime() <= Date.now() : false;
   const recentPaidSales = scopedSales
@@ -54,10 +54,12 @@ export function AdminDashboard() {
 
   if (authLoading || eventsLoading || statsLoading || salesLoading || hourlyLoading || preferencesLoading) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-3"><span className="animate-spin"><Clock className="h-6 w-6" /></span><span>Carregando métricas...</span></div>;
 
+  if (!operationalEvent) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div className="flex h-12 w-12 items-center justify-center rounded-full bg-bg-secondary"><Ticket className="h-6 w-6 text-text-secondary" /></div><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><Link to="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</Link></div>;
+
   if (blockingError) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div className="flex h-12 w-12 items-center justify-center rounded-full bg-error/10"><AlertTriangle className="h-6 w-6 text-error" /></div><div><h2 className="text-heading-2 text-text-primary">Não foi possível carregar as métricas</h2><p className="mt-1 max-w-xl text-small text-text-secondary">A sessão ou uma consulta administrativa não respondeu corretamente. Seus dados não foram apagados.</p><p className="mt-2 max-w-xl break-words text-small text-error">{blockingError instanceof Error ? blockingError.message : String(blockingError)}</p></div><button type="button" onClick={handleRetry} className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] bg-bg-secondary px-4 py-2 text-small font-semibold text-text-primary shadow-sm hover:bg-bg-tertiary"><RefreshCw className="h-4 w-4" />Tentar novamente</button></div>;
 
   return <div className="space-y-6">
-    <div><p className="text-small text-text-secondary">{operationalEvent ? "Evento atual" : "Visão consolidada"}</p><h1 className="text-heading-1 text-text-primary">{operationalEvent?.title ?? "Todos os eventos"}</h1></div>
+    <div><p className="text-small text-text-secondary">{operationalEvent ? "Evento atual" : "Operação"}</p><h1 className="text-heading-1 text-text-primary">{operationalEvent?.title ?? "Nenhum evento ativo"}</h1></div>
     {!!pixFailures?.count && <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-error/40 bg-error/10 px-4 py-3"><AlertTriangle className="h-5 w-5 shrink-0 text-error" /><p className="flex-1 text-body text-text-primary"><span className="font-semibold">{pixFailures.count} {pixFailures.count === 1 ? "falha recente" : "falhas recentes"} na geração de Pix</span> <span className="text-text-secondary">nas últimas 24h — verifique o Mercado Pago.</span></p><Link to="/admin/configuracoes/mercado-pago" className="text-small font-semibold text-accent hover:underline">Verificar configuração →</Link></div>}
     {!!audienceError && <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 px-4 py-3 text-small text-text-primary"><AlertTriangle className="h-4 w-4 shrink-0" />Dados do público indisponíveis no momento.</div>}
     {!!pixFailuresError && <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 px-4 py-3 text-small text-text-primary"><AlertTriangle className="h-4 w-4 shrink-0" />Não foi possível consultar as falhas recentes de Pix.</div>}

@@ -4,6 +4,7 @@ const DB_VERSION = 1;
 
 export interface OfflineTicket {
   code: string;
+  eventId: string;
   name: string;
   eventName: string;
   status: 'valid' | 'already_used' | 'invalid';
@@ -12,6 +13,7 @@ export interface OfflineTicket {
 
 export interface SyncItem {
   id: string;
+  eventId: string;
   code: string;
   eventName: string;
   timestamp: number;
@@ -59,6 +61,7 @@ export class OfflineDB {
       const transaction = db.transaction(['event_tickets'], 'readwrite');
       const store = transaction.objectStore('event_tickets');
       
+      store.clear();
       tickets.forEach(ticket => store.put(ticket));
       
       transaction.oncomplete = () => resolve();
@@ -76,6 +79,11 @@ export class OfflineDB {
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
+  }
+
+  async getTicketForEvent(code: string, eventId: string): Promise<OfflineTicket | null> {
+    const ticket = await this.getTicket(code);
+    return ticket?.eventId === eventId ? ticket : null;
   }
 
   async updateTicketStatus(code: string, status: OfflineTicket['status']): Promise<void> {
@@ -113,6 +121,31 @@ export class OfflineDB {
       
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
+    });
+  }
+
+  async removeSyncItem(id: string): Promise<void> {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(["checkin_sync_queue"], "readwrite");
+      const store = transaction.objectStore("checkin_sync_queue");
+      store.delete(id);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
+  async removeSyncItemsForEvent(eventId: string): Promise<void> {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(["checkin_sync_queue"], "readwrite");
+      const store = transaction.objectStore("checkin_sync_queue");
+      const request = store.getAll();
+      request.onsuccess = () => {
+        (request.result as SyncItem[]).filter((item) => item.eventId === eventId).forEach((item) => store.delete(item.id));
+      };
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
     });
   }
 

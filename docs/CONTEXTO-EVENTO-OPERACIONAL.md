@@ -207,3 +207,44 @@ Se for histórico:
 - src/pages/admin/RemarketingPage.tsx
 - src/pages/PublicEventPage.tsx
 - src/pages/admin/EventsListPage.tsx
+
+
+## Implementação da primeira etapa
+
+A primeira etapa foi implementada na branch `feat/contexto-evento-operacional`.
+
+Já coberto nesta entrega:
+
+- Dashboard sem fallback para dados históricos;
+- Vendas restritas ao Evento Operacional;
+- Cortesias e métricas operacionais com contexto explícito;
+- Remarketing restrito ao Evento Operacional;
+- página pública rejeitando eventos encerrados;
+- Check-in usando exclusivamente o Evento Operacional;
+- cache offline do Check-in isolado por evento;
+- sincronização offline preservando filas de outros eventos;
+- bloqueio de edição/exclusão de eventos encerrados na interface;
+- Links de Venda e Checklist também seguem o Evento Operacional e deixam de exibir/editar eventos encerrados;
+- bloqueio no banco de alterações em eventos encerrados e seus lotes;
+- teste da seleção do Evento Operacional.
+
+### Proteções adicionais do Check-in
+
+O cliente passou a chamar uma RPC específica por evento: `checkin_ticket_for_event`.
+
+Essa função deve:
+
+- aceitar somente evento pertencente à organização do operador;
+- aceitar somente evento publicado e não encerrado;
+- aceitar somente ticket pertencente ao `event_id` informado;
+- impedir que um QR Code de evento encerrado ou de outro evento seja validado durante a operação corrente.
+
+A migration `20260922235500_add_event_scoped_checkin.sql` foi aplicada no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`) e a RPC `checkin_ticket_for_event(text, uuid)` foi verificada.
+
+### Validação de produção
+
+A aplicação do código desta branch passou pela validação automatizada. As migrations desta etapa foram aplicadas no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`): `add_event_scoped_checkin`, `protect_closed_events`, `protect_closed_operational_children` e `harden_closed_batch_move`. As cinco triggers de proteção relevantes foram verificadas no banco.
+
+Foi feita ainda uma auditoria adicional dos fluxos de Links de Venda e Checklist, que agora também respeitam exclusivamente o Evento Operacional.
+
+A validação funcional ponta a ponta ainda deve ser feita após o merge/deploy.

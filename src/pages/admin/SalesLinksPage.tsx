@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Copy,
   DollarSign,
@@ -34,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEvents, useOperationalEvent } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 import { formatCurrency } from "@/lib/sales-queries";
 import {
   SALES_LINK_CHANNELS,
@@ -58,20 +58,9 @@ const copy = async (value: string) => {
 };
 
 export function SalesLinksPage() {
-  const { data: events = [] } = useEvents();
-  const { event: operationalEvent } = useOperationalEvent();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (selectedEventId) return;
-    const fallback = operationalEvent?.id ?? events[0]?.id ?? null;
-    if (fallback) setSelectedEventId(fallback);
-  }, [events, operationalEvent, selectedEventId]);
-
-  const selectedEvent = useMemo(
-    () => events.find((e) => e.id === selectedEventId),
-    [events, selectedEventId],
-  );
+  const { event: operationalEvent, isLoading: eventLoading } = useOperationalEvent();
+  const selectedEvent = operationalEvent;
+  const selectedEventId = operationalEvent?.id ?? null;
 
   const { data, isLoading } = useSalesLinkStats(selectedEventId);
   const updateLink = useUpdateSalesLink();
@@ -139,24 +128,21 @@ export function SalesLinksPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <ListPageHeader
         title="Links de Venda"
-        action={
-          events.length > 0 ? (
-            <select
-              aria-label="Selecionar evento"
-              className="border border-border-default bg-bg-secondary px-3 py-2 text-small outline-none focus:border-accent"
-              value={selectedEventId ?? ""}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-            >
-              {events.map((ev) => (
-                <option key={ev.id} value={ev.id}>
-                  {ev.title}
-                </option>
-              ))}
-            </select>
-          ) : undefined
-        }
+        action={selectedEvent ? (
+          <span className="text-small text-text-secondary">{selectedEvent.title}</span>
+        ) : undefined}
       />
 
+      {!eventLoading && !operationalEvent ? (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center">
+          <div>
+            <h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2>
+            <p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p>
+          </div>
+          <a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a>
+        </div>
+      ) : (
+        <>
       <MiniMetricGrid>
         <MiniMetricCard
           title="Receita total do evento"
@@ -283,6 +269,8 @@ export function SalesLinksPage() {
             </tbody>
           </DataTable>
         </DataTableShell>
+      )}
+      </>
       )}
 
       <SidePanel

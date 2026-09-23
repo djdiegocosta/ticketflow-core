@@ -221,6 +221,14 @@ export function EditEventPage() {
     return <div className="text-small text-error">Evento não encontrado.</div>;
   }
 
+  if (event.is_closed) {
+    return <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-4 py-20 text-center">
+      <div className="text-heading-2 font-bold text-text-primary">Evento encerrado</div>
+      <p className="max-w-xl text-small text-text-secondary">Este evento foi encerrado e não pode mais ser alterado. Consulte o Histórico de Eventos para os dados consolidados.</p>
+      <button type="button" onClick={() => navigate({ to: "/admin/eventos" })} className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Voltar para Eventos</button>
+    </div>;
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20 animate-in fade-in duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { MessageCircle, Target, Users, Clock, Wallet } from "lucide-react";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/admin/DataTable";
 import { getInitials } from "@/lib/clients-data";
 import { formatCurrency } from "@/lib/sales-queries";
-import { useEvents, useOperationalEvent } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 import { useAbandonedCheckouts } from "@/lib/remarketing-queries";
 
 function timeAgo(iso: string): string {
@@ -43,17 +43,11 @@ function remarketingWhatsappLink(lead: {
 }
 
 export function RemarketingPage() {
-  const { data: events = [] } = useEvents();
   const { event: operationalEvent } = useOperationalEvent();
-  const [selectedEventId, setSelectedEventId] = useState<string | "all">("all");
-
-  useEffect(() => {
-    if (selectedEventId !== "all") return;
-    if (operationalEvent?.id) setSelectedEventId(operationalEvent.id);
-  }, [operationalEvent]); // eslint-disable-line react-hooks/exhaustive-deps
+  const selectedEventId = operationalEvent?.id ?? null;
 
   const { data: leads = [], isLoading } = useAbandonedCheckouts(
-    selectedEventId === "all" ? undefined : selectedEventId,
+    selectedEventId,
   );
 
   const stats = useMemo(() => {
@@ -63,6 +57,8 @@ export function RemarketingPage() {
     return { total: leads.length, aguardando, expirados, valorPotencial };
   }, [leads]);
 
+  if (!operationalEvent) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a></div>;
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-1">
@@ -70,21 +66,6 @@ export function RemarketingPage() {
           Pessoas que geraram Pix (cadastradas ou não) e não terminaram a compra. Contato é manual —
           nenhuma mensagem é enviada automaticamente.
         </p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <select
-          value={selectedEventId}
-          onChange={(e) => setSelectedEventId(e.target.value as string)}
-          className="rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-3 py-2 text-body text-text-primary"
-        >
-          <option value="all">Todos os eventos</option>
-          {events.map((ev: any) => (
-            <option key={ev.id} value={ev.id}>
-              {ev.title}
-            </option>
-          ))}
-        </select>
       </div>
 
       <MiniMetricGrid>

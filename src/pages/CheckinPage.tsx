@@ -13,7 +13,7 @@ import {
   preloadEventTickets,
   processSyncQueue,
 } from "@/lib/checkin-data";
-import { useEvents } from "@/lib/events-queries";
+import { useOperationalEvent } from "@/lib/events-queries";
 import { offlineDB } from "@/lib/offline-db";
 
 interface OverlayState {
@@ -25,8 +25,7 @@ interface OverlayState {
 export function CheckinPage() {
   const { userRole, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { data: events = [] } = useEvents();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const { event: operationalEvent } = useOperationalEvent();
   const [showManual, setShowManual] = useState(false);
   const [manualCode, setManualCode] = useState("");
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
@@ -35,14 +34,7 @@ export function CheckinPage() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
-  const selectedEvent = events.find(e => e.id === selectedEventId) || events[0];
-
-  useEffect(() => {
-    if (events.length > 0 && !selectedEventId) {
-      const firstEvent = events[0];
-      if (firstEvent) setSelectedEventId(firstEvent.id);
-    }
-  }, [events, selectedEventId]);
+  const selectedEvent = operationalEvent;
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const pausedRef = useRef(false);
@@ -67,13 +59,14 @@ export function CheckinPage() {
       const online = navigator.onLine;
       setIsOnline(online);
       
-      if (online) {
+      if (online && selectedEvent?.id) {
         const queue = await offlineDB.getSyncQueue();
         if (queue.length > 0) {
           toast.promise(
             (async () => {
-              await processSyncQueue();
-              setPendingSyncCount(0);
+              await processSyncQueue(selectedEvent?.id ?? "");
+              const remaining = await offlineDB.getSyncQueue();
+              setPendingSyncCount(remaining.length);
             })(),
             {
               loading: 'Sincronizando check-ins pendentes...',
@@ -103,7 +96,7 @@ export function CheckinPage() {
       window.removeEventListener("online", handleConnectivityChange);
       window.removeEventListener("offline", handleConnectivityChange);
     };
-  }, [selectedEvent?.title]);
+  }, [selectedEvent?.id, selectedEvent?.title]);
 
   // Wake Lock
   useEffect(() => {
@@ -192,7 +185,7 @@ export function CheckinPage() {
 
   // Câmera
   useEffect(() => {
-    if (showManual) return;
+    if (!selectedEvent || showManual) return;
     let cancelled = false;
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let videoWatch: ReturnType<typeof setInterval> | null = null;
@@ -277,7 +270,7 @@ export function CheckinPage() {
         }
       }
     };
-  }, [showManual, processCheckin]);
+  }, [showManual, processCheckin, selectedEvent?.id]);
 
   const requestFullscreen = () => {
     const elem = document.documentElement;
@@ -288,6 +281,8 @@ export function CheckinPage() {
 
   return (
     <div className="fixed inset-0 z-0 flex h-[100dvh] w-screen flex-col bg-black overflow-hidden">
+      {!selectedEvent ? <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[var(--bg-primary)] px-6 text-center"><div><h2 className="text-heading-2 text-[var(--text-primary)]">Nenhum evento ativo</h2><p className="mt-2 max-w-md text-small text-[var(--text-secondary)]">Crie ou publique um novo evento para iniciar o check-in.</p></div><Button onClick={() => navigate({ to: "/admin/eventos" })} className="bg-[var(--accent)] text-[var(--accent-foreground)]">Ir para Eventos</Button></div> : null}
+
       {/* Vídeo em tela cheia ocupando 100dvh */}
       <div 
         id="reader" 
@@ -297,21 +292,7 @@ export function CheckinPage() {
       {/* Header POSICIONADO NO TOPO */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 bg-black/50 px-4 backdrop-blur-sm">
         <div className="flex items-center gap-3 overflow-hidden">
-          {events.length > 1 ? (
-            <select
-              className="max-w-[150px] appearance-none truncate bg-transparent text-small font-medium text-white outline-none"
-              value={selectedEventId || ""}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-            >
-              {events.map((ev) => (
-                <option key={ev.id} value={ev.id} className="text-black">
-                  {ev.title}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span className="truncate text-small font-medium text-white/80">{selectedEvent?.title}</span>
-          )}
+          <span className="truncate text-small font-medium text-white/80">{selectedEvent?.title}</span>
 
           {/* Status Offline/Sync */}
           <div className="flex items-center gap-2 border-l border-white/20 pl-3">

@@ -54,24 +54,27 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
   return data;
 }
 
-export function useSales() {
+export function useSales(eventId?: string | null) {
   return useQuery<Sale[]>({
-    queryKey: ["sales"],
+    queryKey: ["sales", eventId],
     queryFn: async () => {
+      if (eventId === null) return [];
       const { data: orgData, error: orgError } = await supabase.rpc("get_single_organization_id");
       if (orgError) throw orgError;
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;
       if (!orgId) throw new Error("Organização não encontrada");
-      return fetchSales(orgId as string);
+      const sales = await fetchSales(orgId as string);
+      return eventId ? sales.filter((sale) => sale.event_id === eventId) : sales;
     },
   });
 }
 
-export function useCourtesies() {
+export function useCourtesies(eventId?: string | null) {
   return useQuery({
-    queryKey: ["tickets", "courtesies"],
+    queryKey: ["tickets", "courtesies", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (eventId === null) return [];
+      let query = supabase
         .from("tickets")
         .select(`
           id,
@@ -90,20 +93,24 @@ export function useCourtesies() {
         `)
         .eq("sales.is_courtesy", true)
         .order("created_at", { ascending: false });
-
+      if (eventId) query = query.eq("sales.event_id", eventId);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useCourtesiesStats() {
+export function useCourtesiesStats(eventId?: string | null) {
   return useQuery({
-    queryKey: ["courtesies", "stats"],
+    queryKey: ["courtesies", "stats", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (eventId === null) return { total: 0, checkins: 0 };
+      let query = supabase
         .from("event_ticket_stats")
         .select("cortesias_emitidas, checkins_cortesias");
+      if (eventId) query = query.eq("event_id", eventId);
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -151,10 +158,11 @@ export function useSale(id: string) {
   });
 }
 
-export function useSalesStats(eventId?: string) {
+export function useSalesStats(eventId?: string | null) {
   return useQuery({
     queryKey: ["sales", "stats", eventId],
     queryFn: async () => {
+      if (eventId === null) return { totalRevenue: 0, totalSales: 0, totalTickets: 0, pendingSales: 0, pendingAmount: 0, checkins: 0, validTickets: 0, cancelledSales: 0, paidSales: 0, courtesies: 0, last14Days: [] as { date: string; value: number }[] };
       const { data: orgData, error: orgError } = await supabase.rpc("get_single_organization_id");
       if (orgError) throw orgError;
       const orgId = Array.isArray(orgData) ? orgData[0] : orgData;

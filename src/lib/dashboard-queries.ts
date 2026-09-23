@@ -12,12 +12,12 @@ export function useNewCustomersCount(days: number = 30) {
   });
 }
 
-export function useHourlySalesStats(eventId?: string) {
+export function useHourlySalesStats(eventId?: string | null) {
   const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
     queryKey: ["sales", "hourly-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
-    queryFn: async () => { const args: { _event_id?: string } = {}; if (eventId) args._event_id = eventId; const { data, error } = await supabase.rpc("get_hourly_sales_stats", args); if (error) throw error; return data as { hour: string; value: number }[]; },
+    queryFn: async () => { if (eventId === null) return []; const args: { _event_id?: string } = {}; if (eventId) args._event_id = eventId; const { data, error } = await supabase.rpc("get_hourly_sales_stats", args); if (error) throw error; return data as { hour: string; value: number }[]; },
   });
 }
 
@@ -57,12 +57,13 @@ export function useTemperature(eventId?: string) {
   return { salesPerDay, level: classifyTemperature(salesPerDay, thresholds), thresholds, isLoading: authLoading || preferencesLoading || salesPerDayQuery.isLoading };
 }
 
-export function useAudienceStats(eventId?: string) {
+export function useAudienceStats(eventId?: string | null) {
   const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, topCities: [], totalViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago");
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
@@ -95,12 +96,13 @@ export function useAudienceStats(eventId?: string) {
 
 const PIX_FAILURE_STAGES = ["mp_rejected", "missing_qr_code", "exception"];
 
-export function usePixFailures(eventId?: string) {
+export function usePixFailures(eventId?: string | null) {
   const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
     queryKey: ["sales", "pix-failures", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
+      if (eventId === null) return { count: 0 };
       const since = new Date(Date.now() - 24 * 3600_000).toISOString();
       let query = supabase
         .from("sales")
