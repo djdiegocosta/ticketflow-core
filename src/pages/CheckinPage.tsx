@@ -65,7 +65,8 @@ export function CheckinPage() {
           toast.promise(
             (async () => {
               await processSyncQueue(selectedEvent?.id ?? "");
-              setPendingSyncCount(0);
+              const remaining = await offlineDB.getSyncQueue();
+              setPendingSyncCount(remaining.length);
             })(),
             {
               loading: 'Sincronizando check-ins pendentes...',
