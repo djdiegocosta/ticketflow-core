@@ -92,6 +92,7 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
         await offlineDB.addToSyncQueue({
           id: `${Date.now()}-${cleanCode}`,
           code: cleanCode,
+          eventId,
           eventName,
           timestamp: Date.now()
         });
@@ -139,14 +140,16 @@ export async function processSyncQueue(eventId: string) {
   if (queue.length === 0) return;
 
   for (const item of queue) {
+    if (item.eventId !== eventId) continue;
     try {
-      if (item.eventId !== eventId) continue;
-      await supabase.rpc('checkin_ticket_for_event' as any, { _ticket_code: item.code, _event_id: eventId });
+      const { error } = await supabase.rpc("checkin_ticket_for_event" as any, {
+        _ticket_code: item.code,
+        _event_id: eventId,
+      });
+      if (error) throw error;
+      await offlineDB.removeSyncItem(item.id);
     } catch (e) {
       console.error(`[Checkin] Erro ao sincronizar ticket ${item.code}:`, e);
-      // Mantém na fila ou trata erro? Por simplicidade, assumimos que processou ou falhou definitivamente
     }
   }
-  
-  await offlineDB.removeSyncItemsForEvent(eventId);
 }
