@@ -270,7 +270,7 @@ export function SalesLinksPage() {
         </DataTableShell>
       )}
 
-      </>
+      )}
 
       <SidePanel
         open={!!editing}
