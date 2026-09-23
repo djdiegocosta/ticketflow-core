@@ -238,13 +238,10 @@ Essa função deve:
 - aceitar somente ticket pertencente ao `event_id` informado;
 - impedir que um QR Code de evento encerrado ou de outro evento seja validado durante a operação corrente.
 
-A migration `20260922235500_add_event_scoped_checkin.sql` precisa estar aplicada no Supabase antes do novo fluxo de Check-in ser usado em produção.
+A migration `20260922235500_add_event_scoped_checkin.sql` foi aplicada no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`) e a RPC `checkin_ticket_for_event(text, uuid)` foi verificada.
 
 ### Validação de produção
 
-A aplicação do código desta branch ainda deve passar pela validação automatizada e pela aplicação das duas novas migrations no Supabase:
+A aplicação do código desta branch passou pela validação automatizada. As duas novas migrations foram aplicadas no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`) e as três triggers de proteção foram verificadas no banco.
 
-- `20260922235500_add_event_scoped_checkin.sql`
-- `20260922235600_protect_closed_events.sql`
-
-Não considerar a etapa concluída em produção antes dessas verificações.
+A validação funcional ponta a ponta ainda deve ser feita após o merge/deploy.
