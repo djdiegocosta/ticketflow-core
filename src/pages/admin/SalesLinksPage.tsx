@@ -142,6 +142,7 @@ export function SalesLinksPage() {
           <a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a>
         </div>
       ) : (
+        <>
       <MiniMetricGrid>
         <MiniMetricCard
           title="Receita total do evento"
@@ -269,7 +270,7 @@ export function SalesLinksPage() {
           </DataTable>
         </DataTableShell>
       )}
-
+      </>
       )}
 
       <SidePanel
