@@ -59,8 +59,11 @@ BEGIN
   END IF;
 
   IF TG_OP = 'UPDATE'
-     AND EXISTS (SELECT 1 FROM public.events WHERE id = OLD.event_id AND is_closed = true) THEN
-    RAISE EXCEPTION 'Lotes de evento encerrado não podem ser alterados.';
+     AND (
+       EXISTS (SELECT 1 FROM public.events WHERE id = OLD.event_id AND is_closed = true)
+       OR EXISTS (SELECT 1 FROM public.events WHERE id = NEW.event_id AND is_closed = true)
+     ) THEN
+    RAISE EXCEPTION 'Lotes vinculados a evento encerrado não podem ser alterados.';
   END IF;
 
   IF TG_OP = 'INSERT'
