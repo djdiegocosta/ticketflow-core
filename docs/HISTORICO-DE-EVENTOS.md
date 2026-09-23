@@ -1,6 +1,6 @@
 # Histórico de Eventos
 
-**Status:** 🟢 Implementação funcional — encerramento + snapshot histórico. A interface visual aprovada foi conectada aos dados reais, o formulário de encerramento foi implementado e a migration do banco já foi aplicada ao Supabase de produção (22/09/2026).
+**Status:** 🟢 Implementação concluída — encerramento + snapshot histórico, 100% em dados reais (mock removido em 22/09/2026). Migration aplicada ao Supabase de produção. Ainda falta encerrar um evento real de ponta a ponta para validar o fluxo completo (ver seção 14).
 
 ---
 
@@ -281,9 +281,7 @@ Tipos Supabase:
 
 ## 12. MOCK
 
-O Histórico de Eventos não usa mais os dados de `historico-eventos.mock.ts` para exibição.
-
-O arquivo de mock permanece no repositório apenas como referência da etapa visual anterior e pode ser removido em uma limpeza posterior, depois da validação da implementação real.
+O arquivo `historico-eventos.mock.ts` foi removido do repositório (22/09/2026) — a ferramenta usa exclusivamente dados reais (`event_closures` via `event-history-queries.ts`). Não há mais nenhum dado fictício na lista nem no detalhe.
 
 ---
 
