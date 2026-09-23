@@ -224,6 +224,7 @@ Já coberto nesta entrega:
 - cache offline do Check-in isolado por evento;
 - sincronização offline preservando filas de outros eventos;
 - bloqueio de edição/exclusão de eventos encerrados na interface;
+- Links de Venda e Checklist também seguem o Evento Operacional e deixam de exibir/editar eventos encerrados;
 - bloqueio no banco de alterações em eventos encerrados e seus lotes;
 - teste da seleção do Evento Operacional.
 
@@ -242,6 +243,8 @@ A migration `20260922235500_add_event_scoped_checkin.sql` foi aplicada no projet
 
 ### Validação de produção
 
-A aplicação do código desta branch passou pela validação automatizada. As duas novas migrations foram aplicadas no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`) e as três triggers de proteção foram verificadas no banco.
+A aplicação do código desta branch passou pela validação automatizada. As migrations desta etapa foram aplicadas no projeto Supabase correto do TicketFlow (`ywcdopjqfhisopipqxgq`): `add_event_scoped_checkin`, `protect_closed_events`, `protect_closed_operational_children` e `harden_closed_batch_move`. As cinco triggers de proteção relevantes foram verificadas no banco.
+
+Foi feita ainda uma auditoria adicional dos fluxos de Links de Venda e Checklist, que agora também respeitam exclusivamente o Evento Operacional.
 
 A validação funcional ponta a ponta ainda deve ser feita após o merge/deploy.
