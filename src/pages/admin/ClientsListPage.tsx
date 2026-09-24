@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { whatsappLink } from "@/lib/clients-data";
+import { formatCurrency } from "@/lib/sales-queries";
 import { useCustomers, useDeleteCustomer } from "@/lib/customers-queries";
 import { CreateClientPanel } from "@/components/admin/clients/CreateClientPanel";
 import {
@@ -38,7 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type SortKey = "name" | "age" | "totalEvents" | "totalTickets" | "registeredAt" | "lastPurchaseAt";
+type SortKey = "name" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent";
 
 function normalizeMetaPhone(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -197,13 +198,15 @@ export function ClientsListPage() {
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "name") return a.full_name.localeCompare(b.full_name, "pt-BR") * dir;
-      if (sortKey === "registeredAt" || sortKey === "lastPurchaseAt") {
-        const key = sortKey === "registeredAt" ? "created_at" : "last_purchase_at";
-        return (
-          (new Date((a as any)[key] || 0).getTime() - new Date((b as any)[key] || 0).getTime()) *
-          dir
-        );
+      if (sortKey === "city") {
+        return (a.city || "").localeCompare(b.city || "", "pt-BR") * dir;
       }
+      if (sortKey === "birthDate") {
+        const av = a.birth_date ? new Date(a.birth_date).getTime() : 0;
+        const bv = b.birth_date ? new Date(b.birth_date).getTime() : 0;
+        return (av - bv) * dir;
+      }
+      if (sortKey === "totalSpent") return (a.total_spent - b.total_spent) * dir;
       return (((a as any)[sortKey] as number) - ((b as any)[sortKey] as number)) * dir;
     });
   }, [clients, search, sortKey, sortDir]);
@@ -225,13 +228,13 @@ export function ClientsListPage() {
     deleteMutation.mutate(toDelete.id, { onSuccess: () => setToDelete(null) });
   };
   const columns: { key: SortKey | null; label: string }[] = [
-    { key: "name", label: "Nome" },
+    { key: "name", label: "Cliente" },
     { key: null, label: "WhatsApp" },
+    { key: "birthDate", label: "Aniversário" },
     { key: "age", label: "Idade" },
-    { key: "totalEvents", label: "Eventos" },
-    { key: "totalTickets", label: "Ingressos" },
-    { key: "registeredAt", label: "Cadastro" },
-    { key: null, label: "Último evento" },
+    { key: "city", label: "Cidade" },
+    { key: "totalTickets", label: "Ingressos/Eventos" },
+    { key: "totalSpent", label: "Total Gasto" },
     { key: null, label: "Ações" },
   ];
 
@@ -289,7 +292,7 @@ export function ClientsListPage() {
                   type="button"
                   onClick={() => toggleSort(col.key as SortKey)}
                   className={cn(
-                    "flex items-center gap-1 transition-colors hover:text-text-primary",
+                    "flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary",
                     sortKey === col.key && "text-text-primary",
                   )}
                 >
@@ -302,9 +305,9 @@ export function ClientsListPage() {
                     ))}
                 </button>
               ) : col.label === "Ações" ? (
-                <span className="block text-right">{col.label}</span>
+                <span className="block whitespace-nowrap text-right">{col.label}</span>
               ) : (
-                col.label
+                <span className="whitespace-nowrap">{col.label}</span>
               ),
             )}
           />
@@ -323,20 +326,28 @@ export function ClientsListPage() {
                 >
                   {client.full_name}
                 </DataTableCell>
-                <DataTableCell>
+                <DataTableCell className="whitespace-nowrap">
                   <span className="flex items-center gap-1">
                     {client.whatsapp}
                     <CopyWhatsapp value={client.whatsapp} />
                   </span>
                 </DataTableCell>
-                <DataTableCell>{client.age} anos</DataTableCell>
-                <DataTableCell>{client.total_events}</DataTableCell>
-                <DataTableCell variant="strong">{client.total_tickets}</DataTableCell>
-                <DataTableCell>
-                  {new Date(client.created_at).toLocaleDateString("pt-BR")}
+                <DataTableCell className="whitespace-nowrap">
+                  {client.birth_date
+                    ? new Date(client.birth_date + "T12:00:00").toLocaleDateString("pt-BR")
+                    : "—"}
                 </DataTableCell>
-                <DataTableCell>{client.last_event_name || "—"}</DataTableCell>
-                <DataTableCell className="text-right">
+                <DataTableCell className="whitespace-nowrap">
+                  {client.age ? `${client.age} anos` : "—"}
+                </DataTableCell>
+                <DataTableCell className="whitespace-nowrap">{client.city || "—"}</DataTableCell>
+                <DataTableCell variant="strong" className="whitespace-nowrap">
+                  {client.total_tickets}/{client.total_events}
+                </DataTableCell>
+                <DataTableCell variant="strong" className="whitespace-nowrap">
+                  {formatCurrency(client.total_spent)}
+                </DataTableCell>
+                <DataTableCell className="whitespace-nowrap text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button

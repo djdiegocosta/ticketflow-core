@@ -10,6 +10,8 @@ export interface Customer {
   whatsapp: string;
   email: string | null;
   age: number | null;
+  birth_date: string | null;
+  city: string | null;
   total_events: number;
   total_tickets: number;
   total_spent: number;
@@ -30,6 +32,7 @@ export function useCustomers() {
           whatsapp,
           email,
           data_nascimento,
+          cidade,
           created_at
         `)
         .order("created_at", { ascending: false });
@@ -70,6 +73,8 @@ export function useCustomers() {
           whatsapp: c.whatsapp,
           email: c.email,
           age,
+          birth_date: c.data_nascimento,
+          city: c.cidade,
           total_events: uniqueEvents,
           total_tickets: totalTickets,
           total_spent: totalSpent,

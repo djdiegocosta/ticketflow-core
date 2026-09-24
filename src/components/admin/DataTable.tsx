@@ -72,10 +72,10 @@ export function DataTableRow({
 type CellVariant = "primary" | "secondary" | "muted" | "strong";
 
 const cellVariantClass: Record<CellVariant, string> = {
-  primary: "text-body text-text-primary",
+  primary: "text-small text-text-primary",
   secondary: "text-small text-text-secondary",
   muted: "text-small text-text-disabled",
-  strong: "text-body font-semibold text-text-primary",
+  strong: "text-small font-semibold text-text-primary",
 };
 
 export function DataTableCell({
