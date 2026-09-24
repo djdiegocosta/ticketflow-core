@@ -9,8 +9,23 @@ export function ClientVitrine() {
     return <Skeleton className="aspect-[4/5] w-full rounded-[var(--radius-lg)]" />;
   }
 
-  // Só renderizar se banner.image_url existir E banner.link_url existir
-  if (!banner || !banner.image_url || !banner.link_url) return null;
+  // Sem banner ativo: manter a área da Vitrine ocupada e informar o cliente
+  // de forma discreta, usando o mesmo espaço reservado ao banner.
+  if (!banner) {
+    return (
+      <div className="flex aspect-[4/5] w-full shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-lg)] bg-[var(--bg-tertiary)] px-6 text-center">
+        <div className="flex max-w-[280px] flex-col items-center gap-2">
+          <p className="text-small font-semibold tracking-wide text-[var(--accent-text)]">EM BREVE</p>
+          <p className="text-body text-[var(--text-secondary)]">
+            Nosso próximo evento será divulgado.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Banner ativo sem imagem ou link continua oculto por regra de segurança/UX.
+  if (!banner.image_url || !banner.link_url) return null;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
