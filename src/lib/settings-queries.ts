@@ -208,7 +208,13 @@ export function useCreateBanner() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["banners"] }); toast.success("Banner criado com sucesso"); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+      toast.success("Banner criado com sucesso");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao criar banner");
+    },
   });
 }
 
