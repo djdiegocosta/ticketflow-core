@@ -26,3 +26,13 @@ A mutation de criação exibe o erro retornado pelo backend em uma notificação
 ## Regra de segurança
 
 A correção não altera o modelo de dados dos banners nem o fluxo público. Apenas restaura as permissões de escrita necessárias aos administradores e torna a política RLS de administração explícita para leitura/escrita.
+
+
+## Estado sem banner ativo
+
+Quando não existe nenhum banner ativo para a organização, a Área do Cliente mantém o mesmo espaço proporcional reservado à Vitrine (4:5) e exibe a mensagem:
+
+> **EM BREVE**  
+> Nosso próximo evento será divulgado.
+
+Quando existe um banner ativo, mas ele não possui imagem ou link de destino, ele continua sem ser exibido, conforme a regra existente de que banners sem destino válido não devem aparecer.
