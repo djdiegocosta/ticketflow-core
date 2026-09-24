@@ -13,6 +13,13 @@ export interface DashboardMetricCardProps {
   temperatureUnit?: boolean;
   /** Cor de destaque opcional aplicada ao valor (ex.: resultado positivo/negativo). */
   valueColor?: string;
+  /**
+   * Tamanho do valor principal. "default" (text-heading-1, 24px) é o usado
+   * pelo Histórico de Eventos. "sm" (text-heading-2, 18px) é usado pelo
+   * Dashboard, onde 4 cards dividem a linha e o valor precisa ficar no
+   * mesmo tamanho dos cards de métrica da área Clientes sem quebrar linha.
+   */
+  size?: "default" | "sm";
 }
 
 /**
@@ -31,6 +38,7 @@ export const DashboardMetricCard = ({
   iconSize = "h-5 w-5",
   temperatureUnit,
   valueColor,
+  size = "default",
 }: DashboardMetricCardProps) => (
   <div className="flex h-full flex-col rounded-[var(--radius-md)] bg-bg-secondary p-5 shadow-sm">
     <div className="mb-2 flex items-start justify-between gap-2">
@@ -46,7 +54,13 @@ export const DashboardMetricCard = ({
     </div>
     <div className="flex flex-1 items-end justify-between gap-3">
       <div className="min-w-0">
-        <div className={cn("mb-1 break-words text-heading-1 leading-tight text-text-primary", valueColor)}>
+        <div
+          className={cn(
+            "mb-1 break-words leading-tight text-text-primary",
+            size === "sm" ? "text-heading-2" : "text-heading-1",
+            valueColor,
+          )}
+        >
           {value}
         </div>
         {trend && <div className="text-small text-success">{trend}</div>}
