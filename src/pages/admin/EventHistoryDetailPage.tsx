@@ -273,7 +273,7 @@ function FinanceSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
             </p>
             <p
               className={cn(
-                "break-words text-heading-1 leading-tight",
+                "break-words text-heading-1 font-semibold leading-tight",
                 positive ? "text-accent-text" : "text-error-text",
               )}
             >
@@ -432,6 +432,7 @@ export function EventHistoryDetailPage({ id }: { id: string }) {
           icon={positive ? TrendingUp : TrendingDown}
           iconColor={positive ? "text-accent-text" : "text-error-text"}
           valueColor={positive ? "text-accent-text" : "text-error-text"}
+          size="default"
           secondary="após custos"
         />
       </div>
