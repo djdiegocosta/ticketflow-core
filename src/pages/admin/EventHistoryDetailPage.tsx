@@ -117,7 +117,31 @@ function AudienceSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
   );
 }
 
+/** Ordena os lotes no padrão: Promocional primeiro, depois 1º, 2º, 3º... */
+function batchRank(name: string): number {
+  const n = name.toLowerCase();
+  if (n.includes("promo")) return 0;
+  const numMatch = n.match(/\d+/);
+  if (numMatch) return parseInt(numMatch[0], 10);
+  const ordinalWords = [
+    "primeiro",
+    "segundo",
+    "terceiro",
+    "quarto",
+    "quinto",
+    "sexto",
+    "sétimo",
+    "oitavo",
+    "nono",
+    "décimo",
+  ];
+  const idx = ordinalWords.findIndex((w) => n.includes(w));
+  if (idx >= 0) return idx + 1;
+  return 999;
+}
+
 function TicketSalesSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
+  const orderedBatches = [...snapshot.batches].sort((a, b) => batchRank(a.name) - batchRank(b.name));
   const batchesTotal = snapshot.batches.reduce((sum, batch) => sum + batch.quantity, 0);
 
   return (
@@ -135,7 +159,7 @@ function TicketSalesSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
             </tr>
           </thead>
           <tbody>
-            {snapshot.batches.map((batch) => (
+            {orderedBatches.map((batch) => (
               <tr key={batch.id} className="border-b border-border-subtle last:border-0">
                 <td className="py-2 text-body text-text-primary">{batch.name}</td>
                 <td className="py-2 text-body text-text-secondary">{batch.quantity}</td>
@@ -151,36 +175,38 @@ function TicketSalesSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
         </table>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-x-8 gap-y-1 text-small text-text-secondary">
-        <span>
-          Total pelo TicketFlow:{" "}
-          <span className="font-semibold text-text-primary">{batchesTotal}</span>
-        </span>
-        <span>
-          Pagos:{" "}
-          <span className="font-semibold text-text-primary">
-            {snapshot.audience.presale}
-          </span>
-        </span>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-bg-tertiary p-4">
-        <div className="flex items-center gap-3">
-          <ScanBarcode className="h-4 w-4 shrink-0 text-text-secondary" />
-          <div>
-            <p className="text-body font-medium text-text-primary">Bilheteria</p>
-            <p className="text-micro text-text-secondary">
-              Dado informado manualmente no encerramento
-            </p>
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-bg-tertiary p-4">
+          <div className="flex items-center gap-3">
+            <Ticket className="h-4 w-4 shrink-0 text-text-secondary" />
+            <div>
+              <p className="text-body font-medium text-text-primary">TicketFlow</p>
+              <p className="text-micro text-text-secondary">Vendido pela plataforma</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-body font-semibold text-text-primary">{batchesTotal} ingressos</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-body font-semibold text-text-primary">
-            {snapshot.boxOfficeSale.quantity} ingressos
-          </p>
-          <p className="text-small text-text-secondary">
-            {formatCurrency(snapshot.boxOfficeSale.revenue)}
-          </p>
+
+        <div className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-bg-tertiary p-4">
+          <div className="flex items-center gap-3">
+            <ScanBarcode className="h-4 w-4 shrink-0 text-text-secondary" />
+            <div>
+              <p className="text-body font-medium text-text-primary">Bilheteria</p>
+              <p className="text-micro text-text-secondary">
+                Dado informado manualmente no encerramento
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-body font-semibold text-text-primary">
+              {snapshot.boxOfficeSale.quantity} ingressos
+            </p>
+            <p className="text-small text-text-secondary">
+              {formatCurrency(snapshot.boxOfficeSale.revenue)}
+            </p>
+          </div>
         </div>
       </div>
     </div>
