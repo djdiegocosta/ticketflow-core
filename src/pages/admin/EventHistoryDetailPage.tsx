@@ -179,34 +179,19 @@ function TicketSalesSection({ snapshot }: { snapshot: EventHistorySnapshot }) {
         <div className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-bg-tertiary p-4">
           <div className="flex items-center gap-3">
             <Ticket className="h-4 w-4 shrink-0 text-text-secondary" />
-            <div>
-              <p className="text-body font-medium text-text-primary">TicketFlow</p>
-              <p className="text-micro text-text-secondary">Vendido pela plataforma</p>
-            </div>
+            <p className="text-body font-medium text-text-primary">TicketFlow</p>
           </div>
-          <div className="text-right">
-            <p className="text-body font-semibold text-text-primary">{batchesTotal} ingressos</p>
-          </div>
+          <p className="text-body font-semibold text-text-primary">{batchesTotal} ingressos</p>
         </div>
 
         <div className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-bg-tertiary p-4">
           <div className="flex items-center gap-3">
             <ScanBarcode className="h-4 w-4 shrink-0 text-text-secondary" />
-            <div>
-              <p className="text-body font-medium text-text-primary">Bilheteria</p>
-              <p className="text-micro text-text-secondary">
-                Dado informado manualmente no encerramento
-              </p>
-            </div>
+            <p className="text-body font-medium text-text-primary">Bilheteria</p>
           </div>
-          <div className="text-right">
-            <p className="text-body font-semibold text-text-primary">
-              {snapshot.boxOfficeSale.quantity} ingressos
-            </p>
-            <p className="text-small text-text-secondary">
-              {formatCurrency(snapshot.boxOfficeSale.revenue)}
-            </p>
-          </div>
+          <p className="text-body font-semibold text-text-primary">
+            {snapshot.boxOfficeSale.quantity} ingressos
+          </p>
         </div>
       </div>
     </div>
