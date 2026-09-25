@@ -312,3 +312,14 @@ Antes de considerar a entrega concluída:
 10. confirmar que alterações posteriores na configuração do evento não alteram o snapshot.
 
 **Importante:** a migration já foi aplicada ao Supabase de produção. Os itens 2 a 10 (validação funcional ponta a ponta com um evento real) ainda não foram confirmados.
+
+
+---
+
+## 15. Ajuste visual dos resultados
+
+Na tela de detalhe do Histórico de Eventos:
+
+- o KPI **Resultado** utiliza explicitamente o mesmo tamanho de valor `text-heading-1` dos demais KPIs do topo;
+- o **Resultado líquido**, na seção Financeiro, utiliza o mesmo nível de destaque tipográfico do resultado principal, mantendo a cor semântica de positivo/negativo;
+- nenhuma regra de cálculo ou dado foi alterada.
