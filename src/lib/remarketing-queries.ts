@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -19,6 +19,7 @@ export interface AbandonedCheckout {
   expires_at: string | null;
   customer_id: string | null;
   event_id: string;
+  remarketing_contacted_at: string | null;
   events: { title: string; event_date: string; slug: string } | null;
 }
 
@@ -42,6 +43,7 @@ export function useAbandonedCheckouts(eventId?: string | null) {
           expires_at,
           customer_id,
           event_id,
+          remarketing_contacted_at,
           events ( title, event_date, slug )
         `,
         )
@@ -81,6 +83,28 @@ export function useAbandonedCheckouts(eventId?: string | null) {
           !!lead.customer_id && paidByCustomer.has(`${lead.event_id}|${lead.customer_id}`);
         return !alreadyPaidByWhatsapp && !alreadyPaidByCustomer;
       });
+    },
+  });
+}
+
+/**
+ * Marca o lead como contactado, gravando o timestamp atual em remarketing_contacted_at.
+ * Chamado quando o admin clica no botão de WhatsApp.
+ */
+export function useMarkRemarketingContacted() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (saleId: string) => {
+      const { error } = await supabase
+        .from("sales")
+        .update({ remarketing_contacted_at: new Date().toISOString() })
+        .eq("id", saleId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // Invalida o cache do painel para refletir o novo status imediatamente
+      queryClient.invalidateQueries({ queryKey: ["remarketing"] });
     },
   });
 }

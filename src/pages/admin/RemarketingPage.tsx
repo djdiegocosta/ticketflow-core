@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MessageCircle, Target, Users, Clock, Wallet } from "lucide-react";
+import { MessageCircle, Target, Users, Clock, Wallet, CheckCircle } from "lucide-react";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import {
   DataTable,
@@ -12,7 +12,7 @@ import {
 import { getInitials } from "@/lib/clients-data";
 import { formatCurrency } from "@/lib/sales-queries";
 import { useOperationalEvent } from "@/lib/events-queries";
-import { useAbandonedCheckouts } from "@/lib/remarketing-queries";
+import { useAbandonedCheckouts, useMarkRemarketingContacted } from "@/lib/remarketing-queries";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -46,15 +46,15 @@ export function RemarketingPage() {
   const { event: operationalEvent } = useOperationalEvent();
   const selectedEventId = operationalEvent?.id ?? null;
 
-  const { data: leads = [], isLoading } = useAbandonedCheckouts(
-    selectedEventId,
-  );
+  const { data: leads = [], isLoading } = useAbandonedCheckouts(selectedEventId);
+  const { mutate: markContacted } = useMarkRemarketingContacted();
 
   const stats = useMemo(() => {
     const aguardando = leads.filter((l) => l.status === "pendente").length;
     const expirados = leads.filter((l) => l.status === "expirado").length;
     const valorPotencial = leads.reduce((sum, l) => sum + Number(l.total_amount || 0), 0);
-    return { total: leads.length, aguardando, expirados, valorPotencial };
+    const jaContactados = leads.filter((l) => l.remarketing_contacted_at !== null).length;
+    return { total: leads.length, aguardando, expirados, valorPotencial, jaContactados };
   }, [leads]);
 
   if (!operationalEvent) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a></div>;
@@ -82,21 +82,27 @@ export function RemarketingPage() {
           value={formatCurrency(stats.valorPotencial)}
           icon={Wallet}
         />
+        <MiniMetricCard
+          title="Já contactados"
+          value={stats.jaContactados}
+          icon={CheckCircle}
+          iconColor="text-success"
+        />
       </MiniMetricGrid>
 
       <DataTableShell>
         <DataTable>
           <DataTableHeadRow
-            columns={["Cliente", "Evento", "Qtd.", "Valor", "Quando", "Status", ""]}
+            columns={["Cliente", "Evento", "Qtd.", "Valor", "Quando", "Status", "Contato", ""]}
           />
           <tbody>
             {isLoading ? (
               <DataTableRow>
-                <DataTableCell colSpan={7}>Carregando...</DataTableCell>
+                <DataTableCell colSpan={8}>Carregando...</DataTableCell>
               </DataTableRow>
             ) : leads.length === 0 ? (
               <DataTableRow>
-                <DataTableCell colSpan={7}>
+                <DataTableCell colSpan={8}>
                   Nenhum lead encontrado — ninguém com compra pendente ou expirada agora.
                 </DataTableCell>
               </DataTableRow>
@@ -127,10 +133,21 @@ export function RemarketingPage() {
                     </StatusPill>
                   </DataTableCell>
                   <DataTableCell>
+                    {lead.remarketing_contacted_at ? (
+                      <span className="flex items-center gap-1 text-small text-success">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        {timeAgo(lead.remarketing_contacted_at)}
+                      </span>
+                    ) : (
+                      <span className="text-small text-text-tertiary">—</span>
+                    )}
+                  </DataTableCell>
+                  <DataTableCell>
                     <a
                       href={remarketingWhatsappLink(lead)}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => markContacted(lead.id)}
                       className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />

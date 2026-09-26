@@ -819,6 +819,7 @@ export type Database = {
           refund_reason: string | null
           refunded_amount: number | null
           refunded_at: string | null
+          remarketing_contacted_at: string | null
           sale_code: string
           sales_link_id: string | null
           status: Database["public"]["Enums"]["sale_status"]
@@ -855,6 +856,7 @@ export type Database = {
           refund_reason?: string | null
           refunded_amount?: number | null
           refunded_at?: string | null
+          remarketing_contacted_at?: string | null
           sale_code: string
           sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]
@@ -891,6 +893,7 @@ export type Database = {
           refund_reason?: string | null
           refunded_amount?: number | null
           refunded_at?: string | null
+          remarketing_contacted_at?: string | null
           sale_code?: string
           sales_link_id?: string | null
           status?: Database["public"]["Enums"]["sale_status"]

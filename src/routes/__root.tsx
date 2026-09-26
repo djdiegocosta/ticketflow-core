@@ -15,6 +15,7 @@ import { PublicDataProvider } from "../lib/public-data";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { logDiagnosticError } from "../lib/diagnostic";
 import { ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
@@ -71,6 +72,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       pathname: window.location.pathname,
       routerState: router.state,
     });
+
+    // Grava no Supabase para auditoria em produção
+    logDiagnosticError(
+      window.location.pathname,
+      "react_error_boundary",
+      error,
+      { routerState: JSON.stringify(router.state).slice(0, 500) },
+    );
   }, [error, router]);
 
   return (
