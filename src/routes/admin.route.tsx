@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "@tanstack/react-router";
+import { RoutePending } from "@/components/RoutePending";
 
 // Componente interno que valida papel antes de renderizar children
 function AdminRouteGuard({ children }: { children: React.ReactNode }) {
@@ -18,8 +19,9 @@ function AdminRouteGuard({ children }: { children: React.ReactNode }) {
     }
   }, [userRole, loading, navigate]);
 
-  if (loading) return null;
-  if (userRole === "operador_checkin" || userRole === "cliente") return null;
+  // Antes: `return null` (tela branca) enquanto a autenticação carregava.
+  if (loading) return <RoutePending />;
+  if (userRole === "operador_checkin" || userRole === "cliente") return <RoutePending />;
 
   return <>{children}</>;
 }

@@ -1,7 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { requireSession } from "@/lib/auth-guard";
-import { supabase } from "@/integrations/supabase/client";
+import { useEnsureCustomerRecord } from "@/lib/customer-queries";
+
+function ClienteRoute() {
+  // Garante o registro de cliente EM SEGUNDO PLANO (só quando ele realmente
+  // não existe). Antes isso era um `await` no beforeLoad e bloqueava a
+  // entrada da Área do Cliente a cada navegação.
+  useEnsureCustomerRecord();
+  return <MobileLayout />;
+}
 
 export const Route = createFileRoute("/cliente")({
   ssr: false,
@@ -12,19 +20,7 @@ export const Route = createFileRoute("/cliente")({
       throw redirect({ to: "/checkin" });
     }
 
-    if (ctx.role === "cliente") {
-      // ORGANIZAÇÃO ÚNICA: busca sempre a mesma org via RPC
-      const { data } = await supabase.rpc("get_single_organization_id");
-      const organizationId = data as string | null;
-
-      if (organizationId) {
-        await supabase.rpc("get_or_create_customer", {
-          _organization_id: organizationId,
-        });
-      }
-    }
-
     return { auth: ctx };
   },
-  component: MobileLayout,
+  component: ClienteRoute,
 });

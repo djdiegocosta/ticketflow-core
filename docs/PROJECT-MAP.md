@@ -92,6 +92,7 @@ O TPS documenta `/checkin` como módulo isolado. Na implementação atual, `src/
 - `src/components/layouts/MobileLayout.tsx` — área do cliente/mobile.
 - `src/lib/auth-context.tsx` — sessão, papel, organização e redirecionamento. Contém lógica que evita redirecionar a pessoa de volta para a home do seu papel quando a sessão é apenas revalidada em segundo plano (ex.: voltar de outra aba) — não remover essa checagem de "já está na própria área" sem entender por que existe.
 - `src/components/layouts/AdminPageActionContext.tsx` — ação primária do topbar administrativo.
+- `src/lib/auth-snapshot-core.ts` / `src/lib/auth-snapshot.ts` — papel + organização buscados em paralelo, com dedupe e cache de 30s, compartilhados por `AuthProvider`, `requireSession()` (`src/lib/auth-guard.ts`) e `/login`. **Não criar consulta própria de papel/organização em `beforeLoad` ou providers** — ver `docs/OTIMIZACAO-CARREGAMENTO.md` (regras anti-regressão do boot).
 
 ### Modelo de acesso
 - `visitor` — público/guest.

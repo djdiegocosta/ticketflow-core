@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { offlineDB } from "./offline-db";
 import { ACCENT_COLORS, AccentColor, FULL_THEME_OVERRIDES } from "./design";
 import { useAuth } from "./auth-context";
@@ -64,6 +64,40 @@ export function useCurrentCustomer() {
     data: customers?.[0] || null,
     isLoading: !customers,
   };
+}
+
+/**
+ * Garante, EM SEGUNDO PLANO, que o usuário com papel "cliente" tenha o registro
+ * em `customers`. Só chama a RPC quando a consulta dos registros já terminou e
+ * veio vazia — no caso normal (registro existe) não há chamada nenhuma.
+ *
+ * Antes isso era um `await get_or_create_customer` no beforeLoad de /cliente
+ * (bloqueava a entrada da área a CADA navegação). A RPC é idempotente e
+ * continua sendo a mesma (inclui o vínculo retroativo de compras por WhatsApp).
+ * Ver docs/OTIMIZACAO-CARREGAMENTO.md.
+ */
+export function useEnsureCustomerRecord() {
+  const { userRole, organizationId } = useAuth();
+  const { data: customers, isSuccess } = useMyCustomerRecords();
+  const queryClient = useQueryClient();
+  const triedForOrgRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isSuccess || (customers?.length ?? 0) > 0) return;
+    if (userRole !== "cliente" || !organizationId) return;
+    if (triedForOrgRef.current === organizationId) return; // uma tentativa por organização
+    triedForOrgRef.current = organizationId;
+
+    supabase
+      .rpc("get_or_create_customer", { _organization_id: organizationId })
+      .then(({ error }) => {
+        if (error) {
+          console.error("[Cliente] Falha ao garantir registro de cliente:", error);
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ["my-customer-records"] });
+      });
+  }, [isSuccess, customers, userRole, organizationId, queryClient]);
 }
 
 /**

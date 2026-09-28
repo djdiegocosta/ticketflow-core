@@ -18,6 +18,25 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { logDiagnosticError } from "../lib/diagnostic";
 import { ThemeProvider } from "../lib/theme";
 
+
+const GEIST_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap";
+
+/**
+ * Script de <head>, roda antes do primeiro paint:
+ *  - aplica o tema escuro salvo (evita flash claro para quem usa o tema escuro);
+ *  - injeta a folha de fontes SEM bloquear a renderização (CSS inserido por
+ *    script não é render-blocking). display=swap mantém o texto visível.
+ */
+const BOOT_HEAD_SCRIPT = `try{if(localStorage.getItem('ticketflow-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='${GEIST_FONTS_URL}';document.head.appendChild(l)})();`;
+
+/**
+ * Meta Pixel. O stub do fbq (fila) é definido na hora, então fbq('init') e
+ * fbq('track','PageView') continuam valendo; só o DOWNLOAD do fbevents.js
+ * espera o evento "load" da página, para não competir por rede com o boot.
+ */
+const META_PIXEL_SCRIPT = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];var inject=function(){t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)};if(b.readyState==='complete'){inject()}else{f.addEventListener('load',inject)}}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2269701520646682');fbq('track','PageView');`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] px-4">
@@ -133,10 +152,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icons/icon-192x192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
-      },
+      // A folha de fontes do Google NÃO fica mais aqui: um <link rel="stylesheet">
+      // no <head> é bloqueante (o navegador não pinta nada até baixá-lo, em
+      // 2 saltos: googleapis -> gstatic). Ela é carregada sem bloquear em
+      // RootShell (FONTS_LOADER). A pilha de fallback do --font-sans já cobre
+      // o intervalo (ui-sans-serif, system-ui).
       {
         rel: "stylesheet",
         href: appCss,
@@ -152,15 +172,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: o script de <head> pode adicionar a classe "dark"
+    // antes da hidratação (tema salvo), e o React não a conhece.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: BOOT_HEAD_SCRIPT }} />
+        <noscript>
+          <link rel="stylesheet" href={GEIST_FONTS_URL} />
+        </noscript>
         {/* Meta Pixel — carregado globalmente para medir PageView em todo o TicketFlow. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','2269701520646682');fbq('track','PageView');`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: META_PIXEL_SCRIPT }} />
         <noscript>
           <img
             height="1"
@@ -204,9 +226,19 @@ function RootComponent() {
     if (window.location.hostname === "localhost" || window.location.hostname.includes("127.0.0.1"))
       return;
 
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
-      // Silencioso — o site continua funcionando normalmente sem o Service Worker.
-    });
+    // O registro do Service Worker espera a página terminar de carregar: não
+    // compete por rede/CPU com o boot. (Sem requestIdleCallback: não existe no Safari 15.)
+    const register = () => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
+        // Silencioso — o site continua funcionando normalmente sem o Service Worker.
+      });
+    };
+    if (document.readyState === "complete") {
+      register();
+      return;
+    }
+    window.addEventListener("load", register, { once: true });
+    return () => window.removeEventListener("load", register);
   }, []);
 
   return (
