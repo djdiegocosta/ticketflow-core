@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { RoutePending } from "./components/RoutePending";
 
 // Depois de cada novo deploy, o navegador pode ter em cache uma versão antiga
 // do site que tenta buscar um "pedaço" (chunk) de código que já não existe mais
@@ -29,6 +30,12 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Estrutura mínima imediata enquanto a rota resolve (também sai no HTML das
+    // rotas ssr:false). pendingMinMs = 0 evita segurar o skeleton por tempo
+    // artificial (o padrão do roteador é 500ms).
+    defaultPendingComponent: RoutePending,
+    defaultPendingMs: 0,
+    defaultPendingMinMs: 0,
   });
 
   return router;

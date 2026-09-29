@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 type Theme = "light" | "dark";
 
@@ -18,7 +18,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (stored === "dark" || stored === "light") setThemeState(stored);
   }, []);
 
+  // O tema salvo é aplicado ANTES do primeiro paint por um script no <head>
+  // (ver __root.tsx). Na 1ª execução o estado ainda é o padrão "light" e
+  // desfaria essa classe, causando um flash claro para quem usa o tema escuro.
+  const isFirstRun = useRef(true);
   useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 

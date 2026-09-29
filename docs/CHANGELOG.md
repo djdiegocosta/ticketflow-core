@@ -211,6 +211,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Setembro/2026 — Otimização do carregamento inicial (28/09/2026)
+
+- Auditoria do boot: a tela branca de ~4s vinha de uma fila de idas ao servidor antes de qualquer interface (até 6 em fila no `beforeLoad` de `/cliente`, repetidas a cada navegação; 3 em fila no `AuthProvider` com `return null` no admin), consultas duplicadas de papel/organização, Google Fonts bloqueante no `<head>` e HTML sem nada visível nas rotas `ssr: false`.
+- Papel + organização passaram a ser buscados em paralelo, com dedupe e cache de 30s, compartilhados por AuthProvider, guards e `/login` (`src/lib/auth-snapshot*.ts`). Status da organização e `get_or_create_customer` saíram do caminho crítico.
+- Skeleton imediato (reaproveitando `SkeletonScreen`) já no HTML das rotas `ssr: false`; fontes, Meta Pixel e Service Worker fora do caminho crítico; tema escuro aplicado antes do primeiro paint.
+- Sem mudança em offline, checkout, Mercado Pago, modelo de dados ou regras de evento. Detalhes, regras para não regredir e pendências: `docs/OTIMIZACAO-CARREGAMENTO.md`.
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import type { Session, User } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { authSnapshots, fetchOrganizationStatus } from "@/lib/auth-snapshot";
 
 type AppRole = Database["public"]["Enums"]["app_role"] | "cliente";
 
@@ -41,8 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Evita execução concorrente de loadContext
   const loadingRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Descarta resposta atrasada do status da organização (troca de usuário/logout no meio).
+  const orgStatusRequestRef = useRef(0);
 
-  const loadContext = useCallback(async (currentSession: Session | null) => {
+  const loadContext = useCallback(async (currentSession: Session | null, opts?: { force?: boolean }) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
 
@@ -61,52 +64,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userId = currentSession.user.id;
 
-      // Busca papel do usuário em user_roles (tabela de permissão). Se a
-      // consulta falhar (ex: sessão momentaneamente inválida durante um
-      // refresh de token), tenta mais uma vez antes de desistir — sem isso,
-      // uma falha passageira fazia o código assumir silenciosamente "sem
-      // papel" (vira "cliente") em vez de tentar de novo.
-      const roleQuery = () => supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
-      let roleData = await roleQuery();
-      if (roleData.error) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
-        roleData = await roleQuery();
-      }
-      if (roleData.error) {
-        console.error("[AuthContext] Falha ao buscar papel do usuário:", roleData.error);
-      }
-
-      const role: AppRole = roleData.data?.role ?? "cliente";
-
-      // ORGANIZAÇÃO ÚNICA: busca sempre pela mesma org, via RPC
-      // Não usa mais organization_id de user_roles — funciona para todos os papéis
-      // Mesmo cuidado aqui: uma falha na consulta (não "organização
-      // inexistente") não pode virar silenciosamente organizationId = null,
-      // ou toda tela que depende dele (Dashboard, Vendas, Clientes,
-      // Usuários, Configurações) trava com "Organização não encontrada"
-      // mesmo a organização existindo — só a consulta que falhou.
-      let orgResult = await supabase.rpc("get_single_organization_id");
-      if (orgResult.error) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
-        orgResult = await supabase.rpc("get_single_organization_id");
-      }
-      if (orgResult.error) {
-        console.error("[AuthContext] Falha ao buscar organização:", orgResult.error);
-      }
-      const orgId: string | null = (orgResult.data as string) || null;
+      // Papel (user_roles) e organização (RPC) são independentes: o snapshot
+      // busca os dois EM PARALELO, reaproveita o resultado do guard de rota
+      // (sem repetir consulta) e mantém o retry único em caso de falha —
+      // uma falha passageira NÃO pode virar silenciosamente "cliente" /
+      // "sem organização". Ver docs/OTIMIZACAO-CARREGAMENTO.md.
+      const snapshot = await authSnapshots.get(userId, { force: opts?.force });
+      const role: AppRole = snapshot.role as AppRole;
+      const orgId: string | null = snapshot.organizationId;
       setContextError(
-        orgResult.error || roleData.error ? "Não foi possível confirmar sua sessão agora. Tente novamente em instantes." : null
+        snapshot.hadError ? "Não foi possível confirmar sua sessão agora. Tente novamente em instantes." : null
       );
 
-      // Busca status da organização
-      let orgStatus: string | null = null;
+      // Status da organização NÃO bloqueia o primeiro render (nenhuma tela
+      // decide nada com ele no boot): carrega depois, em segundo plano.
+      const statusRequest = ++orgStatusRequestRef.current;
+      if (!orgId) setOrganizationStatus(null);
       if (orgId) {
-        const { data: orgRow } = await supabase
-          .from("organizations")
-          .select("status")
-          .eq("id", orgId)
-          .maybeSingle();
-        orgStatus = (orgRow as any)?.status ?? null;
+        fetchOrganizationStatus(orgId)
+          .then((status) => {
+            if (orgStatusRequestRef.current === statusRequest) setOrganizationStatus(status);
+          })
+          .catch(() => {
+            // Silencioso: o status é secundário.
+          });
       }
 
       const profile = currentSession.user.user_metadata;
@@ -116,7 +97,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserRole(role);
       setUserName(name ?? null);
       setOrganizationId(orgId);
-      setOrganizationStatus(orgStatus);
       setSession(currentSession);
 
       // Navegação por papel — só faz sentido logo após um login de verdade
@@ -168,7 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === "SIGNED_OUT") authSnapshots.clear();
       if (loadingRef.current) return;
       clearTimeout(loadingTimeoutRef.current);
       loadingTimeoutRef.current = setTimeout(() => {
@@ -198,11 +179,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     const { data } = await supabase.auth.getSession();
-    await loadContext(data.session);
+    await loadContext(data.session, { force: true });
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
+    authSnapshots.clear();
+    orgStatusRequestRef.current += 1;
     setSession(null);
     setUser(null);
     setUserRole(null);
