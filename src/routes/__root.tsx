@@ -149,7 +149,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "manifest", href: "/manifest.json" },
-      { rel: "apple-touch-icon", href: "/icons/icon-192x192.png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       // A folha de fontes do Google NÃO fica mais aqui: um <link rel="stylesheet">
@@ -161,7 +161,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico?v=2", type: "image/x-icon" },
+      { rel: "icon", href: "/icons/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
