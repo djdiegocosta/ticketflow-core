@@ -39,7 +39,10 @@ export function useMyCustomerRecords() {
   return useQuery({
     queryKey: ["my-customer-records"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Usuário lido da sessão local (sem ida ao servidor). A segurança dos dados
+      // continua no banco (RLS); ver docs/OTIMIZACAO-CARREGAMENTO.md.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -526,7 +529,10 @@ export function useActiveBanner() {
   return useQuery({
     queryKey: ["active-banner"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Usuário lido da sessão local (sem ida ao servidor). A segurança dos dados
+      // continua no banco (RLS); ver docs/OTIMIZACAO-CARREGAMENTO.md.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return null;
 
       const { data: customerData } = await supabase
@@ -559,7 +565,10 @@ export function useOrgActiveEvents() {
   return useQuery({
     queryKey: ["org-active-events"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Usuário lido da sessão local (sem ida ao servidor). A segurança dos dados
+      // continua no banco (RLS); ver docs/OTIMIZACAO-CARREGAMENTO.md.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return [];
 
       const { data: customerData } = await supabase
