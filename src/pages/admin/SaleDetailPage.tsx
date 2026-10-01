@@ -5,7 +5,7 @@ import { ArrowLeft, FileText, QrCode, X, Loader2, MessageCircle } from "lucide-r
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSale, formatCurrency } from "@/lib/sales-queries";
-import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,7 @@ function Field({ label, value }: { label: string; value: string }) {
 const card = "bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
+  usePreloadCheckinPdf();
   const { data: sale, isLoading, error: fetchError } = useSale(id) as any;
   const { userRole } = useAuth();
   const queryClient = useQueryClient();
@@ -153,12 +154,17 @@ export function SaleDetailPage({ id }: { id: string }) {
             <>
               <button
                 type="button"
-                onClick={() =>
-                  generateCheckinListPdf(
-                    eventTitle,
-                    (sale.tickets || []).map((t: any) => t.participant_name),
-                  )
-                }
+                onClick={async () => {
+                  try {
+                    await generateCheckinListPdf(
+                      eventTitle,
+                      (sale.tickets || []).map((t: any) => t.participant_name),
+                    );
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("Não foi possível gerar o PDF");
+                  }
+                }}
                 className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
               >
                 <FileText className="h-4 w-4" />

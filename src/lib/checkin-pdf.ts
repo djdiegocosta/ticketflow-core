@@ -1,7 +1,25 @@
-import { jsPDF } from "jspdf";
+import { useEffect } from "react";
+
+/**
+ * Baixa a biblioteca de PDF em segundo plano, pouco depois da tela abrir.
+ * Assim a tela carrega rápido e, no clique, o PDF já está no aparelho —
+ * importante no dia do evento, quando a internet pode estar fraca.
+ */
+export function usePreloadCheckinPdf() {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      import("jspdf").catch(() => {
+        /* sem rede agora: a geração tentará de novo no clique */
+      });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
+}
 
 /** Gera e baixa a lista de check-in (participantes) em A4 compacto. */
-export function generateCheckinListPdf(eventName: string, participantNames: string[]) {
+export async function generateCheckinListPdf(eventName: string, participantNames: string[]) {
+  // Carregada sob demanda (fora do carregamento inicial da tela): biblioteca de ~400 KB.
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

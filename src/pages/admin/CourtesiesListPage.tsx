@@ -22,7 +22,7 @@ import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCar
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterSearch } from "@/components/admin/FilterBar";
 import { formatName, isFullName } from "@/lib/form-format";
-import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
 import { useCourtesies } from "@/lib/sales-queries";
@@ -38,6 +38,7 @@ const CreateCourtesyPanelLazy = lazy(() =>
 );
 
 export function CourtesiesListPage() {
+  usePreloadCheckinPdf();
   const { event: operationalEvent, isLoading: eventLoading } = useOperationalEvent();
   const { data: courtesies = [], isLoading } = useCourtesies(operationalEvent?.id ?? null);
   const queryClient = useQueryClient();
@@ -80,10 +81,15 @@ export function CourtesiesListPage() {
     return filteredData.slice(start, start + size);
   }, [filteredData, currentPage, pageSize]);
   const totalPages = Math.ceil(filteredData.length / parseInt(pageSize));
-  const handleExportPdf = () => {
-    const names = filteredData.map((c: any) => c.participant_name);
-    generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
-    toast.success("PDF gerado com sucesso!");
+  const handleExportPdf = async () => {
+    try {
+      const names = filteredData.map((c: any) => c.participant_name);
+      await generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
+      toast.success("PDF gerado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível gerar o PDF");
+    }
   };
   const handleCreateSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });
