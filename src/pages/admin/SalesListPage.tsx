@@ -138,7 +138,7 @@ export function SalesListPage() {
         return namesBySale.get(id) ?? [sale?.buyer_name ?? "—"];
       });
 
-      generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
+      await generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
       toast.success("Lista PDF gerada");
     } catch (err) {
       console.error(err);

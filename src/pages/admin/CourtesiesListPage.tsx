@@ -80,10 +80,15 @@ export function CourtesiesListPage() {
     return filteredData.slice(start, start + size);
   }, [filteredData, currentPage, pageSize]);
   const totalPages = Math.ceil(filteredData.length / parseInt(pageSize));
-  const handleExportPdf = () => {
-    const names = filteredData.map((c: any) => c.participant_name);
-    generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
-    toast.success("PDF gerado com sucesso!");
+  const handleExportPdf = async () => {
+    try {
+      const names = filteredData.map((c: any) => c.participant_name);
+      await generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
+      toast.success("PDF gerado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível gerar o PDF");
+    }
   };
   const handleCreateSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["tickets", "courtesies"] });

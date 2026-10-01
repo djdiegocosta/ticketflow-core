@@ -1,7 +1,7 @@
-import { jsPDF } from "jspdf";
-
 /** Gera e baixa a lista de check-in (participantes) em A4 compacto. */
-export function generateCheckinListPdf(eventName: string, participantNames: string[]) {
+export async function generateCheckinListPdf(eventName: string, participantNames: string[]) {
+  // Carregada sob demanda: a biblioteca de PDF (~400 KB) só é baixada no clique.
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

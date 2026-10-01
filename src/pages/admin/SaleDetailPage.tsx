@@ -153,12 +153,17 @@ export function SaleDetailPage({ id }: { id: string }) {
             <>
               <button
                 type="button"
-                onClick={() =>
-                  generateCheckinListPdf(
-                    eventTitle,
-                    (sale.tickets || []).map((t: any) => t.participant_name),
-                  )
-                }
+                onClick={async () => {
+                  try {
+                    await generateCheckinListPdf(
+                      eventTitle,
+                      (sale.tickets || []).map((t: any) => t.participant_name),
+                    );
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("Não foi possível gerar o PDF");
+                  }
+                }}
                 className="inline-flex items-center gap-2 border border-border-default bg-bg-tertiary px-4 py-2 text-body text-text-primary transition-colors hover:border-accent"
               >
                 <FileText className="h-4 w-4" />
