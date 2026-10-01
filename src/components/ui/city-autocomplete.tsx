@@ -44,10 +44,29 @@ export function CityAutocomplete({
   // isso é o suficiente pra travar o navegador em celulares mais fracos.
   // Enquanto o estado (uf) não é conhecido, mostra uma lista pequena seguindo
   // a mesma região da organização, em vez do país inteiro.
-  const cities = React.useMemo(() => getCitiesByUF(uf || "RJ"), [uf]);
-
-  // Sync state if value is external
+  // A lista é carregada sob demanda (null = ainda carregando).
+  const [cities, setCities] = React.useState<string[] | null>(null);
   React.useEffect(() => {
+    let cancelled = false;
+    setCities(null);
+    getCitiesByUF(uf || "RJ")
+      .then((list) => {
+        if (!cancelled) setCities(list);
+      })
+      .catch(() => {
+        // Sem rede para baixar a lista: segue com lista vazia; o campo
+        // "Outra cidade" continua permitindo digitar manualmente.
+        if (!cancelled) setCities([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [uf]);
+
+  // Sync state if value is external (só depois que a lista chegou — senão uma
+  // cidade já salva seria tratada como "outra cidade" enquanto carrega)
+  React.useEffect(() => {
+    if (cities === null) return;
     if (value && !cities.includes(value) && value !== "Outra (fora do RJ)") {
       setIsCustom(true);
       setCustomValue(value);
@@ -85,9 +104,9 @@ export function CityAutocomplete({
           <Command className="w-full">
             <CommandInput placeholder="Buscar cidade..." />
             <CommandList>
-              <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+              <CommandEmpty>{cities === null ? "Carregando cidades..." : "Nenhuma cidade encontrada."}</CommandEmpty>
               <CommandGroup>
-                {cities.map((city) => (
+                {(cities ?? []).map((city) => (
                   <CommandItem
                     key={city}
                     value={city}

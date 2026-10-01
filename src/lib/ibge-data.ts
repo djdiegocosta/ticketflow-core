@@ -1,5 +1,3 @@
-import { BRAZIL_CITIES } from "./ibge-cities";
-
 export const DDD_TO_UF: Record<string, string> = {
   "11": "SP", "12": "SP", "13": "SP", "14": "SP", "15": "SP", "16": "SP", "17": "SP", "18": "SP", "19": "SP",
   "21": "RJ", "22": "RJ", "24": "RJ",
@@ -34,13 +32,17 @@ export function getUFByDDD(ddd: string): string | null {
   return DDD_TO_UF[ddd] || null;
 }
 
-export function getCitiesByUF(uf: string | null): string[] {
+// A lista de cidades (~88 KB) é carregada sob demanda: só quem abre um campo de
+// cidade baixa esses dados, em vez de toda abertura do sistema.
+export async function getCitiesByUF(uf: string | null): Promise<string[]> {
+  const { BRAZIL_CITIES } = await import("./ibge-cities");
   if (!uf) {
     return Object.values(BRAZIL_CITIES).flat().sort();
   }
   return BRAZIL_CITIES[uf] || [];
 }
 
-export function getAllCities(): string[] {
+export async function getAllCities(): Promise<string[]> {
+  const { BRAZIL_CITIES } = await import("./ibge-cities");
   return Object.values(BRAZIL_CITIES).flat().sort();
 }
