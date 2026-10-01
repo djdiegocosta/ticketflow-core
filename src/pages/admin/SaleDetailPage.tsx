@@ -5,7 +5,7 @@ import { ArrowLeft, FileText, QrCode, X, Loader2, MessageCircle } from "lucide-r
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSale, formatCurrency } from "@/lib/sales-queries";
-import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { useAuth } from "@/lib/auth-context";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,7 @@ function Field({ label, value }: { label: string; value: string }) {
 const card = "bg-bg-secondary p-5 shadow-[var(--shadow-sm)]";
 
 export function SaleDetailPage({ id }: { id: string }) {
+  usePreloadCheckinPdf();
   const { data: sale, isLoading, error: fetchError } = useSale(id) as any;
   const { userRole } = useAuth();
   const queryClient = useQueryClient();

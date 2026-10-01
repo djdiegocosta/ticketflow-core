@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Ban, Download, Eye, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useSales, formatCurrency } from "@/lib/sales-queries";
-import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -62,6 +62,7 @@ function StatusBadge({ sale }: { sale: any }) {
 }
 
 export function SalesListPage() {
+  usePreloadCheckinPdf();
   const { event: operationalEvent } = useOperationalEvent();
   const { data: sales = [], isLoading, refetch } = useSales(operationalEvent?.id ?? null);
   const { userRole } = useAuth();

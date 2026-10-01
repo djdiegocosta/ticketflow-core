@@ -22,7 +22,7 @@ import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCar
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterSearch } from "@/components/admin/FilterBar";
 import { formatName, isFullName } from "@/lib/form-format";
-import { generateCheckinListPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
 import { useCourtesies } from "@/lib/sales-queries";
@@ -38,6 +38,7 @@ const CreateCourtesyPanelLazy = lazy(() =>
 );
 
 export function CourtesiesListPage() {
+  usePreloadCheckinPdf();
   const { event: operationalEvent, isLoading: eventLoading } = useOperationalEvent();
   const { data: courtesies = [], isLoading } = useCourtesies(operationalEvent?.id ?? null);
   const queryClient = useQueryClient();
