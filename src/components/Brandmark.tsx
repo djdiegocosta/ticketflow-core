@@ -1,3 +1,4 @@
+import { Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
@@ -8,36 +9,12 @@ const SIZES = {
 } as const;
 
 /**
- * Marca única do TicketFlow (ícone + wordmark). Fonte única de verdade para
- * não deixar o logo divergir entre Admin, Cliente e telas de autenticação.
+ * Marca única do TicketFlow (ícone + wordmark).
  *
- * Símbolo: ingresso + fluxo central. Mantém apenas #00E676 e branco,
- * sem depender de biblioteca de ícones para a identidade da marca.
+ * O símbolo do logo interno permanece o Ticket original do sistema,
+ * porque sua cor acompanha a identidade/tema através de --icon-brand.
+ * Os ícones de app/favicon usam uma arte separada: ingresso branco + QR.
  */
-function TicketFlowIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 512 512"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className={className}
-    >
-      <path
-        fill="#00E676"
-        d="M112 104h288c13.3 0 24 10.7 24 24v64c-30.9 0-56 25.1-56 56s25.1 56 56 56v64c0 13.3-10.7 24-24 24H112c-13.3 0-24-10.7-24-24v-64c30.9 0 56-25.1 56-56s-25.1-56-56-56v-64c0-13.3 10.7-24 24-24z"
-      />
-      <path
-        d="M145 224c34-42 67-42 101 0s67 42 101 0"
-        stroke="#FFFFFF"
-        strokeWidth="28"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function Brandmark({
   size = "sm",
   pulse = false,
@@ -50,8 +27,12 @@ export function Brandmark({
   const s = SIZES[size];
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <TicketFlowIcon
-        className={cn(s.icon, "shrink-0", pulse && "animate-pulse")}
+      <Ticket
+        className={cn(
+          s.icon,
+          "shrink-0 text-[var(--icon-brand)]",
+          pulse && "animate-pulse",
+        )}
       />
       <span className={cn(s.text, "font-bold text-[var(--text-primary)]")}>TicketFlow</span>
     </div>
