@@ -280,9 +280,9 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
-    if (saleStatus === 'pago' && event && currentSaleCode) {
+    if (saleStatus === 'pago' && event && currentSaleId) {
       toast.success("Pagamento confirmado com sucesso!");
-      navigate({ to: `/e/${event.slug}/confirmacao/${currentSaleCode}` });
+      navigate({ to: `/e/${event.slug}/confirmacao/${currentSaleId}` });
       return;
     }
 
@@ -295,7 +295,7 @@ export default function CheckoutPage() {
       setCountdown(0);
       setPixData(null);
     }
-  }, [saleStatus, event, currentSaleCode, navigate, step]);
+  }, [saleStatus, event, currentSaleId, navigate, step]);
 
   const handleSameAsBuyer = (checked: boolean | 'indeterminate') => {
     if (checked === true && qty === 1) {

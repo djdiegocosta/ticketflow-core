@@ -78,7 +78,7 @@ export function SaleDetailPage({ id }: { id: string }) {
     // WhatsApp, sem precisar checar e-mail.
     let digits = String(sale.buyer_whatsapp).replace(/\D/g, "");
     if (digits.length === 10 || digits.length === 11) digits = "55" + digits;
-    const pdfUrl = `${window.location.origin}/api/public/tickets/pdf?sale_code=${sale.sale_code}`;
+    const pdfUrl = `${window.location.origin}/api/public/tickets/pdf?sale_id=${sale.id}`;
     const eventTitle = sale.events?.title || "seu evento";
     const message =
       `Olá, ${sale.buyer_name}! Aqui está o seu ingresso para *${eventTitle}*.\n\n` +

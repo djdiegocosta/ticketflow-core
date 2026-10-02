@@ -4,19 +4,20 @@ import { Button } from '@/components/ui/button';
 import { useParams, Link } from '@tanstack/react-router';
 import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useSaleByCode, useApplyPublicDesign } from '@/lib/customer-queries';
+import { useSaleConfirmation, useApplyPublicDesign } from '@/lib/customer-queries';
 import { useEffect, useState } from 'react';
 
 export default function ConfirmationPage() {
-  const { slug, sale_code } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
-  const { data: sale, isLoading } = useSaleByCode(sale_code);
+  // O parâmetro da rota continua se chamando sale_code, mas agora carrega o ID (uuid) da venda.
+  const { slug, sale_code: saleId } = useParams({ from: '/e/$slug/confirmacao/$sale_code' });
+  const { data: sale, isLoading } = useSaleConfirmation(saleId);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   useApplyPublicDesign(slug);
 
   useEffect(() => {
     if (!sale || sale.status !== 'pago' || !sale.tickets?.length || typeof window === 'undefined') return;
 
-    const storageKey = `ticketflow_meta_purchase:${sale_code}`;
+    const storageKey = `ticketflow_meta_purchase:${saleId}`;
     if (window.localStorage.getItem(storageKey)) return;
 
     const fbq = (window as typeof window & {
@@ -28,14 +29,14 @@ export default function ConfirmationPage() {
     fbq('track', 'Purchase', {
       content_name: (sale as any).event_title || 'Ingresso',
       content_type: 'event',
-      content_ids: [(sale as any).event_id || sale_code],
+      content_ids: [(sale as any).event_id || saleId],
       value: Number(Number((sale as any).total_amount || 0).toFixed(2)),
       currency: 'BRL',
       num_items: Number((sale as any).quantity || sale.tickets.length),
     });
 
     window.localStorage.setItem(storageKey, '1');
-  }, [sale, sale_code]);
+  }, [sale, saleId]);
 
   const downloadAllTicketsPdf = async () => {
     if (!sale?.tickets?.length || isGeneratingPdf) return;
@@ -43,7 +44,7 @@ export default function ConfirmationPage() {
     setIsGeneratingPdf(true);
 
     try {
-      const response = await fetch(`/api/public/tickets/pdf?sale_code=${encodeURIComponent(sale_code)}`);
+      const response = await fetch(`/api/public/tickets/pdf?sale_id=${encodeURIComponent(saleId)}`);
       if (!response.ok) {
         throw new Error(`Falha ao gerar PDF (${response.status}).`);
       }
@@ -52,7 +53,7 @@ export default function ConfirmationPage() {
       const downloadUrl = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = downloadUrl;
-      anchor.download = `ingressos-${sale_code}.pdf`;
+      anchor.download = `ingressos-${(sale as any).sale_code || 'ingressos'}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();

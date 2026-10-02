@@ -298,24 +298,34 @@ export function useAvailableBatches(eventId: string | undefined) {
 /**
  * Hook para buscar uma venda pelo código (Confirmação/Detalhe)
  */
-export function useSaleByCode(code: string) {
+const SALE_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Venda + ingressos para a tela de confirmação, pelo ID da venda (uuid aleatório de
+ * 122 bits — funciona como "senha" do link; o código curto de 8 caracteres NÃO é mais
+ * aceito aqui porque era adivinhável).
+ */
+export function useSaleConfirmation(saleId: string) {
   return useQuery({
-    queryKey: ["sale-code", code],
+    queryKey: ["sale-confirmation", saleId],
     queryFn: async () => {
-      // get_sale_by_code/get_tickets_by_sale_code são RETURNS TABLE, então
+      // Links antigos (código curto) não são mais válidos: tratar como não encontrada.
+      if (!SALE_ID_REGEX.test(saleId)) return null;
+
+      // get_sale_confirmation/get_tickets_by_sale_id são RETURNS TABLE, então
       // o supabase-js entrega um ARRAY em "data" — sempre pegar a primeira
-      // linha (sale_code é único). Nunca fazer spread do array diretamente.
-      const { data, error } = await supabase.rpc("get_sale_by_code", { _code: code });
+      // linha (id é único). Nunca fazer spread do array diretamente.
+      const { data, error } = await supabase.rpc("get_sale_confirmation", { _sale_id: saleId });
       if (error) throw error;
       const sale = Array.isArray(data) ? data[0] : data;
       if (!sale) return null;
 
-      const { data: tickets, error: tError } = await supabase.rpc("get_tickets_by_sale_code", { _code: code });
+      const { data: tickets, error: tError } = await supabase.rpc("get_tickets_by_sale_id", { _sale_id: saleId });
       if (tError) throw tError;
 
       return { ...sale, tickets: tickets ?? [] };
     },
-    enabled: !!code
+    enabled: !!saleId
   });
 }
 
