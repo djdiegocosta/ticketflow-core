@@ -4,7 +4,7 @@
   "description": "Gestão de eventos e venda de ingressos.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#383B43",
   "theme_color": "#00E676",
   "icons": [
     {
