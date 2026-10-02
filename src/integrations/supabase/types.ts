@@ -1428,6 +1428,32 @@ export type Database = {
         }[]
       }
       get_single_organization_id: { Args: never; Returns: string }
+      get_sale_confirmation: {
+        Args: { _sale_id: string }
+        Returns: {
+          buyer_name: string
+          buyer_whatsapp: string
+          event_date: string
+          event_title: string
+          location: string
+          organization_id: string
+          quantity: number
+          sale_code: string
+          sale_id: string
+          status: Database["public"]["Enums"]["sale_status"]
+          total_amount: number
+        }[]
+      }
+      get_tickets_by_sale_id: {
+        Args: { _sale_id: string }
+        Returns: {
+          checked_in_at: string
+          id: string
+          participant_name: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          ticket_code: string
+        }[]
+      }
       get_tickets_by_sale_code: {
         Args: { _code: string }
         Returns: {

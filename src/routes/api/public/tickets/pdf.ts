@@ -7,21 +7,28 @@ export const Route = createFileRoute("/api/public/tickets/pdf")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const saleCode = url.searchParams.get("sale_code");
-        if (!saleCode) return new Response("sale_code obrigatório", { status: 400 });
+        // O acesso é pelo ID da venda (uuid aleatório de 122 bits, impossível de adivinhar).
+        // O código curto (sale_code, 8 caracteres) NÃO é mais aceito: era adivinhável e
+        // permitia baixar os ingressos de qualquer compra sem login.
+        const saleId = url.searchParams.get("sale_id");
+        if (!saleId) return new Response("sale_id obrigatório", { status: 400 });
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(saleId)) {
+          return new Response("sale_id inválido", { status: 400 });
+        }
 
         const { data: sale, error: saleError } = await supabaseAdmin
           .from("sales")
-          .select("created_at, events(title, event_date, location, organizations(name))")
-          .eq("sale_code", saleCode.toUpperCase())
+          .select("created_at, sale_code, events(title, event_date, location, organizations(name))")
+          .eq("id", saleId)
           .maybeSingle();
 
         if (saleError || !sale) return new Response("Venda não encontrada", { status: 404 });
+        const saleCode = (sale as any).sale_code as string;
 
         const { data: tickets, error: ticketsError } = await supabaseAdmin
           .from("tickets")
-          .select("ticket_code, participant_name, ticket_batches(name), sales!inner(sale_code)")
-          .eq("sales.sale_code", saleCode.toUpperCase());
+          .select("ticket_code, participant_name, ticket_batches(name)")
+          .eq("sale_id", saleId);
 
         if (ticketsError || !tickets?.length) return new Response("Nenhum ingresso encontrado para essa venda", { status: 404 });
 
