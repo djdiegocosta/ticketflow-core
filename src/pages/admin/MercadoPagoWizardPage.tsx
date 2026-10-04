@@ -121,7 +121,7 @@ export function MercadoPagoWizardPage() {
   const orgId = org?.id;
 
   // URL dinâmica para webhook
-  const siteUrl = import.meta.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
+  const siteUrl = import.meta.env["VITE_SITE_URL"] || "https://ticketflow-core.vercel.app";
   const webhookUrl = orgId ? `${siteUrl}/api/public/mp/webhook?org_id=${orgId}` : "";
 
   const isValidated = (id: number) => validated.includes(id);

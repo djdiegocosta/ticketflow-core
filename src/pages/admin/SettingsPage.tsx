@@ -15,7 +15,8 @@ import {
   Loader2,
   Clock3,
   Thermometer,
-  Flame,
+  UserCheck,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
@@ -24,7 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useDesign } from "@/lib/design";
 import { cn } from "@/lib/utils";
-import { preferencesMock, type MpStatus } from "@/lib/settings-data";
+import { type MpStatus } from "@/lib/settings-data";
+import { InfoHint } from "@/components/admin/InfoHint";
 import {
   useOrganization,
   useUpdateOrganization,
@@ -95,6 +97,29 @@ function Panel({
   );
 }
 
+function PrefRow({
+  icon: Icon,
+  title,
+  hint,
+  children,
+}: {
+  icon: typeof Settings2;
+  title: string;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+      <div className="flex min-w-0 items-center gap-2">
+        <Icon className="h-4 w-4 shrink-0 text-icon-brand" />
+        <span className="text-body text-[var(--text-primary)]">{title}</span>
+        {hint && <InfoHint>{hint}</InfoHint>}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const [active, setActive] = useState<SectionId>("organizacao");
   const { data: organization, isLoading: loadingOrg } = useOrganization();
@@ -106,7 +131,8 @@ export function SettingsPage() {
   const [orgForm, setOrgForm] = useState({ name: "", email: "", phone: "", logoUrl: "" });
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [unified, setUnified] = useState(preferencesMock.unifiedCheckinPdf);
+  const [allowGuest, setAllowGuest] = useState(true);
+  const [unifyPdf, setUnifyPdf] = useState(true);
   const [pendingMinutes, setPendingMinutes] = useState(30);
   const [aquecendo, setAquecendo] = useState(10);
   const [quente, setQuente] = useState(25);
@@ -131,6 +157,8 @@ export function SettingsPage() {
       setAquecendo(operationalPreferences.temperature_aquecendo_sales_per_day);
       setQuente(operationalPreferences.temperature_quente_sales_per_day);
       setExplodindo(operationalPreferences.temperature_explodindo_sales_per_day);
+      setAllowGuest(operationalPreferences.allow_guest_checkout);
+      setUnifyPdf(operationalPreferences.unify_checkin_pdf);
     }
   }, [operationalPreferences]);
 
@@ -145,6 +173,23 @@ export function SettingsPage() {
       phone: orgForm.phone,
       logo_url: orgForm.logoUrl,
     });
+
+  // Salva na hora: a regra vale para os eventos ativos assim que muda.
+  const handleToggleGuest = (value: boolean) => {
+    setAllowGuest(value);
+    updatePreferencesMutation.mutate(
+      { allow_guest_checkout: value },
+      { onError: () => setAllowGuest(!value) },
+    );
+  };
+
+  const handleToggleUnifyPdf = (value: boolean) => {
+    setUnifyPdf(value);
+    updatePreferencesMutation.mutate(
+      { unify_checkin_pdf: value },
+      { onError: () => setUnifyPdf(!value) },
+    );
+  };
 
   const handleSavePreferences = () => {
     const values = {
@@ -383,116 +428,97 @@ export function SettingsPage() {
 
           {active === "preferencias" && (
             <Panel title="Preferências">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Clock3 className="h-4 w-4 text-icon-brand" />
-                  <FieldLabel>Expiração de vendas pendentes</FieldLabel>
-                </div>
-                <p className="text-small text-[var(--text-secondary)]">
-                  Define por quanto tempo uma venda não paga permanece pendente. Depois desse prazo,
-                  ela passa para expirada e deixa de aparecer na lista operacional de vendas.
-                </p>
-                <div className="flex max-w-xs items-center gap-2">
-                  <Input
-                    type="number"
-                    min={5}
-                    max={1440}
-                    value={pendingMinutes}
-                    onChange={(e) => setPendingMinutes(Number(e.target.value))}
-                    className="rounded-[var(--radius-sm)]"
+              <div className="divide-y divide-[var(--border-subtle)]">
+                <PrefRow
+                  icon={UserCheck}
+                  title="Compra sem cadastro"
+                  hint="Ligado: qualquer pessoa compra sem criar conta. Desligado: o cliente precisa entrar ou criar conta antes de comprar. Vale para todos os eventos ativos e muda na hora."
+                >
+                  <Switch
+                    checked={allowGuest}
+                    onCheckedChange={handleToggleGuest}
+                    disabled={updatePreferencesMutation.isPending}
+                    aria-label="Compra sem cadastro"
                   />
-                  <span className="text-small text-[var(--text-secondary)]">minutos</span>
+                </PrefRow>
+
+                <PrefRow
+                  icon={FileText}
+                  title="Unificar listas de PDF"
+                  hint="Ligado: o PDF de check-in traz Vendas e Cortesias numa lista só, nas duas telas. Desligado: Vendas gera só os compradores e Cortesias gera só as cortesias."
+                >
+                  <Switch
+                    checked={unifyPdf}
+                    onCheckedChange={handleToggleUnifyPdf}
+                    disabled={updatePreferencesMutation.isPending}
+                    aria-label="Unificar listas de PDF"
+                  />
+                </PrefRow>
+
+                <PrefRow
+                  icon={Clock3}
+                  title="Expiração de vendas pendentes"
+                  hint="Tempo que uma venda não paga fica pendente. Depois disso ela expira e sai da lista de vendas. Entre 5 e 1440 minutos."
+                >
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={5}
+                      max={1440}
+                      value={pendingMinutes}
+                      onChange={(e) => setPendingMinutes(Number(e.target.value))}
+                      className="h-9 w-20 rounded-[var(--radius-sm)] text-center"
+                    />
+                    <span className="text-small text-[var(--text-secondary)]">min</span>
+                  </div>
+                </PrefRow>
+
+                <div className="space-y-3 py-4 last:pb-0">
+                  <div className="flex items-center gap-2">
+                    <Thermometer className="h-4 w-4 shrink-0 text-icon-brand" />
+                    <span className="text-body text-[var(--text-primary)]">Temperatura do evento</span>
+                    <InfoHint>
+                      Classifica o evento pelos ingressos pagos nas últimas 24 horas. Os valores
+                      precisam crescer: Aquecendo &lt; Quente &lt; Explodindo.
+                    </InfoHint>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-4 pl-6">
+                    {[
+                      { label: "Aquecendo", value: aquecendo, set: setAquecendo },
+                      { label: "Quente", value: quente, set: setQuente },
+                      { label: "Explodindo", value: explodindo, set: setExplodindo },
+                    ].map((item) => (
+                      <div key={item.label} className="space-y-1">
+                        <FieldLabel>{item.label}</FieldLabel>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={item.value}
+                          onChange={(e) => item.set(Number(e.target.value))}
+                          className="h-9 w-20 rounded-[var(--radius-sm)] text-center"
+                        />
+                      </div>
+                    ))}
+                    <span className="pb-2 text-small text-[var(--text-secondary)]">ingressos/dia</span>
+                  </div>
+                  <p className="pl-6 text-small text-[var(--text-secondary)]">
+                    <span className="text-sky-400">Fria</span> &lt; {aquecendo} ·{" "}
+                    <span className="text-warning">Aquecendo</span> {aquecendo}–
+                    {Math.max(aquecendo, quente - 1)} · <span className="text-error">Quente</span>{" "}
+                    {quente}–{Math.max(quente, explodindo - 1)} ·{" "}
+                    <span className="text-error">Explodindo</span> ≥ {explodindo}
+                  </p>
                 </div>
               </div>
 
-              <div className="border-t border-[var(--border-subtle)] pt-6">
-                <div className="flex items-center gap-2">
-                  <Thermometer className="h-4 w-4 text-icon-brand" />
-                  <div>
-                    <p className="text-body text-[var(--text-primary)]">Temperatura do evento</p>
-                    <p className="text-small text-[var(--text-secondary)]">
-                      Classificação baseada em ingressos vendidos (pagos) nas últimas 24 horas.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <FieldLabel>Aquecendo a partir de</FieldLabel>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        value={aquecendo}
-                        onChange={(e) => setAquecendo(Number(e.target.value))}
-                        className="rounded-[var(--radius-sm)]"
-                      />
-                      <span className="text-small text-[var(--text-secondary)]">ingressos/dia</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <FieldLabel>Quente a partir de</FieldLabel>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        value={quente}
-                        onChange={(e) => setQuente(Number(e.target.value))}
-                        className="rounded-[var(--radius-sm)]"
-                      />
-                      <span className="text-small text-[var(--text-secondary)]">ingressos/dia</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <FieldLabel>Explodindo a partir de</FieldLabel>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        value={explodindo}
-                        onChange={(e) => setExplodindo(Number(e.target.value))}
-                        className="rounded-[var(--radius-sm)]"
-                      />
-                      <span className="text-small text-[var(--text-secondary)]">ingressos/dia</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5 rounded-[var(--radius-sm)] bg-[var(--bg-tertiary)] p-4">
-                  <div className="flex flex-wrap items-center gap-4 text-small">
-                    <span className="font-medium text-sky-400">Fria</span>
-                    <span className="text-[var(--text-secondary)]">&lt; {aquecendo}</span>
-                    <span className="font-medium text-warning">Aquecendo</span>
-                    <span className="text-[var(--text-secondary)]">
-                      {aquecendo}–{Math.max(aquecendo, quente - 1)}
-                    </span>
-                    <span className="font-medium text-error">Quente</span>
-                    <span className="text-[var(--text-secondary)]">
-                      {quente}–{Math.max(quente, explodindo - 1)}
-                    </span>
-                    <span className="font-medium text-error">Explodindo</span>
-                    <span className="text-[var(--text-secondary)]">≥ {explodindo}</span>
-                    <Flame className="ml-auto h-4 w-4 text-error" />
-                  </div>
-                </div>
+              <div className="flex justify-end border-t border-[var(--border-subtle)] pt-4">
+                <Button
+                  onClick={handleSavePreferences}
+                  disabled={updatePreferencesMutation.isPending}
+                >
+                  {updatePreferencesMutation.isPending ? "Salvando..." : "Salvar"}
+                </Button>
               </div>
-
-              <div className="flex items-start justify-between gap-6 border-t border-[var(--border-subtle)] pt-6">
-                <div>
-                  <p className="text-body text-[var(--text-primary)]">
-                    Unificar listas de PDF de check-in
-                  </p>
-                  <p className="text-small text-[var(--text-secondary)]">
-                    Ativado: Vendas e Cortesias saem em uma única lista. Desativado: uma lista para
-                    cada.
-                  </p>
-                </div>
-                <Switch checked={unified} onCheckedChange={setUnified} />
-              </div>
-              <Button
-                onClick={handleSavePreferences}
-                disabled={updatePreferencesMutation.isPending}
-              >
-                {updatePreferencesMutation.isPending ? "Salvando..." : "Salvar preferências"}
-              </Button>
             </Panel>
           )}
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,10 +30,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isAuthenticated, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
+  const router = useRouter();
+  const { voltar } = useSearch({ from: "/login" });
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      if (userRole === "admin" || userRole === "colaborador") {
+      if (userRole === "cliente" && voltar) {
+        router.history.replace(voltar);
+      } else if (userRole === "admin" || userRole === "colaborador") {
         navigate({ to: "/admin", replace: true });
       } else if (userRole === "cliente") {
         navigate({ to: "/cliente", replace: true });
@@ -41,7 +45,7 @@ export default function LoginPage() {
         navigate({ to: "/checkin", replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, userRole, navigate]);
+  }, [isLoading, isAuthenticated, userRole, navigate, router, voltar]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -164,6 +168,7 @@ export default function LoginPage() {
               <p className="text-small text-[var(--text-secondary)] mb-1.5">Não tem uma conta?</p>
               <Link
                 to="/cadastro"
+                search={voltar ? { voltar } : {}}
                 className="text-body font-semibold text-[var(--accent-text)] hover:text-[var(--accent)] hover:underline transition-colors"
               >
                 Criar conta

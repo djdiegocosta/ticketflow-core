@@ -1,11 +1,16 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import LoginPage from "@/pages/LoginPage";
+import { safeReturnTo } from "@/lib/return-to";
 import { supabase } from "@/integrations/supabase/client";
 import { homeRouteForRole, type GuardRole } from "@/lib/auth-guard";
 import { authSnapshots } from "@/lib/auth-snapshot";
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { voltar?: string } => {
+    const voltar = safeReturnTo(search['voltar']);
+    return voltar ? { voltar } : {};
+  },
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;

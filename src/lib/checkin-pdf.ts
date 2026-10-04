@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Baixa a biblioteca de PDF em segundo plano, pouco depois da tela abrir.
@@ -85,4 +86,51 @@ export async function generateCheckinListPdf(eventName: string, participantNames
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
   doc.save(`lista-checkin-${slug || "evento"}.pdf`);
+}
+
+/**
+ * Nomes dos participantes de um evento para a lista de check-in: só vendas
+ * pagas e cortesias (nunca pendente/expirado/cancelado/reembolsado).
+ * `incluir`: "tudo" = vendas + cortesias; "cortesias" = só cortesias.
+ * Um nome por INGRESSO; venda sem ingresso gerado usa o nome do comprador.
+ */
+export async function fetchCheckinNames(
+  eventId: string,
+  incluir: "tudo" | "cortesias",
+): Promise<string[]> {
+  const PAGE = 1000;
+  const sales: { id: string; buyer_name: string | null; is_courtesy: boolean }[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from("sales")
+      .select("id, buyer_name, is_courtesy")
+      .eq("event_id", eventId)
+      .eq("status", "pago")
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    sales.push(...((data ?? []) as typeof sales));
+    if (!data || data.length < PAGE) break;
+  }
+  const wanted = new Map(
+    sales.filter((s) => incluir === "tudo" || s.is_courtesy).map((s) => [s.id, s]),
+  );
+
+  const namesBySale = new Map<string, string[]>();
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("participant_name, sale_id, sales!inner(event_id)")
+      .eq("sales.event_id", eventId)
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    (data ?? []).forEach((t: any) => {
+      if (!wanted.has(t.sale_id)) return;
+      const list = namesBySale.get(t.sale_id) ?? [];
+      list.push(t.participant_name || "—");
+      namesBySale.set(t.sale_id, list);
+    });
+    if (!data || data.length < PAGE) break;
+  }
+
+  return [...wanted.values()].flatMap((s) => namesBySale.get(s.id) ?? [s.buyer_name ?? "—"]);
 }

@@ -16,6 +16,17 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 04/10/2026 — Agente Claude 2
+
+- 🔧 **Endereço de reserva do Mercado Pago apontava para o Lovable (fora
+  do ar)**: usado só quando falta a variável `VITE_SITE_URL`; trocado
+  para `https://ticketflow-core.vercel.app`. Como a Vercel já tem essa
+  variável configurada, não muda nada na prática hoje — é uma rede de
+  segurança para o caso de faltar. (`3bf4635`)
+- 📝 Confirmado: painel do Mercado Pago com webhook já apontando para a
+  Vercel; Supabase → Authentication → URL Configuration com Site URL e
+  Redirect URLs só da Vercel (removidas as referências ao Lovable).
+
 ## 01/10/2026 — Agente 01 (Claude)
 
 - 🎨 **Logo unificado** entre sidebar do Admin, header do Cliente, Login,

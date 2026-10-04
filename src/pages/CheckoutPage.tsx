@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 import { Copy, CheckCircle2, Clock, Loader2, User, Phone, Mail, RefreshCw, Ticket, QrCode, Minus, Plus } from 'lucide-react';
 import { SmartField } from '@/components/ui/smart-field';
-import { usePublicEvent, useApplyPublicDesign, useAvailableBatches, useMyCustomerRecords } from '@/lib/customer-queries';
+import { usePublicEvent, useApplyPublicDesign, useAvailableBatches, useMyCustomerRecords, useGuestCheckoutAllowed } from '@/lib/customer-queries';
 import { useCreatePendingSale, useTrackAbandonment, useGenerateSalePix, useSaleStatus } from '@/lib/sales-queries';
 import { useAuth } from '@/lib/auth-context';
 import { buildCheckoutPrefill } from '@/lib/checkout-prefill';
@@ -48,8 +48,9 @@ export default function CheckoutPage() {
   const legacyQty = parseInt(search.qty || '1', 10);
   const initialQty = Number.isFinite(legacyQty) ? Math.min(MAX_TICKETS, Math.max(1, legacyQty)) : 1;
   
-  const { user } = useAuth();
+  const { user, isLoading: isLoadingAuth } = useAuth();
   const { data: event, isLoading: isLoadingEvent } = usePublicEvent(slug);
+  const { data: guestAllowed, isLoading: isLoadingRule } = useGuestCheckoutAllowed(event?.id);
   const { data: availableBatches } = useAvailableBatches(event?.id);
   const { data: customerRecords } = useMyCustomerRecords();
   useApplyPublicDesign(slug);
@@ -315,11 +316,35 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isLoadingEvent || isResuming) {
+  if (isLoadingEvent || isResuming || isLoadingAuth || (!!event && isLoadingRule)) {
     return (
       <MobileLayout showFooter={false}>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  // Regra "compra sem cadastro" desligada: só quem está logado compra.
+  // (A trava real fica no banco; esta tela só evita o cliente preencher tudo à toa.)
+  if (guestAllowed === false && !user) {
+    const voltar = `/e/${slug}/checkout${typeof window !== 'undefined' ? window.location.search : ''}`;
+    return (
+      <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
+        <div className="flex flex-col items-center gap-4 px-5 py-16 text-center">
+          <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Entre para comprar</h2>
+          <p className="text-small text-[var(--text-secondary)]">
+            Para comprar neste evento, entre na sua conta ou crie uma. Leva um minuto.
+          </p>
+          <div className="flex w-full max-w-xs flex-col gap-3">
+            <Button asChild className="bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]">
+              <Link to="/login" search={{ voltar }}>Entrar</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/cadastro" search={{ voltar }}>Criar conta</Link>
+            </Button>
+          </div>
         </div>
       </MobileLayout>
     );

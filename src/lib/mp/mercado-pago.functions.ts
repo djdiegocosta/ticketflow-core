@@ -94,7 +94,7 @@ export const createMpPix = createServerFn({ method: "POST" })
         throw new Error("Não foi possível ler as credenciais salvas do Mercado Pago. Abra Configurações → Mercado Pago e salve novamente o Access Token.");
       }
 
-      const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow2.lovable.app";
+      const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow-core.vercel.app";
       const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
         method: "POST",

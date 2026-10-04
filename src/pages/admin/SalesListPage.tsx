@@ -4,6 +4,7 @@ import { Ban, Download, Eye, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useSales, formatCurrency } from "@/lib/sales-queries";
 import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
+import { useOperationalPreferences } from "@/lib/settings-queries";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -101,6 +102,8 @@ export function SalesListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
 
+  const { data: preferences } = useOperationalPreferences();
+  const unifyPdf = preferences?.unify_checkin_pdf ?? true;
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const generatePdf = async () => {
     // Lista de check-in substitui o check-in automático quando ele falha,
@@ -108,7 +111,7 @@ export function SalesListPage() {
     // (cortesias já nascem com status "pago" — ver create_courtesy).
     // Nunca incluir pendente/expirado/cancelado/reembolsado.
     const qualifyingSaleIds = filtered
-      .filter((s) => s.status === "pago" || s.is_courtesy)
+      .filter((s) => (s.status === "pago" || s.is_courtesy) && (unifyPdf || !s.is_courtesy))
       .map((s) => s.id);
     if (qualifyingSaleIds.length === 0) {
       toast.error("Nenhum participante para gerar a lista");

@@ -22,7 +22,8 @@ import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCar
 import { PrimaryActionButton } from "@/components/admin/PrimaryActionButton";
 import { FilterSearch } from "@/components/admin/FilterBar";
 import { formatName, isFullName } from "@/lib/form-format";
-import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
+import { generateCheckinListPdf, fetchCheckinNames, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
+import { useOperationalPreferences } from "@/lib/settings-queries";
 import { toast } from "sonner";
 import { Suspense, lazy } from "react";
 import { useCourtesies } from "@/lib/sales-queries";
@@ -81,9 +82,18 @@ export function CourtesiesListPage() {
     return filteredData.slice(start, start + size);
   }, [filteredData, currentPage, pageSize]);
   const totalPages = Math.ceil(filteredData.length / parseInt(pageSize));
+  const { data: preferences } = useOperationalPreferences();
   const handleExportPdf = async () => {
     try {
-      const names = filteredData.map((c: any) => c.participant_name);
+      const unify = preferences?.unify_checkin_pdf ?? true;
+      const names =
+        unify && operationalEvent?.id
+          ? await fetchCheckinNames(operationalEvent.id, "tudo")
+          : filteredData.map((c: any) => c.participant_name);
+      if (names.length === 0) {
+        toast.error("Nenhum participante para gerar a lista");
+        return;
+      }
       await generateCheckinListPdf(operationalEvent?.title ?? "Evento", names);
       toast.success("PDF gerado com sucesso!");
     } catch (err) {
