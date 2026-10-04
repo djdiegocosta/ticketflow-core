@@ -231,6 +231,14 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Endereço de reserva do Mercado Pago (04/10/2026)
+
+- O endereço de reserva (usado se `VITE_SITE_URL` faltar) deixou de ser `ticketflow2.lovable.app` (fora do ar) e passou a ser `https://ticketflow-core.vercel.app`, em `mercado-pago.functions.ts` e `MercadoPagoWizardPage.tsx`. Hoje a `VITE_SITE_URL` da Vercel já aponta para esse mesmo endereço, então nada muda na prática.
+- Painel do Mercado Pago: webhook já aponta para a Vercel (confirmado pelo Diego).
+- Supabase → Authentication → URL Configuration: Site URL `https://ticketflow-core.vercel.app` e Redirect URLs só `https://ticketflow-core.vercel.app/**` (URLs do Lovable removidas).
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
