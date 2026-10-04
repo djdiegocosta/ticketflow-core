@@ -220,6 +220,16 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Compra sem cadastro e Preferências enxutas (04/10/2026)
+
+- Novo toggle **Compra sem cadastro** em Configurações → Preferências. Ligado (padrão) = qualquer pessoa compra sem conta, como já era. Desligado = o cliente precisa entrar ou criar conta antes de comprar; depois volta direto ao checkout do evento. Vale para todos os eventos ativos e muda na hora.
+- Banco: campo `organizations.allow_guest_checkout` (padrão `true`), função pública `is_guest_checkout_allowed(_event_id)` (só devolve sim/não) e trava em `create_pending_sale` (recusa venda sem login quando a regra está desligada). Migration `20261004120000_add_guest_checkout_toggle.sql`.
+- Login e cadastro aceitam o parâmetro `voltar` (só caminhos `/e/...`) para retornar ao checkout. Se o cadastro exigir confirmação por e-mail, o cliente volta pelo link do evento depois de confirmar.
+- Preferências reorganizadas em linhas compactas, com explicações atrás do ícone (i) (`InfoHint`). Removido o switch "Unificar listas de PDF de check-in": não salvava nem era usado em lugar nenhum.
+- Pendente: testar a trava de ponta a ponta quando houver um evento ativo (hoje o único evento está encerrado).
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).

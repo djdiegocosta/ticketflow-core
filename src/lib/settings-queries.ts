@@ -80,6 +80,7 @@ export type OperationalPreferences = {
   temperature_aquecendo_sales_per_day: number;
   temperature_quente_sales_per_day: number;
   temperature_explodindo_sales_per_day: number;
+  allow_guest_checkout: boolean;
 };
 
 const DEFAULT_OPERATIONAL_PREFERENCES: OperationalPreferences = {
@@ -87,6 +88,7 @@ const DEFAULT_OPERATIONAL_PREFERENCES: OperationalPreferences = {
   temperature_aquecendo_sales_per_day: 10,
   temperature_quente_sales_per_day: 25,
   temperature_explodindo_sales_per_day: 50,
+  allow_guest_checkout: true,
 };
 
 export function useOperationalPreferences() {
@@ -97,7 +99,7 @@ export function useOperationalPreferences() {
     queryFn: async () => {
       if (!organizationId) throw new Error("Organização não encontrada");
       const { data, error } = await (supabase.from("organizations") as any)
-        .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day")
+        .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day, allow_guest_checkout")
         .eq("id", organizationId)
         .single();
       if (error) throw error;
@@ -115,7 +117,7 @@ export function useUpdateOperationalPreferences() {
       const { data, error } = await (supabase.from("organizations") as any)
         .update(vars)
         .eq("id", organizationId)
-        .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day")
+        .select("pending_sale_expiration_minutes, temperature_aquecendo_sales_per_day, temperature_quente_sales_per_day, temperature_explodindo_sales_per_day, allow_guest_checkout")
         .single();
       if (error) throw error;
       return data as OperationalPreferences;

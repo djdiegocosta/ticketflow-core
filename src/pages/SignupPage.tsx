@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
 import { useForm, Controller } from "react-hook-form";
@@ -57,9 +57,11 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
-  const { org_id, whatsapp } = useSearch({ from: "/cadastro" }) as {
+  const router = useRouter();
+  const { org_id, whatsapp, voltar } = useSearch({ from: "/cadastro" }) as {
     org_id?: string;
     whatsapp?: string;
+    voltar?: string;
   };
 
   const form = useForm<SignupFormValues>({
@@ -120,7 +122,11 @@ export default function SignupPage() {
       localStorage.setItem("is_new_registration", "true");
       toast.success("Conta criada com sucesso!");
 
-      navigate({ to: "/cliente" });
+      if (voltar) {
+        router.history.replace(voltar);
+      } else {
+        navigate({ to: "/cliente" });
+      }
       return;
     }
 
@@ -327,6 +333,7 @@ export default function SignupPage() {
                   <span className="text-small text-text-secondary">Já tem uma conta? </span>
                   <Link
                     to="/login"
+                    search={voltar ? { voltar } : {}}
                     className="text-small text-accent-text font-semibold hover:underline"
                   >
                     Entrar

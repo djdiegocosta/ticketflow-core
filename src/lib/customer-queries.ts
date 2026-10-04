@@ -608,3 +608,23 @@ export function useOrgActiveEvents() {
 
 
 
+
+/**
+ * Regra "compra sem cadastro" da organização do evento.
+ * true = qualquer pessoa compra sem conta; false = precisa estar logado.
+ * Em caso de erro assume true (a trava real está no banco, em create_pending_sale).
+ */
+export function useGuestCheckoutAllowed(eventId: string | undefined) {
+  return useQuery({
+    queryKey: ["guest-checkout-allowed", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("is_guest_checkout_allowed" as any, {
+        _event_id: eventId as any,
+      });
+      if (error) throw error;
+      return data !== false;
+    },
+    enabled: !!eventId,
+    staleTime: 30_000,
+  });
+}
