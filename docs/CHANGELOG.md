@@ -248,6 +248,14 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Varredura: bibliotecas com falha de segurança (04/10/2026)
+
+- `nodemailer` (envio do ingresso por e-mail) 10.0.0 → 10.0.14 (falha de nível alto corrigida) e `dompurify` 3.4.12 → 3.4.16, em `package.json` e `bun.lock`. As duas entradas agora apontam para o registro oficial do npm.
+- Restam 3 avisos em `bun audit` (`js-yaml` e `nanoid`), vindos de ferramentas de build (eslint/vite), sem efeito no site em produção. Acompanhar.
+- Observação: o `bun.lock` ainda tem outros pacotes apontando para o registro do Lovable (`pkg.dev/lovable-core-prod`). Hoje o deploy funciona, mas vale migrar quando for conveniente.
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
