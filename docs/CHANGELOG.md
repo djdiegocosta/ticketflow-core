@@ -1,233 +1,65 @@
 # TicketFlow — CHANGELOG
 
-Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantido a cada prompt concluído.
+Registro cronológico de mudanças reais no projeto. **Mais recente no topo.**
+
+**Reiniciado em 01/10/2026.** O changelog anterior parou de ser atualizado em
+julho/2026 — mais de 460 commits depois ficaram sem registro, por agentes
+diferentes trabalhando sem anotar. Reconstruir esse histórico perdido viraria
+arqueologia de git, então não tentamos: o conteúdo antigo continua disponível
+em `docs/CHANGELOG-ARQUIVO-ATE-2026-07.md`, e o histórico completo sempre
+pode ser consultado em `git log`. **Daqui pra frente, toda mudança relevante
+entra aqui — ver regra em `CLAUDE.md`.**
+
+**Como registrar uma entrada nova:** data, categoria (🐛 correção /
+🔒 segurança / ✨ funcionalidade / 🎨 design / 📝 documentação), descrição
+em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
-## Julho/2026
+## 01/10/2026 — Agente 01 (Claude)
 
-### Fundação
-- Definido stack: React + Vite + TypeScript, Tailwind + shadcn/ui, Supabase (a conectar), Lucide Icons.
-- Criado Design System v1.0: paleta light/dark, tipografia Geist, espaçamento, componentes base.
-- Estrutura de rotas completa definida (pública, cliente, admin, superadmin).
-- Login de teste implementado (sem backend) para permitir navegação durante o desenvolvimento.
-
-### Dashboard
-- Cards de métricas: Receita Total, Ingressos Vendidos, Aguardando Pagamento (Gauge Chart), Visitas na Página.
-- Seletor de contexto: Visão Geral / evento(s) ativo(s).
-- Gráfico de vendas diárias (linha fina, suavizada) e pico de vendas por horário.
-- Lista de últimas vendas em tempo real (mockado).
-- Ajustes: Gauge Chart corrigido para formato meia-lua (não círculo completo); altura dos cards revisada.
-
-### Eventos
-- Listagem com filtros por status e paginação configurável.
-- Criação em formato Wizard (Steps): Informações → Modelo de venda (lotes ou preço único) → Configuração → Revisão.
-- Decisão de arquitetura: "preço único" é tratado internamente como um lote único ("Ingresso único") — sem caminho de código separado.
-- Regras de virada de lote: automática por data/horário, automática por esgotamento de estoque, e "Virada Expressa" manual (com confirmação) na tela de detalhe do evento.
-- Encerramento de evento: manual (comando do produtor), nunca automático por data. Não trava o Histórico Financeiro após encerrado.
-
-### Vendas
-- Listagem com abas de origem (TicketFlow / Manual / Importadas — Bilheteria removida desta área, ver Histórico Financeiro).
-- Regra global: Comprador ≠ Participante — campos de nome de participante gerados dinamicamente conforme quantidade, em toda venda com mais de 1 ingresso.
-- Lançamento manual convertido de modal centralizado para painel lateral (Sheet) com steps: Cliente → Ingressos → Confirmar.
-- Geração de lista em PDF para check-in manual (ordem alfabética, checkbox, espaçamento compacto).
-- Mini dashboard da área: Total vendido, Ingressos vendidos, Ticket médio, Aguardando pagamento.
-- Botão renomeado de "Lançar venda manual" para "+ Nova Venda".
-
-### Cortesias
-- Simplificado deliberadamente em relação a Vendas: sem WhatsApp, sem distinção comprador/participante — apenas nome do convidado.
-- Painel único de emissão com 3 formas de adicionar nome: digitar (Enter adiciona e mantém foco), colar lista, importar arquivo .txt — todas alimentando a mesma lista acumulada.
-- Mini dashboard simplificado: Total de cortesias, Check-ins de cortesias.
-- Geração de PDF no mesmo padrão de Vendas.
-- Correção: tabela padronizada para seguir exatamente os parâmetros visuais de Vendas (fonte, badges, espaçamento).
-
-### Clientes
-- Listagem com colunas ordenáveis (indexáveis), incluindo por quantidade de ingressos — substitui a necessidade de um componente de ranking dedicado.
-- Ranking "Top 10 Clientes" (dock lateral) especificado e depois removido/substituído pela ordenação de colunas.
-- Adicionadas colunas: data de cadastro, botão de copiar WhatsApp; exclusão de cliente com confirmação.
-- Botão "+ Novo Cliente" com painel lateral de etapa única (sem steps).
-- Card "Novos Clientes" com seletor de período (7/15/30 dias).
-
-### Padronização visual (transversal)
-- Cantos retos definidos como padrão do sistema em todos os componentes (exceto elementos circulares funcionais: avatares, indicadores).
-- Tipografia dos cards padronizada em todas as áreas.
-- Sidebar e header do admin corrigidos para altura fixa (100vh), sem rolar junto com o conteúdo — só a área de conteúdo principal rola.
-- Menu lateral reorganizado: Simulador de Evento, Remarketing e Sorteios agrupados em um hub único "Ferramentas" (grid de cards), reduzindo itens fixos do menu.
-- Modal de Nova Venda e futuros modais complexos passam a usar o padrão de painel lateral (Sheet) com steps, ao invés de modal centralizado — reservado para fluxos com 2+ etapas ou muitos campos.
-
-### Configurações
-- Estrutura definida: Organização, Mercado Pago, Preferências, Backup de Dados — em telas separadas (menu lateral secundário, estilo macOS System Preferences).
-- Assistente guiado de configuração do Mercado Pago (5 etapas): Ambiente → Aplicação MP → Credenciais → Webhook → Pagamento de teste. Baseado na versão validada do TicketFlow anterior, adaptado ao Design System atual.
-- Credenciais armazenadas separadamente por ambiente (Sandbox / Produção).
-- Etapas de Webhook e Pagamento de teste sinalizam claramente a dependência da conexão futura com Supabase — sem simular dados de infraestrutura inexistente.
-
----
-
-## Setembro/2026
-
-### Correção crítica — Geração de Pix no Checkout
-- Bug: checkout público não coletava e-mail do comprador (campo `buyer_email` sempre enviado vazio). A API do Mercado Pago exige e-mail válido do pagador para gerar qualquer pagamento, incluindo Pix — a venda era criada normalmente, mas a geração do Pix falhava sempre depois, com o cliente vendo "Erro ao gerar o Pix" e a venda ficando pendente no sistema.
-- Correção: adicionado campo obrigatório de e-mail no formulário de checkout (`CheckoutPage.tsx`), com validação de formato, e o valor real passa a ser enviado para `createPendingSale` e, por consequência, para a criação do pagamento Pix.
-- Arquivo alterado: `src/pages/CheckoutPage.tsx`.
-
-### Correção crítica — Divergência de `checkin_ticket` entre repositório e produção
-- Bug: a migration mais recente que redefinia `checkin_ticket` (`20260903050000_harden_admin_operations.sql`) usava colunas (`ticket_id`, `checked_by`) que não existem na tabela `checkin_log`. A função realmente ativa em produção era uma versão anterior, aplicada fora desse histórico. Um banco recriado do zero a partir das migrations instalaria a versão quebrada e o check-in do evento pararia de funcionar.
-- Correção: nova migration (`20260905231500_restore_checkin_ticket_correct_definition.sql`) recria a função com a definição real e funcional hoje em produção. Nenhuma mudança de comportamento — só reconciliação entre repositório e banco.
-- Arquivo criado: `supabase/migrations/20260905231500_restore_checkin_ticket_correct_definition.sql`.
-
-### PWA — Área do Cliente instalável
-- A Área do Cliente e as telas públicas de compra passam a ser instaláveis como app (Android/Chrome com prompt nativo; iOS/Safari com instrução guiada "Compartilhar → Adicionar à Tela de Início"). Abre em modo `standalone` (sem barra do navegador).
-- Reaproveitado o manifest e o Service Worker que já existiam no projeto (sem cache, só habilitam a instalação) — estavam prontos, mas o registro do Service Worker tinha sido desativado de propósito em 29/08/2026 após bugs de carregamento pós-deploy. Religado com `skipWaiting`/`clients.claim`, que substitui automaticamente qualquer versão antiga/problemática ainda ativa no navegador de algum cliente.
-- Botão "Instalar aplicativo" (componente `InstallAppButton`) adicionado em 3 pontos: Início da Área do Cliente, visualização de um ingresso, e confirmação de compra. Discreto, dispensável, nunca aparece no Admin.
-- Corrigido de passagem: o ícone `icon-192x192.png` estava salvo internamente como 512×512 (tamanho errado dentro do arquivo).
-- Arquivos novos: `src/hooks/use-pwa-install.ts`, `src/components/cliente/InstallAppButton.tsx`.
-- Arquivos alterados: `public/sw.js`, `public/icons/icon-192x192.png`, `src/routes/__root.tsx`, `src/routes/cliente.index.tsx`, `src/pages/TicketDetailPage.tsx`, `src/pages/ConfirmationPage.tsx`.
-- Fora de escopo (deliberado): notificação push, uso offline, publicação nas lojas Apple/Google — ver `docs/PROJECT-MAP.md` §15 para detalhe técnico completo.
-
-### Visitante sem conta não vê mais o menu do módulo Cliente
-- Antes, qualquer pessoa nas telas públicas de compra (evento, checkout, confirmação, ingresso) via o menu hambúrguer com links para Início/Eventos/Ingressos/Pontos/Perfil — todos exigem login, então clicar levava direto a uma tela de login, sem aviso.
-- Agora, sem sessão: o botão de menu some e aparece um botão "Criar conta" no lugar (leva para `/cadastro`). Com sessão: nada muda. Automático via `useAuth()`, vale pra qualquer tela que use `MobileLayout`, sem precisar marcar rota por rota.
-- Objetivo: não criar atrito pra quem só quer comprar um ingresso, mas induzir a criação de conta pra quem quiser acesso completo ao módulo.
-- Arquivos alterados: `src/components/layouts/MobileLayout.tsx`, `src/pages/SignupPage.tsx` (nova prop `hideAuthCta`, usada só ali).
-
-### Clientes — métricas no dashboard administrativo
-- Adicionados dois cards no topo da página Admin → Clientes: **Clientes cadastrados** e **Idade média**.
-- "Clientes cadastrados" considera todos os clientes retornados pela base da organização.
-- "Idade média" ignora clientes sem idade válida e qualquer idade igual a `0`; o cálculo considera somente valores numéricos maiores que zero.
-- A média é exibida com uma casa decimal e formatação brasileira.
-- Arquivo alterado: `src/pages/admin/ClientsListPage.tsx`.
-
-### Reserva de ingresso presa por até 1 hora em compra abandonada
-- Diego reportou: clientes não conseguiam comprar (botão desabilitado, "R$ 0,00") mesmo com ingressos ainda não vendidos de verdade — precisava editar a quantidade manualmente pra destravar.
-- Causa raiz 1: o tempo de reserva (`organizations.pending_sale_expiration_minutes`) estava em 60 minutos. Toda compra iniciada e não paga prendia o estoque por até 1h antes do job (`expire_pending_sales_job`, já rodava certinho a cada minuto) devolver. Ajustado para 15 minutos — tempo de sobra pra quem realmente vai pagar via Pix.
-- Causa raiz 2 (bug real, corrigido em código): `src/pages/PublicEventPage.tsx` não tratava o caso de "nenhum lote disponível" — em vez de avisar "esgotado", mostrava a seção de seleção vazia e o botão de compra com "R$ 0,00" desabilitado, sem nenhuma explicação. Agora mostra "Ingressos esgotados no momento" com aviso de que pode ser temporário.
-- Decisão registrada: não removemos a reserva de estoque (só dar baixa após pagamento confirmado, como cogitado inicialmente) porque isso abriria brecha pra venda duplicada em ingressos com pouca sobra — mantivemos a reserva, só encurtamos a janela.
-
-### Admin agora pode editar o cadastro de um cliente
-- Objetivo: corrigir erros de digitação do próprio cliente (e-mail errado, ano de nascimento errado, etc.) sem precisar excluir e recriar o cadastro.
-- Botão "Editar cadastro" na ficha do cliente (`/admin/clientes/:id`), abre painel com Nome, WhatsApp, E-mail, Cidade, Data de nascimento, Instagram e Sexo — mesmos campos que o próprio cliente edita no perfil dele.
-- Achado durante a implementação: a função do banco (`update_customer`) e o hook (`useUpdateCustomer`) já existiam prontos, com checagem de permissão (só admin da mesma organização pode editar cliente que não é ele mesmo) — só faltava a tela. Nenhuma mudança de banco foi necessária.
-- Arquivos: `src/components/admin/clients/EditClientPanel.tsx` (novo), `src/pages/admin/ClientDetailPage.tsx`, `src/lib/customers-queries.ts` (hook passou a enviar também cidade/instagram/sexo, que a função já suportava).
-
-### "Organização não encontrada" travava Dashboard/Vendas/Clientes/Usuários/Configurações numa aba
-- Diego reportou: às vezes, numa aba/perfil do navegador, todas essas telas paravam de mostrar dados com a mensagem "Organização não encontrada" — só resolvia trocando de conta. A tela de Eventos continuava funcionando normal.
-- Causa raiz: em `src/lib/auth-context.tsx`, as consultas que buscam o papel do usuário e a organização (rodadas uma vez ao logar/revalidar sessão) ignoravam qualquer erro de consulta — se uma falhasse por instabilidade momentânea (ex: token passando por renovação), o código assumia silenciosamente "organização não existe" e essa informação errada ficava presa na sessão daquela aba até um recarregamento com sorte de dar certo. "Eventos" não tem esse problema por não depender dessa informação.
-- Corrigido: as duas consultas agora tentam de novo automaticamente uma vez se falharem, em vez de desistir. Também corrigidos 2 outros lugares (`src/lib/sales-queries.ts`) que tinham o mesmo padrão de ignorar erro de consulta.
-- O botão "Tentar novamente" do Dashboard agora também reconfirma a sessão (`refreshProfile()`) antes de repetir as consultas — antes só repetia as mesmas consultas já quebradas, então nunca resolvia sozinho.
-- Arquivos: `src/lib/auth-context.tsx`, `src/lib/sales-queries.ts`, `src/pages/AdminDashboard.tsx`.
-
-### Ingresso e QR Code disponíveis offline (V1)
-- Objetivo: cliente conseguir mostrar o ingresso/QR Code na portaria mesmo sem internet.
-- Auditoria prévia (pedida por Diego) encontrou: a rota real usada pelo menu do cliente é `/cliente/ingressos`, não `/meus-ingressos` (essa é uma tela separada, de busca por código, sem exigir login) — `/cliente/ingressos` já tinha um fallback offline funcional para a *lista*; faltava só na tela do ingresso individual (`/ingresso/$ticket_code`), que é a que ambas as listas abrem.
-- O QR Code não depende de nada online — é gerado 100% no navegador a partir do `ticket_code` (biblioteca `qrcode.react`), então bastou garantir que o `ticket_code` e os dados de exibição estivessem salvos localmente.
-- `useCustomerSales` (já salvava ingressos no IndexedDB) passou a incluir também nome do lote e da produtora, que faltavam para a tela do ingresso individual.
-- `TicketDetailPage` (tela do ingresso) e `MyTicketsPage` (`/meus-ingressos`) ganharam o mesmo fallback offline que `/cliente/ingressos` já tinha, com aviso "Offline"/"Disponível offline neste dispositivo".
-- Isso é só uma cópia local para EXIBIÇÃO — o servidor continua sendo a única autoridade sobre a validade do ingresso; nada muda em autenticação, Mercado Pago, webhook, geração de ingresso ou validação de check-in.
-- **Limite encontrado, decisão pendente:** o Service Worker atual não guarda nada em cache (de propósito, ver seção PWA acima). Isso significa que abrir o app do zero (ícone, sem tê-lo aberto recentemente) totalmente offline pode falhar antes mesmo do React carregar. Andando dentro do app (tocar em "Ingressos" → tocar no ingresso) funciona normalmente, porque não baixa nada novo da rede nessa navegação. Resolver o caso "abrir do zero, offline" exigiria voltar a interceptar requisições no Service Worker — a mesma área que já causou um incidente em produção antes. Não implementado nesta v1 sem confirmação explícita.
-- Arquivos: `src/lib/customer-queries.ts`, `src/pages/TicketDetailPage.tsx`, `src/pages/MyTicketsPage.tsx`.
-
-### Painel de Remarketing (leads em potencial)
-- Objetivo: Diego conseguir ver quem gerou Pix e não pagou (cadastrado ou visitante), pra contato manual (WhatsApp). Achado durante a conversa: já existia um card "Remarketing" na tela de Ferramentas apontando para `/admin/remarketing` — a página em si nunca tinha sido criada (link quebrado).
-- Somente leitura: lista vendas com status `pendente` ou `expirado` (exclui cortesias). Não envia nada sozinho — cada linha tem um botão que abre o WhatsApp do comprador pra contato manual.
-- Filtro por evento, métricas resumidas no topo (total de leads, aguardando pagamento, expirados, valor potencial somado).
-- Não toca em checkout, Pix, webhook, autenticação ou geração de ingresso — só lê a tabela `sales`, do mesmo jeito que a tela de Vendas já lê.
-- Arquivos: `src/lib/remarketing-queries.ts` (novo), `src/pages/admin/RemarketingPage.tsx` (novo), `src/routes/admin.remarketing.tsx` (novo).
-
-### Remarketing v1.1: não mostra quem já comprou depois + mensagem pronta no WhatsApp
-- Diego notou que gente que teve dificuldade na hora de comprar, mas comprou depois, continuava aparecendo na lista.
-- Corrigido: agora busca também as vendas pagas do mesmo evento e tira da lista quem já converteu, cruzando por WhatsApp (funciona pra visitante sem cadastro) e por `customer_id` (quando existe).
-- Botão de WhatsApp agora abre com mensagem pronta: "Oi [primeiro nome]! Seus ingressos pro evento [evento] ainda estão te esperando! Bora!? Vou deixar aqui o link novamente pra você solicitar sua compra novamente: [link do evento]". Diego ainda revisa e manda manualmente — nada é enviado sozinho.
-- Nota de segurança encontrada de passagem (não é deste código, é pré-existente e já registrada como resolvida — AUD-018): dois arquivos usam `ticketflow2.lovable.app` como *fallback* caso a variável `VITE_SITE_URL` não esteja configurada na Vercel. Não mexi nisso agora — fora do escopo desta tarefa — mas como o site antigo será despublicado, vale conferir se `VITE_SITE_URL` está mesmo configurada na Vercel, se não já estiver.
-- Arquivos: `src/lib/remarketing-queries.ts`, `src/pages/admin/RemarketingPage.tsx`.
-
-### Data de nascimento: 3 seletores (Dia/Mês/Ano) no lugar do calendário nativo
-- Diego reportou (com print) que no Perfil (mobile), o campo "Data de Nascimento" aparecia como uma caixa pequena, desalinhada, na mesma linha do rótulo. Causa: bug conhecido do Safari/iOS, que ignora `width: 100%` em `<input type="date">` vazio — mesma classe de bug já visto nos ajustes de compatibilidade iOS 15 anteriores.
-- Diego trouxe uma sugestão de solução (componente de calendário com biblioteca `@ark-ui/react`). Optamos por não usar: exigiria uma dependência nova nunca usada no projeto, estilo totalmente fora do sistema de temas (precisaria reescrever do zero mesmo assim), e um calendário completo tende a ser **mais** lento pra digitar uma data de nascimento do que escolher direto dia/mês/ano — o oposto do "sem barreiras" pedido.
-- Solução escolhida (confirmada com Diego): 3 seletores simples — Dia, Mês, Ano — sem biblioteca nova, com o mesmo visual dos outros campos. Ajusta sozinho o dia se o mês escolhido tiver menos dias (ex: 31 → fevereiro vira 28/29).
-- Aplicado nos dois lugares que pedem data de nascimento: Perfil (`/cliente/perfil`) e Cadastro (`/cadastro`).
-- Arquivos: `src/components/ui/birthdate-select.tsx` (novo), `src/routes/cliente.perfil.tsx`, `src/pages/SignupPage.tsx`.
-
-### Incidente: histórico do GitHub revertido de propósito (force-push) apagou 4 entregas
-- Outro agente, tentando corrigir um build quebrado (`0a771b9`/`469bc2e`, gamificação de XP com erro), reverteu o histórico do zero em vez de corrigir só o que estava errado — isso arrastou junto e apagou do GitHub (e da Vercel) a correção de sessão, o painel de Remarketing completo e a correção da Data de Nascimento, todos já entregues e aprovados por Diego antes disso.
-- Nada foi perdido de verdade: estava tudo salvo no histórico local. Restaurado com `git rebase --onto` por cima do estado atual do GitHub (preservando o que tinha sido feito de válido depois da reversão) e publicado com push normal — sem forçar nada por cima de novo.
-- Lição registrada: ao encontrar um build quebrado, a correção deve ser feita **avançando** (corrigir o commit problemático ou reverter só ele), nunca resetando o histórico inteiro pra um ponto anterior — isso apaga trabalho de todo mundo que aconteceu depois, não só o problema.
-
-### "Dados do público": Visitas ao evento + Idade média/Faixa etária numa linha só
-- Nova métrica "Visitas ao evento": não existia nenhum rastreamento de acesso à página do evento antes — criada a tabela `event_page_views` (só `event_id` + data/hora, sem dado pessoal) e a função `track_event_view`, no mesmo padrão de segurança já usado em `track_checkout_abandonment` (escrita só pela função, nunca direto na tabela).
-- Contagem roda no navegador (depois do React montar), não no servidor — assim não conta pré-visualização de link do WhatsApp/Instagram, que só lê as tags da página sem carregar nada.
-- "Idade média" e "Faixa etária predominante" (que mostrava uma faixa fixa tipo "25-34") viraram uma linha só: "24 Anos / 18 - 39" — a faixa agora é a idade real do comprador mais novo até o mais velho, não mais uma faixa pré-definida.
-- Arquivos: migration `create_event_page_views`, `src/lib/dashboard-queries.ts`, `src/pages/AdminDashboard.tsx`, `src/pages/PublicEventPage.tsx`.
-
-### Auditoria de design/layout do admin (skill ui-ux-pro-max) + correção dos pontos 1-3
-- Diego pediu uma auditoria de design do módulo admin usando a skill `ui-ux-pro-max`. Aviso registrado: o script de busca da skill (`search.py`) e os arquivos de referência não existem neste ambiente — a auditoria usou a tabela de prioridades do `SKILL.md`, aplicada de verdade sobre o código (evidência por arquivo, não achismo).
-- Relatório completo com 7 pontos entregue a Diego. Ele pediu pra resolver os 3 primeiros:
-  1. **Contraste:** código da venda (`sale.sale_code`) e 3 outros textos/ícones ativos usavam a cor `text-disabled` (2,38:1 de contraste, abaixo do mínimo de 4,5:1) — essa cor é pra elementos genuinamente desativados, não texto que o admin precisa ler. Trocados para `text-secondary` (5:1). Deixados como estavam: usos legítimos em ícones decorativos e botões realmente desabilitados.
-  2. **Área de toque:** botão de menu "..." (ações da linha) em 5 telas diferentes (Clientes, Cortesias, Links de Venda, Vendas, Usuários) usava 32×32px. Aumentado pra 44×44px (padrão mínimo recomendado), mantendo o ícone visualmente do mesmo tamanho — só a área clicável cresceu.
-  3. **Cor sem token:** `#111111` (texto sobre botões na cor de destaque) estava escrito solto em 16 lugares. Criado o token `--accent-foreground`, usado em ambos os temas (claro/escuro).
-- Pontos 4-7 do relatório (responsivo, QR Code duplicado, gráficos, formatação de código) ficaram pendentes, sem ação ainda.
-- Arquivos: `src/styles.css`, e nos 14 arquivos de página/componente do admin listados acima.
-
-### Pontos 6 e 7 da auditoria de design (gráficos sem reforço visual + formatação de código)
-- **Ponto 6 (gráficos):** os 2 gráficos do Dashboard ("Vendas diárias" e "Picos de venda por horário") são de série única — não há confusão de cores entre séries diferentes, mas os valores só apareciam ao passar o mouse. Adicionado rótulo de valor direto em cima de cada barra do gráfico de picos, e um texto mais claro no tooltip do gráfico de vendas diárias (antes mostrava só o rótulo técnico "value"). "Sexo predominante" já era texto puro, sem gráfico — não precisou de mudança.
-- **Ponto 7 (formatação):** boa parte do código do admin estava com componentes JSX inteiros numa única linha (o pior caso, `SalesListPage.tsx`, tinha uma tela inteira em 1 linha só). Rodada formatação automática (prettier, via `eslint --fix`) em todo `src/pages/admin/` e `src/components/admin/` — 811 dos 905 problemas de formatação corrigidos. **Conferido manualmente:** comparando o conteúdo sem espaços em branco de antes e depois, o resultado é idêntico — só espaçamento, vírgulas finais e quebras de linha mudaram, nenhuma string, lógica ou visual foi alterada. Ficaram só 91 avisos de tipagem (`any`), que não são formatação e não fazem parte deste ponto.
-- Arquivos: `src/pages/AdminDashboard.tsx` (ponto 6) e 28 arquivos de `src/pages/admin/` e `src/components/admin/` (ponto 7, só formatação).
-
-### Ponto 5 da auditoria de design (QR Code duplicado entre admin e cliente)
-- O QR Code do ingresso, na tela de detalhe da venda no admin (`SaleDetailPage.tsx`), era buscado de um serviço externo (`api.qrserver.com`) pela internet. A tela do próprio cliente (`TicketDetailPage.tsx`) já gera o mesmo QR Code localmente, sem depender de internet nem de terceiros.
-- Unificado: o admin agora usa o mesmo método local (`qrcode.react`), igual ao cliente. Corrige 2 problemas de uma vez: a tela do admin não quebra mais se aquele serviço externo cair, e o código do ingresso deixa de ser enviado pra um servidor de fora sem necessidade.
-- Arquivo: `src/pages/admin/SaleDetailPage.tsx`.
-
-### Ponto 4 da auditoria de design (responsivo — revisão mais profunda)
-- Esse ponto tinha sido registrado como elogio (sidebar colapsável e tabelas com rolagem contida já estavam certas), sem problema pra corrigir. Diego pediu pra ir mais fundo mesmo assim.
-- Varredura completa em todo `src/pages/admin/` e `src/components/admin/` procurando grades de 3+ colunas sem nenhum ajuste pra tela estreita. Quase tudo já estava certo (a primeira varredura tinha alguns falsos positivos, corrigidos na conferência). Achado real único: as 3 abas do painel "Nova Cortesia" (Digitar/Colar lista/Importar) ficavam apertadas em celulares muito estreitos (largura tipo iPhone SE).
-- Corrigido: espaçamento entre ícone e texto reduzido nas 3 abas — cabe confortavelmente mesmo nas telas mais estreitas, sem mudar nada no restante do layout.
-- Arquivo: `src/components/admin/cortesias/CreateCourtesyPanel.tsx`.
-
-### Alerta sonoro quando uma venda é confirmada (admin)
-- Objetivo: Diego pediu um som quando uma venda é concluída, só enquanto a tela do admin estiver aberta (sem virar notificação push).
-- Usa o Supabase Realtime (nunca usado antes no projeto) — o admin escuta em tempo real quando uma venda muda pra status "pago" na própria organização, e toca um som curto (sintetizado por código, sem precisar de arquivo de áudio).
-- Ativado em `AdminLayout.tsx`, então funciona em qualquer tela do admin, não só no Dashboard ou em Vendas.
-- Só toca na transição pra "pago" — não em qualquer atualização da venda (ex: check-in de um ingresso também atualiza a linha, mas não deve tocar o som).
-- Também aparece um toast discreto com o nome do comprador (cortesias não geram toast, só o som seria estranho pra elas já que não é uma venda de verdade).
-- Aviso de navegador: o primeiro som pode não tocar se o admin não tiver clicado em nada na página ainda (bloqueio padrão de autoplay dos navegadores) — a partir do primeiro clique em qualquer lugar do sistema, funciona normalmente pelo resto da sessão.
-- Migrations: `enable_realtime_sales` (inclui a tabela `sales` na publicação de tempo real) e `set_sales_replica_identity_full` (necessária pra saber se o status realmente mudou pra "pago", e não outra coisa qualquer da venda).
-- Arquivos: `src/lib/sale-alert-sound.ts` (novo), `src/hooks/use-sale-alert-sound.ts` (novo), `src/components/layouts/AdminLayout.tsx`.
-
-### Ajustes de UX no checkout (wizard, quantidade e textos)
-- **Wizard:** nomes encurtados (`COMPRADOR` / `INGRESSO(S)` / `PAGAMENTO`) e círculos dos ícones reduzidos de 40px pra 32px — estavam grandes demais em telas de celular pequenas.
-- **Step 1 (Comprador):** texto encurtado ("Preencha e confirme seus dados para identificar a compra"). O aviso de Termos de Uso / Política de Privacidade foi movido do Step 2 pra cá, logo abaixo do campo de e-mail — faz mais sentido perto do "Continuar" inicial.
-- **Step 2 (Ingressos):** seletor de quantidade reestruturado — agora aparece logo abaixo do wizard, centralizado, com rótulo "QUANTIDADE" e botões +/− grandes (56px, mesmo peso visual do botão "Gerar Pix"). Texto abaixo encurtado pra "Preencha o nome de quem vai usar cada ingresso". O "Sou eu" e o limite de 10 ingressos foram preservados.
-- **Bug de foco corrigido:** ao aumentar a quantidade, o cursor pulava direto pro campo de nome recém-criado, tirando o cliente do seletor no meio da escolha. Causa: o `append` do react-hook-form foca o campo novo por padrão. Corrigido com `shouldFocus: false` — agora o cliente escolhe a quantidade primeiro e depois preenche os nomes, um a um.
-- **Textos enxugados** (sem mudar nenhum comportamento): botão "Voltar para dados do comprador" → "Voltar"; instrução do Pix; botão "Já paguei — verificar pagamento" → "Já paguei"; aviso de pagamento não confirmado; aviso de dados preenchidos automaticamente.
-- Aproveitado pra trocar os `#111111` restantes do arquivo pelo token `--accent-foreground` (criado na auditoria de design anterior).
-- Arquivo: `src/pages/CheckoutPage.tsx`.
-
-### Histórico de Eventos (Admin → Ferramentas)
-- Nova ferramenta para consultar resultados de eventos encerrados: público, ingressos, bar, financeiro, indicadores e observações do produtor.
-- Etapa 1 (visual): telas de lista e detalhe construídas com dados mock, reaproveitando os cards de KPI do Dashboard (`DashboardMetricCard`, extraído de `AdminDashboard.tsx` sem mudar seu comportamento) e uma única página de resultado, sem abas.
-- Ajuste em recurso já existente: o card "Histórico de Eventos" em Ferramentas apontava, por engano, para o histórico de check-in (`CheckinHistoryPage`) — foi redirecionado para a nova ferramenta, e um card "Histórico de Check-in" foi criado à parte para preservar esse acesso.
-- Etapa 2 (dados reais): tabela `event_closures` e RPC `close_event` (migration `20260922230000_create_event_closures.sql`, aplicada ao Supabase de produção em 22/09/2026). O encerramento consolida vendas pagas do TicketFlow (lotes, receita de ingressos) com dados informados manualmente pelo produtor (bilheteria, cortesias presentes, público presente, bar, custo do evento) num snapshot imutável em `jsonb` — a tela de histórico lê o snapshot, não o estado atual do evento. Encerramento iniciado em Admin → Eventos.
-- Ver `docs/HISTORICO-DE-EVENTOS.md` para a definição de cada indicador, o que é automático vs. manual, e o estado de validação funcional.
-
----
-
-## Setembro/2026 — Otimização do carregamento inicial (28/09/2026)
-
-- Auditoria do boot: a tela branca de ~4s vinha de uma fila de idas ao servidor antes de qualquer interface (até 6 em fila no `beforeLoad` de `/cliente`, repetidas a cada navegação; 3 em fila no `AuthProvider` com `return null` no admin), consultas duplicadas de papel/organização, Google Fonts bloqueante no `<head>` e HTML sem nada visível nas rotas `ssr: false`.
-- Papel + organização passaram a ser buscados em paralelo, com dedupe e cache de 30s, compartilhados por AuthProvider, guards e `/login` (`src/lib/auth-snapshot*.ts`). Status da organização e `get_or_create_customer` saíram do caminho crítico.
-- Skeleton imediato (reaproveitando `SkeletonScreen`) já no HTML das rotas `ssr: false`; fontes, Meta Pixel e Service Worker fora do caminho crítico; tema escuro aplicado antes do primeiro paint.
-- Sem mudança em offline, checkout, Mercado Pago, modelo de dados ou regras de evento. Detalhes, regras para não regredir e pendências: `docs/OTIMIZACAO-CARREGAMENTO.md`.
-
----
-
-## Pendências conhecidas
-
-> **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
-
-- ~~Conexão real com Supabase (schema, autenticação, Edge Functions) ainda não realizada neste projeto novo.~~ **Desatualizado:** Supabase está conectado e em produção desde Agosto/2026 (projeto `ywcdopjqfhisopipqxgq`), com schema completo, autenticação, RLS e dezenas de funções `SECURITY DEFINER` versionadas em `supabase/migrations`.
-- ~~Integração real com Mercado Pago depende da conexão com Supabase.~~ **Desatualizado:** a integração com Mercado Pago está implementada e ativa (checkout, Pix, webhook, confirmação de pagamento) — ver `src/lib/mp/` e `src/routes/api/public/mp/webhook.ts`.
-- ~~ARQUITETURA.md será reescrito somente após a conexão real com o banco de dados.~~ **Desatualizado:** o arquivo `docs/ARQUITETURA.md` nunca chegou a ser criado; `docs/PROJECT-MAP.md` cumpre hoje esse papel (índice operacional do projeto, mantido revalidado a cada auditoria).
-
-### Estado real (06/09/2026)
-
-Para o estado operacional atual — o que está funcionando, o que está pendente e por quê — a fonte de verdade é `docs/AUDITORIA.md`. Este changelog registra decisões de produto ao longo do tempo; `AUDITORIA.md` registra o estado técnico vivo (segurança, integridade de dados, performance).
+- 🎨 **Logo unificado** entre sidebar do Admin, header do Cliente, Login,
+  Cadastro e telas de senha — existiam 4 versões visuais diferentes do
+  mesmo logo; criado componente único `Brandmark`. De quebra, corrigiu um
+  bug de texto invisível no tema claro do Cadastro. (`ee82b07`)
+- 🐛 **Módulo Usuários inacessível**: a tela sempre redirecionava para
+  Vendas, até para administradores reais — a checagem de permissão
+  dependia de um dado nunca preenchido pelo sistema. (`42d9423`)
+- 🐛 **Botão "Remover" não cancelava convite pendente**: funcionava só
+  para quem já tinha conta; convite pendente ficava órfão mesmo com a
+  mensagem de sucesso. Criada função `remove_user_or_invite`. (`42d9423`)
+- 🐛 **Assistente do Mercado Pago inacessível**: mesmo bug de permissão
+  do item acima, numa tela ainda mais crítica — sem abrir, não dava para
+  configurar o Pix de jeito nenhum. (`2507b52`)
+- 🔒 **Falha de segurança no salvamento de credenciais do Mercado Pago**:
+  as funções de servidor não conferiam quem estava chamando — qualquer
+  pessoa que descobrisse o endereço poderia trocar as credenciais de
+  pagamento de qualquer organização. Corrigido com checagem de admin.
+  (`2507b52`)
+- 🐛 **Salvar só o webhook secret apagava o Access Token** já salvo (e
+  vice-versa) por sobrescrita sem preservar o que não foi reenviado.
+  Correção convergiu com um fix equivalente aplicado em paralelo por
+  outro agente. (`66a7e43`)
+- 🐛 **Botão "Criar PIX de teste" nunca funcionava**: tentava inserir
+  direto na tabela `sales`, bloqueado por regra de segurança do banco,
+  com um evento/lote inventado que não existe. Criada função
+  `create_mp_test_sale`, usando um evento real da organização. (`66a7e43`)
+- 📝 Registrada a causa raiz de fundo do problema do Pix: Lovable e
+  Vercel guardam a chave de criptografia (`APP_ENCRYPTION_KEY`) em
+  variáveis de ambiente separadas — credencial salva numa plataforma não
+  descriptografa na outra. Ação pendente, fora do repositório: igualar a
+  variável nas duas plataformas ou definir uma só como produção.
+  (`6460526`)
+- 🐛 **Duas versões de funções do banco coexistindo** (`create_locked_tickets`,
+  `create_pending_sale`, `update_customer`) — o sistema estava resolvendo
+  chamadas para a versão antiga e já corrigida, reativando bugs já dados
+  como resolvidos. Risco real: ingresso duplicado em reenvio de webhook,
+  e venda sem login nunca vinculava ao cliente. Removidas as versões
+  antigas; criado snapshot de todas as funções do banco como backup
+  versionado (não existia controle de versão de várias delas).
+- 🎨 Auditoria de aderência ao Design System: achado que o documento
+  oficial descreve o tema verde antigo (v1.1) enquanto o código já roda
+  o tema roxo (v1.2) — raiz de parte da sensação de inconsistência visual.
+  Ver `docs/DESIGN-SYSTEM.md` para o status da correção do documento.
+- 📝 Criado `CLAUDE.md` (índice de rotas) — na verdade já existia, criado
+  por outro agente em paralelo; só foi complementado.

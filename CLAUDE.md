@@ -9,6 +9,21 @@ Guarda de acesso principal em `admin.route.tsx` (módulo Admin) e
 `cliente.tsx` (módulo Clientes); cada um redireciona papéis que não
 pertencem ali para sua área correta.
 
+## Regra obrigatória: registrar mudanças
+
+Sempre que corrigir um bug, adicionar funcionalidade, mudar o banco de dados
+ou tomar uma decisão de produto/arquitetura relevante, registre em:
+
+- **`docs/CHANGELOG.md`** — uma entrada curta (data, categoria, 1 linha,
+  hash do commit), sempre adicionada no topo. É o log do que mudou.
+- **`docs/AUDITORIA-STATUS.md`** — quando o item resolve ou cria uma
+  pendência relevante (bug conhecido corrigido, risco identificado, algo
+  ainda incompleto). É o retrato de "o que falta hoje", não um histórico.
+
+Os dois documentos ficaram parados por meses no passado porque mudanças
+reais aconteciam sem ninguém atualizar o registro — isso já causou
+retrabalho real neste projeto. Não repita.
+
 ---
 
 ## Módulo Admin (`/admin/*`)
