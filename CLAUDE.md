@@ -106,6 +106,9 @@ link dado à equipe de portaria no dia do evento, sem precisar do login admin co
 
 ## Notas
 
+- **Vitrine → botão "Criar Banner" (resolvido, 24/09)**: não salvava por causa de uma
+  permissão restritiva demais no banco (`client_banners`). Corrigido na migration
+  `fix_client_banners_admin_permissions`. Se o problema reaparecer, comece por aí.
 - `admin.historico.tsx` e `checkin.historico.tsx` renderizam a mesma
   página (`CheckinHistoryPage`) por dois caminhos diferentes — histórico,
   não duplicar ao criar algo novo aqui.
