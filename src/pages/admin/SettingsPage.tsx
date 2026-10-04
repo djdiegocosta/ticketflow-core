@@ -16,6 +16,7 @@ import {
   Clock3,
   Thermometer,
   UserCheck,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MercadoPagoLogo } from "@/components/MercadoPagoLogo";
@@ -131,6 +132,7 @@ export function SettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [allowGuest, setAllowGuest] = useState(true);
+  const [unifyPdf, setUnifyPdf] = useState(true);
   const [pendingMinutes, setPendingMinutes] = useState(30);
   const [aquecendo, setAquecendo] = useState(10);
   const [quente, setQuente] = useState(25);
@@ -156,6 +158,7 @@ export function SettingsPage() {
       setQuente(operationalPreferences.temperature_quente_sales_per_day);
       setExplodindo(operationalPreferences.temperature_explodindo_sales_per_day);
       setAllowGuest(operationalPreferences.allow_guest_checkout);
+      setUnifyPdf(operationalPreferences.unify_checkin_pdf);
     }
   }, [operationalPreferences]);
 
@@ -177,6 +180,14 @@ export function SettingsPage() {
     updatePreferencesMutation.mutate(
       { allow_guest_checkout: value },
       { onError: () => setAllowGuest(!value) },
+    );
+  };
+
+  const handleToggleUnifyPdf = (value: boolean) => {
+    setUnifyPdf(value);
+    updatePreferencesMutation.mutate(
+      { unify_checkin_pdf: value },
+      { onError: () => setUnifyPdf(!value) },
     );
   };
 
@@ -428,6 +439,19 @@ export function SettingsPage() {
                     onCheckedChange={handleToggleGuest}
                     disabled={updatePreferencesMutation.isPending}
                     aria-label="Compra sem cadastro"
+                  />
+                </PrefRow>
+
+                <PrefRow
+                  icon={FileText}
+                  title="Unificar listas de PDF"
+                  hint="Ligado: o PDF de check-in traz Vendas e Cortesias numa lista só, nas duas telas. Desligado: Vendas gera só os compradores e Cortesias gera só as cortesias."
+                >
+                  <Switch
+                    checked={unifyPdf}
+                    onCheckedChange={handleToggleUnifyPdf}
+                    disabled={updatePreferencesMutation.isPending}
+                    aria-label="Unificar listas de PDF"
                   />
                 </PrefRow>
 

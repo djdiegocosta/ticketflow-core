@@ -226,6 +226,7 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 - Banco: campo `organizations.allow_guest_checkout` (padrão `true`), função pública `is_guest_checkout_allowed(_event_id)` (só devolve sim/não) e trava em `create_pending_sale` (recusa venda sem login quando a regra está desligada). Migration `20261004120000_add_guest_checkout_toggle.sql`.
 - Login e cadastro aceitam o parâmetro `voltar` (só caminhos `/e/...`) para retornar ao checkout. Se o cadastro exigir confirmação por e-mail, o link do e-mail leva de volta ao checkout (precisa estar liberado em Supabase → Authentication → URL Configuration; senão cai na página inicial).
 - Preferências reorganizadas em linhas compactas, com explicações atrás do ícone (i) (`InfoHint`). Removido o switch "Unificar listas de PDF de check-in": não salvava nem era usado em lugar nenhum.
+- Preferência **Unificar listas de PDF** agora funciona de verdade (campo `organizations.unify_checkin_pdf`, padrão ligado; migration `20261004130000`). Ligado: o PDF de check-in traz vendas pagas + cortesias numa lista só, nas telas Vendas e Cortesias. Desligado: Vendas gera só compradores e Cortesias só cortesias.
 - Pendente: testar a trava de ponta a ponta quando houver um evento ativo (hoje o único evento está encerrado).
 
 ---
