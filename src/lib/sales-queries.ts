@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useServerFn } from "@tanstack/react-start";
-import { createMpPix } from "./mp/mercado-pago.functions";
+import { createMpPix, getMpPublicKey } from "./mp/mercado-pago.functions";
+import { getMpDeviceId } from "./mp/device";
 
 export interface Sale {
   id: string;
@@ -302,7 +303,18 @@ export function useTrackAbandonment() {
 
 export function useGenerateSalePix() {
   const createFn = useServerFn(createMpPix);
-  return async (vars: { sale_id: string }) => await createFn({ data: vars });
+  const publicKeyFn = useServerFn(getMpPublicKey);
+  return async (vars: { sale_id: string }) => {
+    // Identificador do dispositivo (antifraude). Se falhar, o Pix sai normalmente.
+    let device_id: string | undefined;
+    try {
+      const { public_key } = await publicKeyFn({ data: { sale_id: vars.sale_id } });
+      device_id = await getMpDeviceId(public_key);
+    } catch (error) {
+      console.warn("Não foi possível obter o identificador do dispositivo:", error);
+    }
+    return await createFn({ data: { ...vars, device_id } });
+  };
 }
 
 export function useSaleStatus(saleId: string | null) {

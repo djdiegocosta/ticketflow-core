@@ -239,6 +239,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Qualidade da integração Mercado Pago (04/10/2026)
+
+- Item "Descrição do item": o Pix agora envia `additional_info.items` (id do lote, título do evento, descrição, categoria `tickets`, quantidade e preço unitário).
+- Item "Identificador do dispositivo" + "SDK do frontend": a tela de pagamento carrega o SDK oficial `MercadoPago.JS V2` (com a chave pública guardada em `mp_config`) e o script de segurança do Mercado Pago, e envia o código do dispositivo no cabeçalho `X-meli-session-id`. Se falhar, o Pix sai normalmente (nunca bloqueia a compra). Arquivos: `src/lib/mp/device.ts`, `getMpPublicKey` e `createMpPix` em `src/lib/mp/mercado-pago.functions.ts`, `useGenerateSalePix` em `src/lib/sales-queries.ts`.
+- Item "Descrição na fatura": `statement_descriptor` = `INGRESSO-TICKETFLOW`.
+- Pendente: validar com um Pix real em evento ativo (e acompanhar a nota no painel do Mercado Pago nos próximos dias).
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
