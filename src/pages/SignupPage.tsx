@@ -85,7 +85,8 @@ export default function SignupPage() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: window.location.origin,
+        // Se veio do checkout, o link de confirmação do e-mail leva de volta a ele.
+        emailRedirectTo: voltar ? `${window.location.origin}${voltar}` : window.location.origin,
         data: {
           full_name: formatName(data.name),
           whatsapp: data.whatsapp,
