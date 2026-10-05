@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <path d="M112 104H400C413 104 424 115 424 128V198C393 198 368 223 368 254S393 310 424 310V384C424 397 413 408 400 408H112C99 408 88 397 88 384V310C119 310 144 285 144 254S119 198 88 198V128C88 115 99 104 112 104Z"
-        fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linejoin="round"/>
-  <g fill="#FFFFFF">
-    <rect x="205" y="182" width="40" height="40"/><rect x="307" y="182" width="40" height="40"/>
-    <rect x="205" y="284" width="40" height="40"/>
-    <rect x="245" y="182" width="18" height="18"/><rect x="285" y="182" width="18" height="18"/>
-    <rect x="265" y="202" width="18" height="18"/><rect x="347" y="202" width="18" height="18"/>
-    <rect x="245" y="222" width="18" height="18"/><rect x="285" y="222" width="18" height="18"/>
-    <rect x="225" y="242" width="18" height="18"/><rect x="265" y="242" width="18" height="18"/><rect x="305" y="242" width="18" height="18"/>
-    <rect x="345" y="242" width="18" height="18"/><rect x="205" y="262" width="18" height="18"/>
-    <rect x="245" y="262" width="18" height="18"/><rect x="285" y="262" width="18" height="18"/><rect x="325" y="262" width="18" height="18"/>
-    <rect x="245" y="284" width="18" height="18"/><rect x="285" y="284" width="18" height="18"/><rect x="325" y="284" width="18" height="18"/>
-    <rect x="265" y="304" width="18" height="18"/><rect x="305" y="304" width="18" height="18"/><rect x="345" y="304" width="18" height="18"/>
-  </g>
-</svg>
+<g transform="rotate(-28 256 256)">
+<path fill="#00E676" fill-rule="evenodd" d="
+M112 118H400C414 118 425 129 425 143V203
+C394 203 369 227 369 256C369 285 394 309 425 309V369
+C425 383 414 394 400 394H112C98 394 87 383 87 369V309
+C118 309 143 285 143 256C143 227 118 203 87 203V143
+C87 129 98 118 112 118Z
+M247 178a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 205a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 232a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 259a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 286a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 313a9 9 0 1 0 18 0a9 9 0 1 0-18 0
+M247 340a9 9 0 1 0 18 0a9 9 0 1 0-18 0"/>
+</g></svg>
