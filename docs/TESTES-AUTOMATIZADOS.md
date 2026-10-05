@@ -25,6 +25,15 @@ O projeto possui uma primeira camada unitária usando o **Bun Test Runner**, sem
 - O pipeline executa `bun test tests/checkout-prefill.test.ts` diretamente.
 - O `package.json` não recebeu script `test` nem nova dependência de testes.
 
+### Camada 1b — Pix, webhook e retorno ao checkout (04/10/2026)
+
+- `tests/pix-payload.test.ts`: pedido de Pix ao Mercado Pago (valor, referência da venda, aviso/webhook, descrição do item, nome na fatura, identificador do dispositivo e chave de idempotência).
+- `tests/webhook-signature.test.ts`: conferência da assinatura do webhook (aceita a correta; recusa outro segredo, id adulterado e assinatura vazia).
+- `tests/return-to.test.ts`: caminho de volta ao checkout (só `/e/...`; recusa sites externos).
+- A lógica foi movida para `src/lib/mp/pix-payload.ts` e `src/lib/mp/webhook-signature.ts` (funções puras, sem banco), e `createMpPix` e o webhook passaram a usá-las.
+- O pipeline agora roda `bun test` (todos os arquivos de `tests/`), não só dois.
+- Ainda NÃO coberto: criação de venda e confirmação de pagamento no banco (`create_pending_sale`, `confirm_sale_paid`) — dependem de evento ativo/ambiente de teste.
+
 ### Camada 2 — smoke de integração do banco executado
 
 Em 08/09/2026 foi executada uma bateria controlada diretamente no projeto Supabase conectado ao TicketFlow, usando o evento real de teste operacional e removendo os dados criados ao final.

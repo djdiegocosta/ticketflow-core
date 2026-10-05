@@ -265,6 +265,14 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Varredura: testes automáticos de Pix e webhook (05/10/2026)
+
+- 3 arquivos de teste novos (Pix, assinatura do webhook, retorno ao checkout): total de 44 testes, todos passando. O pipeline passou a rodar todos os testes.
+- Refatoração sem mudança de comportamento: montagem do Pix e conferência da assinatura saíram de `mercado-pago.functions.ts` e `webhook.ts` para módulos puros testáveis.
+- `safeReturnTo` também recusa `..` no caminho.
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).

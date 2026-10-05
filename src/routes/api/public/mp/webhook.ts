@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { decrypt } from "@/lib/mp/utils.server";
+import { buildManifest, isValidSignature, parseSignatureHeader } from "@/lib/mp/webhook-signature";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendPurchaseConfirmationEmail } from "@/lib/email/confirmation-email.server";
 import { sendPushToOrganization } from "@/lib/push.server";
@@ -20,12 +21,11 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           const signatureHeader = request.headers.get("x-signature");
           const requestId = request.headers.get("x-request-id");
           if (!signatureHeader || !requestId) return new Response("Unauthorized", { status: 401 });
-          const parts = signatureHeader.split(",");
-          const ts = parts.find(p => p.startsWith("ts="))?.split("=")[1];
-          const v1 = parts.find(p => p.startsWith("v1="))?.split("=")[1];
-          if (!ts || !v1) return new Response("Unauthorized", { status: 401 });
+          const parsed = parseSignatureHeader(signatureHeader);
+          if (!parsed) return new Response("Unauthorized", { status: 401 });
+          const { ts, v1 } = parsed;
 
-          const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;
+          const manifest = buildManifest(dataId, requestId, ts);
           const { data: configs } = await supabaseAdmin
             .from("mp_config")
             .select("*")
@@ -34,15 +34,7 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           for (const config of configs || []) {
             if (!config.webhook_secret_encrypted) continue;
             const secret = await decrypt(config.webhook_secret_encrypted);
-            const encoder = new TextEncoder();
-            const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-            const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(manifest));
-            const hashHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, "0")).join("");
-            if (hashHex.length === v1.length) {
-              let diff = 0;
-              for (let i = 0; i < hashHex.length; i++) diff |= hashHex.charCodeAt(i) ^ v1.charCodeAt(i);
-              if (diff === 0) { validConfig = config; break; }
-            }
+            if (await isValidSignature(secret, manifest, v1)) { validConfig = config; break; }
           }
           if (!validConfig) return new Response("Unauthorized", { status: 401 });
 

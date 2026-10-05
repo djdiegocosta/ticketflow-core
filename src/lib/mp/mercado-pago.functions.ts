@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { encrypt, decrypt } from "./utils.server";
+import { buildPixHeaders, buildPixPayload, DEVICE_ID_PATTERN } from "./pix-payload";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendPushToOrganization } from "@/lib/push.server";
@@ -72,9 +73,6 @@ export const testMpWebhook = createServerFn({ method: "POST" })
     return { status: "Configurado" };
   });
 
-// Nome que aparece na fatura do cartão (máx. 22 caracteres, sem acento).
-const MP_STATEMENT_DESCRIPTOR = "INGRESSO-TICKETFLOW";
-
 // Chave pública do Mercado Pago (não é segredo — foi feita para ficar no site).
 // Usada pela tela de pagamento para carregar o SDK oficial.
 export const getMpPublicKey = createServerFn({ method: "POST" })
@@ -89,7 +87,7 @@ export const getMpPublicKey = createServerFn({ method: "POST" })
   });
 
 export const createMpPix = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ sale_id: z.string().uuid(), device_id: z.string().max(200).regex(/^[\w.:-]+$/).optional() }).parse)
+  .inputValidator(z.object({ sale_id: z.string().uuid(), device_id: z.string().max(200).regex(DEVICE_ID_PATTERN).optional() }).parse)
   .handler(async ({ data }) => {
     const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*, events!inner(organization_id, title)").eq("id", data.sale_id).single();
     if (saleError || !sale) throw new Error("Venda não encontrada");
@@ -113,38 +111,12 @@ export const createMpPix = createServerFn({ method: "POST" })
       const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow-core.vercel.app";
       const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
       const { data: batch } = await supabaseAdmin.from("ticket_batches").select("name").eq("id", sale.batch_id).maybeSingle();
-      const eventTitle = String(sale.events.title ?? "Evento").slice(0, 250);
-      const batchName = String(batch?.name ?? "Ingresso").slice(0, 200);
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          "X-Idempotency-Key": sale.id,
-          // Identificador do dispositivo do comprador (antifraude do Mercado Pago).
-          ...(data.device_id ? { "X-meli-session-id": data.device_id } : {}),
-        },
-        body: JSON.stringify({
-          transaction_amount: sale.total_amount,
-          description: `Ingresso TicketFlow - Venda ${sale.sale_code}`,
-          statement_descriptor: MP_STATEMENT_DESCRIPTOR,
-          additional_info: {
-            items: [
-              {
-                id: String(sale.batch_id),
-                title: eventTitle,
-                description: `Ingresso ${batchName} - ${eventTitle}`.slice(0, 250),
-                category_id: "tickets",
-                quantity: Number(sale.quantity),
-                unit_price: Number(sale.unit_price),
-              },
-            ],
-          },
-          payment_method_id: "pix",
-          external_reference: sale.id,
-          notification_url: notificationUrl,
-          payer: { email: sale.buyer_email, first_name: sale.buyer_name.split(" ")[0], last_name: sale.buyer_name.split(" ").slice(1).join(" ") || "Cliente" },
-        }),
+        headers: buildPixHeaders(accessToken, sale.id, data.device_id),
+        body: JSON.stringify(
+          buildPixPayload({ sale, eventTitle: sale.events.title, batchName: batch?.name, notificationUrl }),
+        ),
       });
       const mpData = await mpRes.json();
       if (!mpRes.ok) {
