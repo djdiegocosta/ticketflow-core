@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -192,6 +190,81 @@ export type Database = {
           },
         ]
       }
+      customer_xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          event_id: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          reason: string
+          sale_id: string | null
+          ticket_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id: string
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          reason: string
+          sale_id?: string | null
+          ticket_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          reason?: string
+          sale_id?: string | null
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_xp_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_xp_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_xp_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_xp_events_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_xp_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           account_created_at: string | null
@@ -203,7 +276,6 @@ export type Database = {
           id: string
           instagram: string | null
           organization_id: string
-          points: number
           sexo: Database["public"]["Enums"]["customer_gender"] | null
           updated_at: string
           user_id: string | null
@@ -219,7 +291,6 @@ export type Database = {
           id?: string
           instagram?: string | null
           organization_id: string
-          points?: number
           sexo?: Database["public"]["Enums"]["customer_gender"] | null
           updated_at?: string
           user_id?: string | null
@@ -235,7 +306,6 @@ export type Database = {
           id?: string
           instagram?: string | null
           organization_id?: string
-          points?: number
           sexo?: Database["public"]["Enums"]["customer_gender"] | null
           updated_at?: string
           user_id?: string | null
@@ -298,75 +368,6 @@ export type Database = {
           },
         ]
       }
-      event_closures: {
-        Row: {
-          attendance_present: number
-          bar_product_cost: number
-          bar_revenue: number
-          box_office_quantity: number
-          box_office_revenue: number
-          closed_at: string
-          closed_by: string | null
-          courtesies_present: number
-          created_at: string
-          event_id: string
-          event_cost: number
-          id: string
-          notes: string | null
-          organization_id: string
-          snapshot: Json
-        }
-        Insert: {
-          attendance_present?: number
-          bar_product_cost?: number
-          bar_revenue?: number
-          box_office_quantity?: number
-          box_office_revenue?: number
-          closed_at?: string
-          closed_by?: string | null
-          courtesies_present?: number
-          created_at?: string
-          event_id: string
-          event_cost?: number
-          id?: string
-          notes?: string | null
-          organization_id: string
-          snapshot: Json
-        }
-        Update: {
-          attendance_present?: number
-          bar_product_cost?: number
-          bar_revenue?: number
-          box_office_quantity?: number
-          box_office_revenue?: number
-          closed_at?: string
-          closed_by?: string | null
-          courtesies_present?: number
-          created_at?: string
-          event_id?: string
-          event_cost?: number
-          id?: string
-          notes?: string | null
-          organization_id?: string
-          snapshot?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_closures_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: true
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_closures_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       event_checklist_items: {
         Row: {
           completed_at: string | null
@@ -411,6 +412,101 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_closures: {
+        Row: {
+          attendance_present: number
+          bar_product_cost: number
+          bar_revenue: number
+          box_office_quantity: number
+          box_office_revenue: number
+          closed_at: string
+          closed_by: string | null
+          courtesies_present: number
+          created_at: string
+          event_cost: number
+          event_id: string
+          id: string
+          notes: string | null
+          organization_id: string
+          snapshot: Json
+        }
+        Insert: {
+          attendance_present?: number
+          bar_product_cost?: number
+          bar_revenue?: number
+          box_office_quantity?: number
+          box_office_revenue?: number
+          closed_at?: string
+          closed_by?: string | null
+          courtesies_present?: number
+          created_at?: string
+          event_cost?: number
+          event_id: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          snapshot: Json
+        }
+        Update: {
+          attendance_present?: number
+          bar_product_cost?: number
+          bar_revenue?: number
+          box_office_quantity?: number
+          box_office_revenue?: number
+          closed_at?: string
+          closed_by?: string | null
+          courtesies_present?: number
+          created_at?: string
+          event_cost?: number
+          event_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_closures_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_closures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_page_views: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_page_views_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -521,6 +617,7 @@ export type Database = {
       organizations: {
         Row: {
           accent_color: string
+          allow_guest_checkout: boolean
           contact_email: string | null
           contact_phone: string | null
           corner_style: string
@@ -534,10 +631,12 @@ export type Database = {
           temperature_aquecendo_sales_per_day: number
           temperature_explodindo_sales_per_day: number
           temperature_quente_sales_per_day: number
+          unify_checkin_pdf: boolean
           updated_at: string
         }
         Insert: {
           accent_color?: string
+          allow_guest_checkout?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           corner_style?: string
@@ -551,10 +650,12 @@ export type Database = {
           temperature_aquecendo_sales_per_day?: number
           temperature_explodindo_sales_per_day?: number
           temperature_quente_sales_per_day?: number
+          unify_checkin_pdf?: boolean
           updated_at?: string
         }
         Update: {
           accent_color?: string
+          allow_guest_checkout?: boolean
           contact_email?: string | null
           contact_phone?: string | null
           corner_style?: string
@@ -568,6 +669,7 @@ export type Database = {
           temperature_aquecendo_sales_per_day?: number
           temperature_explodindo_sales_per_day?: number
           temperature_quente_sales_per_day?: number
+          unify_checkin_pdf?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -576,6 +678,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          expires_at: string
           id: string
           invited_by: string | null
           organization_id: string
@@ -584,6 +687,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          expires_at?: string
           id?: string
           invited_by?: string | null
           organization_id: string
@@ -592,6 +696,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          expires_at?: string
           id?: string
           invited_by?: string | null
           organization_id?: string
@@ -600,48 +705,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pending_invites_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      points_ledger: {
-        Row: {
-          created_at: string
-          customer_id: string
-          id: string
-          organization_id: string
-          points: number
-          reason: string
-        }
-        Insert: {
-          created_at?: string
-          customer_id: string
-          id?: string
-          organization_id: string
-          points: number
-          reason: string
-        }
-        Update: {
-          created_at?: string
-          customer_id?: string
-          id?: string
-          organization_id?: string
-          points?: number
-          reason?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "points_ledger_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "points_ledger_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -678,6 +741,53 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          active: boolean
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          organization_id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          organization_id: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          organization_id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       raffle_participants: {
         Row: {
@@ -1196,6 +1306,30 @@ export type Database = {
       }
     }
     Views: {
+      customer_xp_totals: {
+        Row: {
+          customer_id: string | null
+          organization_id: string | null
+          patente: string | null
+          total_xp: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_xp_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_xp_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_ticket_stats: {
         Row: {
           checkins_cortesias: number | null
@@ -1224,10 +1358,6 @@ export type Database = {
       }
     }
     Functions: {
-      award_points: {
-        Args: { _customer_id: string; _points: number; _reason: string }
-        Returns: undefined
-      }
       cancel_event: { Args: { _event_id: string }; Returns: undefined }
       cancel_sale: { Args: { _sale_id: string }; Returns: undefined }
       checkin_ticket: {
@@ -1239,9 +1369,14 @@ export type Database = {
           result: string
         }[]
       }
-      confirm_sale_paid: {
-        Args: { _mp_payment_id: string; _sale_id: string }
-        Returns: boolean
+      checkin_ticket_for_event: {
+        Args: { _event_id: string; _ticket_code: string }
+        Returns: {
+          checked_in_at: string
+          event_title: string
+          participant_name: string
+          result: string
+        }[]
       }
       close_event: {
         Args: {
@@ -1253,9 +1388,13 @@ export type Database = {
           _courtesies_present: number
           _event_cost: number
           _event_id: string
-          _notes?: string | null
+          _notes?: string
         }
         Returns: Json
+      }
+      confirm_sale_paid: {
+        Args: { _mp_payment_id: string; _sale_id: string }
+        Returns: boolean
       }
       create_courtesy: {
         Args: {
@@ -1406,28 +1545,17 @@ export type Database = {
         Args: { _code: string }
         Returns: {
           buyer_name: string
+          buyer_whatsapp: string
           event_date: string
           event_title: string
           location: string
+          organization_id: string
           quantity: number
           sale_id: string
           status: Database["public"]["Enums"]["sale_status"]
           total_amount: number
         }[]
       }
-      get_sales_link_stats: {
-        Args: { _event_id: string }
-        Returns: {
-          channel: string
-          code: string
-          is_active: boolean
-          name: string
-          revenue: number
-          sales_count: number
-          sales_link_id: string
-        }[]
-      }
-      get_single_organization_id: { Args: never; Returns: string }
       get_sale_confirmation: {
         Args: { _sale_id: string }
         Returns: {
@@ -1444,8 +1572,25 @@ export type Database = {
           total_amount: number
         }[]
       }
-      get_tickets_by_sale_id: {
+      get_sale_status: {
         Args: { _sale_id: string }
+        Returns: Database["public"]["Enums"]["sale_status"]
+      }
+      get_sales_link_stats: {
+        Args: { _event_id: string }
+        Returns: {
+          channel: string
+          code: string
+          is_active: boolean
+          name: string
+          revenue: number
+          sales_count: number
+          sales_link_id: string
+        }[]
+      }
+      get_single_organization_id: { Args: never; Returns: string }
+      get_tickets_by_sale_code: {
+        Args: { _code: string }
         Returns: {
           checked_in_at: string
           id: string
@@ -1454,10 +1599,11 @@ export type Database = {
           ticket_code: string
         }[]
       }
-      get_tickets_by_sale_code: {
-        Args: { _code: string }
+      get_tickets_by_sale_id: {
+        Args: { _sale_id: string }
         Returns: {
           checked_in_at: string
+          id: string
           participant_name: string
           status: Database["public"]["Enums"]["ticket_status"]
           ticket_code: string
@@ -1475,6 +1621,12 @@ export type Database = {
         Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: string
       }
+      is_guest_checkout_allowed: {
+        Args: { _event_id: string }
+        Returns: boolean
+      }
+      link_guest_purchases_to_current_customer: { Args: never; Returns: number }
+      normalize_whatsapp: { Args: { _raw: string }; Returns: string }
       refund_sale: {
         Args: { _reason: string; _refund_amount: number; _sale_id: string }
         Returns: undefined
@@ -1499,6 +1651,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      track_event_view: { Args: { _event_id: string }; Returns: undefined }
       update_courtesy_participant: {
         Args: { _name: string; _ticket_id: string }
         Returns: undefined
