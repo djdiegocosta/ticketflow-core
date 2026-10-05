@@ -5,6 +5,6 @@
  */
 export function safeReturnTo(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
-  if (!value.startsWith("/e/") || value.startsWith("//") || value.includes("\\")) return undefined;
+  if (!value.startsWith("/e/") || value.startsWith("//") || value.includes("\\") || value.includes("..")) return undefined;
   return value;
 }

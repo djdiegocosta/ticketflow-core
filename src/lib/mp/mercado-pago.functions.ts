@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { encrypt, decrypt } from "./utils.server";
+import { buildPixHeaders, buildPixPayload, DEVICE_ID_PATTERN } from "./pix-payload";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendPushToOrganization } from "@/lib/push.server";
@@ -72,10 +73,23 @@ export const testMpWebhook = createServerFn({ method: "POST" })
     return { status: "Configurado" };
   });
 
-export const createMpPix = createServerFn({ method: "POST" })
+// Chave pública do Mercado Pago (não é segredo — foi feita para ficar no site).
+// Usada pela tela de pagamento para carregar o SDK oficial.
+export const getMpPublicKey = createServerFn({ method: "POST" })
   .inputValidator(z.object({ sale_id: z.string().uuid() }).parse)
   .handler(async ({ data }) => {
-    const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*, events!inner(organization_id)").eq("id", data.sale_id).single();
+    const { data: sale } = await supabaseAdmin.from("sales").select("status, events!inner(organization_id)").eq("id", data.sale_id).maybeSingle();
+    if (!sale || sale.status !== "pendente") return { public_key: null as string | null };
+    const { data: configs } = await supabaseAdmin.from("mp_config").select("environment, public_key, validated_at").eq("organization_id", (sale as any).events.organization_id);
+    const prod = configs?.find((c) => c.environment === "producao" && c.validated_at);
+    const sandbox = configs?.find((c) => c.environment === "sandbox");
+    return { public_key: (prod || sandbox)?.public_key?.trim() || null };
+  });
+
+export const createMpPix = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ sale_id: z.string().uuid(), device_id: z.string().max(200).regex(DEVICE_ID_PATTERN).optional() }).parse)
+  .handler(async ({ data }) => {
+    const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*, events!inner(organization_id, title)").eq("id", data.sale_id).single();
     if (saleError || !sale) throw new Error("Venda não encontrada");
     if (sale.status !== "pendente") throw new Error("A venda já foi processada");
     if (sale.expires_at && new Date(sale.expires_at) <= new Date()) throw new Error("Esta reserva expirou");
@@ -96,17 +110,13 @@ export const createMpPix = createServerFn({ method: "POST" })
 
       const siteUrl = process.env["VITE_SITE_URL"] || "https://ticketflow-core.vercel.app";
       const notificationUrl = `${siteUrl}/api/public/mp/webhook?org_id=${orgId}`;
+      const { data: batch } = await supabaseAdmin.from("ticket_batches").select("name").eq("id", sale.batch_id).maybeSingle();
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
         method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "X-Idempotency-Key": sale.id },
-        body: JSON.stringify({
-          transaction_amount: sale.total_amount,
-          description: `Ingresso TicketFlow - Venda ${sale.sale_code}`,
-          payment_method_id: "pix",
-          external_reference: sale.id,
-          notification_url: notificationUrl,
-          payer: { email: sale.buyer_email, first_name: sale.buyer_name.split(" ")[0], last_name: sale.buyer_name.split(" ").slice(1).join(" ") || "Cliente" },
-        }),
+        headers: buildPixHeaders(accessToken, sale.id, data.device_id),
+        body: JSON.stringify(
+          buildPixPayload({ sale, eventTitle: sale.events.title, batchName: batch?.name, notificationUrl }),
+        ),
       });
       const mpData = await mpRes.json();
       if (!mpRes.ok) {

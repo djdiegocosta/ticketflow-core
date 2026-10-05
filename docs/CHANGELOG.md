@@ -16,8 +16,42 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 05/10/2026 — Agente Claude 2
+
+- ✨ **Testes automáticos de Pix, assinatura do webhook e retorno ao
+  checkout**: 3 arquivos de teste novos, 44 testes no total, todos
+  passando; o pipeline agora roda todos. Refatoração sem mudança de
+  comportamento: montagem do Pix e conferência da assinatura saíram de
+  `mercado-pago.functions.ts` e `webhook.ts` para módulos puros
+  testáveis. `safeReturnTo` também passou a recusar `..` no caminho.
+  (`385b173`)
+
 ## 04/10/2026 — Agente Claude 2
 
+- ✨ **Qualidade da integração Mercado Pago**: o Pix agora envia a
+  descrição do item (id do lote, título do evento, categoria `tickets`,
+  quantidade e preço), carrega o SDK oficial `MercadoPago.JS V2` com o
+  script de segurança e envia o código do dispositivo no cabeçalho
+  `X-meli-session-id`, e usa `INGRESSO-TICKETFLOW` como descrição na
+  fatura. Se o SDK falhar, o Pix sai normalmente — nunca bloqueia a
+  compra. **Pendente:** validar com um Pix real em evento ativo e
+  acompanhar a nota no painel do Mercado Pago. (`414d353`)
+- 🔒 **Bibliotecas com falha de segurança atualizadas**: `nodemailer`
+  10.0.0 → 10.0.14 (falha de nível alto, afetava envio do ingresso por
+  e-mail) e `dompurify` 3.4.12 → 3.4.16. Restam 3 avisos em ferramentas
+  de build (`js-yaml`, `nanoid`), sem efeito no site em produção. O
+  `bun.lock` ainda tem pacotes apontando para o registro do Lovable
+  (`pkg.dev/lovable-core-prod`) — hoje o deploy funciona, mas vale
+  migrar quando for conveniente. (`6176db9`)
+- 🔒 **Limite de reservas pendentes por pessoa**: `create_pending_sale`
+  recusa a 4ª reserva não paga de um mesmo WhatsApp ou e-mail no mesmo
+  evento, com trava de concorrência para tentativas simultâneas. Compra
+  sem cadastro continua liberada. Limite conhecido: quem trocar WhatsApp
+  e e-mail a cada tentativa passa; limite por IP ficou de fora por
+  decisão do Diego (afetaria clientes na mesma rede de Wi-Fi). Migration
+  `20261004140000_limit_pending_sales_per_buyer`. **Pendente:** validar
+  com evento ativo (4ª tentativa recusada, compra normal segue).
+  (`49cda8b`)
 - 🔧 **Endereço de reserva do Mercado Pago apontava para o Lovable (fora
   do ar)**: usado só quando falta a variável `VITE_SITE_URL`; trocado
   para `https://ticketflow-core.vercel.app`. Como a Vercel já tem essa
