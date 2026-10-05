@@ -256,6 +256,15 @@ Registro cronológico de decisões, funcionalidades e ajustes do projeto. Mantid
 
 ---
 
+## Outubro/2026 — Varredura: limite de reservas por pessoa (04/10/2026)
+
+- `create_pending_sale` agora recusa a 4ª reserva pendente de uma mesma pessoa (mesmo WhatsApp ou mesmo e-mail) no mesmo evento. Mensagem ao cliente: "Você já tem compras aguardando pagamento. Conclua o Pix ou tente de novo em alguns minutos." Um bloqueio de concorrência (`pg_advisory_xact_lock`) impede que tentativas simultâneas furem o limite. Migration `20261004140000_limit_pending_sales_per_buyer.sql`. A trava de "compra sem cadastro" foi mantida.
+- Histórico antes da regra: máximo de 3 reservas não pagas por pessoa, então nenhum comprador real é afetado.
+- Limite conhecido: quem trocar WhatsApp e e-mail a cada tentativa passa. Limite por endereço de internet (IP) ficou de fora por decisão do Diego (afetaria vários clientes na mesma rede de Wi-Fi).
+- Pendente: validar com um evento ativo (4ª tentativa deve ser recusada; a compra normal deve seguir).
+
+---
+
 ## Pendências conhecidas
 
 > **Nota (06/09/2026, Claude 2):** as três afirmações abaixo são do início do projeto (Julho/2026) e ficaram desatualizadas — mantidas aqui só como registro histórico, nunca apagadas (ver `docs/AUDITORIA.md` para o estado real e atual de cada item).
