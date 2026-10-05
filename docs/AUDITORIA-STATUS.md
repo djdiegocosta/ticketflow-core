@@ -1,5 +1,5 @@
 # TicketFlow — Status de Auditoria e Refinamentos
-**Última atualização:** 23/08/2026
+**Última atualização:** 05/10/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
@@ -116,3 +116,16 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 **Importante:** isso é uma causa **adicional e independente** dos bugs de código já corrigidos nesta mesma área (sobrescrita de credencial ao salvar só o webhook secret; botão de teste com inserção direta bloqueada por RLS). Os dois tipos de problema coexistiam — corrigir só o código não resolve isso, e garantir a mesma chave nas duas plataformas não substitui as correções de código já aplicadas.
 
 **Ação pendente (não é algo que dá para resolver só editando código do repositório):** confirmar `APP_ENCRYPTION_KEY` idêntica nas variáveis de ambiente do Lovable e da Vercel — ou definir qual das duas é a plataforma de produção real e garantir que a chave usada lá é a mesma com que as credenciais atualmente salvas no banco foram criptografadas (senão, o caminho mais seguro é gerar uma chave nova e resalvar as credenciais do zero por essa plataforma).
+
+## Rodada — Compra sem cadastro, Mercado Pago e varredura de segurança (04-05/10/2026)
+- ✅ Toggle "Compra sem cadastro" (Admin → Configurações → Preferências), com trava também no banco (`create_pending_sale`).
+- ✅ "Unificar listas de PDF" passou a funcionar de verdade (antes era um switch sem efeito).
+- ✅ Mercado Pago: descrição do item, SDK `MercadoPago.JS V2`, identificador do dispositivo e descrição na fatura (`INGRESSO-TICKETFLOW`); Pix de teste confirmado. Meta de qualidade da integração: 75% (estava em 51%).
+- ✅ `nodemailer` e `dompurify` atualizados; limite de 3 reservas pendentes por pessoa por evento; testes automáticos de Pix, webhook e retorno ao checkout (44 testes).
+- ⏳ Testar com evento ativo: toggle ligado/desligado, PDF unificado e 4ª reserva recusada (o único evento hoje está encerrado).
+- ⏳ Acompanhar a nota de qualidade do Mercado Pago nos próximos dias (só sobe com pagamentos reais).
+- 🔴 Visitantes sem login (`anon`) têm permissão de escrita em todas as tabelas; a proteção por linha (RLS) bloqueia, mas falta a segunda camada. Revogar tabela por tabela, só onde o visitante nunca grava (carrinho abandonado e acessos gravam sem login). Deixado para depois do primeiro evento real.
+- 🔴 Limite de reservas não barra quem troca WhatsApp e e-mail a cada tentativa (limite por IP descartado por afetar redes compartilhadas).
+- 🔴 Sem testes automáticos de criação de venda e confirmação de pagamento no banco (dependem de evento ativo/ambiente de teste).
+- 🔴 `bun.lock` ainda aponta pacotes para o registro do Lovable; 3 avisos leves em ferramentas de build (`js-yaml`, `nanoid`).
+- 🔴 E-mail próprio (SMTP) no Supabase só no plano pago; sem ele, o envio de confirmação de cadastro tem limite baixo por hora.

@@ -28,6 +28,28 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 04/10/2026 — Agente Claude 2
 
+- ✨ **Toggle "Compra sem cadastro" nas Preferências do Admin**: ligado
+  (padrão) = qualquer pessoa compra sem conta, como já era; desligado =
+  o cliente vê "Entre para comprar" no checkout, entra ou cria conta e
+  volta direto ao checkout (parâmetro `voltar`, só caminhos `/e/...`). A
+  regra vale para todos os eventos ativos e também é imposta no banco
+  (`create_pending_sale` recusa venda sem login). Banco: coluna
+  `organizations.allow_guest_checkout` (padrão `true`), função
+  `is_guest_checkout_allowed` e migration
+  `20261004120000_add_guest_checkout_toggle`. O link de confirmação de
+  e-mail do cadastro também volta ao checkout (depende de a URL estar
+  liberada no Supabase). **Pendente:** testar com evento ativo, ligado e
+  desligado. (`ffadc1e`, `12b6a40`)
+- 🎨 **Preferências reorganizadas**: linhas compactas, campos menores e
+  explicações atrás de ícone (i) (`InfoHint`), no lugar de textos
+  longos. (`ffadc1e`)
+- ✨ **"Unificar listas de PDF" agora funciona**: antes era um switch
+  que não salvava nem era usado. Ligado (padrão): o PDF de check-in traz
+  vendas pagas + cortesias numa lista só, nas telas Vendas e Cortesias;
+  desligado: Vendas só compradores e Cortesias só cortesias. Banco:
+  coluna `organizations.unify_checkin_pdf` e migration
+  `20261004130000_add_unify_checkin_pdf_preference`. **Pendente:**
+  conferir o PDF com evento ativo. (`e4de0d2`)
 - ✨ **Qualidade da integração Mercado Pago**: o Pix agora envia a
   descrição do item (id do lote, título do evento, categoria `tickets`,
   quantidade e preço), carrega o SDK oficial `MercadoPago.JS V2` com o
