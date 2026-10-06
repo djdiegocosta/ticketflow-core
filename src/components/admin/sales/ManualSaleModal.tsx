@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { channelLabel, useSalesLinks } from "@/lib/sales-links-queries";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Search, X } from "lucide-react";
+import { useCustomerPickerList, type CustomerPickerItem } from "@/lib/customers-queries";
 import { formatCurrency } from "@/lib/sales-queries";
 import { useEvents } from "@/lib/events-queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,9 @@ export function ManualSaleModal({
   const [lotId, setLotId] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [buyerWhatsapp, setBuyerWhatsapp] = useState("");
+  const [buyerMode, setBuyerMode] = useState<"cadastrado" | "novo">("cadastrado");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerPickerItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [participants, setParticipants] = useState<string[]>([""]);
   const [sameAsBuyer, setSameAsBuyer] = useState(false);
@@ -47,6 +51,47 @@ export function ManualSaleModal({
   const [loading, setLoading] = useState(false);
 
   const event = useMemo(() => eventsQuery.find((e) => e.id === eventId), [eventsQuery, eventId]);
+
+  const { data: customerList = [], isLoading: customersLoading } = useCustomerPickerList(open && buyerMode === "cadastrado");
+  const customerMatches = useMemo(() => {
+    const term = customerSearch.trim().toLowerCase();
+    if (term.length < 2) return [];
+    const digits = onlyDigits(term);
+    return customerList
+      .filter((c) => {
+        if (c.full_name.toLowerCase().includes(term)) return true;
+        if (c.email && c.email.toLowerCase().includes(term)) return true;
+        return digits.length >= 3 && onlyDigits(c.whatsapp).includes(digits);
+      })
+      .slice(0, 8);
+  }, [customerList, customerSearch]);
+
+  const pickCustomer = (c: CustomerPickerItem) => {
+    setSelectedCustomer(c);
+    setBuyerName(c.full_name);
+    setBuyerWhatsapp(c.whatsapp);
+    setSameAsBuyer(true);
+    setCustomerSearch("");
+    setErrors({});
+  };
+
+  const clearCustomer = () => {
+    setSelectedCustomer(null);
+    setBuyerName("");
+    setBuyerWhatsapp("");
+    setSameAsBuyer(false);
+  };
+
+  const changeBuyerMode = (mode: "cadastrado" | "novo") => {
+    if (mode === buyerMode) return;
+    setBuyerMode(mode);
+    setSelectedCustomer(null);
+    setCustomerSearch("");
+    setBuyerName("");
+    setBuyerWhatsapp("");
+    setSameAsBuyer(false);
+    setErrors({});
+  };
 
   const [eventWithBatches, setEventWithBatches] = useState<any>(null);
   const { data: salesLinks = [] } = useSalesLinks(eventId || null);
@@ -121,6 +166,9 @@ export function ManualSaleModal({
     setStep(1);
     setBuyerName("");
     setBuyerWhatsapp("");
+    setBuyerMode("cadastrado");
+    setCustomerSearch("");
+    setSelectedCustomer(null);
     setQuantity(1);
     setParticipants([""]);
     setSameAsBuyer(false);
@@ -133,11 +181,17 @@ export function ManualSaleModal({
   const validateStep = (s: number) => {
     const next: Errors = {};
     if (s === 1) {
-      if (!buyerName.trim()) next["buyerName"] = "Nome do comprador obrigatório";
-      else if (!isFullName(buyerName))
-        next["buyerName"] = "Informe nome e sobrenome (mínimo 2 palavras)";
-      if (onlyDigits(buyerWhatsapp).length < 11)
-        next["buyerWhatsapp"] = "WhatsApp deve ter 11 dígitos";
+      if (buyerMode === "cadastrado") {
+        if (!selectedCustomer) next["customer"] = "Busque e selecione um cliente cadastrado";
+        else if (onlyDigits(selectedCustomer.whatsapp).length < 10)
+          next["customer"] = "Este cliente não tem um WhatsApp válido cadastrado. Corrija o cadastro dele ou use \"Novo comprador\".";
+      } else {
+        if (!buyerName.trim()) next["buyerName"] = "Nome do comprador obrigatório";
+        else if (!isFullName(buyerName))
+          next["buyerName"] = "Informe nome e sobrenome (mínimo 2 palavras)";
+        if (onlyDigits(buyerWhatsapp).length < 11)
+          next["buyerWhatsapp"] = "WhatsApp deve ter 11 dígitos";
+      }
     } else if (s === 2) {
       if (quantity < 1) next["quantity"] = "Quantidade mínima: 1";
       participants.slice(0, quantity).forEach((name, i) => {
@@ -177,8 +231,10 @@ export function ManualSaleModal({
     const { error } = await supabase.rpc("create_manual_sale", {
       _event_id: eventId,
       _batch_id: lotId,
-      _buyer_name: formatName(buyerName),
-      _buyer_whatsapp: buyerWhatsapp,
+      // Cliente cadastrado: usa o nome e o WhatsApp exatamente como estão no cadastro,
+      // para a venda cair na conta dele sem alterar nada do cadastro.
+      _buyer_name: selectedCustomer ? selectedCustomer.full_name : formatName(buyerName),
+      _buyer_whatsapp: selectedCustomer ? selectedCustomer.whatsapp : buyerWhatsapp,
       _quantity: quantity,
       _participant_names: participants.slice(0, quantity).map((n) => formatName(n)),
       _total_amount: parsedAmount,
@@ -195,7 +251,11 @@ export function ManualSaleModal({
     }
 
     onCreate();
-    toast.success(`Venda registrada — ${quantity} ingresso(s) gerado(s)`);
+    toast.success(
+      selectedCustomer
+        ? `Venda registrada na conta de ${selectedCustomer.full_name} — ${quantity} ingresso(s) gerado(s)`
+        : `Venda registrada — ${quantity} ingresso(s) gerado(s)`,
+    );
     reset();
     onClose();
   };
@@ -282,30 +342,117 @@ export function ManualSaleModal({
 
           <section className="space-y-4">
             <p className={blockTitle}>Comprador</p>
-            <div>
-              <label className={labelClass}>Nome completo</label>
-              <input
-                className={inputClass}
-                placeholder="Nome Sobrenome"
-                value={buyerName}
-                onInput={(e) => {
-                  const target = e.target as HTMLInputElement;
-                  target.value = formatName(target.value);
-                  setBuyerName(target.value);
-                }}
-              />
-              {errors["buyerName"] && <p className={errorClass}>{errors["buyerName"]}</p>}
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ["cadastrado", "Cliente cadastrado"],
+                ["novo", "Novo comprador"],
+              ] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => changeBuyerMode(mode)}
+                  className={
+                    buyerMode === mode
+                      ? "rounded-[var(--radius-sm)] bg-accent-muted px-3 py-2 text-small font-semibold text-accent-text"
+                      : "rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-3 py-2 text-small text-text-primary"
+                  }
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-            <div>
-              <label className={labelClass}>WhatsApp</label>
-              <input
-                className={inputClass}
-                placeholder="(00) 00000-0000"
-                value={buyerWhatsapp}
-                onChange={(e) => setBuyerWhatsapp(maskWhatsApp(e.target.value))}
-              />
-              {errors["buyerWhatsapp"] && <p className={errorClass}>{errors["buyerWhatsapp"]}</p>}
-            </div>
+
+            {buyerMode === "cadastrado" ? (
+              <div className="space-y-3">
+                {selectedCustomer ? (
+                  <div className="flex items-start justify-between gap-3 rounded-[var(--radius-sm)] border border-accent bg-accent-muted p-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-body font-semibold text-text-primary">{selectedCustomer.full_name}</p>
+                      <p className="text-small text-text-secondary">{selectedCustomer.whatsapp}</p>
+                      {selectedCustomer.email && (
+                        <p className="truncate text-small text-text-secondary">{selectedCustomer.email}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearCustomer}
+                      aria-label="Trocar cliente"
+                      className="shrink-0 text-text-secondary hover:text-text-primary"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className={labelClass}>Buscar cliente</label>
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-disabled" />
+                        <input
+                          className={`${inputClass} pl-9`}
+                          placeholder="Nome, WhatsApp ou e-mail"
+                          value={customerSearch}
+                          onChange={(e) => setCustomerSearch(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    {customersLoading && <p className="text-small text-text-secondary">Carregando clientes...</p>}
+                    {!customersLoading && customerSearch.trim().length >= 2 && customerMatches.length === 0 && (
+                      <p className="text-small text-text-secondary">
+                        Nenhum cliente encontrado. Se for uma pessoa nova, use "Novo comprador".
+                      </p>
+                    )}
+                    {customerMatches.length > 0 && (
+                      <ul className="divide-y divide-border-subtle overflow-hidden rounded-[var(--radius-sm)] border border-border-default">
+                        {customerMatches.map((c) => (
+                          <li key={c.id}>
+                            <button
+                              type="button"
+                              onClick={() => pickCustomer(c)}
+                              className="w-full bg-bg-secondary px-4 py-3 text-left hover:bg-bg-tertiary"
+                            >
+                              <p className="truncate text-body text-text-primary">{c.full_name}</p>
+                              <p className="truncate text-small text-text-secondary">
+                                {c.whatsapp}
+                                {c.email ? ` · ${c.email}` : ""}
+                              </p>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+                {errors["customer"] && <p className={errorClass}>{errors["customer"]}</p>}
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className={labelClass}>Nome completo</label>
+                  <input
+                    className={inputClass}
+                    placeholder="Nome Sobrenome"
+                    value={buyerName}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = formatName(target.value);
+                      setBuyerName(target.value);
+                    }}
+                  />
+                  {errors["buyerName"] && <p className={errorClass}>{errors["buyerName"]}</p>}
+                </div>
+                <div>
+                  <label className={labelClass}>WhatsApp</label>
+                  <input
+                    className={inputClass}
+                    placeholder="(00) 00000-0000"
+                    value={buyerWhatsapp}
+                    onChange={(e) => setBuyerWhatsapp(maskWhatsApp(e.target.value))}
+                  />
+                  {errors["buyerWhatsapp"] && <p className={errorClass}>{errors["buyerWhatsapp"]}</p>}
+                </div>
+              </>
+            )}
           </section>
         </div>
       )}

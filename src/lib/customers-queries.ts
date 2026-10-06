@@ -20,6 +20,32 @@ export interface Customer {
   created_at: string;
 }
 
+export interface CustomerPickerItem {
+  id: string;
+  full_name: string;
+  whatsapp: string;
+  email: string | null;
+}
+
+// Lista leve (só nome, WhatsApp e e-mail) para o operador escolher um cliente
+// cadastrado ao lançar uma venda. A busca é feita na própria tela.
+export function useCustomerPickerList(enabled: boolean) {
+  return useQuery({
+    queryKey: ["customers", "picker"],
+    enabled,
+    staleTime: 30_000,
+    queryFn: async (): Promise<CustomerPickerItem[]> => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("id, full_name, whatsapp, email")
+        .order("full_name", { ascending: true })
+        .limit(5000);
+      if (error) throw error;
+      return (data || []) as CustomerPickerItem[];
+    },
+  });
+}
+
 export function useCustomers() {
   return useQuery({
     queryKey: ["customers"],
