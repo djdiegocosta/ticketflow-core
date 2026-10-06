@@ -87,11 +87,20 @@ export const getMpPublicKey = createServerFn({ method: "POST" })
   });
 
 export const createMpPix = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ sale_id: z.string().uuid(), device_id: z.string().max(200).regex(DEVICE_ID_PATTERN).optional() }).parse)
+  .inputValidator(z.object({ sale_id: z.string().uuid(), device_id: z.string().max(200).optional() }).parse)
   .handler(async ({ data }) => {
+    // O identificador do dispositivo é só um reforço antifraude: se vier fora do formato
+    // esperado, é descartado em vez de impedir a compra.
+    const deviceId = data.device_id && DEVICE_ID_PATTERN.test(data.device_id) ? data.device_id : undefined;
     const { data: sale, error: saleError } = await supabaseAdmin.from("sales").select("*, events!inner(organization_id, title)").eq("id", data.sale_id).single();
-    if (saleError || !sale) throw new Error("Venda não encontrada");
-    if (sale.status !== "pendente") throw new Error("A venda já foi processada");
+    if (saleError || !sale) {
+      console.error("Pix: venda não encontrada", data.sale_id, saleError?.message);
+      throw new Error("Venda não encontrada");
+    }
+    if (sale.status !== "pendente") {
+      console.error("Pix: venda não está pendente", sale.sale_code, sale.status);
+      throw new Error("A venda já foi processada");
+    }
     if (sale.expires_at && new Date(sale.expires_at) <= new Date()) throw new Error("Esta reserva expirou");
 
     try {
@@ -113,7 +122,7 @@ export const createMpPix = createServerFn({ method: "POST" })
       const { data: batch } = await supabaseAdmin.from("ticket_batches").select("name").eq("id", sale.batch_id).maybeSingle();
       const mpRes = await fetch("https://api.mercadopago.com/v1/payments", {
         method: "POST",
-        headers: buildPixHeaders(accessToken, sale.id, data.device_id),
+        headers: buildPixHeaders(accessToken, sale.id, deviceId),
         body: JSON.stringify(
           buildPixPayload({ sale, eventTitle: sale.events.title, batchName: batch?.name, notificationUrl }),
         ),
@@ -149,6 +158,7 @@ export const createMpPix = createServerFn({ method: "POST" })
 
       return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId };
     } catch (err: any) {
+      console.error("Falha ao gerar Pix:", sale.sale_code, err?.message);
       await supabaseAdmin.from("sales").update({
         mp_debug_response: JSON.stringify({ stage: "exception", message: err?.message, name: err?.name, stack: String(err?.stack).slice(0, 2000) }),
       } as never).eq("id", sale.id);

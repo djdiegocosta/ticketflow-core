@@ -313,7 +313,15 @@ export function useGenerateSalePix() {
     } catch (error) {
       console.warn("Não foi possível obter o identificador do dispositivo:", error);
     }
-    return await createFn({ data: { ...vars, device_id } });
+    try {
+      return await createFn({ data: { ...vars, device_id } });
+    } catch (error) {
+      // Se falhar com o identificador do dispositivo, tenta de novo sem ele:
+      // o Pix do cliente nunca pode depender desse reforço antifraude.
+      console.warn("Falha ao gerar Pix; tentando novamente sem o identificador do dispositivo:", error);
+      if (!device_id) throw error;
+      return await createFn({ data: { ...vars } });
+    }
   };
 }
 
