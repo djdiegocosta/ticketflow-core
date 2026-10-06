@@ -129,3 +129,4 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Sem testes automáticos de criação de venda e confirmação de pagamento no banco (dependem de evento ativo/ambiente de teste).
 - 🔴 `bun.lock` ainda aponta pacotes para o registro do Lovable; 3 avisos leves em ferramentas de build (`js-yaml`, `nanoid`).
 - 🔴 E-mail próprio (SMTP) no Supabase só no plano pago; sem ele, o envio de confirmação de cadastro tem limite baixo por hora.
+- ✅ `paid_at` passa a ser gravado na confirmação do pagamento (06/10). Vendas online pagas antes dessa data (2 casos) seguem com o campo vazio.

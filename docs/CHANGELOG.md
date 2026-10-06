@@ -16,6 +16,10 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 06/10/2026 — Agente Claude
+
+- 🐛 Vendas online pagas agora gravam a data/hora do pagamento (`sales.paid_at`): a função `confirm_sale_paid` do banco foi atualizada. Antes o campo ficava vazio. Vendas pagas antes de hoje continuam sem a data (2 casos).
+
 ## 05/10/2026 — Agente Claude 2
 
 - ✨ **Testes automáticos de Pix, assinatura do webhook e retorno ao
