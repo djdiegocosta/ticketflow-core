@@ -18,6 +18,7 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 06/10/2026 — Agente Claude
 
+- 🎨 Ícones do app (PWA, favicon, ícone do iPhone) regenerados a partir do `ticketflow-icon.svg` (ingresso verde inclinado). Antes, as imagens ainda eram o desenho antigo (ingresso branco com QR). O logo dentro do sistema continua sendo o `Brandmark.tsx`, que acompanha o tema. O ícone do iPhone tem fundo cinza-escuro (#383B43), porque o iOS não aceita fundo transparente.
 - ✨ Vendas → Nova Venda: agora dá para buscar um cliente cadastrado (por nome, WhatsApp ou e-mail) e lançar o ingresso direto na conta dele. "Novo comprador" continua disponível. Sem mudança no banco: usa a função `create_manual_sale` existente com os dados exatos do cadastro.
 - 🐛 Pix: o identificador do dispositivo deixou de poder impedir a geração do Pix. O servidor descarta o valor se vier fora do formato, e a tela tenta de novo sem ele se a 1ª tentativa falhar. Erros do Pix passam a ser registrados nos logs da Vercel. Causa exata ainda não confirmada (erro vinha sem registro).
 - 🐛 Vendas online pagas agora gravam a data/hora do pagamento (`sales.paid_at`): a função `confirm_sale_paid` do banco foi atualizada. Antes o campo ficava vazio. Vendas pagas antes de hoje continuam sem a data (2 casos).

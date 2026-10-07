@@ -1,20 +1,19 @@
 TicketFlow — pacote de ícones
 
-Conceito: Ingresso + Fluxo / Fluxo Central.
+Conceito: ingresso verde inclinado, com fileira de pontos vazados no centro.
 
-Cores:
+Cor:
 - Verde: #00E676
-- Branco: #FFFFFF
+Sem gradientes, sombras ou segunda cor. Os pontos são vazados (mostram o fundo).
 
-Sem gradientes, sombras ou terceira cor.
-
-Arquivos:
+Arquivos (todos gerados a partir de ticketflow-icon.svg):
 - ticketflow-icon.svg — matriz vetorial
-- icon-1024x1024.png — master/app
-- icon-512x512.png — PWA
-- icon-192x192.png — PWA
-- apple-touch-icon.png — 180x180
-- favicon.ico — 64/32/16
+- icon-1024x1024.png — master/app (fundo transparente)
+- icon-512x512.png — PWA (fundo transparente)
+- icon-192x192.png — PWA (fundo transparente)
+- apple-touch-icon.png — 180x180, fundo cinza-escuro #383B43 (o iOS não aceita transparência)
+- favicon.ico — 16/32/48/64 (também em public/favicon.ico, com 128 e 256)
 - favicon-16.png / favicon-32.png / favicon-64.png — prévias
 
-O desenho é um ingresso verde com uma linha branca de fluxo atravessando o centro.
+O logo dentro do sistema (menu, login) NÃO usa estes arquivos: é o componente
+src/components/Brandmark.tsx, que acompanha a cor do tema.

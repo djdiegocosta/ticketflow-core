@@ -13,7 +13,7 @@ const SIZES = {
  *
  * O símbolo do logo interno permanece o Ticket original do sistema,
  * porque sua cor acompanha a identidade/tema através de --icon-brand.
- * Os ícones de app/favicon usam uma arte separada: ingresso branco + QR.
+ * Os ícones de app/favicon (public/icons) usam uma arte separada: ingresso verde inclinado.
  */
 export function Brandmark({
   size = "sm",
