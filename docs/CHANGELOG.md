@@ -18,6 +18,16 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 08/10/2026 — Agente Claude (chat)
 
+- ✨ **Conferência de pagamentos com o Mercado Pago (só leitura).** Novo
+  cartão "Conferir pagamentos com o Mercado Pago" no painel (visível só
+  para admin). Compara as vendas dos últimos 7 dias que têm Pix gerado
+  com o status real do pagamento no Mercado Pago e lista divergências:
+  pago no MP e não confirmado, valor ou referência diferente, e venda
+  confirmada mas estornada/contestada no MP. **Não altera nenhuma venda.**
+  Limites: 120 vendas por conferência, 4 consultas em paralelo, 8 s por
+  consulta. Lógica pura em `src/lib/mp/reconcile.ts` (9 testes); função de
+  servidor em `src/lib/mp/reconcile.functions.ts` (exige admin da
+  organização). Ainda não testada contra o Mercado Pago real.
 - 🐛 **Alerta de falhas de Pix no painel: acabou o alarme falso.** Antes, se
   o cliente tentava de novo e o Pix saía, o registro da falha antiga
   mantinha a faixa vermelha por 24h. Agora só conta falha de venda que
