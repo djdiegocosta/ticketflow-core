@@ -18,9 +18,11 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 08/10/2026 — Agente Claude (chat)
 
-- ✨ **Conferência de pagamentos com o Mercado Pago (só leitura).** Novo
-  cartão "Conferir pagamentos com o Mercado Pago" no painel (visível só
-  para admin). Compara as vendas dos últimos 7 dias que têm Pix gerado
+- ✨ **Conferência de pagamentos com o Mercado Pago (só leitura).** Botão
+  com ícone de atualizar no cabeçalho do painel, ao lado do sino de
+  notificações (visível só para admin). Ao parar o mouse mostra uma dica
+  curta; ao clicar abre uma janela que roda a conferência e mostra o
+  resultado (antes era um cartão no dashboard). Compara as vendas dos últimos 7 dias que têm Pix gerado
   com o status real do pagamento no Mercado Pago e lista divergências:
   pago no MP e não confirmado, valor ou referência diferente, e venda
   confirmada mas estornada/contestada no MP. **Não altera nenhuma venda.**
