@@ -101,6 +101,11 @@ export function EditEventPage() {
       toast.error("Preencha nome, data, horário e local");
       return;
     }
+    const eventDateIso = brtInputToUtcIso(`${date}T${time}`);
+    if (!eventDateIso) {
+      toast.error("Data ou horário do evento inválido");
+      return;
+    }
     setSaving(true);
     try {
       await updateEvent(id, {
@@ -108,7 +113,7 @@ export function EditEventPage() {
         slug: slugify(slug || title),
         description: description.trim() || null,
         image_url: imageUrl.trim() || null,
-        event_date: brtInputToUtcIso(`${date}T${time}`),
+        event_date: eventDateIso,
         location: location.trim(),
         status,
       });

@@ -131,6 +131,8 @@ export function useCustomerXp() {
   return useQuery({
     queryKey: ["customer-xp", customerId],
     queryFn: async () => {
+      // A busca só roda quando o cliente existe (enabled), mas o tipo não sabe disso.
+      if (!customerId) throw new Error("Cliente não carregado");
       const { data: totals } = await supabase
         .from("customer_xp_totals")
         .select("total_xp, patente")
@@ -145,8 +147,8 @@ export function useCustomerXp() {
       if (error) throw error;
 
       const totalXp = totals?.total_xp ?? 0;
-      const currentTierIndex = XP_TIERS.findIndex((t, i) => totalXp >= t.min && (i === XP_TIERS.length - 1 || totalXp < XP_TIERS[i + 1].min));
-      const currentTier = XP_TIERS[Math.max(currentTierIndex, 0)];
+      const currentTierIndex = XP_TIERS.findIndex((t, i) => totalXp >= t.min && (i === XP_TIERS.length - 1 || totalXp < (XP_TIERS[i + 1]?.min ?? Infinity)));
+      const currentTier = XP_TIERS[Math.max(currentTierIndex, 0)] ?? XP_TIERS[0]!;
       const nextTier = XP_TIERS[Math.max(currentTierIndex, 0) + 1] ?? null;
       const progressPct = nextTier ? Math.min(100, Math.round(((totalXp - currentTier.min) / (nextTier.min - currentTier.min)) * 100)) : 100;
 

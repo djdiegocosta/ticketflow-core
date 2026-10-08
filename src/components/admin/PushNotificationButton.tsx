@@ -9,7 +9,7 @@ import {
   sendPushTest,
 } from "@/lib/push.functions";
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   // O padding do base64 precisa ser calculado, não fixo — chaves VAPID
   // reais quase nunca precisam de exatamente "==". Somar um padding fixo
   // (como estava antes) gera uma string de tamanho inválido e o atob()

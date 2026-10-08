@@ -32,7 +32,7 @@ export async function fetchEventMeta(slug: string): Promise<EventMetaData> {
  * e o nome real do evento.
  */
 export function buildEventMeta(
-  event: EventMetaData,
+  event: EventMetaData | undefined,
   opts?: { titleSuffix?: string; descriptionOverride?: string }
 ) {
   const fallbackTitle = "Evento | TicketFlow";

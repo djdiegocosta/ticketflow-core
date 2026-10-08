@@ -182,7 +182,9 @@ async function addTicketPage(
 export async function generateTicketsPdf(input: TicketPdfInput): Promise<Buffer> {
   const doc = new jsPDF({ unit: "pt", format: [PAGE_W, PAGE_H] });
   for (let i = 0; i < input.tickets.length; i++) {
-    await addTicketPage(doc, input.tickets[i], input, i === 0);
+    const ticket = input.tickets[i];
+    if (!ticket) continue;
+    await addTicketPage(doc, ticket, input, i === 0);
   }
   return Buffer.from(doc.output("arraybuffer"));
 }

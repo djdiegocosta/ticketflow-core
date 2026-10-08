@@ -24,6 +24,7 @@ export function brtInputToUtcIso(localValue: string): string | null {
   if (!datePart || !timePart) return null;
   const [y, m, d] = datePart.split("-").map(Number);
   const [h, min] = timePart.split(":").map(Number);
+  if (y === undefined || m === undefined || d === undefined || h === undefined || min === undefined) return null;
   if ([y, m, d, h, min].some((n) => Number.isNaN(n))) return null;
   const utcMs = Date.UTC(y, m - 1, d, h, min) + BRT_OFFSET_MINUTES * 60 * 1000;
   return new Date(utcMs).toISOString();

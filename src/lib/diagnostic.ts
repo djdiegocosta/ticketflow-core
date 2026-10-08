@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 /**
  * Grava um registro em diagnostic_logs para rastrear erros críticos em produção.
@@ -42,7 +43,7 @@ export async function logDiagnosticError(
       error_message: errorMessage,
       likely_cause: buildLikelyCause(error),
       context: context
-        ? context
+        ? (context as Json)
         : error instanceof Error && error.stack
           ? { stack: error.stack.slice(0, 1500) }
           : null,

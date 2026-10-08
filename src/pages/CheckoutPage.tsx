@@ -66,7 +66,7 @@ export default function CheckoutPage() {
   const [isCreatingSale, setIsCreatingSale] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
   const [currentSaleCode, setCurrentSaleCode] = useState<string | null>(null);
-  const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string } | null>(null);
+  const [pixData, setPixData] = useState<{ qr_code: string; qr_code_base64: string | null } | null>(null);
   
   const { data: saleStatus, refetch: refetchSaleStatus, isFetching: isCheckingPayment } = useSaleStatus(currentSaleId);
   const [isResuming, setIsResuming] = useState(!!search.resume);
@@ -76,13 +76,14 @@ export default function CheckoutPage() {
   const prefillAppliedKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!search.resume) return;
+    const resumeId = search.resume;
+    if (!resumeId) return;
     let cancelled = false;
     (async () => {
       const { data: sale, error } = await supabase
         .from('sales')
         .select('id, sale_code, status, expires_at, mp_qr_code, mp_qr_code_base64')
-        .eq('id', search.resume)
+        .eq('id', resumeId)
         .maybeSingle();
 
       if (cancelled) return;
@@ -544,8 +545,10 @@ export default function CheckoutPage() {
 
             <div className="flex flex-col items-center gap-4 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
               <div className="bg-white p-3 rounded-xl shadow-sm min-h-[190px] min-w-[190px] flex items-center justify-center">
-                {pixData ? (
+                {pixData?.qr_code_base64 ? (
                   <img src={`data:image/png;base64,${pixData.qr_code_base64}`} alt="QR Code Pix" className="h-[164px] w-[164px]" />
+                ) : pixData ? (
+                  <p className="text-center text-small text-neutral-700">Use o código “copia e cola” abaixo para pagar.</p>
                 ) : (
                   <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
                 )}

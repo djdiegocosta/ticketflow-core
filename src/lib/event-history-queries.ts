@@ -206,7 +206,8 @@ export async function closeEvent(input: CloseEventInput): Promise<EventHistorySn
     _bar_revenue: input.barRevenue,
     _bar_product_cost: input.barProductCost,
     _event_cost: input.eventCost,
-    _notes: input.notes.trim() || null,
+    // O banco aceita null aqui; os tipos gerados não refletem isso.
+    _notes: (input.notes.trim() || null) as string,
   });
 
   if (error) throw error;

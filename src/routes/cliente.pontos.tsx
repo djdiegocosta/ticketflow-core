@@ -71,7 +71,7 @@ export function Page_cliente_pontos() {
       <div className="flex justify-between px-1">
         {TIER_ORDER.map((tier) => (
           <div key={tier} className="flex flex-col items-center gap-1.5">
-            <Shield color={TIER_COLORS[tier]} size={tier === patente ? 34 : 28} muted={tier !== patente} />
+            <Shield color={TIER_COLORS[tier] ?? "#b4b2a9"} size={tier === patente ? 34 : 28} muted={tier !== patente} />
             <span className={tier === patente ? "text-small font-medium text-[var(--text-primary)]" : "text-micro text-[var(--text-secondary)]"}>{tier}</span>
           </div>
         ))}

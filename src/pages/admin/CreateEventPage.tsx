@@ -111,6 +111,11 @@ export function CreateEventPage() {
       toast.error("Informe data e horário do evento");
       return;
     }
+    const eventDateIso = brtInputToUtcIso(`${date}T${time}`);
+    if (!eventDateIso) {
+      toast.error("Data ou horário do evento inválido");
+      return;
+    }
     if (!location.trim()) {
       toast.error("Informe o local do evento");
       return;
@@ -134,7 +139,7 @@ export function CreateEventPage() {
           title: name.trim(),
           description: description.trim() || null,
           image_url: imageUrl.trim() || null,
-          event_date: brtInputToUtcIso(`${date}T${time}`),
+          event_date: eventDateIso,
           location: location.trim(),
           slug: slug,
           status,

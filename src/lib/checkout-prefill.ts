@@ -5,9 +5,9 @@ export type CheckoutPrefillCustomer = {
 };
 
 export type CheckoutPrefill = {
-  buyerName?: string;
-  buyerWhatsApp?: string;
-  buyerEmail?: string;
+  buyerName?: string | undefined;
+  buyerWhatsApp?: string | undefined;
+  buyerEmail?: string | undefined;
 };
 
 /**
