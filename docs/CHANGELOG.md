@@ -16,6 +16,21 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 07/10/2026 — Agente Claude (chat)
+
+- 🐛 **Zerados os 23 erros de typecheck** (antes: 3 importantes e 20
+  avisos). Importantes: (1) Pix retomado sem imagem de QR Code agora
+  mostra a instrução de usar o copia e cola, em vez de imagem quebrada;
+  (2) e (3) criar e editar evento com data/horário inválido agora mostra
+  "Data ou horário do evento inválido" em vez de falhar no banco com erro
+  genérico. Os 20 avisos eram "valor possivelmente vazio" já tratado no
+  código; ajustes sem mudança de comportamento. A tela de erro geral
+  também passou a aceitar erro que não seja `Error`. (`d459aba`)
+- ✨ **Typecheck no pipeline**: novo script `bun run typecheck`
+  (`tsc --noEmit`) e passo "Typecheck" em `quality.yml`, antes dos
+  testes. Motivo: o pipeline só rodava testes e build, então erros de
+  tipo novos (inclusive os gerados pelo Lovable) passavam sem aviso.
+  (`d459aba`)
 ## 06/10/2026 — Agente Claude
 
 - 🎨 Ícones do app (PWA, favicon, ícone do iPhone) regenerados a partir do `ticketflow-icon.svg` (ingresso verde inclinado). Antes, as imagens ainda eram o desenho antigo (ingresso branco com QR). O logo dentro do sistema continua sendo o `Brandmark.tsx`, que acompanha o tema. O ícone do iPhone tem fundo cinza-escuro (#383B43), porque o iOS não aceita fundo transparente.
