@@ -18,6 +18,15 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 07/10/2026 — Agente Claude (chat)
 
+- 🔒 **Security Advisor: fechado o acesso externo a 5 funções internas do
+  banco.** `grant_xp_new_account`, `grant_xp_on_checkin`,
+  `grant_xp_on_sale_paid` e `enforce_single_active_banner` (gatilhos que
+  só o próprio banco dispara) deixam de ser chamáveis por visitantes e
+  por usuários logados; `link_guest_purchases_to_current_customer` deixa
+  de ser chamável por visitantes (segue liberada para logado). Nenhuma
+  tela as chamava. Testado antes: gatilho continua disparando mesmo sem
+  permissão de chamada. Alertas do Advisor: 60 → 52. Migration
+  `20261008024752_revoke_internal_function_execute`.
 - 🐛 **Zerados os 23 erros de typecheck** (antes: 3 importantes e 20
   avisos). Importantes: (1) Pix retomado sem imagem de QR Code agora
   mostra a instrução de usar o copia e cola, em vez de imagem quebrada;

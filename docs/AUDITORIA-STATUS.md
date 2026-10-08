@@ -134,7 +134,8 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 ## Rodada — Qualidade de código e Security Advisor (07/10/2026)
 - ✅ Typecheck zerado: 23 erros (3 importantes: QR do Pix retomado, data inválida ao criar/editar evento; 20 avisos de tipo) corrigidos. Passo `Typecheck` adicionado ao pipeline (`quality.yml`) e script `typecheck` no `package.json`.
 - ✅ Auditoria somente leitura do Security Advisor do Supabase (3 alertas de nível Aviso, 60 itens). Nada alterado no banco.
-- 🔴 Fechar acesso externo (anon e logado) às funções internas `grant_xp_new_account`, `grant_xp_on_checkin`, `grant_xp_on_sale_paid`, `enforce_single_active_banner`; e `link_guest_purchases_to_current_customer` para visitantes. Baixo risco.
+- ✅ Fechado o acesso externo (anon e logado) às funções internas `grant_xp_new_account`, `grant_xp_on_checkin`, `grant_xp_on_sale_paid`, `enforce_single_active_banner`; e `link_guest_purchases_to_current_customer` para visitantes. Migration `20261008024752`. Alertas do Advisor: 60 → 52.
+- 🔴 **Achado:** `get_direct_sales_stats` e `get_sales_link_stats` só exigem login (qualquer cliente vê faturamento, nº de vendas e links de um evento); `get_user_organization` ignora o usuário e sempre devolve a única organização, então a "trava por organização" não protege nada. Correção proposta: exigir papel admin dentro das duas funções. Aguardando OK.
 - 🔴 Revisar se `checkin_ticket`, `checkin_ticket_for_event`, `get_direct_sales_stats` e `get_sales_link_stats` conferem o papel do usuário por dentro (hoje só conferem login).
 - 🔴 Ativar proteção contra senhas vazadas no Supabase Auth (depende do plano) e tratar a mensagem de senha recusada em cadastro e redefinição.
 - 🔴 Endurecer `get_sale_confirmation`, `get_sale_status` e `get_tickets_by_sale_id` (acessíveis a visitantes pelo ID da venda) — exige teste completo de compra e Pix.
