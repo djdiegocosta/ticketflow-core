@@ -16,6 +16,15 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 08/10/2026 — Agente Claude (chat)
+
+- 🐛 **Alerta de falhas de Pix no painel: acabou o alarme falso.** Antes, se
+  o cliente tentava de novo e o Pix saía, o registro da falha antiga
+  mantinha a faixa vermelha por 24h. Agora só conta falha de venda que
+  ficou sem Pix (`mp_payment_id` vazio). Mudança só na consulta do painel
+  (`dashboard-queries.ts`); a geração do Pix não foi tocada. Regra
+  extraída para `src/lib/pix-failures.ts` com 3 testes novos.
+
 ## 07/10/2026 — Agente Claude (chat)
 
 - 🔒 **Security Advisor: fechado o acesso externo a 5 funções internas do

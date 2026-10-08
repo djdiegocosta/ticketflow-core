@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
 import { useOperationalPreferences } from "./settings-queries";
+import { isUnresolvedPixFailure } from "@/lib/pix-failures";
 
 export function useNewCustomersCount(days: number = 30) {
   const { user, organizationId, loading: authLoading } = useAuth();
@@ -94,8 +95,6 @@ export function useAudienceStats(eventId?: string | null) {
   });
 }
 
-const PIX_FAILURE_STAGES = ["mp_rejected", "missing_qr_code", "exception"];
-
 export function usePixFailures(eventId?: string | null) {
   const { user, organizationId, loading: authLoading } = useAuth();
   return useQuery({
@@ -106,21 +105,13 @@ export function usePixFailures(eventId?: string | null) {
       const since = new Date(Date.now() - 24 * 3600_000).toISOString();
       let query = supabase
         .from("sales")
-        .select("id, created_at, mp_debug_response")
+        .select("id, created_at, mp_debug_response, mp_payment_id")
         .not("mp_debug_response", "is", null)
         .gte("created_at", since);
       if (eventId) query = query.eq("event_id", eventId);
       const { data, error } = await query;
       if (error) throw error;
-      const failures = (data ?? []).filter((sale) => {
-        if (!sale.mp_debug_response) return false;
-        try {
-          const parsed = JSON.parse(sale.mp_debug_response) as { stage?: string };
-          return !!parsed.stage && PIX_FAILURE_STAGES.includes(parsed.stage);
-        } catch {
-          return false;
-        }
-      });
+      const failures = (data ?? []).filter(isUnresolvedPixFailure);
       return { count: failures.length };
     },
     refetchInterval: 60_000,
