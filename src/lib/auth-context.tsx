@@ -117,7 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const isEntryPage = ["/", "/login", "/cadastro", "/recuperar-senha"].includes(currentPath);
       const isPublicArea =
-        currentPath.startsWith("/e/") || currentPath.startsWith("/meus-ingressos") || currentPath.startsWith("/ingresso/");
+        currentPath.startsWith("/e/") ||
+        currentPath.startsWith("/meus-ingressos") ||
+        currentPath.startsWith("/ingresso/") ||
+        currentPath === "/links";
       const alreadyOnOwnArea =
         (role === "operador_checkin" && currentPath.startsWith("/checkin")) ||
         ((role === "admin" || role === "colaborador") && currentPath.startsWith("/admin")) ||

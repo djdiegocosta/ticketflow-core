@@ -6,6 +6,8 @@ const SIZES = {
   sm: { icon: "h-5 w-5", text: "text-heading-2" },
   /** Usado em telas de entrada de tela cheia: Login, Cadastro. */
   lg: { icon: "h-7 w-7", text: "text-[28px] leading-tight" },
+  /** Usado em páginas públicas de destaque: links da bio. */
+  xl: { icon: "h-9 w-9", text: "text-[36px] leading-tight" },
 } as const;
 
 /**

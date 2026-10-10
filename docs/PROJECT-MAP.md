@@ -43,6 +43,7 @@ TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/
 
 ### Público
 - `/` → entrada/redirecionamento
+- `/links` (página pública para o link da bio do Instagram)
 - `/login`
 - `/cadastro`
 - `/recuperar-senha`

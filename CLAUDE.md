@@ -96,6 +96,7 @@ link dado à equipe de portaria no dia do evento, sem precisar do login admin co
 | `/meus-ingressos` | `meus-ingressos.tsx` | Consulta de ingressos sem login (por WhatsApp/e-mail) |
 | `/privacidade` | `privacidade.tsx` | Política de privacidade |
 | `/termos` | `termos.tsx` | Termos de uso |
+| `/links` | `links.tsx` | Links da bio do Instagram: logo, "O que você deseja?", Comprar ingresso (próximo evento aberto), Criar Conta, Fazer Login, Redefinir Senha |
 
 ---
 

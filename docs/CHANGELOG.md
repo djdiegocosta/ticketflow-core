@@ -18,6 +18,17 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 10/10/2026 — Agente Claude (chat)
 
+- ✨ **Nova página pública `/links` (link da bio do Instagram).** Logo
+  TicketFlow centralizado, pergunta "O que você deseja?", botão em
+  destaque "Comprar ingresso" e, mais abaixo, "Criar Conta", "Fazer Login"
+  e "Redefinir Senha" (leva a `/recuperar-senha`). Mobile first, tema
+  claro/escuro, sem login. "Comprar ingresso" leva ao próximo evento
+  publicado, não encerrado e ainda por vir (`/e/<slug>`), com nome e data
+  do evento embaixo; sem evento, o botão fica desativado com aviso.
+  `Brandmark` ganhou o tamanho `xl`. `/links` entrou na lista de rotas
+  públicas do `auth-context`, para quem já está logado não ser
+  redirecionado ao painel ao abrir o link. Sem mudança no banco.
+
 - ✨ **Remarketing: o contato agora é salvo e existe o card "Recuperados".**
   O botão de WhatsApp tentava gravar `remarketing_contacted_at` direto na
   tabela `sales`, mas a policy "No direct update on sales" bloqueia todo

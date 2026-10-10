@@ -156,3 +156,6 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Remarketing lista também reservas ainda dentro dos 15 min (rótulo "Aguardando pagamento"). Decidir se deve mostrar só expiradas.
 - 🔴 Vercel Hobby guarda só 1 hora de logs; investigar erro em horário passado depende do banco. Avaliar plano ou dreno de logs.
 - 🔴 `package-lock.json` desatualizado em relação ao `package.json` (`npm ci` falha; o projeto usa `bun.lock`). Instalar com `bun install` ou atualizar/remover o arquivo.
+- ✅ Página pública `/links` (link da bio do Instagram) criada; compila e passa no typecheck.
+- ⏳ `/links`: conferir no celular (iPhone e Android, navegador interno do Instagram) — não foi possível ver a página renderizada durante o desenvolvimento.
+- 🔴 `/links`: com 2 ou mais eventos à venda, "Comprar ingresso" leva só ao mais próximo. Decidir se vira uma lista de eventos.

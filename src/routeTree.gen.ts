@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './routes/admin.route'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ClienteRouteImport } from './routes/cliente'
+import { Route as LinksRouteImport } from './routes/links'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MeusIngressosRouteImport } from './routes/meus-ingressos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -74,6 +75,11 @@ const CadastroRoute = CadastroRouteImport.update({
 const ClienteRoute = ClienteRouteImport.update({
   id: '/cliente',
   path: '/cliente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksRoute = LinksRouteImport.update({
+  id: '/links',
+  path: '/links',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/cliente': typeof ClienteRouteWithChildren
+  '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -343,6 +350,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -392,6 +400,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/cliente': typeof ClienteRouteWithChildren
+  '/links': typeof LinksRoute
   '/login': typeof LoginRoute
   '/meus-ingressos': typeof MeusIngressosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -442,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cadastro'
     | '/cliente'
+    | '/links'
     | '/login'
     | '/meus-ingressos'
     | '/privacidade'
@@ -488,6 +498,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/links'
     | '/login'
     | '/meus-ingressos'
     | '/privacidade'
@@ -536,6 +547,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cadastro'
     | '/cliente'
+    | '/links'
     | '/login'
     | '/meus-ingressos'
     | '/privacidade'
@@ -585,6 +597,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   ClienteRoute: typeof ClienteRouteWithChildren
+  LinksRoute: typeof LinksRoute
   LoginRoute: typeof LoginRoute
   MeusIngressosRoute: typeof MeusIngressosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -629,6 +642,13 @@ declare module '@tanstack/react-router' {
       path: '/cliente'
       fullPath: '/cliente'
       preLoaderRoute: typeof ClienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/links': {
+      id: '/links'
+      path: '/links'
+      fullPath: '/links'
+      preLoaderRoute: typeof LinksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1010,6 +1030,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CadastroRoute: CadastroRoute,
   ClienteRoute: ClienteRouteWithChildren,
+  LinksRoute: LinksRoute,
   LoginRoute: LoginRoute,
   MeusIngressosRoute: MeusIngressosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
