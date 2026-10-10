@@ -540,7 +540,9 @@ Exportar dados (CSV) em todos os relatórios.
 **Ações disponíveis:**
 - Visualizar lista de abandonos por evento.
 - Acesso rápido ao WhatsApp do potencial comprador.
-- Marcar como "contactado" / "convertido" / "descartado".
+- "Já contactado": marcado automaticamente ao clicar no botão de WhatsApp (guarda o 1º contato).
+- "Recuperado": automático quando o lead contactado compra depois (a própria reserva ou compra nova no mesmo evento). Cards: Leads no total, Valor potencial, Já contactados e Recuperados.
+- "Descartado": ainda não implementado.
 
 **Dashboard:** card de resumo de abandonos nas últimas 24h visível no Dashboard principal.
 

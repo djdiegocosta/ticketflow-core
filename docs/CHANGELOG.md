@@ -18,6 +18,34 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 10/10/2026 — Agente Claude (chat)
 
+- ✨ **Remarketing: o contato agora é salvo e existe o card "Recuperados".**
+  O botão de WhatsApp tentava gravar `remarketing_contacted_at` direto na
+  tabela `sales`, mas a policy "No direct update on sales" bloqueia todo
+  UPDATE direto e o banco devolvia sucesso sem alterar nada — 0 contatos
+  salvos em 51 vendas expiradas. Nova função `mark_remarketing_contacted`
+  (admin/colaborador, guarda só o 1º contato; migration
+  `20261010130000`). O lead vira "Já contactado"; quem foi contactado e
+  pagou depois (a própria reserva ou compra nova no evento) vira
+  "Recuperado". Cards "Aguardando pagamento" e "Expirados" removidos; novo
+  card "Recuperados" (com % dos contactados); "Valor potencial" não soma
+  recuperados. Comparação de WhatsApp só por dígitos. (`153fe95`)
+- 🔒 **Redefinição de senha: link no endereço público oficial e tela com
+  aviso de link vencido.** O link usava `window.location.origin`; pedido a
+  partir de endereço temporário da Vercel (deploy/branch, protegido por
+  login da Vercel) levava o cliente ao login da Vercel. Novo
+  `src/lib/site-url.ts` (`getPublicSiteUrl`: `VITE_SITE_URL`, reserva
+  `ticketflow-core.vercel.app`) usado em `/recuperar-senha` e no cadastro.
+  `/redefinir-senha` mostra "Link vencido ou já usado" + "Pedir novo link".
+  (`88a3b3a`)
+- 📝 **E-mail profissional de redefinição de senha (config no painel do
+  Supabase, fora do código).** Projetos novos no plano gratuito não editam
+  modelos de e-mail sem SMTP próprio. Configurado SMTP provisório pelo
+  Gmail `ticketflow.confirmacoes@gmail.com` (senha de app, só no Supabase),
+  modelo "Reset Password" em PT-BR versionado em
+  `docs/emails/redefinir-senha.html`, e Site URL / Redirect URLs ajustados
+  para `https://ticketflow-core.vercel.app`. O SMTP próprio também remove o
+  limite de 2 e-mails/hora do envio padrão. Pendente: domínio próprio.
+
 - 🐛 **Pagamento aprovado depois da reserva expirar não é mais descartado.**
   Incidente real: venda `1A494A29` (R$ 25,00). O Pix é criado sem prazo de
   validade, então o QR Code seguia pagável no Mercado Pago depois dos 15
@@ -100,19 +128,13 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   testes. Motivo: o pipeline só rodava testes e build, então erros de
   tipo novos (inclusive os gerados pelo Lovable) passavam sem aviso.
   (`d459aba`)
-## 10/10/2026 — Agente Claude
-
-- 📣 Remarketing: o clique no botão WhatsApp agora realmente registra o contato (antes nada era salvo, porque a tabela de vendas bloqueia alteração direta). Nova função no banco `mark_remarketing_contacted`, restrita a admin e colaborador, que guarda o 1º contato. O lead passa a aparecer como "Já contactado".
-- 📣 Remarketing: quem foi contactado e depois pagou entra como "Recuperado" (a própria reserva ou uma compra nova). Cards "Aguardando pagamento" e "Expirados" removidos; novo card "Recuperados" (com % dos contactados). "Valor potencial" não soma mais os recuperados. Quem paga sozinho, sem contato prévio, continua saindo da lista.
-- 🔐 Redefinir senha: o link do e-mail agora usa sempre o endereço público oficial (`VITE_SITE_URL`, com `https://ticketflow-core.vercel.app` como reserva). Antes usava o endereço em que a pessoa estava; se fosse um endereço temporário da Vercel (de deploy ou de branch), o cliente caía na tela de login da Vercel. Mesma correção aplicada ao e-mail de confirmação de cadastro.
-- 🔐 Tela `/redefinir-senha`: se o link estiver vencido, já usado ou aberto sem o e-mail, mostra "Link vencido ou já usado" com botão "Pedir novo link" (antes mostrava um erro confuso ao salvar).
-
 ## 06/10/2026 — Agente Claude
 
-- 🎨 Ícones do app (PWA, favicon, ícone do iPhone) regenerados a partir do `ticketflow-icon.svg` (ingresso verde inclinado). Antes, as imagens ainda eram o desenho antigo (ingresso branco com QR). O logo dentro do sistema continua sendo o `Brandmark.tsx`, que acompanha o tema. O ícone do iPhone tem fundo cinza-escuro (#383B43), porque o iOS não aceita fundo transparente.
-- ✨ Vendas → Nova Venda: agora dá para buscar um cliente cadastrado (por nome, WhatsApp ou e-mail) e lançar o ingresso direto na conta dele. "Novo comprador" continua disponível. Sem mudança no banco: usa a função `create_manual_sale` existente com os dados exatos do cadastro.
-- 🐛 Pix: o identificador do dispositivo deixou de poder impedir a geração do Pix. O servidor descarta o valor se vier fora do formato, e a tela tenta de novo sem ele se a 1ª tentativa falhar. Erros do Pix passam a ser registrados nos logs da Vercel. Causa exata ainda não confirmada (erro vinha sem registro).
-- 🐛 Vendas online pagas agora gravam a data/hora do pagamento (`sales.paid_at`): a função `confirm_sale_paid` do banco foi atualizada. Antes o campo ficava vazio. Vendas pagas antes de hoje continuam sem a data (2 casos).
+- 📝 Limpeza de dados de teste: apagadas do banco 4 vendas **canceladas** do dia (`B0BC7A90`, `8C2FD1CD`, `4C2E1D9C`, `EC491041`), a pedido do dono. Todas sem ingresso, pagamento ou reembolso; os Pix gerados expiram sozinhos no Mercado Pago.
+- 🎨 Ícones do app (PWA, favicon, ícone do iPhone) regenerados a partir do `ticketflow-icon.svg` (ingresso verde inclinado). Antes, as imagens ainda eram o desenho antigo (ingresso branco com QR). O logo dentro do sistema continua sendo o `Brandmark.tsx`, que acompanha o tema. O ícone do iPhone tem fundo cinza-escuro (#383B43), porque o iOS não aceita fundo transparente. (`16a57a1`)
+- ✨ Vendas → Nova Venda: agora dá para buscar um cliente cadastrado (por nome, WhatsApp ou e-mail) e lançar o ingresso direto na conta dele. "Novo comprador" continua disponível. Sem mudança no banco: usa a função `create_manual_sale` existente com os dados exatos do cadastro. (`5cc951a`)
+- 🐛 Pix: o identificador do dispositivo deixou de poder impedir a geração do Pix. O servidor descarta o valor se vier fora do formato, e a tela tenta de novo sem ele se a 1ª tentativa falhar. Erros do Pix passam a ser registrados nos logs da Vercel. Causa exata ainda não confirmada (erro vinha sem registro); depois disso as vendas online seguiram normais. (`07b7a93`)
+- 🐛 Vendas online pagas agora gravam a data/hora do pagamento (`sales.paid_at`): a função `confirm_sale_paid` do banco foi atualizada (migration `20261006120000`). Antes o campo ficava vazio. Vendas pagas antes de 06/10 continuam sem a data (2 casos). (`84921b6`)
 
 ## 05/10/2026 — Agente Claude 2
 

@@ -1,5 +1,5 @@
 # TicketFlow — Status de Auditoria e Refinamentos
-**Última atualização:** 07/10/2026
+**Última atualização:** 10/10/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
@@ -128,7 +128,7 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Limite de reservas não barra quem troca WhatsApp e e-mail a cada tentativa (limite por IP descartado por afetar redes compartilhadas).
 - 🔴 Sem testes automáticos de criação de venda e confirmação de pagamento no banco (dependem de evento ativo/ambiente de teste).
 - 🔴 `bun.lock` ainda aponta pacotes para o registro do Lovable; 3 avisos leves em ferramentas de build (`js-yaml`, `nanoid`).
-- 🔴 E-mail próprio (SMTP) no Supabase só no plano pago; sem ele, o envio de confirmação de cadastro tem limite baixo por hora.
+- ✅ E-mail próprio (SMTP) no Supabase: configurado em 10/10 pelo Gmail `ticketflow.confirmacoes@gmail.com` (provisório, ~500 e-mails/dia). Libera a edição dos modelos de e-mail e remove o limite de 2 e-mails/hora do envio padrão. Ver rodada de 10/10 abaixo.
 - ✅ `paid_at` passa a ser gravado na confirmação do pagamento (06/10). Vendas online pagas antes dessa data (2 casos) seguem com o campo vazio.
 
 ## Rodada — Qualidade de código e Security Advisor (07/10/2026)
@@ -140,3 +140,19 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Ativar proteção contra senhas vazadas no Supabase Auth (depende do plano) e tratar a mensagem de senha recusada em cadastro e redefinição.
 - 🔴 Endurecer `get_sale_confirmation`, `get_sale_status` e `get_tickets_by_sale_id` (acessíveis a visitantes pelo ID da venda) — exige teste completo de compra e Pix.
 
+## Rodada — Remarketing, redefinição de senha, ícones e vendas manuais (06-10/10/2026)
+- ✅ Remarketing: o botão de WhatsApp nunca salvou o contato (policy "No direct update on sales" bloqueava em silêncio). Corrigido com a função `mark_remarketing_contacted` (admin/colaborador). Leads contactados aparecem como "Já contactado"; quem compra depois vira "Recuperado"; novo card "Recuperados".
+- ✅ Redefinição de senha: link do e-mail e do cadastro usam sempre o endereço público oficial (`getPublicSiteUrl`); a tela `/redefinir-senha` trata link vencido/usado. Fim do login da Vercel no meio do fluxo.
+- ✅ Vendas → Nova Venda: busca de cliente cadastrado (nome, WhatsApp ou e-mail) e lançamento direto na conta dele; "Novo comprador" mantido.
+- ✅ `paid_at` gravado em toda venda online paga (função `confirm_sale_paid`).
+- ✅ Pix: identificador do dispositivo não bloqueia mais a geração (servidor descarta se inválido; tela repete sem ele); erros do Pix registrados nos logs da Vercel. A causa exata do erro de 05/10 não foi confirmada (⏳ vigiar se reaparecer).
+- ✅ Pacote de ícones (PWA, favicon, iPhone) regenerado a partir do `ticketflow-icon.svg`. Navegador/celular podem demorar a trocar o ícone antigo (cache).
+- ⏳ Configuração fora do código, no painel do Supabase: SMTP Gmail provisório, modelo "Reset Password" (cópia em `docs/emails/redefinir-senha.html`) e Site URL / Redirect URLs. Se o projeto for recriado, refazer essas três coisas.
+- 🔴 **Segurança:** o token de acesso do GitHub foi colado em chat em 05/10 — revogar e criar outro.
+- 🔴 Pix pendente reaproveitado no checkout para cliente com conta, com cancelamento pelo próprio cliente. Ao cancelar, também cancelar o Pix no Mercado Pago (senão pode ser pago depois) e devolver o estoque. Combinado esperar o Pix estabilizar; ainda não iniciado.
+- 🔴 `cancel_sale` (cancelamento pelo admin) não devolve o estoque de reserva pendente; só a expiração automática devolve.
+- 🔴 Domínio próprio: links de e-mail ainda mostram `vercel.app`; remetente ainda é um Gmail (limite ~500/dia).
+- 🔴 Backfill de `paid_at` das 2 vendas online pagas antes de 06/10 (precisa estimar o horário; não feito de propósito).
+- 🔴 Remarketing lista também reservas ainda dentro dos 15 min (rótulo "Aguardando pagamento"). Decidir se deve mostrar só expiradas.
+- 🔴 Vercel Hobby guarda só 1 hora de logs; investigar erro em horário passado depende do banco. Avaliar plano ou dreno de logs.
+- 🔴 `package-lock.json` desatualizado em relação ao `package.json` (`npm ci` falha; o projeto usa `bun.lock`). Instalar com `bun install` ou atualizar/remover o arquivo.
