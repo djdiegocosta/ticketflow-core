@@ -5,6 +5,7 @@ import { buildPixHeaders, buildPixPayload, DEVICE_ID_PATTERN } from "./pix-paylo
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendPushToOrganization } from "@/lib/push.server";
+import { decideReopen } from "./reopen-sale";
 
 async function assertOrgAdmin(userId: string, organizationId: string) {
   const { data, error } = await supabaseAdmin
@@ -97,11 +98,24 @@ export const createMpPix = createServerFn({ method: "POST" })
       console.error("Pix: venda não encontrada", data.sale_id, saleError?.message);
       throw new Error("Venda não encontrada");
     }
-    if (sale.status !== "pendente") {
-      console.error("Pix: venda não está pendente", sale.sale_code, sale.status);
-      throw new Error("A venda já foi processada");
+    // O prazo da reserva só dá urgência ao cliente: reserva expirada não impede o Pix.
+    // Se ainda houver estoque, a reserva é reaberta; se o lote esgotou, avisa com clareza.
+    let reopenedExpiresAt: string | null = null;
+    const reservationExpired = !!sale.expires_at && new Date(sale.expires_at) <= new Date();
+    if (sale.status !== "pendente" || reservationExpired) {
+      const { data: reopenResult, error: reopenError } = await supabaseAdmin.rpc("reopen_expired_sale", { _sale_id: sale.id });
+      if (reopenError) {
+        console.error("Pix: falha ao reabrir reserva", sale.sale_code, reopenError.message);
+        throw new Error("Não foi possível retomar esta reserva. Tente novamente.");
+      }
+      const decision = decideReopen(reopenResult);
+      if (!decision.proceed) {
+        console.error("Pix: reserva não reaberta", sale.sale_code, sale.status, reopenResult);
+        throw new Error(decision.message);
+      }
+      const { data: fresh } = await supabaseAdmin.from("sales").select("expires_at").eq("id", sale.id).single();
+      reopenedExpiresAt = fresh?.expires_at ?? null;
     }
-    if (sale.expires_at && new Date(sale.expires_at) <= new Date()) throw new Error("Esta reserva expirou");
 
     try {
       const orgId = sale.events.organization_id;
@@ -156,7 +170,7 @@ export const createMpPix = createServerFn({ method: "POST" })
         }).catch((pushError) => console.error("Push de venda pendente falhou:", pushError));
       }
 
-      return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId };
+      return { qr_code: qrCode, qr_code_base64: qrCodeBase64, payment_id: mpPaymentId, expires_at: reopenedExpiresAt };
     } catch (err: any) {
       console.error("Falha ao gerar Pix:", sale.sale_code, err?.message);
       await supabaseAdmin.from("sales").update({

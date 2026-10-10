@@ -32,6 +32,21 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   repetido continua idempotente. Função só para `service_role`. Lógica de
   decisão em `src/lib/mp/late-payment.ts` (5 testes). Migration
   `20261010015324_confirm_late_paid_sale`.
+- 🔓 **Reserva expirada não bloqueia mais quem quer pagar.** Regra de
+  negócio: o prazo da reserva só dá urgência; todo pagamento é bem-vindo.
+  (1) Tela de pagamento (`CheckoutPage`): ao expirar, o cliente não é mais
+  expulso do Pix nem perde o QR Code (antes voltava ao formulário com
+  "o estoque foi liberado"); aparece "Tempo de reserva encerrado, mas você
+  ainda pode pagar. Se o ingresso esgotar, entraremos em contato." e a
+  tela segue acompanhando o status até a confirmação. (2) `createMpPix`:
+  em vez de recusar "Esta reserva expirou", chama a nova
+  `reopen_expired_sale`: com estoque, reabre a reserva (baixa o estoque de
+  novo e dá prazo novo); sem estoque, único bloqueio, com mensagem clara
+  ("Os ingressos deste lote esgotaram..."). O Pix usa a venda como chave de
+  idempotência no Mercado Pago, então pedir de novo devolve o mesmo QR
+  Code (sem pagamento em dobro). Caminho normal (reserva dentro do prazo)
+  não muda. Lógica em `src/lib/mp/reopen-sale.ts` (4 testes). Migration
+  `reopen_expired_sale` (só `service_role`).
 - 🧾 **Correção manual da venda `1A494A29`** (venda confirmada e ingresso
   `1A494A29-1` emitido direto no banco; e-mail não foi enviado). Na
   correção manual o estoque do lote não foi baixado de novo e foi acertado

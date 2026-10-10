@@ -206,6 +206,9 @@ export default function CheckoutPage() {
     return () => clearInterval(timer);
   }, [step, expiresAt]);
 
+  // Só considera encerrada quando o prazo realmente passou (evita piscar no primeiro render).
+  const reservationEnded = !!expiresAt && countdown === 0 && new Date(expiresAt).getTime() <= Date.now();
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -288,15 +291,10 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (saleStatus === 'expirado' && step === 'payment') {
-      toast.error("O tempo para pagamento expirou. O estoque foi liberado.", { duration: 5000 });
-      setStep('buyer');
-      setCurrentSaleId(null);
-      setCurrentSaleCode(null);
-      setExpiresAt(null);
-      setCountdown(0);
-      setPixData(null);
-    }
+    // Reserva expirada NÃO tira o cliente do Pix: o QR Code segue válido e o
+    // pagamento aprovado depois do prazo é aceito (vira ingresso se houver estoque).
+    // O prazo só serve para dar urgência; a tela continua acompanhando o status e
+    // leva à confirmação assim que o pagamento chegar.
   }, [saleStatus, event, currentSaleId, navigate, step]);
 
   const handleSameAsBuyer = (checked: boolean | 'indeterminate') => {
@@ -540,7 +538,11 @@ export default function CheckoutPage() {
           <div className="flex flex-col gap-6 animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-center gap-2 text-center">
               <Clock className="h-4 w-4 text-[var(--accent)]" />
-              <p className="text-small text-[var(--text-secondary)]">Aguardando Pagamento — expira em <span className="font-mono font-bold text-[var(--accent-text)]">{formatTime(countdown)}</span></p>
+              {reservationEnded ? (
+                <p className="text-small text-[var(--text-secondary)]">Tempo de reserva encerrado, mas você ainda pode pagar. Se o ingresso esgotar, entraremos em contato.</p>
+              ) : (
+                <p className="text-small text-[var(--text-secondary)]">Aguardando Pagamento — expira em <span className="font-mono font-bold text-[var(--accent-text)]">{formatTime(countdown)}</span></p>
+              )}
             </div>
 
             <div className="flex flex-col items-center gap-4 rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--bg-secondary)] p-6">
