@@ -1360,6 +1360,7 @@ export type Database = {
     Functions: {
       cancel_event: { Args: { _event_id: string }; Returns: undefined }
       cancel_sale: { Args: { _sale_id: string }; Returns: undefined }
+      mark_remarketing_contacted: { Args: { _sale_id: string }; Returns: undefined }
       checkin_ticket: {
         Args: { _ticket_code: string }
         Returns: {

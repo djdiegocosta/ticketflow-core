@@ -102,6 +102,8 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   (`d459aba`)
 ## 10/10/2026 — Agente Claude
 
+- 📣 Remarketing: o clique no botão WhatsApp agora realmente registra o contato (antes nada era salvo, porque a tabela de vendas bloqueia alteração direta). Nova função no banco `mark_remarketing_contacted`, restrita a admin e colaborador, que guarda o 1º contato. O lead passa a aparecer como "Já contactado".
+- 📣 Remarketing: quem foi contactado e depois pagou entra como "Recuperado" (a própria reserva ou uma compra nova). Cards "Aguardando pagamento" e "Expirados" removidos; novo card "Recuperados" (com % dos contactados). "Valor potencial" não soma mais os recuperados. Quem paga sozinho, sem contato prévio, continua saindo da lista.
 - 🔐 Redefinir senha: o link do e-mail agora usa sempre o endereço público oficial (`VITE_SITE_URL`, com `https://ticketflow-core.vercel.app` como reserva). Antes usava o endereço em que a pessoa estava; se fosse um endereço temporário da Vercel (de deploy ou de branch), o cliente caía na tela de login da Vercel. Mesma correção aplicada ao e-mail de confirmação de cadastro.
 - 🔐 Tela `/redefinir-senha`: se o link estiver vencido, já usado ou aberto sem o e-mail, mostra "Link vencido ou já usado" com botão "Pedir novo link" (antes mostrava um erro confuso ao salvar).
 

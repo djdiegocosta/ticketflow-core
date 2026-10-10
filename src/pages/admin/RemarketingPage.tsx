@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MessageCircle, Target, Users, Clock, Wallet, CheckCircle } from "lucide-react";
+import { MessageCircle, Target, Wallet, CheckCircle, TrendingUp } from "lucide-react";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import {
   DataTable,
@@ -50,11 +50,14 @@ export function RemarketingPage() {
   const { mutate: markContacted } = useMarkRemarketingContacted();
 
   const stats = useMemo(() => {
-    const aguardando = leads.filter((l) => l.status === "pendente").length;
-    const expirados = leads.filter((l) => l.status === "expirado").length;
-    const valorPotencial = leads.reduce((sum, l) => sum + Number(l.total_amount || 0), 0);
+    const naoRecuperados = leads.filter((l) => !l.recovered);
+    const valorPotencial = naoRecuperados.reduce((sum, l) => sum + Number(l.total_amount || 0), 0);
     const jaContactados = leads.filter((l) => l.remarketing_contacted_at !== null).length;
-    return { total: leads.length, aguardando, expirados, valorPotencial, jaContactados };
+    // Conta pessoas (não reservas): quem foi contactado por mais de uma reserva e comprou, vale 1.
+    const recuperados = new Set(
+      leads.filter((l) => l.recovered).map((l) => `${l.event_id}|${l.buyer_whatsapp.replace(/\D/g, "")}`),
+    ).size;
+    return { total: leads.length, valorPotencial, jaContactados, recuperados };
   }, [leads]);
 
   if (!operationalEvent) return <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 text-center"><div><h2 className="text-heading-2 text-text-primary">Nenhum evento ativo</h2><p className="mt-1 max-w-xl text-small text-text-secondary">Crie ou publique um novo evento para começar a operação.</p></div><a href="/admin/eventos" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-small font-semibold text-[var(--accent-foreground)]">Ir para Eventos</a></div>;
@@ -71,13 +74,6 @@ export function RemarketingPage() {
       <MiniMetricGrid>
         <MiniMetricCard title="Leads no total" value={stats.total} icon={Target} />
         <MiniMetricCard
-          title="Aguardando pagamento"
-          value={stats.aguardando}
-          icon={Clock}
-          iconColor="text-warning"
-        />
-        <MiniMetricCard title="Expirados" value={stats.expirados} icon={Users} />
-        <MiniMetricCard
           title="Valor potencial"
           value={formatCurrency(stats.valorPotencial)}
           icon={Wallet}
@@ -86,6 +82,17 @@ export function RemarketingPage() {
           title="Já contactados"
           value={stats.jaContactados}
           icon={CheckCircle}
+          iconColor="text-success"
+        />
+        <MiniMetricCard
+          title="Recuperados"
+          value={stats.recuperados}
+          subtext={
+            stats.jaContactados > 0
+              ? `${Math.round((stats.recuperados / stats.jaContactados) * 100)}% dos contactados`
+              : "Ninguém contactado ainda"
+          }
+          icon={TrendingUp}
           iconColor="text-success"
         />
       </MiniMetricGrid>
@@ -128,9 +135,15 @@ export function RemarketingPage() {
                   <DataTableCell>{formatCurrency(Number(lead.total_amount || 0))}</DataTableCell>
                   <DataTableCell>{timeAgo(lead.created_at)}</DataTableCell>
                   <DataTableCell>
-                    <StatusPill tone={lead.status === "pendente" ? "warning" : "neutral"}>
-                      {lead.status === "pendente" ? "Aguardando pagamento" : "Expirado"}
-                    </StatusPill>
+                    {lead.recovered ? (
+                      <StatusPill tone="success">Recuperado</StatusPill>
+                    ) : lead.remarketing_contacted_at ? (
+                      <StatusPill tone="info">Já contactado</StatusPill>
+                    ) : (
+                      <StatusPill tone={lead.status === "pendente" ? "warning" : "neutral"}>
+                        {lead.status === "pendente" ? "Aguardando pagamento" : "Expirado"}
+                      </StatusPill>
+                    )}
                   </DataTableCell>
                   <DataTableCell>
                     {lead.remarketing_contacted_at ? (
@@ -143,16 +156,20 @@ export function RemarketingPage() {
                     )}
                   </DataTableCell>
                   <DataTableCell>
-                    <a
-                      href={remarketingWhatsappLink(lead)}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => markContacted(lead.id)}
-                      className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                      WhatsApp
-                    </a>
+                    {lead.recovered ? (
+                      <span className="text-small text-text-tertiary">—</span>
+                    ) : (
+                      <a
+                        href={remarketingWhatsappLink(lead)}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => markContacted(lead.id)}
+                        className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 text-small font-semibold text-[var(--accent-foreground)] transition-colors hover:bg-accent-hover"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        WhatsApp
+                      </a>
+                    )}
                   </DataTableCell>
                 </DataTableRow>
               ))
