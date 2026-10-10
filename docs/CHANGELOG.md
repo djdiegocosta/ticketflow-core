@@ -16,6 +16,30 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 10/10/2026 — Agente Claude (chat)
+
+- 🐛 **Pagamento aprovado depois da reserva expirar não é mais descartado.**
+  Incidente real: venda `1A494A29` (R$ 25,00). O Pix é criado sem prazo de
+  validade, então o QR Code seguia pagável no Mercado Pago depois dos 15
+  min da reserva; o webhook chamava `confirm_sale_paid`, que recusa venda
+  expirada, e respondia "ok" sem registrar nada. Achado pela conferência
+  de pagamentos. Regra de negócio: o prazo só dá urgência ao cliente, todo
+  pagamento aprovado é bem-vindo. Agora, se `confirm_sale_paid` recusar, o
+  webhook chama a nova `confirm_late_paid_sale`: com estoque, confirma,
+  baixa o estoque de novo e segue o fluxo normal (ingresso, e-mail, push
+  "pagamento após o prazo"); sem estoque, ou em qualquer estado inesperado,
+  anota na venda e avisa a equipe por push (`late-paid-<id>`). Aviso
+  repetido continua idempotente. Função só para `service_role`. Lógica de
+  decisão em `src/lib/mp/late-payment.ts` (5 testes). Migration
+  `20261010015324_confirm_late_paid_sale`.
+- 🧾 **Correção manual da venda `1A494A29`** (venda confirmada e ingresso
+  `1A494A29-1` emitido direto no banco; e-mail não foi enviado). Na
+  correção manual o estoque do lote não foi baixado de novo e foi acertado
+  em seguida (2º Lote: 91 → 90). **Regra de estoque a lembrar:**
+  `ticket_batches.quantity` é o estoque que RESTA; diminui ao criar a
+  reserva e VOLTA quando a reserva expira (`expire_pending_sales_job`).
+  Reativar venda expirada exige baixar o estoque de novo.
+
 ## 08/10/2026 — Agente Claude (chat)
 
 - ✨ **Conferência de pagamentos com o Mercado Pago (só leitura).** Botão

@@ -1392,6 +1392,10 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_late_paid_sale: {
+        Args: { _mp_payment_id: string; _sale_id: string }
+        Returns: string
+      }
       confirm_sale_paid: {
         Args: { _mp_payment_id: string; _sale_id: string }
         Returns: boolean

@@ -4,6 +4,7 @@ import { buildManifest, isValidSignature, parseSignatureHeader } from "@/lib/mp/
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendPurchaseConfirmationEmail } from "@/lib/email/confirmation-email.server";
 import { sendPushToOrganization } from "@/lib/push.server";
+import { interpretLateConfirmation } from "@/lib/mp/late-payment";
 
 export const Route = createFileRoute("/api/public/mp/webhook")({
   server: {
@@ -70,9 +71,48 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
 
           // O RPC é idempotente. Quando um webhook repetido chega depois da
           // confirmação original, ele retorna false e não deve reenviar e-mail
-          // nem push.
+          // nem push. Ele também retorna false quando a reserva já expirou:
+          // nesse caso o pagamento aprovado NÃO pode ser descartado. O prazo da
+          // reserva só dá urgência ao cliente; todo pagamento aprovado vira
+          // ingresso (se houver estoque) ou gera alerta para a equipe decidir.
+          let paidLate = false;
           if (confirmationResult !== true) {
-            return new Response("ok", { status: 200 });
+            const { data: lateResult, error: lateError } = await supabaseAdmin.rpc("confirm_late_paid_sale", {
+              _sale_id: saleId,
+              _mp_payment_id: String(mpData.id),
+            });
+            // Erro técnico: responde 500 para o Mercado Pago tentar de novo.
+            if (lateError) throw lateError;
+
+            const action = interpretLateConfirmation(lateResult, {
+              sale_code: sale.sale_code,
+              total_amount: saleAmount,
+            });
+            if (action.kind === "already_done") {
+              return new Response("ok", { status: 200 });
+            }
+            if (action.kind === "alert") {
+              console.error("Pagamento aprovado sem confirmar venda", {
+                saleId,
+                saleCode: sale.sale_code,
+                paymentId: mpData.id,
+                result: lateResult,
+              });
+              await sendPushToOrganization(orgId, {
+                title: action.title,
+                body: action.body,
+                url: "/admin/vendas",
+                tag: `late-paid-${sale.id}`,
+              }).catch((pushError) => console.error("Push de pagamento tardio falhou:", pushError));
+              // Já ficou registrado na venda e avisado: 200 evita repetir o alerta.
+              return new Response("ok", { status: 200 });
+            }
+            paidLate = true;
+            console.warn("Pagamento aprovado depois do prazo da reserva; venda confirmada", {
+              saleId,
+              saleCode: sale.sale_code,
+              paymentId: mpData.id,
+            });
           }
 
           if (sale.pending_participant_names) {
@@ -94,8 +134,8 @@ export const Route = createFileRoute("/api/public/mp/webhook")({
           const eventTitle = event?.title ?? "seu evento";
 
           await sendPushToOrganization(orgId, {
-            title: "Venda concluída",
-            body: `Venda ${sale.sale_code ?? ""} paga. Pagamento de R$ ${saleAmount.toFixed(2).replace(".", ",")} confirmado.`,
+            title: paidLate ? "Venda concluída (pagamento após o prazo)" : "Venda concluída",
+            body: `Venda ${sale.sale_code ?? ""} paga${paidLate ? " depois do prazo da reserva" : ""}. Pagamento de R$ ${saleAmount.toFixed(2).replace(".", ",")} confirmado.`,
             url: "/admin/vendas",
             tag: `sale-paid-${sale.id}`,
           }).catch((pushError) => console.error("Push de venda paga falhou:", pushError));
