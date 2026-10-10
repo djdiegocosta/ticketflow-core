@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { MobileLayout } from "@/components/layouts/MobileLayout";
@@ -35,6 +35,36 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  // "checking": verificando o link; "ok": link válido; "invalid": link vencido ou já usado
+  const [linkStatus, setLinkStatus] = useState<"checking" | "ok" | "invalid">("checking");
+
+  useEffect(() => {
+    // O Supabase avisa link vencido/usado no próprio endereço (#error=...)
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    if (hash.includes("error=") || hash.includes("error_code=")) {
+      setLinkStatus("invalid");
+      return;
+    }
+    let done = false;
+    const markOk = () => {
+      done = true;
+      setLinkStatus("ok");
+    };
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "INITIAL_SESSION")) markOk();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) markOk();
+    });
+    // Se em alguns segundos não houver sessão, o link não é válido
+    const timer = setTimeout(() => {
+      if (!done) setLinkStatus("invalid");
+    }, 4000);
+    return () => {
+      clearTimeout(timer);
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const form = useForm<ResetFormValues>({
     resolver: zodResolver(resetSchema),
@@ -56,6 +86,38 @@ export default function ResetPasswordPage() {
     toast.success("Senha redefinida com sucesso!");
     navigate({ to: "/login" });
   };
+
+  if (linkStatus === "checking") {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex flex-col items-center justify-center p-4 py-12">
+          <p className="text-small text-text-secondary">Verificando seu link...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (linkStatus === "invalid") {
+    return (
+      <MobileLayout showFooter={false}>
+        <div className="flex flex-col items-center justify-center p-4 py-12">
+          <Card className="w-full max-w-[400px] bg-bg-secondary border-border-default shadow-md rounded-lg">
+            <CardHeader className="pb-2 text-center">
+              <h2 className="text-heading-1">Link vencido ou já usado</h2>
+              <p className="text-small text-text-secondary mt-2">
+                Por segurança, o link de redefinição vale por pouco tempo e só pode ser usado uma vez. Peça um novo para continuar.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full bg-accent hover:bg-accent-hover text-[#111111] font-semibold rounded-md mt-2">
+                <Link to="/recuperar-senha">Pedir novo link</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout showFooter={false}>

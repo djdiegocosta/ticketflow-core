@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -34,7 +35,7 @@ export default function RecoverPasswordPage() {
 
   const onSubmit = async (data: RecoverFormValues) => {
     const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
+      redirectTo: `${getPublicSiteUrl()}/redefinir-senha`,
     });
 
     if (error) {

@@ -1,3 +1,4 @@
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { useState, useMemo } from "react";
 import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,7 +87,7 @@ export default function SignupPage() {
       password: data.password,
       options: {
         // Se veio do checkout, o link de confirmação do e-mail leva de volta a ele.
-        emailRedirectTo: voltar ? `${window.location.origin}${voltar}` : window.location.origin,
+        emailRedirectTo: voltar ? `${getPublicSiteUrl()}${voltar}` : getPublicSiteUrl(),
         data: {
           full_name: formatName(data.name),
           whatsapp: data.whatsapp,

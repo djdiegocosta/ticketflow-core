@@ -100,6 +100,11 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   testes. Motivo: o pipeline só rodava testes e build, então erros de
   tipo novos (inclusive os gerados pelo Lovable) passavam sem aviso.
   (`d459aba`)
+## 10/10/2026 — Agente Claude
+
+- 🔐 Redefinir senha: o link do e-mail agora usa sempre o endereço público oficial (`VITE_SITE_URL`, com `https://ticketflow-core.vercel.app` como reserva). Antes usava o endereço em que a pessoa estava; se fosse um endereço temporário da Vercel (de deploy ou de branch), o cliente caía na tela de login da Vercel. Mesma correção aplicada ao e-mail de confirmação de cadastro.
+- 🔐 Tela `/redefinir-senha`: se o link estiver vencido, já usado ou aberto sem o e-mail, mostra "Link vencido ou já usado" com botão "Pedir novo link" (antes mostrava um erro confuso ao salvar).
+
 ## 06/10/2026 — Agente Claude
 
 - 🎨 Ícones do app (PWA, favicon, ícone do iPhone) regenerados a partir do `ticketflow-icon.svg` (ingresso verde inclinado). Antes, as imagens ainda eram o desenho antigo (ingresso branco com QR). O logo dentro do sistema continua sendo o `Brandmark.tsx`, que acompanha o tema. O ícone do iPhone tem fundo cinza-escuro (#383B43), porque o iOS não aceita fundo transparente.
