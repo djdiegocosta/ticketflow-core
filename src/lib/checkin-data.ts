@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { offlineDB, type OfflineTicket } from "./offline-db";
 
-export type CheckinStatus = "valid" | "already_used" | "invalid";
+import { interpretCheckinRow, type CheckinOutcome, type CheckinRpcRow, type CheckinStatus } from "./checkin-result";
+
+export type { CheckinStatus } from "./checkin-result";
 
 export interface CheckinAttempt {
   id: string;
@@ -58,7 +60,7 @@ export async function preloadEventTickets(eventId: string, eventName: string) {
 }
 
 /** Lógica de Check-in Offline First */
-export async function resolveCheckin(code: string, eventId: string, eventName: string) {
+export async function resolveCheckin(code: string, eventId: string, eventName: string): Promise<CheckinOutcome & { time: string; isOffline: boolean }> {
   const isOnline = navigator.onLine;
   const cleanCode = code.trim().toUpperCase();
   const time = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -115,20 +117,13 @@ export async function resolveCheckin(code: string, eventId: string, eventName: s
       return { status: 'invalid' as CheckinStatus, name: cleanCode, eventName, time, isOffline: false };
     }
 
-    const first = data[0];
+    const first = data[0] as CheckinRpcRow | undefined;
     if (!first) {
       return { status: 'invalid' as CheckinStatus, name: cleanCode, eventName, time, isOffline: false };
     }
-    
-    const status: CheckinStatus = first.result === 'sucesso' ? 'valid' : first.result === 'duplicidade' ? 'already_used' : 'invalid';
-    
-    return {
-      status,
-      name: first.participant_name || cleanCode,
-      eventName: first.event_title || eventName,
-      time,
-      isOffline: false
-    };
+
+    // sucesso / duplicidade (já utilizado) / evento_passado / inválido
+    return { ...interpretCheckinRow(first, cleanCode, eventName), time, isOffline: false };
   } catch (e) {
     console.error("[Checkin] Erro RPC:", e);
     return { status: 'invalid' as CheckinStatus, name: cleanCode, eventName, time, isOffline: false };

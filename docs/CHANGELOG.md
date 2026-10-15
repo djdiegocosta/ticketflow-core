@@ -54,6 +54,25 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 14/10/2026 — Agente Claude (chat)
 
+- 🚨 **Check-in: alertas claros de ingresso de evento passado e de ingresso
+  já utilizado.** Problema real: cliente tentou entrar com ingresso de um
+  evento passado e a tela só dizia "Ingresso inválido". Agora a função
+  `checkin_ticket_for_event` devolve `evento_passado` quando o ingresso é
+  de OUTRO evento que já passou ou foi encerrado (com nome do participante
+  e evento de origem; gravado no histórico do check-in) e a tela mostra
+  "INGRESSO DE EVENTO PASSADO" (vermelho, ícone de calendário, evento de
+  origem) e "INGRESSO JÁ UTILIZADO" (âmbar, nome e hora do primeiro uso),
+  com vibração do aparelho; o histórico ganhou o rótulo de cada caso.
+  Ingresso de evento FUTURO continua "inválido" (não é "passado"). Lógica
+  em `src/lib/checkin-result.ts` (7 testes). Modo offline: o alerta
+  específico depende de consultar o servidor; offline segue "inválido".
+- 🔒 **Check-in: só a equipe valida ingresso.** `checkin_ticket_for_event`
+  não conferia o papel de quem chamava (qualquer cliente logado podia
+  marcar ingresso como usado); agora exige admin, colaborador ou
+  operador_checkin. A função antiga `checkin_ticket` (sem amarração ao
+  evento; app parou de usar em 22/09) foi fechada para visitantes e
+  logados. Testado em simulação desfeita com operador, admin e cliente.
+  Migration `20261016200041_checkin_evento_passado_e_permissao`.
 - 🐛 **Check-in: operador agora consegue sair da conta.** Problema real:
   operador de check-in que entrou não conseguia deslogar. Causa: a tela de
   check-in não usa layout (é a câmera em tela cheia), e é nos layouts que

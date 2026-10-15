@@ -87,6 +87,11 @@ export function CheckinHistoryPage() {
                     <p className="truncate text-small text-[var(--text-secondary)]">
                       {(item.events as any)?.title || "Evento não identificado"}
                     </p>
+                    {item.result === "evento_passado" ? (
+                      <p className="truncate text-small font-semibold text-[var(--error)]">Ingresso de evento passado</p>
+                    ) : item.result === "duplicidade" ? (
+                      <p className="truncate text-small font-semibold text-[var(--warning)]">Ingresso já utilizado</p>
+                    ) : null}
                   </div>
                   <span className="shrink-0 text-small text-[var(--text-secondary)]">{time}</span>
                 </div>

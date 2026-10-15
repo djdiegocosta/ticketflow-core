@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "@tanstack/react-router";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
-import { AlertTriangle, CheckCircle2, History, Keyboard, Maximize, XCircle, Wifi, WifiOff, CloudSync } from "lucide-react";
+import { AlertTriangle, CalendarX2, CheckCircle2, History, Keyboard, Maximize, XCircle, Wifi, WifiOff, CloudSync } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -15,9 +15,11 @@ import {
 } from "@/lib/checkin-data";
 import { useOperationalEvent } from "@/lib/events-queries";
 import { CheckinLogoutButton } from "@/components/checkin/CheckinLogoutButton";
+import { overlayText, vibrationFor } from "@/lib/checkin-result";
 import { offlineDB } from "@/lib/offline-db";
 
 interface OverlayState {
+  detail?: string | undefined;
   status: CheckinStatus;
   name: string;
   visible: boolean;
@@ -165,13 +167,16 @@ export function CheckinPage() {
         status: result.status,
         isOffline: result.isOffline,
       });
-      setOverlay({ status: result.status, name: result.name, visible: true });
+      setOverlay({ status: result.status, name: result.name, detail: result.detail, visible: true });
+      // Alerta tátil para o operador perceber mesmo sem olhar a tela (não existe em todo aparelho).
+      const pattern = vibrationFor(result.status);
+      if (pattern && typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(pattern);
 
       // Atualiza contagem de pendentes se necessário
       const queue = await offlineDB.getSyncQueue();
       setPendingSyncCount(queue.length);
 
-      const duration = result.status === "valid" ? 1000 : 2500;
+      const duration = result.status === "valid" ? 1000 : 3500;
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         setOverlay(null);
@@ -447,17 +452,18 @@ export function CheckinPage() {
               <CheckCircle2 className="h-40 w-40 text-white" />
             ) : overlay.status === "already_used" ? (
               <AlertTriangle className="h-40 w-40 text-white" />
+            ) : overlay.status === "past_event" ? (
+              <CalendarX2 className="h-40 w-40 text-white" />
             ) : (
               <XCircle className="h-40 w-40 text-white" />
             )}
           </div>
-          <p className="mt-8 text-heading-1 font-bold text-white">
-            {overlay.status === "valid"
-              ? overlay.name
-              : overlay.status === "already_used"
-                ? "Ingresso já utilizado"
-                : "Ingresso inválido"}
-          </p>
+          <p className="mt-8 text-heading-1 font-bold text-white">{overlayText(overlay.status, overlay.name, overlay.detail).title}</p>
+          {overlayText(overlay.status, overlay.name, overlay.detail).subtitle ? (
+            <p className="mt-3 text-heading-3 font-semibold text-white/90">
+              {overlayText(overlay.status, overlay.name, overlay.detail).subtitle}
+            </p>
+          ) : null}
         </div>
       )}
     </div>
