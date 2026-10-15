@@ -14,6 +14,7 @@ import {
   processSyncQueue,
 } from "@/lib/checkin-data";
 import { useOperationalEvent } from "@/lib/events-queries";
+import { CheckinLogoutButton } from "@/components/checkin/CheckinLogoutButton";
 import { offlineDB } from "@/lib/offline-db";
 
 interface OverlayState {
@@ -281,7 +282,7 @@ export function CheckinPage() {
 
   return (
     <div className="fixed inset-0 z-0 flex h-[100dvh] w-screen flex-col bg-black overflow-hidden">
-      {!selectedEvent ? <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[var(--bg-primary)] px-6 text-center"><div><h2 className="text-heading-2 text-[var(--text-primary)]">Nenhum evento ativo</h2><p className="mt-2 max-w-md text-small text-[var(--text-secondary)]">Crie ou publique um novo evento para iniciar o check-in.</p></div><Button onClick={() => navigate({ to: "/admin/eventos" })} className="bg-[var(--accent)] text-[var(--accent-foreground)]">Ir para Eventos</Button></div> : null}
+      {!selectedEvent ? <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[var(--bg-primary)] px-6 text-center"><div><h2 className="text-heading-2 text-[var(--text-primary)]">Nenhum evento ativo</h2><p className="mt-2 max-w-md text-small text-[var(--text-secondary)]">Crie ou publique um novo evento para iniciar o check-in.</p></div><div className="flex flex-col items-center gap-3">{userRole === "admin" || userRole === "colaborador" ? <Button onClick={() => navigate({ to: "/admin/eventos" })} className="bg-[var(--accent)] text-[var(--accent-foreground)]">Ir para Eventos</Button> : null}<CheckinLogoutButton variant="text" pendingSyncCount={pendingSyncCount} /></div></div> : null}
 
       {/* Vídeo em tela cheia ocupando 100dvh */}
       <div 
@@ -310,13 +311,16 @@ export function CheckinPage() {
           </div>
         </div>
         
-        <button
-          onClick={requestFullscreen}
-          aria-label="Tela cheia"
-          className="p-2 text-white/70 transition-colors hover:text-white"
-        >
-          <Maximize className="h-5 w-5" />
-        </button>
+        <div className="flex items-center">
+          <button
+            onClick={requestFullscreen}
+            aria-label="Tela cheia"
+            className="p-2 text-white/70 transition-colors hover:text-white"
+          >
+            <Maximize className="h-5 w-5" />
+          </button>
+          <CheckinLogoutButton pendingSyncCount={pendingSyncCount} />
+        </div>
       </header>
 
       {/* Camada de interface: Moldura única e centralizada */}

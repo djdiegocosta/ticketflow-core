@@ -16,6 +16,20 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 14/10/2026 — Agente Claude (chat)
+
+- 🐛 **Check-in: operador agora consegue sair da conta.** Problema real:
+  operador de check-in que entrou não conseguia deslogar. Causa: a tela de
+  check-in não usa layout (é a câmera em tela cheia), e é nos layouts que
+  fica o "Sair"; além disso, sem evento ativo a tela cobre tudo e o único
+  botão era "Ir para Eventos", área que o operador não pode abrir.
+  Novo `CheckinLogoutButton`: ícone discreto no cabeçalho da câmera, ao lado
+  de "Tela cheia", com confirmação; avisa se há check-ins feitos offline
+  ainda não enviados. Na tela "Nenhum evento ativo" aparece "Sair da conta"
+  (e "Ir para Eventos" só para admin/colaborador). Se o encerramento no
+  servidor falhar (sem internet), limpa a sessão só do aparelho e vai para
+  o login, para ninguém ficar preso.
+
 ## 10/10/2026 — Agente Claude (chat)
 
 - ✨ **Nova página pública `/links` (link da bio do Instagram).** Logo
