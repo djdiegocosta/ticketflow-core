@@ -2,7 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, KeyRound, LogIn, Ticket, UserPlus } from "lucide-react";
 import { Brandmark } from "@/components/Brandmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { useNextPublicEvent } from "@/lib/links-queries";
+
+// WhatsApp oficial do TicketFlow: +55 22 99785-1781
+const WHATSAPP_URL = "https://wa.me/5522997851781";
 
 const primaryClass =
   "flex min-h-14 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--accent)] px-5 py-3 text-base font-semibold text-[#111111] transition-colors hover:bg-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
@@ -89,6 +93,18 @@ export default function LinksPage() {
           </Link>
         </nav>
       </main>
+
+      <footer className="flex w-full max-w-[420px] justify-center pt-2">
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Falar com o TicketFlow no WhatsApp"
+          className="inline-flex h-14 w-14 items-center justify-center rounded-[var(--radius-full)] border border-[var(--border-default)] bg-[var(--bg-tertiary)] text-[#25D366] transition-colors hover:border-[#25D366] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]"
+        >
+          <WhatsAppIcon className="h-8 w-8" />
+        </a>
+      </footer>
     </div>
   );
 }

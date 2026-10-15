@@ -42,6 +42,9 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   `Brandmark` ganhou o tamanho `xl`. `/links` entrou na lista de rotas
   públicas do `auth-context`, para quem já está logado não ser
   redirecionado ao painel ao abrir o link. Sem mudança no banco.
+- ✨ **`/links`: botão verde do WhatsApp no rodapé**, levando ao WhatsApp
+  oficial do TicketFlow (+55 22 99785-1781, `wa.me/5522997851781`). Novo
+  componente `WhatsAppIcon` (desenho do Simple Icons, domínio público).
 
 - ✨ **Remarketing: o contato agora é salvo e existe o card "Recuperados".**
   O botão de WhatsApp tentava gravar `remarketing_contacted_at` direto na
