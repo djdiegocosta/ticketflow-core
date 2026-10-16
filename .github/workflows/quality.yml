@@ -29,3 +29,6 @@ jobs:
 
       - name: Build production
         run: bun run build
+
+      - name: Smoke test do servidor (abre páginas reais)
+        run: bun run smoke:ssr

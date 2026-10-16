@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "smoke:ssr": "VERCEL=1 vite build && node scripts/smoke-ssr.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
