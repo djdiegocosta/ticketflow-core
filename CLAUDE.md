@@ -26,6 +26,29 @@ retrabalho real neste projeto. Não repita.
 
 ---
 
+## Regra obrigatória: dependências e publicação
+
+O site já ficou ~18h fora do ar (14–15/10/2026, erro 500 em todas as páginas)
+porque a Vercel roda `npm install` e o `package-lock.json` estava
+desatualizado: ela resolveu `@tanstack/react-start` 1.169.x, que quebra o
+servidor. O teste do GitHub não pegou porque instala com `bun` (outro arquivo
+de versões). Por isso:
+
+- **Nunca** deixar as bibliotecas TanStack flutuarem. `@tanstack/react-start`,
+  `@tanstack/react-router` e `@tanstack/router-plugin` estão em versão EXATA
+  no `package.json` e precisam andar juntas (o react-start exige exatamente um
+  react-router; o router-plugin precisa aceitar esse router). Só atualizar os
+  três ao mesmo tempo.
+- Mexeu em `package.json`? Regenere o `package-lock.json` na mesma mudança e
+  prove com `npm ci` (precisa passar) — o que vai para a Vercel é o
+  `package-lock.json`, não o `bun.lock`.
+- Antes de publicar qualquer coisa: `npm run typecheck`, `bun test` e
+  **`npm run smoke:ssr`** (monta no formato da Vercel, sobe o servidor e abre
+  páginas reais; falha se alguma der 500). Esse último é o único que pega
+  queda total do site.
+- Depois de publicar: abrir o site de verdade (o deploy ficar "READY" na
+  Vercel NÃO prova que funciona) e olhar `get_runtime_logs`.
+
 ## Módulo Admin (`/admin/*`)
 
 Acesso: `admin` e `colaborador`. Layout: `src/components/layouts/AdminLayout.tsx`.
