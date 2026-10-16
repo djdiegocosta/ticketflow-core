@@ -36,6 +36,14 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   `package-lock.json` junto e validar com `npm ci`; não deixar versões
   flutuarem com `^`.** Validado antes de publicar: build no formato da
   Vercel + servidor real respondendo 9 rotas + tipos + testes.
+- ✨ **Teste de fumaça do servidor (`npm run smoke:ssr`)**, também no teste
+  automático do GitHub. Monta no formato da Vercel, sobe o servidor e abre 8
+  páginas reais (`/`, `/login`, `/links`, evento, checkout, `/cliente`,
+  `/admin`, `/checkin`); falha se alguma der 500 ou mostrar "This page didn't
+  load". Provado nos dois sentidos: com as versões travadas as 8 respondem;
+  no estado exato que derrubou o site (`ff00c46`) as 8 dão 500 e o teste
+  manda não publicar. Regra nova em `CLAUDE.md` ("dependências e
+  publicação").
 
 ## 14/10/2026 — Agente Claude (chat)
 
