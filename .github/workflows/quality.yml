@@ -18,6 +18,13 @@ jobs:
         with:
           bun-version: latest
 
+      # O app exige Node 22+ (o cliente do banco usa WebSocket nativo) e a Vercel
+      # roda Node 22+. O padrão do GitHub é o Node 20, onde o servidor não sobe.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Install dependencies
         run: bun install
 
