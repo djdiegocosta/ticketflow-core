@@ -47,7 +47,10 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
   Na primeira execução no GitHub o passo falhou: o app exige **Node 22+**
   (o cliente do banco usa WebSocket nativo; reproduzido localmente com Node
   20) e o GitHub roda Node 20 por padrão. `quality.yml` agora fixa Node 22
-  (a Vercel já roda 22+).
+  (a Vercel já roda 22+). Segunda falha no GitHub: com `GITHUB_ACTIONS`
+  definido, `VERCEL=1` sozinho não faz a montagem sair no formato da Vercel
+  (reproduzido localmente); o script agora também passa
+  `NITRO_PRESET=vercel`.
 
 ## 14/10/2026 — Agente Claude (chat)
 
