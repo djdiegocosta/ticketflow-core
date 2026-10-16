@@ -16,6 +16,27 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 15/10/2026 — Agente Claude (chat)
+
+- 🚨 **Site fora do ar por ~18h30 (14/10 23h27 → 15/10 ~18h) corrigido.**
+  Todas as páginas davam "This page didn't load" (erro 500 com
+  `createServerFn(...).middleware(...).inputValidator is not a function`).
+  Causa: o `package-lock.json` estava desatualizado em relação ao
+  `package.json`; a Vercel roda `npm install`, então resolveu versões
+  "na hora" e passou a instalar `@tanstack/react-start` 1.169.x, que quebra
+  o servidor. O teste do GitHub não pegou porque usa `bun` com outro
+  arquivo de versões (`bun.lock`, que estava coerente). Nenhuma venda
+  perdida (nenhum evento aberto para venda). Mitigação imediata: deploy
+  `5bb017b` promovido a produção. Correção definitiva: travadas em versão
+  exata `@tanstack/react-start` 1.168.60, `@tanstack/react-router` 1.170.41
+  e `@tanstack/router-plugin` 1.168.42 (precisam andar juntas: o react-start
+  exige exatamente o router 1.170.41, e o router-plugin 1.168.42 é o que
+  aceita esse router) e `package-lock.json` regenerado e provado com
+  `npm ci`. **Regra daqui pra frente: ao mexer em dependências, regenerar o
+  `package-lock.json` junto e validar com `npm ci`; não deixar versões
+  flutuarem com `^`.** Validado antes de publicar: build no formato da
+  Vercel + servidor real respondendo 9 rotas + tipos + testes.
+
 ## 14/10/2026 — Agente Claude (chat)
 
 - 🐛 **Check-in: operador agora consegue sair da conta.** Problema real:
