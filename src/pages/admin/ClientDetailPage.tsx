@@ -16,6 +16,7 @@ import { useCustomerDetail } from "@/lib/customers-queries";
 import { StatusPill } from "@/components/admin/DataTable";
 import { QuickCourtesyPanel } from "@/components/admin/clients/QuickCourtesyPanel";
 import { EditClientPanel } from "@/components/admin/clients/EditClientPanel";
+import { formatBrtDate } from "@/lib/br-datetime";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -193,6 +194,8 @@ export function ClientDetailPage({ id }: { id: string }) {
                 : "—"
             }
           />
+          {/* Quando criou a conta; se a data da conta não foi gravada, vale a do registro do cliente. */}
+          <InfoRow label="Data de cadastro" value={formatBrtDate(client.account_created_at ?? client.created_at)} />
           <InfoRow label="Último evento" value={lastEvent} />
           <InfoRow label="Última compra" value={lastPurchaseAt} />
         </div>

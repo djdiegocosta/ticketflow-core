@@ -16,6 +16,16 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ---
 
+## 16/10/2026 — Agente Claude (chat)
+
+- ✨ **"Data de cadastro" em "Dados do cliente"** (`ClientDetailPage`). Mostra
+  quando o cliente criou a conta (`account_created_at`); se essa data não foi
+  gravada, usa a do registro (`created_at`), a mesma regra que o projeto já
+  usa para contar "novos clientes". Motivo do fallback: só 16 dos 125
+  clientes têm `account_created_at`, mas todos têm `created_at`, e os dois
+  nunca diferem mais de 1 dia. Data no fuso de Brasília (função
+  `formatBrtDate` que já existia; 3 testes novos protegem o fuso).
+
 ## 15/10/2026 — Agente Claude (chat)
 
 - 🚨 **Site fora do ar por ~18h30 (14/10 23h27 → 15/10 ~18h) corrigido.**
