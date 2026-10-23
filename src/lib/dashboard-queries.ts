@@ -64,7 +64,7 @@ export function useAudienceStats(eventId?: string | null) {
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, topCities: [], totalViews: 0 };
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago");
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
@@ -80,8 +80,48 @@ export function useAudienceStats(eventId?: string | null) {
       (customers ?? []).forEach((c) => { if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); } if (c.cidade) cityMap.set(c.cidade, (cityMap.get(c.cidade) ?? 0) + 1); if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++; if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++; });
       const genderTotal = femaleCount + maleCount;
       const genderSplit = genderTotal > 0 ? { femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100) } : null;
-      const purchases = new Map<string, number>(); (paidSales ?? []).forEach((s) => { if (s.customer_id) purchases.set(s.customer_id, (purchases.get(s.customer_id) ?? 0) + 1); });
-      const recurringCustomers = Array.from(purchases.values()).filter((n) => n > 1).length;
+      // Recorrência significa compra paga em pelo menos dois eventos distintos.
+      // Usamos somente compradores identificados e excluímos cortesias; vendas sem
+      // customer_id não podem ser associadas com segurança a uma pessoa.
+      const allSales: { customer_id: string | null; event_id: string | null }[] = [];
+      const pageSize = 1000;
+      for (let offset = 0; ; offset += pageSize) {
+        const { data, error: recurrenceError } = await supabase
+          .from("sales")
+          .select("customer_id, event_id")
+          .eq("organization_id", organizationId as string)
+          .eq("status", "pago")
+          .eq("is_courtesy", false)
+          .not("customer_id", "is", null)
+          .not("event_id", "is", null)
+          .range(offset, offset + pageSize - 1);
+        if (recurrenceError) throw recurrenceError;
+        const page = data ?? [];
+        allSales.push(...page);
+        if (page.length < pageSize) break;
+      }
+
+      const eventsByCustomer = new Map<string, Set<string>>();
+      allSales.forEach((sale) => {
+        if (!sale.customer_id || !sale.event_id) return;
+        const events = eventsByCustomer.get(sale.customer_id) ?? new Set<string>();
+        events.add(sale.event_id);
+        eventsByCustomer.set(sale.customer_id, events);
+      });
+      const scopedRecurrenceSales = eventId
+        ? allSales.filter((sale) => sale.event_id === eventId)
+        : allSales;
+      const currentBuyerIds = new Set(
+        scopedRecurrenceSales
+          .map((sale) => sale.customer_id)
+          .filter((customerId): customerId is string => !!customerId),
+      );
+      const recurringCustomers = Array.from(currentBuyerIds).filter(
+        (customerId) => (eventsByCustomer.get(customerId)?.size ?? 0) >= 2,
+      ).length;
+      const recurringRate = currentBuyerIds.size > 0
+        ? Math.round((recurringCustomers / currentBuyerIds.size) * 1000) / 10
+        : null;
       const ageRange = ages.length ? { min: Math.min(...ages), max: Math.max(...ages) } : null;
       const topCities = Array.from(cityMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([city, count]) => ({ city, count }));
 
@@ -90,7 +130,7 @@ export function useAudienceStats(eventId?: string | null) {
       else viewsQuery = viewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
       const { count: totalViews } = await viewsQuery;
 
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, topCities, totalViews: totalViews ?? 0 };
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalViews: totalViews ?? 0 };
     },
   });
 }
