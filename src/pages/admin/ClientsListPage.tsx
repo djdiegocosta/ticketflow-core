@@ -207,7 +207,9 @@ export function ClientsListPage() {
         return (av - bv) * dir;
       }
       if (sortKey === "totalSpent") return (a.total_spent - b.total_spent) * dir;
-      return (((a as any)[sortKey] as number) - ((b as any)[sortKey] as number)) * dir;
+      if (sortKey === "totalTickets") return (a.total_tickets - b.total_tickets) * dir;
+      if (sortKey === "age") return ((a.age ?? -1) - (b.age ?? -1)) * dir;
+      return 0;
     });
   }, [clients, search, sortKey, sortDir]);
 
