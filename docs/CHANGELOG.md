@@ -18,7 +18,7 @@ em 1 linha, hash do commit entre parênteses. Adicionar sempre no topo.
 
 ## 23/10/2026 — Correção em branch (validação pendente)
 
-- 🐛 **Clientes recorrentes no dashboard:** o indicador agora considera compras pagas e não cortesia em eventos distintos da mesma organização, usando somente clientes identificados. Exibe também a taxa entre compradores identificados do escopo atual. Vendas sem vínculo com cliente ficam fora da taxa; mudança registrada no commit `b02dd88`. Ainda não publicado em produção e aguardando typecheck/testes.
+- 🐛 **Clientes recorrentes no dashboard:** o indicador agora considera compras pagas e não cortesia em eventos distintos da mesma organização, usando somente clientes identificados. Exibe também a taxa entre compradores identificados do escopo atual. Vendas sem vínculo com cliente ficam fora da taxa; mudança registrada no commit `8d7d21a`. Ainda não publicado em produção e aguardando typecheck/testes.
 
 ## 16/10/2026 — Agente Claude (chat)
 
