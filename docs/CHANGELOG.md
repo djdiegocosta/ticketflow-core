@@ -1,3 +1,9 @@
+## 23/10/2026 — Correções da área Clientes
+
+- 🐛 **Clientes:** corrigida a ordenação por quantidade de ingressos; histórico ordenado pela data real da venda; status expirado identificado como “Expirado” e estados desconhecidos não são classificados como pendentes.
+- ⚡ **Desempenho:** métricas agregadas por cliente em uma passagem, evitando filtrar e ordenar o histórico repetidamente.
+- 🔒 Nenhuma alteração em banco, políticas RLS ou dependências nesta mudança. A auditoria de segurança do Supabase permanece uma verificação separada.
+
 ## 23/10/2026 — Correção em preparação
 
 - 🐛 **Estatísticas do dashboard:** o retorno usado quando nenhum evento está selecionado agora inclui `expiredSales: 0`, mantendo o formato consistente com a consulta normal. Correção de tipagem preexistente na `main`; commit de código `19ada41`. Aguardando validações automatizadas e revisão.
