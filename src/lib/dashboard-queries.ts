@@ -108,10 +108,13 @@ export function useAudienceStats(eventId?: string | null) {
         events.add(sale.event_id);
         eventsByCustomer.set(sale.customer_id, events);
       });
+      const scopedRecurrenceSales = eventId
+        ? allSales.filter((sale) => sale.event_id === eventId)
+        : allSales;
       const currentBuyerIds = new Set(
-        (paidSales ?? [])
-          .filter((sale) => sale.customer_id)
-          .map((sale) => sale.customer_id as string),
+        scopedRecurrenceSales
+          .map((sale) => sale.customer_id)
+          .filter((customerId): customerId is string => !!customerId),
       );
       const recurringCustomers = Array.from(currentBuyerIds).filter(
         (customerId) => (eventsByCustomer.get(customerId)?.size ?? 0) >= 2,
