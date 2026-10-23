@@ -1,3 +1,10 @@
+## Área Clientes — correções em revisão (23/10/2026)
+- 🛠️ Ordenação por ingressos usa o campo `total_tickets` correto.
+- 🛠️ Histórico ordenado por `created_at` decrescente antes de identificar última compra e último evento.
+- 🛠️ Status `expirado` exibido como “Expirado”; status não reconhecido não é mascarado como pendente.
+- ⚡ Estatísticas agregadas por cliente em uma passagem para reduzir processamento na listagem.
+- ⏳ Requer CI completo (typecheck, testes, build e smoke SSR) e revisão específica das políticas RLS antes de merge/publicação.
+
 ## Dashboard — tipo das estatísticas de vendas (23/10/2026)
 - 🛠️ Correção proposta na branch `fix/expired-sales-stats-default`: o retorno antecipado de `useSalesStats` quando `eventId === null` inclui `expiredSales: 0`, alinhando sua estrutura ao retorno normal.
 - ℹ️ A incompatibilidade de tipos já existia na `main`; não foi introduzida pela otimização da área Clientes (PR #46).
