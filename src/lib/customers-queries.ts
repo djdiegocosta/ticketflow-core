@@ -73,22 +73,60 @@ export function useCustomers() {
 
       if (statsError) throw statsError;
 
-      return (data || []).map((c: any) => {
-        const paidSales = (salesStats || []).filter((s: any) => s.customer_id === c.id);
-        const uniqueEvents = new Set(paidSales.map((s: any) => s.event_id)).size;
-        const totalTickets = paidSales.reduce((sum: number, s: any) => sum + (s.tickets?.length || 0), 0);
-        const totalSpent = paidSales.reduce((sum: number, s: any) => sum + Number(s.total_amount), 0);
-        
-        const lastSale = paidSales.length > 0 
-          ? [...paidSales].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-          : null;
+      // Agrega as vendas pagas em uma única passagem, evitando filtrar e ordenar
+      // todo o histórico novamente para cada cliente.
+      type CustomerStats = {
+        eventIds: Set<string>;
+        totalTickets: number;
+        totalSpent: number;
+        lastSaleAt: number;
+        lastEventName: string | null;
+        lastPurchaseAt: string | null;
+      };
 
-        let age = null;
+      const statsByCustomer = new Map<string, CustomerStats>();
+
+      for (const sale of salesStats || []) {
+        if (!sale.customer_id) continue;
+
+        let stats = statsByCustomer.get(sale.customer_id);
+        if (!stats) {
+          stats = {
+            eventIds: new Set<string>(),
+            totalTickets: 0,
+            totalSpent: 0,
+            lastSaleAt: Number.NEGATIVE_INFINITY,
+            lastEventName: null,
+            lastPurchaseAt: null,
+          };
+          statsByCustomer.set(sale.customer_id, stats);
+        }
+
+        if (sale.event_id) stats.eventIds.add(sale.event_id);
+        stats.totalTickets += sale.tickets?.length || 0;
+        stats.totalSpent += Number(sale.total_amount || 0);
+
+        const saleTimestamp = new Date(sale.created_at).getTime();
+        if (saleTimestamp > stats.lastSaleAt) {
+          stats.lastSaleAt = saleTimestamp;
+          stats.lastEventName = sale.events?.title || null;
+          stats.lastPurchaseAt = sale.created_at || null;
+        }
+      }
+
+      const now = new Date();
+
+      return (data || []).map((c: any) => {
+        const stats = statsByCustomer.get(c.id);
+
+        let age: number | null = null;
         if (c.data_nascimento) {
           const birth = new Date(c.data_nascimento);
-          const now = new Date();
           age = now.getFullYear() - birth.getFullYear();
-          if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {
+          if (
+            now.getMonth() < birth.getMonth() ||
+            (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())
+          ) {
             age--;
           }
         }
@@ -101,11 +139,11 @@ export function useCustomers() {
           age,
           birth_date: c.data_nascimento,
           city: c.cidade,
-          total_events: uniqueEvents,
-          total_tickets: totalTickets,
-          total_spent: totalSpent,
-          last_event_name: lastSale?.events?.title || null,
-          last_purchase_at: lastSale?.created_at || null,
+          total_events: stats?.eventIds.size || 0,
+          total_tickets: stats?.totalTickets || 0,
+          total_spent: stats?.totalSpent || 0,
+          last_event_name: stats?.lastEventName || null,
+          last_purchase_at: stats?.lastPurchaseAt || null,
           created_at: c.created_at,
         };
       });
