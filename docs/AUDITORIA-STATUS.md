@@ -1,8 +1,12 @@
 # TicketFlow — Status de Auditoria e Refinamentos
-**Última atualização:** 10/10/2026
+**Última atualização:** 23/10/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
+
+## Dashboard — clientes recorrentes (23/10/2026)
+- ⏳ Correção registrada na branch `fix/audience-recurring-customers`: recorrência passa a significar comprador identificado com compra paga e não cortesia em pelo menos dois eventos distintos da mesma organização; a taxa usa como denominador os compradores identificados do escopo atual. Vendas sem `customer_id` não são inferidas por nome/contato.
+- ⏳ Ainda não validado por typecheck/testes nem publicado. Não considerar resolvido em produção até a validação e a publicação serem feitas separadamente.
 
 ---
 
