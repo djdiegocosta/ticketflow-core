@@ -1,3 +1,7 @@
+## 23/10/2026 — Correção em preparação
+
+- 🐛 **Estatísticas do dashboard:** o retorno usado quando nenhum evento está selecionado agora inclui `expiredSales: 0`, mantendo o formato consistente com a consulta normal. Correção de tipagem preexistente na `main`; commit de código `19ada41`. Aguardando validações automatizadas e revisão.
+
 ## 23/10/2026 — Indicador operacional de pagamentos (em PR)
 
 - ✨ **Dashboard — Pendentes:** removido o medidor percentual; o card mantém quantidade e valor aguardando pagamento e passa a mostrar também o total de vendas expiradas no evento/escopo atual. Reutiliza os status existentes, sem migration; alerta de falhas recentes de Pix já existente permanece. Código: `4d92ccd`. Validações automatizadas ainda pendentes.
