@@ -64,7 +64,7 @@ export function useAudienceStats(eventId?: string | null) {
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalViews: 0 };
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalPageViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago");
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
@@ -125,12 +125,13 @@ export function useAudienceStats(eventId?: string | null) {
       const ageRange = ages.length ? { min: Math.min(...ages), max: Math.max(...ages) } : null;
       const topCities = Array.from(cityMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([city, count]) => ({ city, count }));
 
-      let viewsQuery = supabase.from("event_page_views" as any).select("id", { count: "exact", head: true });
-      if (eventId) viewsQuery = viewsQuery.eq("event_id", eventId);
-      else viewsQuery = viewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
-      const { count: totalViews } = await viewsQuery;
+      // Conta registros de visualização, não visitantes únicos: cada carregamento da página pode gerar uma linha.
+      let pageViewsQuery = supabase.from("event_page_views" as any).select("id", { count: "exact", head: true });
+      if (eventId) pageViewsQuery = pageViewsQuery.eq("event_id", eventId);
+      else pageViewsQuery = pageViewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
+      const { count: totalPageViews } = await pageViewsQuery;
 
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalViews: totalViews ?? 0 };
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalPageViews: totalPageViews ?? 0 };
     },
   });
 }
