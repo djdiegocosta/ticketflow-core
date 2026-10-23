@@ -71,7 +71,11 @@ export function ClientDetailPage({ id }: { id: string }) {
     );
   }
 
-  const history = (client.sales || []).map((s: any) => {
+  const sortedSales = [...(client.sales || [])].sort(
+    (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+
+  const history = sortedSales.map((s: any) => {
     const paidTickets = (s.tickets || []).filter(
       (t: any) => t.status === "valido" || t.status === "utilizado",
     );
@@ -88,7 +92,11 @@ export function ClientDetailPage({ id }: { id: string }) {
           ? "Pago"
           : s.status === "cancelado"
             ? "Cancelado"
-            : "Pendente",
+            : s.status === "expirado"
+              ? "Expirado"
+              : s.status === "pendente"
+                ? "Pendente"
+                : "Desconhecido",
       createdAt: new Date(s.created_at).toLocaleDateString("pt-BR"),
     };
   });
@@ -119,8 +127,9 @@ export function ClientDetailPage({ id }: { id: string }) {
     }
   }
 
-  const lastPurchaseAt = history && history.length > 0 ? history[0]?.createdAt || "—" : "—";
-  const lastEvent = history && history.length > 0 ? history[0]?.eventName || "—" : "—";
+  const latestHistory = history[0];
+  const lastPurchaseAt = latestHistory?.createdAt || "—";
+  const lastEvent = latestHistory?.eventName || "—";
 
   return (
     <div className="space-y-6">
@@ -239,9 +248,11 @@ export function ClientDetailPage({ id }: { id: string }) {
                         ? "accent"
                         : sale.status === "Cortesia"
                           ? "warning"
-                          : sale.status === "Cancelado"
+                          : sale.status === "Cancelado" || sale.status === "Expirado"
                             ? "error"
-                            : "warning"
+                            : sale.status === "Pendente"
+                              ? "warning"
+                              : "neutral"
                     }
                   >
                     {sale.status}
