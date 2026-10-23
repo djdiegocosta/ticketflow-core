@@ -1,4 +1,8 @@
 # TicketFlow — Status de Auditoria e Refinamentos
+
+## Dashboard — principais cidades dos compradores (23/10/2026)
+- 🛠️ Alteração proposta na branch `fix/audience-top-cities` (código: `7eec21b`): lista considera clientes identificados com ao menos uma venda paga na organização/evento em escopo; agrupa nomes após remover espaços extras e ignorar diferenças entre maiúsculas/minúsculas. Exibe até três cidades, número de compradores e percentual entre compradores com cidade preenchida.
+- ℹ️ A cidade é a informada no cadastro do comprador e não representa a localização real de quem visita a página. Nenhuma geolocalização, migration ou alteração de banco foi adicionada. Validações automatizadas ainda não foram executadas neste ambiente.
 **Última atualização:** 23/10/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 

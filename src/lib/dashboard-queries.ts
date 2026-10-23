@@ -65,7 +65,7 @@ export function useAudienceStats(eventId?: string | null) {
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
       if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalPageViews: 0 };
-      let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago");
+      let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago").eq("organization_id", organizationId as string);
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
       if (salesError) throw salesError;
@@ -75,9 +75,21 @@ export function useAudienceStats(eventId?: string | null) {
         : supabase.from("customers").select("id, data_nascimento, cidade, sexo, created_at");
       const { data: customers, error } = customersQuery ? await customersQuery : { data: [], error: null };
       if (error) throw error;
-      const now = new Date(); const ages: number[] = []; const cityMap = new Map<string, number>(); let newCustomers = 0;
+      const now = new Date(); const ages: number[] = []; const cityMap = new Map<string, { city: string; count: number }>(); let newCustomers = 0;
       let femaleCount = 0; let maleCount = 0;
-      (customers ?? []).forEach((c) => { if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); } if (c.cidade) cityMap.set(c.cidade, (cityMap.get(c.cidade) ?? 0) + 1); if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++; if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++; });
+      const paidBuyerIds = new Set(customerIds);
+      (customers ?? []).forEach((c) => {
+        if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); }
+        if (paidBuyerIds.has(c.id) && typeof c.cidade === "string" && c.cidade.trim()) {
+          const city = c.cidade.trim().replace(/\s+/g, " ");
+          const key = city.toLocaleLowerCase("pt-BR");
+          const existing = cityMap.get(key);
+          if (existing) existing.count += 1;
+          else cityMap.set(key, { city, count: 1 });
+        }
+        if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++;
+        if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++;
+      });
       const genderTotal = femaleCount + maleCount;
       const genderSplit = genderTotal > 0 ? { femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100) } : null;
       // Recorrência significa compra paga em pelo menos dois eventos distintos.
@@ -123,7 +135,11 @@ export function useAudienceStats(eventId?: string | null) {
         ? Math.round((recurringCustomers / currentBuyerIds.size) * 1000) / 10
         : null;
       const ageRange = ages.length ? { min: Math.min(...ages), max: Math.max(...ages) } : null;
-      const topCities = Array.from(cityMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([city, count]) => ({ city, count }));
+      const buyersWithCity = Array.from(cityMap.values()).reduce((sum, item) => sum + item.count, 0);
+      const topCities = Array.from(cityMap.values())
+        .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city, "pt-BR"))
+        .slice(0, 3)
+        .map(({ city, count }) => ({ city, count, percentage: buyersWithCity > 0 ? Math.round((count / buyersWithCity) * 1000) / 10 : 0 }));
 
       // Conta registros de visualização, não visitantes únicos: cada carregamento da página pode gerar uma linha.
       let pageViewsQuery = supabase.from("event_page_views" as any).select("id", { count: "exact", head: true });

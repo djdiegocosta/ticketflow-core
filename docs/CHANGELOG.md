@@ -1,3 +1,7 @@
+## 23/10/2026 — Principais cidades dos compradores (em PR)
+
+- 🎨 **Dashboard — Dados do público:** lista compacta das três cidades mais frequentes entre compradores com venda paga, com contagem e percentual entre compradores com cidade preenchida; normaliza espaços e diferenças de caixa. Cidade é a informada no cadastro, não geolocalização. Código inicial `7eec21b`; validações automatizadas ainda pendentes.
+
 ## 23/10/2026 — Correção da métrica de visualizações
 - 🐛 **Dashboard — Dados do público:** rótulo corrigido para “Visualizações da página”, pois `track_event_view` grava uma linha por carregamento e não identifica visitantes únicos. Sem alterações de layout ou banco nesta correção.
 
