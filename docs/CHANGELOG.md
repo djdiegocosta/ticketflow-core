@@ -1,3 +1,7 @@
+## 23/10/2026 — Indicador operacional de pagamentos (em PR)
+
+- ✨ **Dashboard — Pendentes:** removido o medidor percentual; o card mantém quantidade e valor aguardando pagamento e passa a mostrar também o total de vendas expiradas no evento/escopo atual. Reutiliza os status existentes, sem migration; alerta de falhas recentes de Pix já existente permanece. Código: `4d92ccd`. Validações automatizadas ainda pendentes.
+
 ## 23/10/2026 — Principais cidades dos compradores (em PR)
 
 - 🎨 **Dashboard — Dados do público:** lista compacta das três cidades mais frequentes entre compradores com venda paga, com contagem e percentual entre compradores com cidade preenchida; normaliza espaços e diferenças de caixa. Cidade é a informada no cadastro, não geolocalização. Código inicial `7eec21b`; validações automatizadas ainda pendentes.
