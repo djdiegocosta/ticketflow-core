@@ -204,12 +204,27 @@ export function useSalesStats(eventId?: string | null) {
       const { data: pendingData, error: pendingError } = await pendingQuery;
       if (pendingError) throw pendingError;
 
+      // Vendas expiradas são contadas separadamente das pendentes. Como a main
+      // ainda não garante um timestamp confiável da transição para expirado,
+      // mostramos o total do evento/escopo, sem rotulá-lo como "últimas 24h".
+      let expiredQuery = supabase
+        .from("sales")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", orgId)
+        .eq("status", "expirado")
+        .eq("is_courtesy", false);
+      if (eventId && eventId !== "overview") expiredQuery = expiredQuery.eq("event_id", eventId);
+
+      const { count: expiredCount, error: expiredError } = await expiredQuery;
+      if (expiredError) throw expiredError;
+
       const stats = {
         totalRevenue: 0,
         totalSales: 0,
         totalTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0), 0),
         pendingSales: 0,
         pendingAmount: 0,
+        expiredSales: expiredCount ?? 0,
         checkins: (viewData || []).reduce((acc, v) => acc + (v.checkins_vendidos || 0) + (v.checkins_cortesias || 0), 0),
         validTickets: (viewData || []).reduce((acc, v) => acc + (v.ingressos_vendidos || 0) + (v.cortesias_emitidas || 0), 0),
         cancelledSales: 0,
