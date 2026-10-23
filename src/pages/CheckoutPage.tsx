@@ -104,7 +104,11 @@ export default function CheckoutPage() {
     return () => { cancelled = true; };
   }, [search.resume, navigate, slug]);
 
-  const batch = availableBatches?.find(b => b.id === search.batchId) || availableBatches?.[0];
+  // Com mais de um lote ativo, nunca trocar o lote em silêncio: se o cliente escolheu um
+  // lote específico e ele saiu de venda (esgotou ou venceu), avisamos em vez de cobrar
+  // outro lote, com outro preço. Sem lote na URL (link direto), usa o primeiro disponível.
+  const requestedBatch = search.batchId ? availableBatches?.find(b => b.id === search.batchId) : undefined;
+  const batch = search.batchId ? requestedBatch : availableBatches?.[0];
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -320,6 +324,30 @@ export default function CheckoutPage() {
       <MobileLayout showFooter={false}>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)]" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  // Lote escolhido não está mais à venda (só antes de iniciar o pagamento).
+  if (
+    availableBatches !== undefined &&
+    !!search.batchId &&
+    !requestedBatch &&
+    step !== 'payment' &&
+    !currentSaleId &&
+    !isCreatingSale
+  ) {
+    return (
+      <MobileLayout showFooter={false} headerContent={<div className="text-center font-semibold text-small">Checkout</div>}>
+        <div className="flex flex-col items-center gap-4 px-5 py-16 text-center">
+          <h2 className="text-heading-2 font-bold text-[var(--text-primary)]">Este ingresso não está mais disponível</h2>
+          <p className="text-small text-[var(--text-secondary)]">
+            O lote que você escolheu acabou ou saiu de venda. Veja os ingressos que ainda estão disponíveis.
+          </p>
+          <Button asChild className="bg-[var(--accent)] text-[#111111] hover:bg-[var(--accent-hover)]">
+            <Link to="/e/$slug" params={{ slug }}>Ver ingressos disponíveis</Link>
+          </Button>
         </div>
       </MobileLayout>
     );

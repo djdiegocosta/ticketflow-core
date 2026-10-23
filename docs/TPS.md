@@ -353,8 +353,8 @@ Princípio: eliminar poluição visual, um assunto por tela. Aplica-se também �
 **Editar evento:** mesmo formato de Steps, reaproveitando os dados já preenchidos. Header da tela (fora dos steps): link "Abrir página pública" (ExternalLink, `/e/:slug` em nova aba) — visível quando o evento está Publicado. Agora funcional, já que a página pública existe.
 
 **Virada de lote:**
-- **Automática por data/horário** — consequência natural de cada lote ter início/fim; ao expirar, o próximo lote (ordem cronológica) assume. **Implementado:** função `get_available_batches` no banco calcula isso em cascata (lote N só aparece quando todos os anteriores esgotaram OU passaram da data) — a página pública e o checkout consultam essa função, nunca a lista bruta de lotes.
-- **Automática por esgotamento** — se o lote atual esgotar o estoque antes da data programada, o sistema avança automaticamente para o próximo lote (evita perda de venda). Implementado junto com o item acima.
+- **Todos os lotes ativos aparecem juntos (desde 23/10/2026).** A função `get_available_batches` no banco devolve todo lote de venda que esteja dentro do período configurado (início/fim) e com estoque; o cliente escolhe qualquer um deles, mesmo que os anteriores não tenham esgotado. A regra antiga em fila (lote N só aparecia quando os anteriores esgotavam ou venciam) foi removida a pedido do dono. Ordem de exibição: data de início e, em empate, o mais barato primeiro (esse é o lote selecionado por padrão). A página pública e o checkout consultam essa função, nunca a lista bruta de lotes.
+- **Virada de lote por data/esgotamento** — continua acontecendo naturalmente: lote vencido ou esgotado sai da lista e lote futuro entra quando chega o início. Atenção: lotes cadastrados **sem data de início/fim** ficam sempre visíveis enquanto houver estoque.
 - Lotes marcados como **Cortesia** (ver 8.6) nunca aparecem nessa lista — excluídos por padrão na função de disponibilidade.
 - **Virada Expressa (manual)** — botão na tela de detalhe do evento para antecipar a virada manualmente. **Pendente** — ainda não implementado.
 

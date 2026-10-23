@@ -97,13 +97,13 @@ Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴
 - ✅ `update_customer` corrigida: exigia papel de admin até para o cliente editar o próprio perfil (bug confirmado via `pg_get_functiondef`) — agora aceita o dono do registro OU admin da organização. Parâmetros de Cidade/Instagram/Sexo passam a preservar valor atual quando não enviados (antes o painel admin apagava esses campos ao editar só nome/e-mail/WhatsApp).
 - ✅ Bug "Data de Nascimento obrigatória mesmo sendo opcional" — causa raiz confirmada: campo vazio enviava texto vazio para um parâmetro do tipo `date` no banco, que rejeita a conversão. Corrigido enviando nulo.
 - ✅ Banner da Vitrine não aparecendo — investigado e não era bug: banner ativo sem link de destino cadastrado (comportamento intencional do sistema).
-- ✅ Função `get_available_batches` criada — lotes liberados em cascata (esgotamento ou data), cortesia sempre excluída.
+- ✅ Função `get_available_batches` criada — lotes liberados em cascata (esgotamento ou data), cortesia sempre excluída. (Regra em cascata substituída em 23/10/2026: ver rodada abaixo.)
 - ✅ Segurança (achados apontados pelo linter do Lovable, resolvidos via SQL direto em vez de correção automática): bucket `event-images` sem validação de organização (corrigido); tabela `checkout_rate_limits` com RLS desabilitada, expondo WhatsApp/IP publicamente (corrigido); confirmado que não há outras tabelas sem RLS nem views com SECURITY DEFINER problemáticas.
 
 ### Entregue (prompt fornecido), aguardando confirmação de teste
 - ⏳ Cidade restrita a municípios do RJ + opção "Outra" com texto livre.
 - ⏳ Seletores nativos de data/hora substituídos por entrada manual com máscara, em todos os pontos do sistema (Criar/Editar Evento, Cadastro de Cliente, Perfil).
-- ⏳ Conexão da tela pública/checkout com `get_available_batches` (a função já existe e funciona; falta confirmar que a tela para de listar todos os lotes juntos).
+- ✅ Conexão da tela pública/checkout com `get_available_batches` — confirmada; a regra mudou em 23/10/2026 para listar todos os lotes ativos (ver rodada abaixo).
 - ⏳ Bug do logo "TicketFlow" invisível no tema claro do Login — causa raiz encontrada (cor fixa em branco) e correção repassada.
 - ⏳ Campo Sexo adicionado às telas de Cadastro e Perfil (coluna e função já prontas no banco desde rodada anterior).
 
@@ -196,3 +196,11 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ✅ Página pública `/links` (link da bio do Instagram) criada; compila e passa no typecheck.
 - ⏳ `/links`: conferir no celular (iPhone e Android, navegador interno do Instagram) — não foi possível ver a página renderizada durante o desenvolvimento.
 - 🔴 `/links`: com 2 ou mais eventos à venda, "Comprar ingresso" leva só ao mais próximo. Decidir se vira uma lista de eventos.
+
+## Rodada — Lotes simultâneos na página pública (23/10/2026)
+- ✅ Bug: com dois lotes ativos ao mesmo tempo (caso real: "1º Lote" R$ 25 e "Lote Especial + COPO" R$ 35 no `halloween-fantasy-2026`), só um aparecia para o cliente, porque `get_available_batches` liberava os lotes em fila. Agora aparecem todos os lotes de venda dentro do período e com estoque; cortesia segue fora. Nova migration `20261023190000_get_available_batches_all_active.sql` (mesma assinatura e mesmos grants).
+- ✅ Checkout (`create_pending_sale`) já validava o lote escolhido de forma independente (evento publicado, lote do evento, não cortesia, período, preço do lote, baixa atômica de estoque); não foi alterado.
+- ✅ Tela: se o lote escolhido saiu de venda antes do pagamento, o checkout avisa "Este ingresso não está mais disponível" em vez de trocar em silêncio para outro lote (com outro preço); a tela do evento usa sempre o lote realmente destacado.
+- ⏳ Conferir no celular: abrir `/e/halloween-fantasy-2026`, ver os dois lotes, escolher cada um e chegar ao Pix com o valor certo (R$ 25 e R$ 35).
+- 🔴 Atenção: lotes cadastrados sem data de início/fim ficam sempre visíveis enquanto houver estoque (efeito da nova regra).
+- 🔴 `create_pending_sale` não vende lote com estoque vazio (`quantity` nulo = sem limite); hoje só existe uma cortesia assim, num evento encerrado. Se um dia houver lote de venda sem limite, ajustar a função.

@@ -76,10 +76,11 @@ export default function EventPage() {
   const soldOut = availableBatches !== undefined && availableBatches.length === 0;
 
   const handleBuy = () => {
-    if (!selectedBatchId) return;
+    // Usa o lote realmente exibido como selecionado (se o escolhido saiu de venda, vale o primeiro).
+    if (!selectedBatch) return;
     navigate({
       to: `/e/${event.slug}/checkout`,
-      search: { batchId: selectedBatchId, qty: '1' }
+      search: { batchId: selectedBatch.id, qty: '1' }
     });
   };
 
@@ -141,7 +142,7 @@ export default function EventPage() {
                   key={batch.id}
                   onClick={() => setSelectedBatchId(batch.id)}
                   className={`flex items-center justify-between rounded-[var(--radius-md)] border-2 p-4 transition-all ${
-                    selectedBatchId === batch.id
+                    selectedBatch?.id === batch.id
                       ? 'border-[var(--accent)] bg-[var(--accent-muted)]'
                       : 'border-[var(--border-subtle)] bg-[var(--bg-secondary)]'
                   }`}
@@ -150,7 +151,7 @@ export default function EventPage() {
                     <span className="font-semibold text-[var(--text-primary)]">{batch.name}</span>
                     <span className="text-small text-[var(--text-secondary)]">R$ {batch.price.toFixed(2)}</span>
                   </div>
-                  {selectedBatchId === batch.id && (
+                  {selectedBatch?.id === batch.id && (
                     <div className="h-5 w-5 rounded-full bg-[var(--accent)] flex items-center justify-center">
                       <div className="h-2 w-2 rounded-full bg-[#111111]" />
                     </div>
@@ -167,7 +168,7 @@ export default function EventPage() {
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 py-4 safe-area-bottom shadow-lg">
         <Button
           onClick={handleBuy}
-          disabled={!selectedBatchId || soldOut}
+          disabled={!selectedBatch || soldOut}
           className="h-14 w-full bg-[var(--accent)] text-[#111111] font-bold text-lg hover:bg-[var(--accent-hover)] transition-all active:scale-[0.98]"
         >
           <span>{soldOut ? 'Esgotado' : 'Comprar agora'}</span>

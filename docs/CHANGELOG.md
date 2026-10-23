@@ -1,3 +1,9 @@
+## 23/10/2026 — Lotes simultâneos na página pública
+
+- 🐛 **Lotes: com dois lotes ativos ao mesmo tempo, só um aparecia para o cliente.** A função `get_available_batches` liberava os lotes em fila (o lote N só aparecia quando os anteriores esgotavam ou venciam). Caso real: no `halloween-fantasy-2026`, "1º Lote" (R$ 25) estava escondido e só o "Lote Especial + COPO" (R$ 35) aparecia. Nova migration `20261023190000_get_available_batches_all_active.sql`: aparece todo lote de venda dentro do período (`starts_at`/`ends_at`) e com estoque; cortesia segue fora; mesma assinatura e mesmos grants. Ordem: início do lote e, em empate, o mais barato primeiro. Testado em simulação com rollback: lista com 2 lotes ativos, checkout de cada um com preço e baixa de estoque corretos, e recusa de cortesia, lote futuro, vencido, esgotado e estoque excedido.
+- 🔒 **Checkout:** o servidor (`create_pending_sale`) já validava o lote escolhido; não foi alterado. Na tela, se o lote escolhido sai de venda antes do pagamento, aparece "Este ingresso não está mais disponível" em vez de trocar em silêncio para outro lote com outro preço. A tela do evento passa a destacar e enviar sempre o lote realmente exibido como selecionado.
+- 📝 `docs/TPS.md` atualizado: a regra em fila foi substituída por "todos os lotes ativos aparecem juntos".
+
 ## 23/10/2026 — Correções da área Clientes
 
 - 🐛 **Clientes:** corrigida a ordenação por quantidade de ingressos; histórico ordenado pela data real da venda; status expirado identificado como “Expirado” e estados desconhecidos não são classificados como pendentes.
