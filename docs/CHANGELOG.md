@@ -5,6 +5,10 @@
 ## 23/10/2026 — Correção da métrica de visualizações
 - 🐛 **Dashboard — Dados do público:** rótulo corrigido para “Visualizações da página”, pois `track_event_view` grava uma linha por carregamento e não identifica visitantes únicos. Sem alterações de layout ou banco nesta correção.
 
+## 23/10/2026 — Dados demográficos mais representativos (em PR)
+
+- 🎨 **Dashboard — Dados do público:** substitui extremos mínimo–máximo por faixas etárias, exibe cobertura de data de nascimento e inclui “Não informado” na distribuição de sexo; percentuais usam a base de compradores identificados do escopo. Testes automatizados ainda pendentes.
+
 # TicketFlow — CHANGELOG
 
 Registro cronológico de mudanças reais no projeto. **Mais recente no topo.**
