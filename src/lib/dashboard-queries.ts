@@ -64,7 +64,7 @@ export function useAudienceStats(eventId?: string | null) {
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, topCities: [], totalViews: 0 };
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago");
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
