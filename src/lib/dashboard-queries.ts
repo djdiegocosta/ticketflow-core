@@ -64,7 +64,7 @@ export function useAudienceStats(eventId?: string | null) {
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalPageViews: 0 };
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, ageBands: [], ageCoverage: { known: 0, missing: 0, percentage: 0 }, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalPageViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago").eq("organization_id", organizationId as string);
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
@@ -76,10 +76,10 @@ export function useAudienceStats(eventId?: string | null) {
       const { data: customers, error } = customersQuery ? await customersQuery : { data: [], error: null };
       if (error) throw error;
       const now = new Date(); const ages: number[] = []; const cityMap = new Map<string, { city: string; count: number }>(); let newCustomers = 0;
-      let femaleCount = 0; let maleCount = 0;
+      let femaleCount = 0; let maleCount = 0; let genderNotReportedCount = 0; let ageMissingCount = 0;
       const paidBuyerIds = new Set(customerIds);
       (customers ?? []).forEach((c) => {
-        if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (age > 0 && age < 120) ages.push(age); }
+        if (c.data_nascimento) { const b = new Date(c.data_nascimento); let age = now.getFullYear() - b.getFullYear(); if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--; if (Number.isFinite(b.getTime()) && age >= 0 && age < 120) ages.push(age); else ageMissingCount++; } else ageMissingCount++;
         if (paidBuyerIds.has(c.id) && typeof c.cidade === "string" && c.cidade.trim()) {
           const city = c.cidade.trim().replace(/\s+/g, " ");
           const key = city.toLocaleLowerCase("pt-BR");
@@ -87,11 +87,14 @@ export function useAudienceStats(eventId?: string | null) {
           if (existing) existing.count += 1;
           else cityMap.set(key, { city, count: 1 });
         }
-        if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++;
+        if (c.sexo === "feminino") femaleCount++; else if (c.sexo === "masculino") maleCount++; else genderNotReportedCount++;
         if (now.getTime() - new Date(c.created_at).getTime() <= 30 * 24 * 3600_000) newCustomers++;
       });
-      const genderTotal = femaleCount + maleCount;
-      const genderSplit = genderTotal > 0 ? { femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100) } : null;
+      const genderTotal = femaleCount + maleCount + genderNotReportedCount;
+      const genderSplit = genderTotal > 0 ? { femaleCount, maleCount, notReportedCount: genderNotReportedCount, total: genderTotal, femalePct: Math.round((femaleCount / genderTotal) * 100), malePct: Math.round((maleCount / genderTotal) * 100), notReportedPct: Math.round((genderNotReportedCount / genderTotal) * 100), reportedCount: femaleCount + maleCount, coveragePct: Math.round(((femaleCount + maleCount) / genderTotal) * 100) } : null;
+      const ageBandDefinitions = [{ label: "Menos de 18", min: 0, max: 17 }, { label: "18–20", min: 18, max: 20 }, { label: "21–24", min: 21, max: 24 }, { label: "25–29", min: 25, max: 29 }, { label: "30+", min: 30, max: 119 }];
+      const ageBands = ageBandDefinitions.map((band) => { const count = ages.filter((age) => age >= band.min && age <= band.max).length; return { label: band.label, count, percentage: ages.length ? Math.round((count / ages.length) * 1000) / 10 : 0 }; }).filter((band) => band.count > 0);
+      const ageCoverage = { known: ages.length, missing: ageMissingCount, percentage: (ages.length + ageMissingCount) > 0 ? Math.round((ages.length / (ages.length + ageMissingCount)) * 100) : 0 };
       // Recorrência significa compra paga em pelo menos dois eventos distintos.
       // Usamos somente compradores identificados e excluímos cortesias; vendas sem
       // customer_id não podem ser associadas com segurança a uma pessoa.
@@ -147,7 +150,7 @@ export function useAudienceStats(eventId?: string | null) {
       else pageViewsQuery = pageViewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
       const { count: totalPageViews } = await pageViewsQuery;
 
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalPageViews: totalPageViews ?? 0 };
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, ageBands, ageCoverage, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalPageViews: totalPageViews ?? 0 };
     },
   });
 }

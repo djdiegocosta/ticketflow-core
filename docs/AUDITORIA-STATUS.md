@@ -1,5 +1,12 @@
 # TicketFlow — Status de Auditoria e Refinamentos
 
+## Dashboard — idade e sexo mais representativos (23/10/2026)
+- 🛠️ Em PR na branch `feat/audience-demographics`: idade exibida em faixas (Menos de 18, 18–20, 21–24, 25–29 e 30+), com média e percentual de preenchimento de data de nascimento. Idades ausentes/inválidas não entram nas faixas nem na média.
+- 🛠️ Sexo exibido como Feminino, Masculino e Não informado; percentuais usam todos os compradores identificados do escopo, e a interface informa a cobertura do campo.
+- ⏳ Typecheck, testes, build e smoke SSR ainda precisam ser executados antes de merge/deploy.
+
+
+
 ## Dashboard — principais cidades dos compradores (23/10/2026)
 - 🛠️ Alteração proposta na branch `fix/audience-top-cities` (código: `7eec21b`): lista considera clientes identificados com ao menos uma venda paga na organização/evento em escopo; agrupa nomes após remover espaços extras e ignorar diferenças entre maiúsculas/minúsculas. Exibe até três cidades, número de compradores e percentual entre compradores com cidade preenchida.
 - ℹ️ A cidade é a informada no cadastro do comprador e não representa a localização real de quem visita a página. Nenhuma geolocalização, migration ou alteração de banco foi adicionada. Validações automatizadas ainda não foram executadas neste ambiente.
