@@ -4,6 +4,10 @@
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
 
+## Dashboard — visualizações da página (23/10/2026)
+- ✅ Confirmado no código e no banco: `track_event_view(_event_id)` insere uma linha em `event_page_views` por carregamento da página pública; não existe identificador de visitante nem deduplicação. A métrica foi renomeada para “Visualizações da página”; recargas podem aumentar o total, como esperado para visualizações.
+- ✅ `event_page_views` tem RLS habilitado; leitura via tabela é limitada por política a administradores da organização. A função `track_event_view` é `SECURITY DEFINER` e executável por `anon`/`authenticated` para permitir registro público. O papel `anon` também tem privilégios diretos de tabela mais amplos que o necessário, mas as políticas RLS atuais não autorizam leitura pública nem escrita direta. Recomenda-se uma rodada separada de menor privilégio e validação de eventos publicados; nenhuma permissão foi alterada nesta correção.
+
 ## Dashboard — clientes recorrentes (23/10/2026)
 - ✅ Correção integrada à `main` no commit `b291bfc`: recorrência significa comprador identificado com compra paga e não cortesia em pelo menos dois eventos distintos da mesma organização; a taxa usa como denominador os compradores identificados do escopo atual. Vendas sem `customer_id` não são inferidas por nome/contato.
 - ✅ Typecheck, testes automatizados, build de produção e smoke test SSR passaram. Publicado na Vercel em 23/10/2026; URL de produção respondeu HTTP 200. Sem alterações no banco de dados.
