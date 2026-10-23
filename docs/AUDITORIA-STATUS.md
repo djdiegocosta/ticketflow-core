@@ -1,3 +1,8 @@
+## Dashboard — tipo das estatísticas de vendas (23/10/2026)
+- 🛠️ Correção proposta na branch `fix/expired-sales-stats-default`: o retorno antecipado de `useSalesStats` quando `eventId === null` inclui `expiredSales: 0`, alinhando sua estrutura ao retorno normal.
+- ℹ️ A incompatibilidade de tipos já existia na `main`; não foi introduzida pela otimização da área Clientes (PR #46).
+- ⏳ Aguardando CI (typecheck, testes, build e smoke SSR). Sem alteração de banco, migrations ou dependências.
+
 # TicketFlow — Status de Auditoria e Refinamentos
 
 ## Dashboard — indicador operacional de pagamentos (23/10/2026)
