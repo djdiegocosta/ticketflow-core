@@ -1,3 +1,8 @@
+## Clientes — desempenho da listagem (23/10/2026)
+- 🛠️ Em PR na branch `perf/customer-list-calculation`: agrupa estatísticas das vendas pagas por cliente em uma única passagem, eliminando filtros e ordenações repetidos por cliente.
+- ℹ️ Mantém as métricas e critérios existentes; nenhuma migration ou alteração de banco. O volume de dados buscado do Supabase ainda inclui as vendas pagas e os IDs dos ingressos; esta mudança reduz principalmente o processamento no navegador, não o tráfego transferido.
+- ⏳ Typecheck, testes, build e smoke SSR ainda precisam ser executados antes de merge/deploy.
+
 # TicketFlow — Status de Auditoria e Refinamentos
 
 ## Dashboard — indicador operacional de pagamentos (23/10/2026)
