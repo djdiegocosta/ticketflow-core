@@ -5,8 +5,8 @@
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
 
 ## Dashboard — clientes recorrentes (23/10/2026)
-- ⏳ Correção registrada na branch `fix/audience-recurring-customers`: recorrência passa a significar comprador identificado com compra paga e não cortesia em pelo menos dois eventos distintos da mesma organização; a taxa usa como denominador os compradores identificados do escopo atual. Vendas sem `customer_id` não são inferidas por nome/contato.
-- ⏳ Ainda não validado por typecheck/testes nem publicado. Não considerar resolvido em produção até a validação e a publicação serem feitas separadamente.
+- ✅ Correção integrada à `main` no commit `b291bfc`: recorrência significa comprador identificado com compra paga e não cortesia em pelo menos dois eventos distintos da mesma organização; a taxa usa como denominador os compradores identificados do escopo atual. Vendas sem `customer_id` não são inferidas por nome/contato.
+- ✅ Typecheck, testes automatizados, build de produção e smoke test SSR passaram. Publicado na Vercel em 23/10/2026; URL de produção respondeu HTTP 200. Sem alterações no banco de dados.
 
 ---
 
