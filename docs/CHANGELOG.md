@@ -1,3 +1,7 @@
+## 23/10/2026 — Otimização da listagem de clientes (em PR)
+
+- ⚡ **Clientes:** estatísticas de vendas pagas agregadas em uma única passagem por venda, evitando filtrar e ordenar o histórico repetidamente por cliente. Mantém os critérios atuais dos indicadores; sem alterações no banco. Código `010191c`; validações automatizadas ainda pendentes.
+
 ## 23/10/2026 — Indicador operacional de pagamentos (em PR)
 
 - ✨ **Dashboard — Pendentes:** removido o medidor percentual; o card mantém quantidade e valor aguardando pagamento e passa a mostrar também o total de vendas expiradas no evento/escopo atual. Reutiliza os status existentes, sem migration; alerta de falhas recentes de Pix já existente permanece. Código: `4d92ccd`. Validações automatizadas ainda pendentes.
