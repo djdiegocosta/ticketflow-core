@@ -1,5 +1,11 @@
 # TicketFlow — Status de Auditoria e Refinamentos
 
+## Dashboard — indicador operacional de pagamentos (23/10/2026)
+- 🛠️ Em PR na branch `feat/payment-health-dashboard`: card Pendentes sem medidor percentual; mantém contagem e valor aguardando pagamento e exibe total de vendas expiradas no evento/escopo atual.
+- ℹ️ A contagem de expiradas é acumulada no escopo, não “últimas 24h”: o código atual não confirma um timestamp confiável da transição para expirado. Não tratar cada expiração como falha técnica.
+- ✅ Reaproveita status existentes e alerta já implementado para falhas recentes na geração de Pix; sem alteração de banco/migration.
+- ⏳ Typecheck, testes, build e smoke SSR ainda precisam ser executados antes de merge/deploy.
+
 ## Dashboard — idade e sexo mais representativos (23/10/2026)
 - 🛠️ Em PR na branch `feat/audience-demographics`: idade exibida em faixas (Menos de 18, 18–20, 21–24, 25–29 e 30+), com média e percentual de preenchimento de data de nascimento. Idades ausentes/inválidas não entram nas faixas nem na média.
 - 🛠️ Sexo exibido como Feminino, Masculino e Não informado; percentuais usam todos os compradores identificados do escopo, e a interface informa a cobertura do campo.
