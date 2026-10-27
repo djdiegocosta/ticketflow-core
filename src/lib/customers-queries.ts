@@ -15,6 +15,7 @@ export interface Customer {
   total_events: number;
   total_tickets: number;
   total_spent: number;
+  total_xp: number;
   last_event_name: string | null;
   last_purchase_at: string | null;
   created_at: string;
@@ -114,6 +115,20 @@ export function useCustomers() {
         }
       }
 
+      // Pontos XP por cliente (view customer_xp_totals, uma linha por cliente). Se essa
+      // consulta falhar, a lista de clientes continua funcionando e o XP aparece como 0.
+      const xpByCustomer = new Map<string, number>();
+      const { data: xpTotals, error: xpError } = await supabase
+        .from("customer_xp_totals")
+        .select("customer_id, total_xp");
+      if (xpError) {
+        console.warn("Não foi possível carregar os pontos XP dos clientes:", xpError.message);
+      } else {
+        for (const row of xpTotals || []) {
+          if (row.customer_id) xpByCustomer.set(row.customer_id, Number(row.total_xp || 0));
+        }
+      }
+
       const now = new Date();
 
       return (data || []).map((c: any) => {
@@ -142,6 +157,7 @@ export function useCustomers() {
           total_events: stats?.eventIds.size || 0,
           total_tickets: stats?.totalTickets || 0,
           total_spent: stats?.totalSpent || 0,
+          total_xp: xpByCustomer.get(c.id) || 0,
           last_event_name: stats?.lastEventName || null,
           last_purchase_at: stats?.lastPurchaseAt || null,
           created_at: c.created_at,

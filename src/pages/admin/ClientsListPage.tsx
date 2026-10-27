@@ -39,7 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type SortKey = "name" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent";
+type SortKey = "name" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent" | "totalXp";
 
 function normalizeMetaPhone(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -207,6 +207,7 @@ export function ClientsListPage() {
         return (av - bv) * dir;
       }
       if (sortKey === "totalSpent") return (a.total_spent - b.total_spent) * dir;
+      if (sortKey === "totalXp") return (a.total_xp - b.total_xp) * dir;
       if (sortKey === "totalTickets") return (a.total_tickets - b.total_tickets) * dir;
       if (sortKey === "age") return ((a.age ?? -1) - (b.age ?? -1)) * dir;
       return 0;
@@ -237,6 +238,7 @@ export function ClientsListPage() {
     { key: "city", label: "Cidade" },
     { key: "totalTickets", label: "Ingressos/Eventos" },
     { key: "totalSpent", label: "Total Gasto" },
+    { key: "totalXp", label: "Pontos XP" },
     { key: null, label: "Ações" },
   ];
 
@@ -286,7 +288,7 @@ export function ClientsListPage() {
         </TooltipProvider>
       </FilterBar>
       <DataTableShell>
-        <DataTable className="min-w-[980px]">
+        <DataTable className="min-w-[1060px]">
           <DataTableHeadRow
             columns={columns.map((col) =>
               col.key ? (
@@ -349,6 +351,9 @@ export function ClientsListPage() {
                 <DataTableCell variant="strong" className="whitespace-nowrap">
                   {formatCurrency(client.total_spent)}
                 </DataTableCell>
+                <DataTableCell variant="strong" className="whitespace-nowrap">
+                  {client.total_xp.toLocaleString("pt-BR")}
+                </DataTableCell>
                 <DataTableCell className="whitespace-nowrap text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -388,7 +393,7 @@ export function ClientsListPage() {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <DataTableCell colSpan={8} className="py-10 text-center text-body">
+                <DataTableCell colSpan={9} className="py-10 text-center text-body">
                   {isLoading ? "Carregando clientes..." : "Nenhum cliente encontrado."}
                 </DataTableCell>
               </tr>

@@ -16,6 +16,10 @@
   simultâneos + checkout como visitante; termina de propósito com erro, o que desfaz
   tudo — leia o texto do erro). Rodado contra a função real em 24/10: 14 cenários ok.
 
+## 24/10/2026 — Pontos XP na lista de clientes (admin)
+
+- ✨ **Admin → Clientes: nova coluna "Pontos XP"** (depois de "Total Gasto"), com o total de XP de cada cliente e ordenação clicável. Os valores vêm da view `customer_xp_totals` (uma linha por cliente, a mesma fonte da tela Pontos do cliente), lida em uma única consulta junto com o carregamento da lista. Se essa consulta falhar, a lista continua funcionando e o XP aparece como 0. Sem mudança no banco, nas políticas RLS ou nas dependências.
+
 ## 23/10/2026 — Lotes simultâneos na página pública
 
 - 🐛 **Lotes: com dois lotes ativos ao mesmo tempo, só um aparecia para o cliente.** A função `get_available_batches` liberava os lotes em fila (o lote N só aparecia quando os anteriores esgotavam ou venciam). Caso real: no `halloween-fantasy-2026`, "1º Lote" (R$ 25) estava escondido e só o "Lote Especial + COPO" (R$ 35) aparecia. Nova migration `20261023190000_get_available_batches_all_active.sql`: aparece todo lote de venda dentro do período (`starts_at`/`ends_at`) e com estoque; cortesia segue fora; mesma assinatura e mesmos grants. Ordem: início do lote e, em empate, o mais barato primeiro. Testado em simulação com rollback: lista com 2 lotes ativos, checkout de cada um com preço e baixa de estoque corretos, e recusa de cortesia, lote futuro, vencido, esgotado e estoque excedido.
