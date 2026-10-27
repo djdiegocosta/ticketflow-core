@@ -16,9 +16,10 @@
   simultâneos + checkout como visitante; termina de propósito com erro, o que desfaz
   tudo — leia o texto do erro). Rodado contra a função real em 24/10: 14 cenários ok.
 
-## 24/10/2026 — Pontos XP na lista de clientes (admin)
+## 27/10/2026 — Coluna XP na lista de clientes (admin)
 
-- ✨ **Admin → Clientes: nova coluna "Pontos XP"** (depois de "Total Gasto"), com o total de XP de cada cliente e ordenação clicável. Os valores vêm da view `customer_xp_totals` (uma linha por cliente, a mesma fonte da tela Pontos do cliente), lida em uma única consulta junto com o carregamento da lista. Se essa consulta falhar, a lista continua funcionando e o XP aparece como 0. Sem mudança no banco, nas políticas RLS ou nas dependências.
+- ✨ **Admin → Clientes: nova coluna "XP"** (depois de "Total Gasto"), com o total de pontos de cada cliente e ordenação clicável. Os valores vêm da view `customer_xp_totals` (uma linha por cliente, a mesma fonte da tela Pontos do cliente), lida em uma única consulta junto com o carregamento da lista. Se essa consulta falhar, a lista continua funcionando e o XP aparece como 0. Sem mudança no banco, nas políticas RLS ou nas dependências. (`3a1fec4`)
+- 🐛 **Grid da lista de clientes desajustado após a coluna nova:** nomes longos passavam para uma segunda linha. O nome agora fica em linha única, cortado com "…" e com o nome completo ao passar o mouse (regra "linha em altura única" do design system). Cabeçalhos renomeados: "Pontos XP" → "XP" e "Ingressos/Eventos" → "Ingressos"; a coluna Ingressos mostra só a quantidade de ingressos (o total de eventos continua em "Eventos participados", na ficha do cliente).
 
 ## 23/10/2026 — Lotes simultâneos na página pública
 

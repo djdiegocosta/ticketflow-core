@@ -28,7 +28,7 @@
 ## Dashboard — principais cidades dos compradores (23/10/2026)
 - 🛠️ Alteração proposta na branch `fix/audience-top-cities` (código: `7eec21b`): lista considera clientes identificados com ao menos uma venda paga na organização/evento em escopo; agrupa nomes após remover espaços extras e ignorar diferenças entre maiúsculas/minúsculas. Exibe até três cidades, número de compradores e percentual entre compradores com cidade preenchida.
 - ℹ️ A cidade é a informada no cadastro do comprador e não representa a localização real de quem visita a página. Nenhuma geolocalização, migration ou alteração de banco foi adicionada. Validações automatizadas ainda não foram executadas neste ambiente.
-**Última atualização:** 24/10/2026
+**Última atualização:** 27/10/2026
 **Como usar este documento:** histórico vivo de tudo que foi encontrado, corrigido ou decidido nas rodadas de auditoria/refinamento do projeto. Atualizado sempre que um SQL/prompt é confirmado como aplicado. Não substitui o TPS.md nem o DESIGN-SYSTEM.md (que descrevem o sistema como ele deve ser) — este documento é o registro de como ele chegou até lá.
 
 Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴 Pendente
@@ -207,7 +207,7 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Atenção: lotes cadastrados sem data de início/fim ficam sempre visíveis enquanto houver estoque (efeito da nova regra).
 - 🔴 `create_pending_sale` não vende lote com estoque vazio (`quantity` nulo = sem limite); hoje só existe uma cortesia assim, num evento encerrado. Se um dia houver lote de venda sem limite, ajustar a função.
 
-## Rodada — Pontos XP na lista de clientes (24/10/2026)
-- ✅ Admin → Clientes: coluna "Pontos XP" com ordenação (fonte: view `customer_xp_totals`).
-- ⏳ Conferir no painel, logado como admin: a coluna mostra números diferentes de zero e a ordenação por Pontos XP funciona (não foi possível testar com login de admin durante o desenvolvimento).
+## Rodada — Coluna XP na lista de clientes (27/10/2026)
+- ✅ Admin → Clientes: coluna "XP" com ordenação (fonte: view `customer_xp_totals`). Nomes longos em linha única (cortados com "…"); "Ingressos/Eventos" virou "Ingressos" (só ingressos).
+- ⏳ Conferir no painel, logado como admin: a coluna XP mostra números diferentes de zero, a ordenação funciona e nenhum nome quebra em duas linhas (não foi possível testar com login de admin durante o desenvolvimento).
 - 🔴 A view `customer_xp_totals` tem permissões amplas (inclusive escrita) para os papéis `anon` e `authenticated`; hoje a segurança vem de `security_invoker` + RLS das tabelas de base. Avaliar revogar escrita e leitura anônima na varredura de segurança.

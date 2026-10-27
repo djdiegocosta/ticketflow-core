@@ -236,9 +236,9 @@ export function ClientsListPage() {
     { key: "birthDate", label: "Aniversário" },
     { key: "age", label: "Idade" },
     { key: "city", label: "Cidade" },
-    { key: "totalTickets", label: "Ingressos/Eventos" },
+    { key: "totalTickets", label: "Ingressos" },
     { key: "totalSpent", label: "Total Gasto" },
-    { key: "totalXp", label: "Pontos XP" },
+    { key: "totalXp", label: "XP" },
     { key: null, label: "Ações" },
   ];
 
@@ -288,7 +288,7 @@ export function ClientsListPage() {
         </TooltipProvider>
       </FilterBar>
       <DataTableShell>
-        <DataTable className="min-w-[1060px]">
+        <DataTable className="min-w-[980px]">
           <DataTableHeadRow
             columns={columns.map((col) =>
               col.key ? (
@@ -328,7 +328,9 @@ export function ClientsListPage() {
                   variant="primary"
                   onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}
                 >
-                  {client.full_name}
+                  <span className="block max-w-[240px] truncate" title={client.full_name}>
+                    {client.full_name}
+                  </span>
                 </DataTableCell>
                 <DataTableCell className="whitespace-nowrap">
                   <span className="flex items-center gap-1">
@@ -346,7 +348,7 @@ export function ClientsListPage() {
                 </DataTableCell>
                 <DataTableCell className="whitespace-nowrap">{client.city || "—"}</DataTableCell>
                 <DataTableCell variant="strong" className="whitespace-nowrap">
-                  {client.total_tickets}/{client.total_events}
+                  {client.total_tickets}
                 </DataTableCell>
                 <DataTableCell variant="strong" className="whitespace-nowrap">
                   {formatCurrency(client.total_spent)}
