@@ -21,6 +21,7 @@ import { buildCheckoutPrefill } from '@/lib/checkout-prefill';
 import { supabase } from '@/integrations/supabase/client';
 import { setLastVisitedOrg } from '@/lib/org-context';
 import { captureRef, getStoredRef } from '@/lib/attribution';
+import { buildOrderSummary, orderSummaryLine, type OrderSummary } from "@/lib/order-summary";
 
 const checkoutSchema = z.object({
   buyerName: z.string().min(1, "Nome obrigatório").refine(isFullName, "Digite seu nome completo (mínimo 2 palavras)"),
@@ -74,6 +75,8 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const abandonmentTracked = useRef(false);
   const prefillAppliedKey = useRef<string | null>(null);
+  // Resumo do pedido já reservado: vem da reserva (servidor), não da lista de lotes à venda.
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
 
   useEffect(() => {
     const resumeId = search.resume;
@@ -82,7 +85,7 @@ export default function CheckoutPage() {
     (async () => {
       const { data: sale, error } = await supabase
         .from('sales')
-        .select('id, sale_code, status, expires_at, mp_qr_code, mp_qr_code_base64')
+        .select('id, sale_code, status, expires_at, mp_qr_code, mp_qr_code_base64, quantity, total_amount, ticket_batches(name)')
         .eq('id', resumeId)
         .maybeSingle();
 
@@ -94,6 +97,7 @@ export default function CheckoutPage() {
         return;
       }
 
+      setOrderSummary(buildOrderSummary({ quantity: sale.quantity, total_amount: sale.total_amount, batchName: sale.ticket_batches?.name }));
       setCurrentSaleId(sale.id);
       setCurrentSaleCode(sale.sale_code);
       setExpiresAt(sale.expires_at);
@@ -109,6 +113,7 @@ export default function CheckoutPage() {
   // outro lote, com outro preço. Sem lote na URL (link direto), usa o primeiro disponível.
   const requestedBatch = search.batchId ? availableBatches?.find(b => b.id === search.batchId) : undefined;
   const batch = search.batchId ? requestedBatch : availableBatches?.[0];
+  const summaryLine = orderSummaryLine(orderSummary, { batch, quantity: qty });
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -262,7 +267,8 @@ export default function CheckoutPage() {
       });
 
       const resultArr = saleResult as any[];
-      const { sale_id: id, sale_code, expires_at } = resultArr[0];
+      const { sale_id: id, sale_code, expires_at, total_amount } = resultArr[0];
+      setOrderSummary(buildOrderSummary({ quantity: qty, total_amount, batchName: batch.name }));
       setCurrentSaleId(id);
       setCurrentSaleCode(sale_code);
       setExpiresAt(expires_at);
@@ -621,8 +627,8 @@ export default function CheckoutPage() {
                 <span className="text-small text-[var(--text-secondary)]">Você está comprando</span>
                 <h2 className="text-heading-3 font-bold text-[var(--text-primary)]">{event?.title}</h2>
                 <div className="mt-2 flex items-center justify-between border-t border-[var(--border-subtle)] pt-2">
-                  <span className="text-small text-[var(--text-secondary)]">{qty}x {batch?.name}</span>
-                  <span className="font-bold text-[var(--text-primary)]">R$ {((batch?.price || 0) * qty).toFixed(2)}</span>
+                  <span className="text-small text-[var(--text-secondary)]">{summaryLine.label}</span>
+                  <span className="font-bold text-[var(--text-primary)]">R$ {summaryLine.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

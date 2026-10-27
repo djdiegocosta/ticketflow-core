@@ -34,6 +34,17 @@ O projeto possui uma primeira camada unitária usando o **Bun Test Runner**, sem
 - O pipeline agora roda `bun test` (todos os arquivos de `tests/`), não só dois.
 - Ainda NÃO coberto: criação de venda e confirmação de pagamento no banco (`create_pending_sale`, `confirm_sale_paid`) — dependem de evento ativo/ambiente de teste.
 
+### Camada 2b — testes de banco versionados (`supabase/tests/`)
+
+Scripts SQL reexecutáveis que terminam de propósito com um erro "RESULTADOS (tudo
+desfeito)", o que desfaz tudo o que alteraram. Leia o texto do erro: ele lista cada
+cenário com o esperado ao lado.
+
+- `get_available_batches_lotes_simultaneos.sql` — lotes ativos ao mesmo tempo na página
+  pública (ambos aparecem; esgotado/vencido/futuro saem; cortesia nunca entra) e checkout
+  como visitante de cada lote (preço, lote gravado e estoque certos; recusa lote futuro,
+  cortesia, estoque insuficiente e prazo vencido).
+
 ### Camada 2 — smoke de integração do banco executado
 
 Em 08/09/2026 foi executada uma bateria controlada diretamente no projeto Supabase conectado ao TicketFlow, usando o evento real de teste operacional e removendo os dados criados ao final.

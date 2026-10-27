@@ -1,3 +1,21 @@
+## 24/10/2026 — Checkout: resumo do pedido correto com mais de um lote
+
+- 🐛 **Resumo do pedido na tela de pagamento não depende mais da lista de lotes à
+  venda.** Com dois lotes ativos, a revisão da correção dos lotes achou dois erros
+  de exibição (o valor do Pix sempre veio do servidor e estava certo): (1) ao
+  retomar um pagamento (`?resume=`, "Meus ingressos → pagar agora") o resumo caía no
+  primeiro lote e na quantidade 1 — quem retomasse 2 ingressos do Lote Especial via
+  "1x 1º Lote R$ 25,00" em vez de "2x Lote Especial + COPO R$ 70,00"; (2) se o lote
+  saísse da lista durante o pagamento (último ingresso levado pelo próprio cliente,
+  ou fim do prazo do lote, comum ao voltar do app do banco), o resumo mostrava
+  "R$ 0,00". Agora o resumo vem da reserva (nome do lote, quantidade e total
+  gravados pelo servidor). Lógica em `src/lib/order-summary.ts` (6 testes; um deles
+  pegou um erro meu: `Number(null)` vale 0 e viraria "R$ 0,00").
+- 🧪 **Teste de regressão do banco publicado:**
+  `supabase/tests/get_available_batches_lotes_simultaneos.sql` (listagem de lotes
+  simultâneos + checkout como visitante; termina de propósito com erro, o que desfaz
+  tudo — leia o texto do erro). Rodado contra a função real em 24/10: 14 cenários ok.
+
 ## 23/10/2026 — Lotes simultâneos na página pública
 
 - 🐛 **Lotes: com dois lotes ativos ao mesmo tempo, só um aparecia para o cliente.** A função `get_available_batches` liberava os lotes em fila (o lote N só aparecia quando os anteriores esgotavam ou venciam). Caso real: no `halloween-fantasy-2026`, "1º Lote" (R$ 25) estava escondido e só o "Lote Especial + COPO" (R$ 35) aparecia. Nova migration `20261023190000_get_available_batches_all_active.sql`: aparece todo lote de venda dentro do período (`starts_at`/`ends_at`) e com estoque; cortesia segue fora; mesma assinatura e mesmos grants. Ordem: início do lote e, em empate, o mais barato primeiro. Testado em simulação com rollback: lista com 2 lotes ativos, checkout de cada um com preço e baixa de estoque corretos, e recusa de cortesia, lote futuro, vencido, esgotado e estoque excedido.
