@@ -104,24 +104,19 @@ export function useEnsureCustomerRecord() {
 }
 
 /**
- * Hook de XP/Patente do cliente logado (gamificação Fase 1).
- * Fonte: customer_xp_totals (soma) e customer_xp_events (extrato).
+ * Hook de XP do cliente logado.
+ * Fonte: customer_xp_totals (saldo) e customer_xp_events (extrato).
  */
-const XP_TIERS = [
-  { patente: "Novato", min: 0 },
-  { patente: "Frequente", min: 500 },
-  { patente: "VIP", min: 1500 },
-  { patente: "Elite", min: 3500 },
-  { patente: "Lenda", min: 7500 },
-] as const;
-
 const XP_REASON_LABELS: Record<string, string> = {
-  criar_conta: "Criou a conta",
-  primeira_compra: "Primeira compra",
-  compra_ingresso: "Compra de ingresso",
-  comparecimento: "Compareceu ao evento",
+  criar_conta: "Criação da conta",
+  primeira_compra: "Bônus da primeira compra",
+  compra_ingresso: "Compra paga",
+  comparecimento: "Check-in válido",
   primeiro_comprador: "Primeiro comprador do evento",
-  compra_primeiro_dia: "Comprou no primeiro dia de vendas",
+  compra_primeiro_dia: "Compra no primeiro dia de vendas",
+  compra_adicional: "Compra adicional no mesmo evento",
+  compra_grupo: "Compra de 3 ou mais ingressos",
+  fidelidade: "Fidelidade: 3 eventos consecutivos",
 };
 
 export function useCustomerXp() {
@@ -131,13 +126,13 @@ export function useCustomerXp() {
   return useQuery({
     queryKey: ["customer-xp", customerId],
     queryFn: async () => {
-      // A busca só roda quando o cliente existe (enabled), mas o tipo não sabe disso.
       if (!customerId) throw new Error("Cliente não carregado");
-      const { data: totals } = await supabase
+      const { data: totals, error: totalsError } = await supabase
         .from("customer_xp_totals")
-        .select("total_xp, patente")
+        .select("total_xp")
         .eq("customer_id", customerId)
         .maybeSingle();
+      if (totalsError) throw totalsError;
 
       const { data: events, error } = await supabase
         .from("customer_xp_events")
@@ -146,18 +141,8 @@ export function useCustomerXp() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      const totalXp = totals?.total_xp ?? 0;
-      const currentTierIndex = XP_TIERS.findIndex((t, i) => totalXp >= t.min && (i === XP_TIERS.length - 1 || totalXp < (XP_TIERS[i + 1]?.min ?? Infinity)));
-      const currentTier = XP_TIERS[Math.max(currentTierIndex, 0)] ?? XP_TIERS[0]!;
-      const nextTier = XP_TIERS[Math.max(currentTierIndex, 0) + 1] ?? null;
-      const progressPct = nextTier ? Math.min(100, Math.round(((totalXp - currentTier.min) / (nextTier.min - currentTier.min)) * 100)) : 100;
-
       return {
-        totalXp,
-        patente: totals?.patente ?? currentTier.patente,
-        currentTierIndex: Math.max(currentTierIndex, 0),
-        nextTier,
-        progressPct,
+        totalXp: totals?.total_xp ?? 0,
         history: (events ?? []).map((e) => ({ ...e, label: XP_REASON_LABELS[e.reason] ?? e.reason })),
       };
     },
