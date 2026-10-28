@@ -1,3 +1,12 @@
+## 28/10/2026 — XP: regras v2, recálculo e preservação do histórico
+
+- 🔒 Aplicada no Supabase a migration `refactor_customer_xp_rules_v2`: 342 registros antigos preservados em `customer_xp_events_archive`; ledger ativo reconstruído com as regras oficiais, sem somar saldos antigos.
+- ✨ XP atualizado: cadastro +50; compra paga +200 por transação; primeira compra +50; check-in válido +50 por cliente/evento; primeiro comprador +100; primeiro dia +50; compra adicional no mesmo evento +50; compra de 3+ ingressos +100; fidelidade de 3 eventos consecutivos concluídos +200.
+- 🔒 Vendas sem conta e atividades anteriores ao cadastro não entram no recálculo. Chaves idempotentes impedem duplicação de concessões.
+- 🐛 A tela de pontos foi simplificada para remover patentes; ajuste de frontend e migrations estão na branch `fix/xp-rules-recalculation-20261028`, aguardando CI/revisão antes do deploy.
+- 🧪 Validação pós-migration: 254 registros ativos, 19.400 XP somados; 0 vendas de convidado com XP e 0 chaves de origem duplicadas. O caso Caio Luiz da Silva Santos foi recalculado para 750 XP.
+- ⚠️ A auditoria do Supabase encontrou outros avisos preexistentes de funções SECURITY DEFINER; não foram alterados nesta tarefa. A tabela de arquivo teve RLS ativado e acesso API revogado.
+
 ## 24/10/2026 — Checkout: resumo do pedido correto com mais de um lote
 
 - 🐛 **Resumo do pedido na tela de pagamento não depende mais da lista de lotes à
