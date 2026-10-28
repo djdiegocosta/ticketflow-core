@@ -174,7 +174,7 @@ begin
   insert into public.customer_xp_events
     (customer_id, organization_id, amount, reason, event_id, sale_id, ticket_id, metadata, created_at, source_key)
   values (v_customer_id, v_org_id, 50, 'comparecimento', new.event_id, new.sale_id, new.id,
-    jsonb_build_object('rule_version', 2), new.checked_in_at, 'ticket:' || new.id::text || ':checkin')
+    jsonb_build_object('rule_version', 2), new.checked_in_at, 'checkin:' || v_customer_id::text || ':' || new.event_id::text)
   on conflict (source_key) where source_key is not null do nothing;
 
   perform public.grant_xp_loyalty_if_eligible(v_customer_id);
@@ -302,8 +302,8 @@ on conflict (source_key) where source_key is not null do nothing;
 -- Eligible check-ins only for purchases created after account registration.
 insert into public.customer_xp_events
   (customer_id, organization_id, amount, reason, event_id, sale_id, ticket_id, metadata, created_at, source_key)
-select distinct s.customer_id, s.organization_id, 50, 'comparecimento', t.event_id, s.id, t.id,
-  jsonb_build_object('rule_version', 2), t.checked_in_at, 'ticket:' || t.id::text || ':checkin'
+select distinct on (s.customer_id, t.event_id) s.customer_id, s.organization_id, 50, 'comparecimento', t.event_id, s.id, t.id,
+  jsonb_build_object('rule_version', 2), t.checked_in_at, 'checkin:' || s.customer_id::text || ':' || t.event_id::text
 from public.tickets t
 join public.sales s on s.id = t.sale_id and s.event_id = t.event_id
 join public.customers c on c.id = s.customer_id and c.organization_id = s.organization_id
@@ -311,6 +311,7 @@ join public.profiles p on p.id = c.user_id
 where t.status = 'utilizado' and t.checked_in_at is not null
   and s.status = 'pago' and not coalesce(s.is_courtesy, false)
   and s.created_at >= p.created_at and t.checked_in_at >= p.created_at
+order by s.customer_id, t.event_id, t.checked_in_at
 on conflict (source_key) where source_key is not null do nothing;
 
 -- Loyalty: three adjacent completed events in the organization's event sequence,
