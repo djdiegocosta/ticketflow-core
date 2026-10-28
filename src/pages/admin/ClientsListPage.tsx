@@ -41,6 +41,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 type SortKey = "name" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent" | "totalXp";
 
+// Texto longo vira "…" depois de `max` caracteres, para a linha da tabela nunca crescer.
+// O texto completo continua disponível ao passar o mouse (atributo title).
+const MAX_NAME_CHARS = 20;
+const MAX_CITY_CHARS = 16;
+
+function shortenText(value: string, max: number) {
+  return value.length > max ? `${value.slice(0, max).trimEnd()}…` : value;
+}
+
 function normalizeMetaPhone(value: string) {
   const digits = value.replace(/\D/g, "");
   if (!digits) return "";
@@ -288,7 +297,7 @@ export function ClientsListPage() {
         </TooltipProvider>
       </FilterBar>
       <DataTableShell>
-        <DataTable className="min-w-[980px]">
+        <DataTable className="[&_th]:whitespace-nowrap">
           <DataTableHeadRow
             columns={columns.map((col) =>
               col.key ? (
@@ -328,8 +337,8 @@ export function ClientsListPage() {
                   variant="primary"
                   onClick={() => navigate({ to: "/admin/clientes/$id", params: { id: client.id } })}
                 >
-                  <span className="block max-w-[240px] truncate" title={client.full_name}>
-                    {client.full_name}
+                  <span className="whitespace-nowrap" title={client.full_name}>
+                    {shortenText(client.full_name, MAX_NAME_CHARS)}
                   </span>
                 </DataTableCell>
                 <DataTableCell className="whitespace-nowrap">
@@ -346,7 +355,11 @@ export function ClientsListPage() {
                 <DataTableCell className="whitespace-nowrap">
                   {client.age ? `${client.age} anos` : "—"}
                 </DataTableCell>
-                <DataTableCell className="whitespace-nowrap">{client.city || "—"}</DataTableCell>
+                <DataTableCell className="whitespace-nowrap">
+                  <span title={client.city || undefined}>
+                    {client.city ? shortenText(client.city, MAX_CITY_CHARS) : "—"}
+                  </span>
+                </DataTableCell>
                 <DataTableCell variant="strong" className="whitespace-nowrap">
                   {client.total_tickets}
                 </DataTableCell>
