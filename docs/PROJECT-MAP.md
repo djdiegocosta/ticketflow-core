@@ -416,7 +416,11 @@ Audience stats:
 - idade média;
 - faixa predominante;
 - novos clientes;
-- recorrentes;
+- recorrentes (definição e fórmula em `src/lib/recurrence.ts`):
+  - **Recorrente** = comprador com compra paga, não cortesia, em **2 ou mais eventos distintos** (qualquer data). Várias compras no mesmo evento contam como 1.
+  - **Base** = compradores identificados (`sales.customer_id`) com ao menos 1 venda do escopo (todos os eventos, ou o evento selecionado).
+  - **Taxa (%)** = recorrentes ÷ base × 100, 1 casa decimal; sem base, sem taxa.
+  - **Limite:** vendas sem `customer_id` (quem comprou sem criar conta) ficam de fora de propósito. Em 28/10/2026 isso era 32–49% das vendas pagas por evento; o painel mostra a cobertura na dica do indicador.
 - principais cidades.
 
 ## 18. Meta Ads

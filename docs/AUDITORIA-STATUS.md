@@ -50,6 +50,9 @@ Legenda: ✅ Aplicado e confirmado · ⏳ Aguardando teste/confirmação · 🔴
 ## Dashboard — clientes recorrentes (23/10/2026)
 - ✅ Correção integrada à `main` no commit `b291bfc`: recorrência significa comprador identificado com compra paga e não cortesia em pelo menos dois eventos distintos da mesma organização; a taxa usa como denominador os compradores identificados do escopo atual. Vendas sem `customer_id` não são inferidas por nome/contato.
 - ✅ Typecheck, testes automatizados, build de produção e smoke test SSR passaram. Publicado na Vercel em 23/10/2026; URL de produção respondeu HTTP 200. Sem alterações no banco de dados.
+- ✅ Revisão de 28/10/2026: fórmula extraída e testada (`src/lib/recurrence.ts`, 14 testes, conferida contra SQL independente nos 4 escopos), paginação determinística e dica de cobertura no painel.
+- ℹ️ **Estrutura do banco x identificação do comprador (28/10/2026):** só `sales.customer_id` identifica a mesma pessoa entre eventos, e é nulo em 32–49% das vendas pagas (quem comprou sem criar conta). Pelo contato da venda (WhatsApp/e-mail) apareceriam mais recorrentes (11–12 contra 6), mas o contato **não é identidade confiável**: 5 WhatsApps com nomes diferentes, 7 e-mails com nomes diferentes e 3 e-mails com mais de um WhatsApp (compras para amigos, casal, grafia). Por isso o cálculo **não infere pessoas por contato** e a taxa vale "entre compradores identificados".
+- ⏳ Para aumentar a cobertura sem inventar dados: usar a função do banco `link_guest_purchases_to_current_customer`, que já existe mas o app não chama, para vincular compras antigas quando o cliente criar conta (exige decisão de produto e verificação do e-mail/WhatsApp). Das 43 vendas pagas sem vínculo, 8–10 coincidem com um cliente cadastrado, e há 2 WhatsApps repetidos entre clientes (possível duplicidade a revisar antes de qualquer vínculo em massa).
 
 ---
 
@@ -211,7 +214,7 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ✅ Bug: com dois lotes ativos ao mesmo tempo (caso real: "1º Lote" R$ 25 e "Lote Especial + COPO" R$ 35 no `halloween-fantasy-2026`), só um aparecia para o cliente, porque `get_available_batches` liberava os lotes em fila. Agora aparecem todos os lotes de venda dentro do período e com estoque; cortesia segue fora. Nova migration `20261023190000_get_available_batches_all_active.sql` (mesma assinatura e mesmos grants).
 - ✅ Checkout (`create_pending_sale`) já validava o lote escolhido de forma independente (evento publicado, lote do evento, não cortesia, período, preço do lote, baixa atômica de estoque); não foi alterado.
 - ✅ Tela: se o lote escolhido saiu de venda antes do pagamento, o checkout avisa "Este ingresso não está mais disponível" em vez de trocar em silêncio para outro lote (com outro preço); a tela do evento usa sempre o lote realmente destacado.
-- ✅ Resumo do pedido (tela de pagamento): agora vem da reserva (lote, quantidade e total gravados pelo servidor). Corrige "retomar pagamento" mostrando o 1º Lote em vez do lote comprado e o "R$ 0,00" quando o lote sai da lista durante o pagamento (24/10/2026).
+- ✅ Resumo do pedido (tela de pagamento): agora vem da reserva (lote, quantidade e total gravados pelo servidor). Corrige "retomar pagamento" mostrando o 1º Lote em vez do lote comprado e o "R$ 0,00" quando o lote sai da lista durante o pagamento (27/10/2026).
 - ✅ Teste de regressão do banco publicado em `supabase/tests/get_available_batches_lotes_simultaneos.sql`.
 - ⏳ Conferir no celular: abrir `/e/halloween-fantasy-2026`, ver os dois lotes, escolher cada um e chegar ao Pix com o valor certo (R$ 25 e R$ 35).
 - 🔴 Atenção: lotes cadastrados sem data de início/fim ficam sempre visíveis enquanto houver estoque (efeito da nova regra).

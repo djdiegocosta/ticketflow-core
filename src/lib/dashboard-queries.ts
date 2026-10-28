@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth-context";
 import { useOperationalPreferences } from "./settings-queries";
 import { isUnresolvedPixFailure } from "@/lib/pix-failures";
+import { computeRecurrence } from "@/lib/recurrence";
 
 export function useNewCustomersCount(days: number = 30) {
   const { user, organizationId, loading: authLoading } = useAuth();
@@ -64,7 +65,7 @@ export function useAudienceStats(eventId?: string | null) {
     queryKey: ["customers", "audience-stats", organizationId, user?.id, eventId],
     enabled: !authLoading && !!user && !!organizationId,
     queryFn: async () => {
-      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, ageBands: [], ageCoverage: { known: 0, missing: 0, percentage: 0 }, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, topCities: [], totalPageViews: 0 };
+      if (eventId === null) return { totalCustomers: 0, averageAge: null, ageRange: null, ageBands: [], ageCoverage: { known: 0, missing: 0, percentage: 0 }, genderSplit: null, newCustomers: 0, recurringCustomers: 0, recurringRate: null, recurrenceCoverage: null, topCities: [], totalPageViews: 0 };
       let salesQuery = supabase.from("sales").select("customer_id").eq("status", "pago").eq("organization_id", organizationId as string);
       if (eventId) salesQuery = salesQuery.eq("event_id", eventId);
       const { data: paidSales, error: salesError } = await salesQuery;
@@ -109,6 +110,8 @@ export function useAudienceStats(eventId?: string | null) {
           .eq("is_courtesy", false)
           .not("customer_id", "is", null)
           .not("event_id", "is", null)
+          // Sem ORDER BY a paginação por .range() pode repetir ou pular linhas entre páginas.
+          .order("id", { ascending: true })
           .range(offset, offset + pageSize - 1);
         if (recurrenceError) throw recurrenceError;
         const page = data ?? [];
@@ -116,27 +119,20 @@ export function useAudienceStats(eventId?: string | null) {
         if (page.length < pageSize) break;
       }
 
-      const eventsByCustomer = new Map<string, Set<string>>();
-      allSales.forEach((sale) => {
-        if (!sale.customer_id || !sale.event_id) return;
-        const events = eventsByCustomer.get(sale.customer_id) ?? new Set<string>();
-        events.add(sale.event_id);
-        eventsByCustomer.set(sale.customer_id, events);
-      });
-      const scopedRecurrenceSales = eventId
-        ? allSales.filter((sale) => sale.event_id === eventId)
-        : allSales;
-      const currentBuyerIds = new Set(
-        scopedRecurrenceSales
-          .map((sale) => sale.customer_id)
-          .filter((customerId): customerId is string => !!customerId),
-      );
-      const recurringCustomers = Array.from(currentBuyerIds).filter(
-        (customerId) => (eventsByCustomer.get(customerId)?.size ?? 0) >= 2,
-      ).length;
-      const recurringRate = currentBuyerIds.size > 0
-        ? Math.round((recurringCustomers / currentBuyerIds.size) * 1000) / 10
-        : null;
+      const { recurringCustomers, recurringRate } = computeRecurrence(allSales, eventId);
+      // Cobertura: quanto das vendas pagas do escopo tem comprador identificado (entra no cálculo).
+      let totalPaidQuery = supabase
+        .from("sales")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", organizationId as string)
+        .eq("status", "pago")
+        .eq("is_courtesy", false);
+      if (eventId) totalPaidQuery = totalPaidQuery.eq("event_id", eventId);
+      const { count: totalPaidSales } = await totalPaidQuery;
+      const recurrenceCoverage = {
+        identifiedSales: eventId ? allSales.filter((sale) => sale.event_id === eventId).length : allSales.length,
+        totalSales: totalPaidSales ?? 0,
+      };
       const ageRange = ages.length ? { min: Math.min(...ages), max: Math.max(...ages) } : null;
       const buyersWithCity = Array.from(cityMap.values()).reduce((sum, item) => sum + item.count, 0);
       const topCities = Array.from(cityMap.values())
@@ -150,7 +146,7 @@ export function useAudienceStats(eventId?: string | null) {
       else pageViewsQuery = pageViewsQuery.in("event_id", (await supabase.from("events").select("id").eq("organization_id", organizationId as string)).data?.map((e) => e.id) ?? []);
       const { count: totalPageViews } = await pageViewsQuery;
 
-      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, ageBands, ageCoverage, genderSplit, newCustomers, recurringCustomers, recurringRate, topCities, totalPageViews: totalPageViews ?? 0 };
+      return { totalCustomers: (customers ?? []).length, averageAge: ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null, ageRange, ageBands, ageCoverage, genderSplit, newCustomers, recurringCustomers, recurringRate, recurrenceCoverage, topCities, totalPageViews: totalPageViews ?? 0 };
     },
   });
 }

@@ -1,3 +1,17 @@
+## 28/10/2026 — Clientes recorrentes: fórmula testada, cobertura visível
+
+- 🐛 **Clientes recorrentes (revisão do que o commit `b291bfc` já corrigiu):** o código
+  de `main` já contava eventos distintos (antes era "compras > 1", que incluía quem
+  comprou várias vezes no mesmo evento). Esta rodada não mudou o resultado, só tornou o
+  cálculo confiável e auditável: (1) lógica extraída para `src/lib/recurrence.ts`
+  (função pura, fórmula documentada no topo do arquivo e em `PROJECT-MAP.md`);
+  (2) 14 testes, incluindo uma réplica da distribuição real conferida por SQL
+  (57 compradores identificados / 6 recorrentes = 10,5%; É O BEAT 6/41 = 14,6%;
+  Modo Revoada 5/16 = 31,3%; Halloween 1/6 = 16,7%) e o caso do problema original;
+  (3) leitura paginada das vendas agora com `ORDER BY id`: sem isso `.range()` pode
+  repetir ou pular linhas entre páginas conforme a base crescer; (4) dica (ao parar
+  o mouse em "Clientes recorrentes") com a fórmula e a cobertura real
+  ("X% das vendas pagas, N de M"). Layout e demais métricas inalterados.
 ## 28/10/2026 — XP: regras v2, recálculo e preservação do histórico
 
 - 🔒 Aplicada no Supabase a migration `refactor_customer_xp_rules_v2`: 342 registros antigos preservados em `customer_xp_events_archive`; ledger ativo reconstruído com as regras oficiais, sem somar saldos antigos.
@@ -7,7 +21,7 @@
 - 🧪 Validação pós-migration: 254 registros ativos, 19.400 XP somados; 0 vendas de convidado com XP e 0 chaves de origem duplicadas. O caso Caio Luiz da Silva Santos foi recalculado para 750 XP.
 - ⚠️ A auditoria do Supabase encontrou outros avisos preexistentes de funções SECURITY DEFINER; não foram alterados nesta tarefa. A tabela de arquivo teve RLS ativado e acesso API revogado.
 
-## 24/10/2026 — Checkout: resumo do pedido correto com mais de um lote
+## 27/10/2026 — Checkout: resumo do pedido correto com mais de um lote
 
 - 🐛 **Resumo do pedido na tela de pagamento não depende mais da lista de lotes à
   venda.** Com dois lotes ativos, a revisão da correção dos lotes achou dois erros
