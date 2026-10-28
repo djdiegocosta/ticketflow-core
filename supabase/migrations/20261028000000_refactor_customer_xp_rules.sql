@@ -87,9 +87,11 @@ begin
 
   select not exists (
     select 1 from public.sales s
+    join public.customers c on c.id = s.customer_id and c.organization_id = s.organization_id
+    join public.profiles p on p.id = c.user_id
     where s.event_id = new.event_id and s.organization_id = new.organization_id
       and s.status = 'pago' and not coalesce(s.is_courtesy, false) and s.id <> new.id
-      and s.created_at >= v_signup_at
+      and s.created_at >= p.created_at
       and (coalesce(s.paid_at, s.updated_at, s.created_at), s.id) <
           (coalesce(new.paid_at, new.updated_at, new.created_at), new.id)
   ) into v_is_first_buyer;
@@ -197,7 +199,7 @@ begin
     select e.id, e.event_date,
       row_number() over (order by e.event_date, e.id) as seq
     from public.events e
-    where e.organization_id = v_org_id and (e.is_closed = true or e.event_date <= now())
+    where e.organization_id = v_org_id and e.event_date <= now()
   ),
   attended as (
     select distinct s.event_id
@@ -231,7 +233,7 @@ revoke all on function public.grant_xp_loyalty_if_eligible(uuid) from public, an
 
 drop trigger if exists trg_grant_xp_new_account on public.customers;
 create trigger trg_grant_xp_new_account
-after insert or update of user_id on public.customers
+after insert or update on public.customers
 for each row execute function public.grant_xp_new_account();
 
 drop trigger if exists trg_grant_xp_on_sale_paid on public.sales;
@@ -317,7 +319,7 @@ with completed_events as (
   select e.id, e.organization_id, e.event_date,
     row_number() over (partition by e.organization_id order by e.event_date, e.id) as seq
   from public.events e
-  where e.is_closed = true or e.event_date <= now()
+  where e.event_date <= now()
 ),
 attended as (
   select distinct c.id as customer_id, s.organization_id, s.event_id
