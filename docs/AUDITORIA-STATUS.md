@@ -1,3 +1,13 @@
+## XP — regras v2 aplicadas ao banco (28/10/2026)
+- ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
+- ✅ Os 342 registros anteriores foram preservados em `customer_xp_events_archive`; o ledger ativo foi recalculado do zero.
+- ✅ Regra aplicada por transação paga: 200 XP; primeira compra +50; cadastro +50; check-in +50 por cliente/evento; primeiro comprador +100; primeiro dia de vendas +50; compra adicional no mesmo evento +50; 3+ ingressos +100; fidelidade por 3 eventos consecutivos concluídos +200.
+- ✅ Vendas de convidados sem conta e compras/check-ins anteriores ao cadastro não recebem XP retroativo. Nenhuma associação foi criada por nome ou telefone.
+- ✅ Pós-validação: 254 lançamentos ativos / 19.400 XP; 0 venda sem cliente vinculada ao XP; 0 chave de origem duplicada. Caio Luiz da Silva Santos: 750 XP, 8 lançamentos (50 cadastro + 200 compra + 50 primeira compra + 50 check-in + 200 compra + 50 primeiro dia + 100 primeiro comprador + 50 check-in).
+- 🔒 RLS habilitado no arquivo de auditoria; acesso de `anon` e `authenticated` revogado.
+- ⏳ Frontend sem patentes e labels atualizados está na branch `fix/xp-rules-recalculation-20261028`; exige CI (typecheck, testes, build, smoke SSR) e revisão antes do merge/deploy.
+- ⚠️ Não houve teste de compra/check-in sintético em produção; a validação foi feita por consulta dos dados recalculados e conferência das funções/gatilhos.
+
 ## Área Clientes — correções em revisão (23/10/2026)
 - 🛠️ Ordenação por ingressos usa o campo `total_tickets` correto.
 - 🛠️ Histórico ordenado por `created_at` decrescente antes de identificar última compra e último evento.
