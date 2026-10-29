@@ -227,4 +227,4 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ⏳ v3 pronta na branch `feat/xp-rules-v3` e testada em simulação (36/36), **aguardando autorização para aplicar no banco** e publicar. Plano e desfazer em `docs/XP-REGRAS.md` e `supabase/rollbacks/`.
 - 🔴 Enquanto a v3 não for aplicada: qualquer cliente logado lê o XP de todos; venda manual paga não gera XP ao vivo; cancelamento não revoga XP.
 - 🔴 Decisões pendentes do dono: fidelidade a cada bloco de 3 (proposta) ou uma vez por cliente; "primeiro dia" por data (proposta) ou por janela de 24 h.
-- 🔴 1 cliente com conta ainda sem nenhum XP (investigar: perfil ausente?).
+- 🔴 1 cliente tem conta (`user_id` válido em `auth.users`) mas **sem linha em `profiles`**; por isso não recebe nenhum XP (a regra usa `profiles.created_at`). Decidir: criar o perfil faltante ou usar `auth.users.created_at` como reserva.

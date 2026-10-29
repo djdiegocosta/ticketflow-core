@@ -54,6 +54,7 @@ O ledger é reconstruído a partir do estado real: venda paga que vira cancelada
 - Desfazer a v3: `supabase/rollbacks/...rollback.sql`.
 
 ## Limitações conhecidas
+- 1 cliente com conta sem linha em `profiles` não recebe XP (sem data de cadastro confiável). Não inventamos a data.
 - Recalcular é global: custo cresce com o volume (hoje ~250 linhas, instantâneo). Reavaliar acima de dezenas de milhares de vendas.
 - Fidelidade só é recalculada quando algo dispara o gatilho (check-in, venda, evento). Um evento que "passa a estar concluído" só pelo relógio é contado no próximo gatilho ou em `rebuild_customer_xp()` manual.
 - Resgate de XP por brindes **não** está implementado. O ledger aceita linhas futuras de resgate (valor negativo) sem mexer nas de ganho (o recálculo só toca nos 9 motivos de ganho; o `check` de motivos precisará de um motivo novo).
