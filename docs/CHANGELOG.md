@@ -1,3 +1,24 @@
+## 28/10/2026 — Dados: 9 compras sem conta ligadas ao cadastro (opção C)
+
+- 🧾 **Ligação manual, conferida caso a caso, de 9 vendas pagas feitas sem login ao cadastro do
+  mesmo cliente** (`sales.customer_id` estava vazio). Critério: nome igual ao do cadastro **e**
+  WhatsApp ou e-mail igual, sem nenhum outro cadastro candidato. Vendas: `E86F8D25`
+  (Thais Ribeiro), `4BB095E0` (Kayck Bonifácio da Silva), `22F0D2B0` (Ingrid Defante),
+  `27B2CB75` (Izabela de Souza Faria), `47B017EE` (Andressa Freitas Rocha), `B4924B1E` e
+  `82AF44A7` (Karolayne Rosa Alvarenga de Oliveira), `58BDB2BB` (Kauê de Barcellos Lopes),
+  `D50C1040` (Kaik Aguiar). Cada venda ficou com uma anotação em `observation`. Aprovado pelo
+  produtor em 28/10/2026 depois de simulação desfeita no banco.
+- **Efeito medido:** recorrência 57 compradores / 6 recorrentes (10,5%) → **61 / 9 (14,8%)**;
+  vendas pagas sem vínculo 43 → 34. **Efeito colateral esperado:** o XP é calculado a partir das
+  vendas (`trg_xp_resync` → `rebuild_customer_xp`), então 5 clientes ganharam pontos retroativos
+  (Kayck +300, Karolayne +500, Izabela +200, Andressa +300, Kauê +250); ninguém fora da lista mudou
+  e o livro-razão de XP ficou sem divergências.
+- **Ficaram de fora de propósito (não ligar sem confirmação):** `64EF9102` (WhatsApp de uma conta,
+  e-mail de outra), `A9A1BB04` (contatos de outra pessoa) e `5EA9A2FC` (e-mail de outra pessoa; ligar
+  tornaria a Isadora "recorrente" por engano).
+- **Para desfazer** (os pontos se recalculam sozinhos):
+  `update public.sales set customer_id = null where sale_code in ('E86F8D25','4BB095E0','22F0D2B0','27B2CB75','47B017EE','B4924B1E','82AF44A7','58BDB2BB','D50C1040');`
+
 ## 29/10/2026 — XP: cliente com login sem perfil passa a ganhar XP (APLICADA no banco)
 
 - 🐛 **1 cliente tinha login (`auth.users`) mas nenhuma linha em `profiles`**, então não recebia nenhum XP. Migration `20261029120000_xp_signup_date_fallback.sql` (aplicada, autorizada pelo dono): a data de cadastro passa a ser `profiles.created_at` e, se o perfil faltar, `auth.users.created_at` (as duas datas coincidem nos outros 132 clientes). Efeito real: +1 linha (conta +50, 08/09/2026); nada mudou nas linhas existentes. Todas as contas agora têm XP (132 de 132).
