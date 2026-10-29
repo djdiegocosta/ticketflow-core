@@ -1,12 +1,26 @@
-## 28/10/2026 — XP v3: regras centralizadas, testes e correção de segurança (NA BRANCH, NÃO APLICADO)
+## 28/10/2026 — XP v3: regras centralizadas, testes e correção de segurança (APLICADA no banco)
 
-- ✨ **Branch `feat/xp-rules-v3`** (migration `20261028230000`, ainda **não aplicada** no banco de produção): `xp_expected_ledger()` e `rebuild_customer_xp()` viram a única fonte das regras; gatilhos antigos `grant_xp_*` substituídos por um gatilho único; recálculo idempotente (2ª execução = 0/0/0). Documentação em `docs/XP-REGRAS.md`.
+- ✨ **Migration `20261028230000` aplicada no banco de produção em 28/10/2026 (autorizada pelo dono):** `xp_expected_ledger()` e `rebuild_customer_xp()` viram a única fonte das regras; gatilhos antigos `grant_xp_*` substituídos por um gatilho único; recálculo idempotente (2ª execução = 0/0/0). Documentação em `docs/XP-REGRAS.md`.
 - 🐛 Achados na auditoria da v2: (1) vendas lançadas já como "pago" (venda manual) não geravam XP ao vivo, só no recálculo; (2) venda paga cancelada/reembolsada mantinha o XP; (3) lote de cortesia contava como abertura das vendas no bônus do primeiro dia; (4) a ordem do "primeiro comprador" usava `updated_at`, que muda com edições posteriores; (5) não havia função de recálculo reexecutável nem testes.
 - 🔒 **Segurança:** qualquer cliente logado conseguia ler o XP de todos (a policy usava `get_user_organization`, que sempre devolve a única organização). Corrigido na v3: só o próprio cliente ou admin/colaborador; escrita direta revogada de `anon`/`authenticated`.
 - 🧹 Patentes (Novato/Frequente/VIP/Elite/Lenda) removidas da view `customer_xp_totals`; a interface já não as usava.
-- 🧪 `supabase/tests/xp_rules_v3.sql`: 36 verificações (14 cenários do pedido + segurança). Ensaio contra o banco real dentro de transação desfeita: 36 PASS, nada gravado. Ver `docs/XP-REGRAS.md` para como rodar.
-- 📊 Impacto previsto da v3 sobre o ledger atual (v2): 254 → 258 linhas, 19.400 → 19.600 XP; 6 clientes mudam de saldo (5 bônus de primeiro dia passam a valer, 1 deixa de valer, 1 bônus de primeiro comprador muda de dono no e-o-beat). Caio Luiz da Silva Santos: 750 → 800.
+- 🧪 `supabase/tests/xp_rules_v3.sql`: 37 verificações (14 cenários do pedido + segurança). Executado contra o banco real, dentro de transação desfeita, antes e depois de aplicar: 37 PASS / 0 FAIL, nada gravado. Ver `docs/XP-REGRAS.md` para como rodar.
+- 📊 Resultado confirmado no banco após aplicar (previsto = real): 254 → 258 linhas, 19.400 → 19.600 XP; 6 clientes mudam de saldo (5 bônus de primeiro dia passam a valer, 1 deixa de valer, 1 bônus de primeiro comprador muda de dono no e-o-beat). Caio Luiz da Silva Santos: 750 → 800. Cópia do ledger anterior em `customer_xp_events_snapshot_v2` (254 linhas, 19.400 XP); histórico da v1 em `customer_xp_events_archive` (342 linhas, 34.000 XP). Fidelidade: aprovada a regra "+200 a cada 3 eventos seguidos".
 
+## 28/10/2026 — Clientes recorrentes: fórmula testada, cobertura visível
+
+- 🐛 **Clientes recorrentes (revisão do que o commit `b291bfc` já corrigiu):** o código
+  de `main` já contava eventos distintos (antes era "compras > 1", que incluía quem
+  comprou várias vezes no mesmo evento). Esta rodada não mudou o resultado, só tornou o
+  cálculo confiável e auditável: (1) lógica extraída para `src/lib/recurrence.ts`
+  (função pura, fórmula documentada no topo do arquivo e em `PROJECT-MAP.md`);
+  (2) 14 testes, incluindo uma réplica da distribuição real conferida por SQL
+  (57 compradores identificados / 6 recorrentes = 10,5%; É O BEAT 6/41 = 14,6%;
+  Modo Revoada 5/16 = 31,3%; Halloween 1/6 = 16,7%) e o caso do problema original;
+  (3) leitura paginada das vendas agora com `ORDER BY id`: sem isso `.range()` pode
+  repetir ou pular linhas entre páginas conforme a base crescer; (4) dica (ao parar
+  o mouse em "Clientes recorrentes") com a fórmula e a cobertura real
+  ("X% das vendas pagas, N de M"). Layout e demais métricas inalterados.
 ## 28/10/2026 — XP: regras v2, recálculo e preservação do histórico
 
 - 🔒 Aplicada no Supabase a migration `refactor_customer_xp_rules_v2`: 342 registros antigos preservados em `customer_xp_events_archive`; ledger ativo reconstruído com as regras oficiais, sem somar saldos antigos.
@@ -16,7 +30,7 @@
 - 🧪 Validação pós-migration: 254 registros ativos, 19.400 XP somados; 0 vendas de convidado com XP e 0 chaves de origem duplicadas. O caso Caio Luiz da Silva Santos foi recalculado para 750 XP.
 - ⚠️ A auditoria do Supabase encontrou outros avisos preexistentes de funções SECURITY DEFINER; não foram alterados nesta tarefa. A tabela de arquivo teve RLS ativado e acesso API revogado.
 
-## 24/10/2026 — Checkout: resumo do pedido correto com mais de um lote
+## 27/10/2026 — Checkout: resumo do pedido correto com mais de um lote
 
 - 🐛 **Resumo do pedido na tela de pagamento não depende mais da lista de lotes à
   venda.** Com dois lotes ativos, a revisão da correção dos lotes achou dois erros

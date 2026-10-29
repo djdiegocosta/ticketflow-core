@@ -2,7 +2,7 @@
 
 **Fonte única:** `xp_expected_ledger()` (quanto cada cliente DEVE ter) e `xp_rule_amount()` (valores), no banco.
 `rebuild_customer_xp()` acerta o ledger `customer_xp_events` com o esperado. Gatilhos só chamam essa função.
-Migration: `supabase/migrations/20261028230000_xp_rules_v3_single_ledger.sql` · Testes: `supabase/tests/xp_rules_v3.sql`
+Migration (aplicada em 28/10/2026): `supabase/migrations/20261028230000_xp_rules_v3_single_ledger.sql` · Testes: `supabase/tests/xp_rules_v3.sql`
 · Desfazer: `supabase/rollbacks/20261028230000_xp_rules_v3_rollback.sql`.
 
 ## Valores
