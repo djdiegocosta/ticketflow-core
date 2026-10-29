@@ -1310,7 +1310,6 @@ export type Database = {
         Row: {
           customer_id: string | null
           organization_id: string | null
-          patente: string | null
           total_xp: number | null
         }
         Relationships: [

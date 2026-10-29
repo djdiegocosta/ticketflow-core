@@ -1,3 +1,12 @@
+## 28/10/2026 — XP v3: regras centralizadas, testes e correção de segurança (NA BRANCH, NÃO APLICADO)
+
+- ✨ **Branch `feat/xp-rules-v3`** (migration `20261028230000`, ainda **não aplicada** no banco de produção): `xp_expected_ledger()` e `rebuild_customer_xp()` viram a única fonte das regras; gatilhos antigos `grant_xp_*` substituídos por um gatilho único; recálculo idempotente (2ª execução = 0/0/0). Documentação em `docs/XP-REGRAS.md`.
+- 🐛 Achados na auditoria da v2: (1) vendas lançadas já como "pago" (venda manual) não geravam XP ao vivo, só no recálculo; (2) venda paga cancelada/reembolsada mantinha o XP; (3) lote de cortesia contava como abertura das vendas no bônus do primeiro dia; (4) a ordem do "primeiro comprador" usava `updated_at`, que muda com edições posteriores; (5) não havia função de recálculo reexecutável nem testes.
+- 🔒 **Segurança:** qualquer cliente logado conseguia ler o XP de todos (a policy usava `get_user_organization`, que sempre devolve a única organização). Corrigido na v3: só o próprio cliente ou admin/colaborador; escrita direta revogada de `anon`/`authenticated`.
+- 🧹 Patentes (Novato/Frequente/VIP/Elite/Lenda) removidas da view `customer_xp_totals`; a interface já não as usava.
+- 🧪 `supabase/tests/xp_rules_v3.sql`: 36 verificações (14 cenários do pedido + segurança). Ensaio contra o banco real dentro de transação desfeita: 36 PASS, nada gravado. Ver `docs/XP-REGRAS.md` para como rodar.
+- 📊 Impacto previsto da v3 sobre o ledger atual (v2): 254 → 258 linhas, 19.400 → 19.600 XP; 6 clientes mudam de saldo (5 bônus de primeiro dia passam a valer, 1 deixa de valer, 1 bônus de primeiro comprador muda de dono no e-o-beat). Caio Luiz da Silva Santos: 750 → 800.
+
 ## 28/10/2026 — XP: regras v2, recálculo e preservação do histórico
 
 - 🔒 Aplicada no Supabase a migration `refactor_customer_xp_rules_v2`: 342 registros antigos preservados em `customer_xp_events_archive`; ledger ativo reconstruído com as regras oficiais, sem somar saldos antigos.

@@ -221,3 +221,10 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ✅ Admin → Clientes: coluna "XP" com ordenação (fonte: view `customer_xp_totals`). Nome cortado com "…" a partir de 20 caracteres e cidade a partir de 16 (texto completo ao passar o mouse), sem largura mínima forçada; "Ingressos/Eventos" virou "Ingressos" (só ingressos).
 - ⏳ Conferir no painel, logado como admin: a coluna XP mostra números diferentes de zero, a ordenação funciona e nenhum nome quebra em duas linhas (não foi possível testar com login de admin durante o desenvolvimento).
 - 🔴 A view `customer_xp_totals` tem permissões amplas (inclusive escrita) para os papéis `anon` e `authenticated`; hoje a segurança vem de `security_invoker` + RLS das tabelas de base. Avaliar revogar escrita e leitura anônima na varredura de segurança.
+
+## Rodada — XP v3 (28/10/2026)
+- ✅ v2 (aplicada em 28/10): 342 registros antigos arquivados e ledger reconstruído (254 linhas, 19.400 XP).
+- ⏳ v3 pronta na branch `feat/xp-rules-v3` e testada em simulação (36/36), **aguardando autorização para aplicar no banco** e publicar. Plano e desfazer em `docs/XP-REGRAS.md` e `supabase/rollbacks/`.
+- 🔴 Enquanto a v3 não for aplicada: qualquer cliente logado lê o XP de todos; venda manual paga não gera XP ao vivo; cancelamento não revoga XP.
+- 🔴 Decisões pendentes do dono: fidelidade a cada bloco de 3 (proposta) ou uma vez por cliente; "primeiro dia" por data (proposta) ou por janela de 24 h.
+- 🔴 1 cliente com conta ainda sem nenhum XP (investigar: perfil ausente?).
