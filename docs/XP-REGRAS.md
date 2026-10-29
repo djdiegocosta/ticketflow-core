@@ -18,11 +18,11 @@ Migration (aplicada em 28/10/2026): `supabase/migrations/20261028230000_xp_rules
 | 3+ ingressos na mesma transação | +100 | `compra_grupo` |
 | 3 eventos concluídos seguidos | +200 | `fidelidade` |
 
-Para mudar um valor: altere só `xp_rule_amount()` e rode `select * from rebuild_customer_xp();`.
+Para mudar um valor: altere só `xp_rule_amount()` e rode `select * from rebuild_customer_xp();` no editor SQL do Supabase.
 
 ## Quem ganha XP (elegibilidade)
 - Só cliente **com conta** (`customers.user_id` ligado a `profiles`). Venda de convidado nunca gera XP.
-- Data de cadastro = `profiles.created_at` (conferido: igual a `auth.users.created_at` e a `customers.account_created_at` em 100% dos casos).
+- Data de cadastro = `profiles.created_at`; se o perfil faltar, `auth.users.created_at` (conferido: as duas coincidem em 100% dos clientes que têm perfil, e batem com `customers.account_created_at` quando ele existe).
 - Nada anterior ao cadastro conta: compra é elegível se `sales.created_at >= cadastro`; check-in se `checked_in_at >= cadastro` e o ingresso é de compra elegível. Sem retroativo e sem associar vendas antigas por nome/telefone.
 - Compra elegível: `status = 'pago'` e não cortesia. Pendente, expirada, cancelada e reembolsada não geram XP.
 
@@ -45,7 +45,7 @@ O ledger é reconstruído a partir do estado real: venda paga que vira cancelada
 
 ## Segurança
 - Leitura de `customer_xp_events`/`customer_xp_totals`: o próprio cliente ou admin/colaborador (antes, qualquer cliente logado lia o XP de todos).
-- `anon`/`authenticated` sem escrita. `rebuild_customer_xp()` e `xp_expected_ledger()` só para `service_role`.
+- `anon`/`authenticated` sem escrita. `rebuild_customer_xp()` e `xp_expected_ledger()` só pelo dono (editor SQL do Supabase) e pelos gatilhos; nenhum papel da API as executa.
 - `SECURITY DEFINER` só nos gatilhos (quem dispara, como operador de check-in, não pode escrever no ledger), com `search_path` fixo e sem EXECUTE público.
 
 ## Histórico e recuperação
@@ -54,7 +54,7 @@ O ledger é reconstruído a partir do estado real: venda paga que vira cancelada
 - Desfazer a v3: `supabase/rollbacks/...rollback.sql`.
 
 ## Limitações conhecidas
-- 1 cliente com conta sem linha em `profiles` não recebe XP (sem data de cadastro confiável). Não inventamos a data.
+- Vendas ligadas manualmente a um cadastro (observação "Ligada manualmente ao cadastro de ...") passam a valer para XP se a compra foi feita depois do cadastro. O sistema não liga vendas por nome, telefone ou WhatsApp.
 - Recalcular é global: custo cresce com o volume (hoje ~250 linhas, instantâneo). Reavaliar acima de dezenas de milhares de vendas.
 - Fidelidade só é recalculada quando algo dispara o gatilho (check-in, venda, evento). Um evento que "passa a estar concluído" só pelo relógio é contado no próximo gatilho ou em `rebuild_customer_xp()` manual.
 - Resgate de XP por brindes **não** está implementado. O ledger aceita linhas futuras de resgate (valor negativo) sem mexer nas de ganho (o recálculo só toca nos 9 motivos de ganho; o `check` de motivos precisará de um motivo novo).

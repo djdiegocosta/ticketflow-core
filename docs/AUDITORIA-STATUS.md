@@ -227,9 +227,10 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 
 ## Rodada — XP v3 (28/10/2026)
 - ✅ v2 (aplicada em 28/10): 342 registros antigos arquivados e ledger reconstruído (254 linhas, 19.400 XP).
-- ✅ v3 aplicada no banco em 28/10 (autorizada): regras centralizadas, recálculo idempotente, RLS corrigida (cliente não lê mais o XP de outros), venda manual paga gera XP, cancelamento revoga XP, patentes removidas. Ledger: 258 linhas / 19.600 XP; 131 clientes com XP. Testes: 37/37 no banco real (desfeitos). Documentação: `docs/XP-REGRAS.md`; desfazer: `supabase/rollbacks/`.
+- ✅ v3 aplicada no banco em 28/10 (autorizada): regras centralizadas, recálculo idempotente, RLS corrigida (cliente não lê mais o XP de outros), venda manual paga gera XP, cancelamento revoga XP, patentes removidas. Ledger logo após aplicar: 258 linhas / 19.600 XP; hoje (29/10): 272 linhas / 21.200 XP, 132 clientes com XP. Testes: 37/37 no banco real (desfeitos). Documentação: `docs/XP-REGRAS.md`; desfazer: `supabase/rollbacks/`.
 - ✅ Decisão do dono: fidelidade a cada bloco de 3 eventos seguidos.
 - ⏳ Validar com uma venda/check-in reais: o XP aparece na tela "Pontos" do cliente e na coluna XP do admin.
-- 🔴 1 cliente tem conta (`user_id` válido em `auth.users`) mas **sem linha em `profiles`**; por isso não recebe XP. Decidir: criar o perfil faltante ou usar `auth.users.created_at` como reserva.
+- ✅ Cliente com login e sem perfil: resolvido em 29/10 (data de cadastro de reserva = `auth.users.created_at`). Todas as 132 contas têm XP.
+- 🔴 Conferir as vendas ligadas manualmente a cadastros em 29/10 14:28: elas passaram a gerar XP retroativo (compras feitas depois do cadastro). Duas delas (`4BB095E0` e `47B017EE`) foram ligadas a cadastros com e-mail e WhatsApp diferentes dos da venda; confirmar se a ligação está certa.
 - 🔴 Fidelidade só é recalculada quando algo dispara o gatilho; considerar um agendamento periódico de `rebuild_customer_xp()`.
 - 🔴 `customer_xp_events_snapshot_v2` e `customer_xp_events_archive` podem ser apagadas após um período de confiança (sugestão: 30 dias).

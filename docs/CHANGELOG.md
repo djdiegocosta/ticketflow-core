@@ -1,3 +1,10 @@
+## 29/10/2026 — XP: cliente com login sem perfil passa a ganhar XP (APLICADA no banco)
+
+- 🐛 **1 cliente tinha login (`auth.users`) mas nenhuma linha em `profiles`**, então não recebia nenhum XP. Migration `20261029120000_xp_signup_date_fallback.sql` (aplicada, autorizada pelo dono): a data de cadastro passa a ser `profiles.created_at` e, se o perfil faltar, `auth.users.created_at` (as duas datas coincidem nos outros 132 clientes). Efeito real: +1 linha (conta +50, 08/09/2026); nada mudou nas linhas existentes. Todas as contas agora têm XP (132 de 132).
+- 🔒 `xp_expected_ledger()` e `rebuild_customer_xp()` agora só rodam pelo dono (editor SQL do Supabase) e pelos gatilhos; `service_role` perdeu o acesso (a função lê `auth.users`, que `service_role` não pode ler) e nenhum papel da API as executa.
+- 🧪 `supabase/tests/xp_signup_fallback.sql` executado no banco real, desfeito: PASS (compra anterior ao cadastro não conta; conta 50 + compra 200 + 1ª compra 50 + 1º comprador 100 = 400).
+- 📊 Estado do ledger em 29/10: 272 linhas, 21.200 XP, 132 clientes com XP. Os ~1.550 XP acima do previsto na v3 vêm de **9 vendas antigas ligadas manualmente a cadastros em 29/10 às 14:28** (observação "Ligada manualmente ao cadastro de ..."): ao receberem `customer_id`, o gatilho reconheceu as compras feitas depois do cadastro. Confirma que o caminho ao vivo funciona.
+
 ## 28/10/2026 — XP v3: regras centralizadas, testes e correção de segurança (APLICADA no banco)
 
 - ✨ **Migration `20261028230000` aplicada no banco de produção em 28/10/2026 (autorizada pelo dono):** `xp_expected_ledger()` e `rebuild_customer_xp()` viram a única fonte das regras; gatilhos antigos `grant_xp_*` substituídos por um gatilho único; recálculo idempotente (2ª execução = 0/0/0). Documentação em `docs/XP-REGRAS.md`.
