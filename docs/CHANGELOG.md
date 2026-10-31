@@ -1,10 +1,10 @@
-## 29/10/2026 — Insights, Etapa 2: rastreamento de visitantes (NA BRANCH, NÃO APLICADO)
+## 31/10/2026 — Insights, Etapa 2: rastreamento de visitantes (APLICADA)
 
-- ✨ **Branch `feat/insights-visitor-tracking`** (migration `20261029190000`, ainda **não aplicada** no banco): a página pública do evento passa a registrar um identificador anônimo do visitante (`visitor_id`), o site de origem, `utm_*` e o código `?ref=`. Nova função `track_event_visit(...)`; `track_event_view(uuid)` continua e usa a mesma validação. Definições em `docs/INSIGHTS-PLANEJAMENTO.md`.
+- ✨ **Migration `20261029190000` aplicada no banco em 31/10/2026 (autorizada pelo dono)** e código publicado na main: a página pública do evento passa a registrar um identificador anônimo do visitante (`visitor_id`), o site de origem, `utm_*` e o código `?ref=`. Nova função `track_event_visit(...)`; `track_event_view(uuid)` continua e usa a mesma validação. Definições em `docs/INSIGHTS-PLANEJAMENTO.md`.
 - 🔒 `track_event_view` aceitava qualquer chamada anônima, até para evento inexistente ou rascunho. Agora só grava evento publicado e aberto, ignora repetição do mesmo visitante em 30 s e tem teto de 300 visitas/minuto por evento.
 - 🔒 `anon` e `authenticated` tinham todos os privilégios (até `TRUNCATE`) em `event_page_views`; só a regra de linhas segurava. Revogados; leitura segue só para administrador.
-- 🧪 `tests/visitor-tracking.test.ts` (16 testes, passam; a suíte inteira, 111, passa com o `bun`) e `supabase/tests/event_visit_tracking.sql` (13 verificações no banco real, em simulação desfeita: 13 PASS / 0 FAIL). Histórico preservado (1.774 visitas sem `visitor_id` antes e depois).
-- Não conta: robôs, pré-visualização de link e equipe interna (admin/colaborador/operador). Pendente: avaliar uma linha na Política de Privacidade sobre o identificador anônimo.
+- 🧪 `tests/visitor-tracking.test.ts` (16 testes, passam; a suíte inteira, 111, passa com o `bun`) e `supabase/tests/event_visit_tracking.sql` (13 verificações no banco real, em simulação desfeita: 13 PASS / 0 FAIL). Executado de novo no banco real depois de aplicar: 13 PASS / 0 FAIL, nada gravado. Histórico preservado (visitas antigas sem `visitor_id` iguais antes e depois).
+- Não conta: robôs, pré-visualização de link e equipe interna (admin/colaborador/operador). Política de Privacidade atualizada (seção 2) com a coleta anônima de visitas.
 
 ## 28/10/2026 — Dados: 9 compras sem conta ligadas ao cadastro (opção C)
 

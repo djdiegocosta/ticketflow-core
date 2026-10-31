@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
         <article className="space-y-7 text-sm leading-6 text-[var(--text-secondary)]">
           <header>
             <h1 className="text-heading-2 font-bold text-[var(--text-primary)]">Política de Privacidade</h1>
-            <p className="mt-2">Última atualização: 06/09/2026</p>
+            <p className="mt-2">Última atualização: 31/10/2026</p>
           </header>
 
           <section>
@@ -24,6 +24,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-heading-3 font-semibold text-[var(--text-primary)]">2. Dados coletados</h2>
             <p className="mt-2">Podemos coletar nome, WhatsApp, e-mail e nome dos participantes informados no checkout, além de dados necessários para identificar a venda, processar o pagamento e emitir os ingressos.</p>
+            <p className="mt-2">Também registramos, de forma anônima, as visitas às páginas dos eventos: um identificador aleatório guardado no seu navegador, o site de onde você veio e os parâmetros do link acessado. Isso serve para entender a procura pelos eventos e melhorar a divulgação, e não contém nome, e-mail, telefone nem outro dado que identifique você. Para apagar esse identificador, basta limpar os dados do site no navegador.</p>
           </section>
 
           <section>

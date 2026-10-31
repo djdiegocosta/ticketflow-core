@@ -1,6 +1,6 @@
 # TicketFlow Insights — decisões e definições
 
-Painel BI **exclusivo para administradores** (colaborador, operador e cliente não acessam). Auditoria técnica feita em 29/10/2026.
+Painel BI **exclusivo para administradores** (colaborador, operador e cliente não acessam). Auditoria técnica concluída em 31/10/2026.
 
 ## Decisões do dono (registradas)
 1. **5º dia útil:** conta o sábado (regra do pagamento de salário). Implementar como **parâmetro** (pode virar "só segunda a sexta" sem refazer).
@@ -15,7 +15,7 @@ Painel BI **exclusivo para administradores** (colaborador, operador e cliente n�
 
 ## Definições de rastreamento (Etapa 2)
 - **Visualização:** carregamento da página pública do evento; o mesmo visitante recarregando em menos de 30 s conta uma vez.
-- **Visitante único:** `visitor_id` distinto (identificador aleatório sorteado no navegador, guardado em `localStorage`, chave `tf_vid`). Visitas antigas (antes de 29/10/2026) não têm `visitor_id`: entram em "visualizações", não em "visitantes únicos".
+- **Visitante único:** `visitor_id` distinto (identificador aleatório sorteado no navegador, guardado em `localStorage`, chave `tf_vid`). Visitas antigas (antes de 31/10/2026) não têm `visitor_id`: entram em "visualizações", não em "visitantes únicos".
 - **Origem:** domínio de onde veio (`referrer_host`), `utm_source`/`utm_medium`/`utm_campaign` e o código `?ref=` do link de venda (`link_code`).
 - **Não entram:** robôs, pré-visualizações de link, e a equipe (admin, colaborador, operador de check-in).
 - **Teto:** 300 visitas por minuto por evento; só eventos publicados e abertos.
@@ -25,7 +25,7 @@ Painel BI **exclusivo para administradores** (colaborador, operador e cliente n�
 
 ## Etapas
 1. Definições e limpeza de dados (marcar vendas de teste; data de abertura das vendas no evento).
-2. **Rastreamento de visitantes** (este documento; migration `20261029190000_event_visit_tracking.sql`).
+2. **Rastreamento de visitantes — concluída em 31/10/2026** ( migration `20261029190000_event_visit_tracking.sql`).
 3. Fundação de dados: calendário de feriados, funções de estatística, índices, testes.
 4. Insights v1 — vendas (indicadores 1 a 8), por evento e consolidado.
 5. Público (indicadores 9 a 12).

@@ -236,9 +236,10 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Fidelidade só é recalculada quando algo dispara o gatilho; considerar um agendamento periódico de `rebuild_customer_xp()`.
 - 🔴 `customer_xp_events_snapshot_v2` e `customer_xp_events_archive` podem ser apagadas após um período de confiança (sugestão: 30 dias).
 
-## Rodada — TicketFlow Insights, Etapa 2 (29/10/2026)
+## Rodada — TicketFlow Insights, Etapa 2 (31/10/2026)
 - ✅ Auditoria técnica do Insights concluída e decisões do dono registradas em `docs/INSIGHTS-PLANEJAMENTO.md`.
-- ⏳ Rastreamento de visitantes pronto na branch `feat/insights-visitor-tracking`, testado em simulação (13/13 no banco, 16/16 no navegador). **Aguardando autorização para aplicar a migration e publicar.**
-- 🔴 Política de Privacidade não cita o identificador anônimo de visita; decidir o texto antes ou junto da publicação.
-- 🔴 Conversão e visitantes únicos só terão dados a partir da publicação; o histórico anterior não permite.
+- ✅ Rastreamento de visitantes aplicado no banco e publicado (autorizado): `visitor_id`, origem e `utm_*` na tabela `event_page_views`; função `track_event_visit`; teto e validação; privilégios revogados de `anon`/`authenticated`. Testes: 13/13 no banco real (desfeitos), 16/16 no navegador, suíte inteira 111/111.
+- ✅ Política de Privacidade atualizada (seção 2) com a coleta anônima de visitas.
+- ⏳ Conferir após a publicação: visitas reais chegando com `visitor_id` na tabela.
+- 🔴 Conversão e visitantes únicos só terão dados a partir de 31/10/2026; o histórico anterior não permite.
 - 🔴 Próximas etapas do Insights dependem de: marcar vendas de teste, data de abertura das vendas, calendário de feriados.
