@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { MobileLayout } from '@/components/layouts/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Loader2 } from 'lucide-react';
@@ -7,6 +7,8 @@ import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib
 import { setLastVisitedOrg } from '@/lib/org-context';
 import { captureRef } from '@/lib/attribution';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth-context';
+import { getOrCreateVisitorId, parseVisitSource, shouldTrackVisit } from '@/lib/visitor-tracking';
 
 export default function EventPage() {
   const { slug } = useParams({ from: '/e/$slug/' });
@@ -38,12 +40,39 @@ export default function EventPage() {
   // depois do React montar) — não conta pré-visualizações de link do
   // WhatsApp/Instagram, que só buscam a página no servidor pra ler as tags
   // de imagem/título, sem executar nada aqui.
+  // Insights: registra também o visitante anônimo (sorteado no navegador) e a origem.
+  // Não conta robôs nem a equipe (admin/colaborador/operador) e espera a autenticação carregar
+  // para saber quem é. Uma vez por carregamento de página e por evento.
+  const { userRole, loading: authLoading } = useAuth();
+  const trackedEventRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!event?.id) return;
-    supabase.rpc("track_event_view" as any, { _event_id: event.id }).then(({ error }) => {
-      if (error) console.error("[PublicEventPage] Falha ao registrar visita:", error);
-    });
-  }, [event?.id]);
+    if (!event?.id || trackedEventRef.current === event.id) return;
+    if (
+      !shouldTrackVisit({
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+        webdriver: typeof navigator !== 'undefined' ? navigator.webdriver : undefined,
+        role: userRole,
+        authLoading,
+      })
+    ) {
+      return;
+    }
+    trackedEventRef.current = event.id;
+    const source = parseVisitSource(window.location.search, document.referrer, window.location.hostname, search.ref);
+    supabase
+      .rpc('track_event_visit' as any, {
+        _event_id: event.id,
+        _visitor_id: getOrCreateVisitorId(),
+        _referrer_host: source.referrer_host,
+        _utm_source: source.utm_source,
+        _utm_medium: source.utm_medium,
+        _utm_campaign: source.utm_campaign,
+        _link_code: source.link_code,
+      })
+      .then(({ error }) => {
+        if (error) console.error('[PublicEventPage] Falha ao registrar visita:', error);
+      });
+  }, [event?.id, userRole, authLoading, search.ref]);
 
   if (isLoading) {
     return (

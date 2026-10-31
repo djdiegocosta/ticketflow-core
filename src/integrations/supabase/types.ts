@@ -490,16 +490,34 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
+          link_code: string | null
+          referrer_host: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          visitor_id: string | null
         }
         Insert: {
           created_at?: string
           event_id: string
           id?: string
+          link_code?: string | null
+          referrer_host?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
         }
         Update: {
           created_at?: string
           event_id?: string
           id?: string
+          link_code?: string | null
+          referrer_host?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
         }
         Relationships: [
           {
@@ -1660,6 +1678,18 @@ export type Database = {
         Returns: undefined
       }
       track_event_view: { Args: { _event_id: string }; Returns: undefined }
+      track_event_visit: {
+        Args: {
+          _event_id: string
+          _link_code?: string
+          _referrer_host?: string
+          _utm_campaign?: string
+          _utm_medium?: string
+          _utm_source?: string
+          _visitor_id?: string
+        }
+        Returns: undefined
+      }
       update_courtesy_participant: {
         Args: { _name: string; _ticket_id: string }
         Returns: undefined

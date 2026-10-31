@@ -235,3 +235,10 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Conferir as vendas ligadas manualmente a cadastros em 29/10 14:28: elas passaram a gerar XP retroativo (compras feitas depois do cadastro). Duas delas (`4BB095E0` e `47B017EE`) foram ligadas a cadastros com e-mail e WhatsApp diferentes dos da venda; confirmar se a ligação está certa.
 - 🔴 Fidelidade só é recalculada quando algo dispara o gatilho; considerar um agendamento periódico de `rebuild_customer_xp()`.
 - 🔴 `customer_xp_events_snapshot_v2` e `customer_xp_events_archive` podem ser apagadas após um período de confiança (sugestão: 30 dias).
+
+## Rodada — TicketFlow Insights, Etapa 2 (29/10/2026)
+- ✅ Auditoria técnica do Insights concluída e decisões do dono registradas em `docs/INSIGHTS-PLANEJAMENTO.md`.
+- ⏳ Rastreamento de visitantes pronto na branch `feat/insights-visitor-tracking`, testado em simulação (13/13 no banco, 16/16 no navegador). **Aguardando autorização para aplicar a migration e publicar.**
+- 🔴 Política de Privacidade não cita o identificador anônimo de visita; decidir o texto antes ou junto da publicação.
+- 🔴 Conversão e visitantes únicos só terão dados a partir da publicação; o histórico anterior não permite.
+- 🔴 Próximas etapas do Insights dependem de: marcar vendas de teste, data de abertura das vendas, calendário de feriados.
