@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { createEventWithBatches, slugify, type BatchInput } from "@/lib/events-queries";
 import { brtInputToUtcIso, formatBrtDateTime } from "@/lib/br-datetime";
+import { suggestSalesOpenAt } from "@/lib/sales-open";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +42,9 @@ export function CreateEventPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
+  // Abertura das vendas: sugerida pelo início do 1º lote enquanto o admin não mexe no campo.
+  const [salesOpenAt, setSalesOpenAt] = useState("");
+  const [salesOpenAtTouched, setSalesOpenAtTouched] = useState(false);
   const [singlePrice, setSinglePrice] = useState("");
   const [singleQuantity, setSingleQuantity] = useState("");
   const [saving, setSaving] = useState(false);
@@ -98,6 +102,8 @@ export function CreateEventPage() {
     }));
   };
 
+  const effectiveSalesOpenAt = salesOpenAtTouched ? salesOpenAt : suggestSalesOpenAt(lotes);
+
   const handleSave = async (status: "publicado" | "rascunho") => {
     if (!organizationId || !user) {
       toast.error("Sessão inválida. Faça login novamente.");
@@ -143,6 +149,7 @@ export function CreateEventPage() {
           location: location.trim(),
           slug: slug,
           status,
+          sales_open_at: brtInputToUtcIso(effectiveSalesOpenAt),
         },
         batches,
       );
@@ -361,6 +368,26 @@ export function CreateEventPage() {
                     className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
                   />
                 </div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-small font-medium text-text-secondary">Abertura das vendas</label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
+                  <input
+                    type="datetime-local"
+                    value={effectiveSalesOpenAt}
+                    onChange={(e) => {
+                      setSalesOpenAt(e.target.value);
+                      setSalesOpenAtTouched(true);
+                    }}
+                    className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
+                  />
+                </div>
+                <p className="text-micro text-text-secondary">
+                  Quando o público pôde começar a comprar (horário de Brasília). Alimenta os relatórios de antecedência
+                  das vendas. Se ficar em branco, usamos o início do primeiro lote ou o momento da criação do evento. Não
+                  muda sozinha quando você edita um lote.
+                </p>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">

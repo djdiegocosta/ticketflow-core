@@ -1,3 +1,12 @@
+## 31/10/2026 — Insights, Etapa 1: vendas de teste e abertura das vendas (NA BRANCH, NÃO APLICADO)
+
+- ✨ **Branch `feat/insights-etapa1-dados`** (migration `20261031120000`, ainda **não aplicada** no banco): `sales.is_test` marca vendas de teste (hoje só `TEST1D58EE2D`; o assistente de teste do Mercado Pago, `create_mp_test_sale`, passa a marcar sozinho); `events.sales_open_at` guarda a abertura real das vendas; `event_sales_open_at()` devolve a abertura efetiva (valor gravado, senão início do 1º lote de venda, senão criação do evento).
+- 📌 Dados históricos: e-o-beat = momento da criação do evento (08/09/2026 17:37, confirmado pelo dono: as vendas abriram ao criar o evento; as datas dos lotes foram regravadas depois); modo-revoada e halloween = início do 1º lote de venda.
+- 🔒 Evento encerrado continua imutável (`trg_prevent_closed_event_update`), exceto a abertura das vendas, que é dado de análise e foi posta fora do bloqueio (testado: título continua bloqueado, abertura aceita correção).
+- ✨ Formulários de criar e editar evento ganham "Abertura das vendas" (horário de Brasília). Vem sugerida pelo início do 1º lote e **não muda sozinha** ao editar um lote. Helper `src/lib/sales-open.ts`.
+- 🧪 `tests/sales-open.test.ts` (5) e `supabase/tests/insights_data_foundations.sql` (16 verificações no banco real, em simulação desfeita: 16 PASS / 0 FAIL).
+- ⚠️ XP **não** alterado: o bônus de "primeiro dia" continua usando a data dos lotes. Alinhar à nova abertura mudaria o e-o-beat (5 clientes perdem +50 e 1 ganha +50, saldo líquido −200 XP); depende de decisão do dono.
+
 ## 31/10/2026 — Insights, Etapa 2: rastreamento de visitantes (APLICADA)
 
 - ✨ **Migration `20261029190000` aplicada no banco em 31/10/2026 (autorizada pelo dono)** e código publicado na main: a página pública do evento passa a registrar um identificador anônimo do visitante (`visitor_id`), o site de origem, `utm_*` e o código `?ref=`. Nova função `track_event_visit(...)`; `track_event_view(uuid)` continua e usa a mesma validação. Definições em `docs/INSIGHTS-PLANEJAMENTO.md`.

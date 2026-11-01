@@ -24,7 +24,7 @@ Painel BI **exclusivo para administradores** (colaborador, operador e cliente n�
 - Conversão só será confiável a partir da primeira venda com `visitor_id` (Etapa 6 liga o visitante à venda); o histórico anterior não permite esse cálculo.
 
 ## Etapas
-1. Definições e limpeza de dados (marcar vendas de teste; data de abertura das vendas no evento).
+1. Definições e limpeza de dados (marcar vendas de teste; data de abertura das vendas no evento) — pronta na branch `feat/insights-etapa1-dados`, aguardando autorização.
 2. **Rastreamento de visitantes — concluída em 31/10/2026** ( migration `20261029190000_event_visit_tracking.sql`).
 3. Fundação de dados: calendário de feriados, funções de estatística, índices, testes.
 4. Insights v1 — vendas (indicadores 1 a 8), por evento e consolidado.

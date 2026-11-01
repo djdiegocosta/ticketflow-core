@@ -243,3 +243,11 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ⏳ Conferir após a publicação: visitas reais chegando com `visitor_id` na tabela.
 - 🔴 Conversão e visitantes únicos só terão dados a partir de 31/10/2026; o histórico anterior não permite.
 - 🔴 Próximas etapas do Insights dependem de: marcar vendas de teste, data de abertura das vendas, calendário de feriados.
+
+## Rodada — TicketFlow Insights, Etapa 1 (31/10/2026)
+- ⏳ Etapa 1 pronta na branch `feat/insights-etapa1-dados`, testada em simulação (16/16 no banco, 5/5 no navegador). **Aguardando autorização para aplicar a migration e publicar.**
+- ✅ Vendas manuais `9D0B1DB1` e `D35674F0` são reais (cliente ligado, Pix manual, ingressos); só `TEST1D58EE2D` é teste.
+- ✅ Dono confirmou: e-o-beat abriu as vendas em 08/09/2026, ao criar o evento.
+- 🔴 Decidir: alinhar o bônus de "primeiro dia" do XP à nova abertura (e-o-beat: −200 XP líquidos) ou manter como está.
+- 🔴 Dashboard e financeiro ainda contam a venda de teste (R$ 0,01); só o Insights usará `is_test`.
+- 🔴 `create_mp_test_sale` sempre usa o evento mais antigo; os testes futuros cairão no e-o-beat, que está encerrado (os próximos testes podem falhar por causa do bloqueio de evento encerrado).

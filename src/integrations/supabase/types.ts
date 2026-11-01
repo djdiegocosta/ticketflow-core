@@ -541,6 +541,7 @@ export type Database = {
           is_closed: boolean
           location: string
           organization_id: string
+          sales_open_at: string | null
           slug: string
           status: Database["public"]["Enums"]["event_status"]
           title: string
@@ -557,6 +558,7 @@ export type Database = {
           is_closed?: boolean
           location: string
           organization_id: string
+          sales_open_at?: string | null
           slug: string
           status?: Database["public"]["Enums"]["event_status"]
           title: string
@@ -573,6 +575,7 @@ export type Database = {
           is_closed?: boolean
           location?: string
           organization_id?: string
+          sales_open_at?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["event_status"]
           title?: string
@@ -933,6 +936,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_courtesy: boolean
+          is_test: boolean
           mp_debug_response: string | null
           mp_payment_id: string | null
           mp_qr_code: string | null
@@ -970,6 +974,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_courtesy?: boolean
+          is_test?: boolean
           mp_debug_response?: string | null
           mp_payment_id?: string | null
           mp_qr_code?: string | null
@@ -1007,6 +1012,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_courtesy?: boolean
+          is_test?: boolean
           mp_debug_response?: string | null
           mp_payment_id?: string | null
           mp_qr_code?: string | null
@@ -1677,6 +1683,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      event_sales_open_at: { Args: { _event_id: string }; Returns: string }
       track_event_view: { Args: { _event_id: string }; Returns: undefined }
       track_event_visit: {
         Args: {
