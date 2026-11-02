@@ -243,3 +243,10 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - ⏳ Conferir após a publicação: visitas reais chegando com `visitor_id` na tabela.
 - 🔴 Conversão e visitantes únicos só terão dados a partir de 31/10/2026; o histórico anterior não permite.
 - 🔴 Próximas etapas do Insights dependem de: marcar vendas de teste, data de abertura das vendas, calendário de feriados.
+
+## Rodada — TicketFlow Insights, Etapas 3+4 unidas (31/10/2026)
+- ⏳ Fundação de dados + primeiro painel (indicadores 1 a 8) prontos na branch `feat/insights-painel-v1`, testados em simulação (26/26 no banco, 12/12 das funções da tela, suíte 123/123). **Aguardando autorização para aplicar a migration e publicar.**
+- 🔴 Conferir visual e celular da página `/admin/insights` depois de publicada (não foi possível ver renderizada).
+- 🔴 O cruzamento (indicador 8) usa sempre a janela D-20 a D0; a janela escolhida vale para o gráfico de antecedência.
+- 🔴 Feriados estaduais e municipais não entram (só nacionais); para incluir, inserir linhas em `br_holidays`. Carnaval e Corpus Christi (pontos facultativos) ficaram de fora.
+- 🔴 Indicadores 9 a 14 (público, ranking, visitas e conversão) são as próximas etapas.

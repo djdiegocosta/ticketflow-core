@@ -25,6 +25,7 @@ import { Route as AdminCheckinRouteImport } from './routes/admin.checkin'
 import { Route as AdminChecklistRouteImport } from './routes/admin.checklist'
 import { Route as AdminCortesiasRouteImport } from './routes/admin.cortesias'
 import { Route as AdminHistoricoRouteImport } from './routes/admin.historico'
+import { Route as AdminInsightsRouteImport } from './routes/admin.insights'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin.relatorios'
 import { Route as AdminRemarketingRouteImport } from './routes/admin.remarketing'
 import { Route as AdminSimuladorRouteImport } from './routes/admin.simulador'
@@ -135,6 +136,11 @@ const AdminCortesiasRoute = AdminCortesiasRouteImport.update({
 const AdminHistoricoRoute = AdminHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminInsightsRoute = AdminInsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminRelatoriosRoute = AdminRelatoriosRouteImport.update({
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/historico': typeof AdminHistoricoRoute
+  '/admin/insights': typeof AdminInsightsRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/remarketing': typeof AdminRemarketingRoute
   '/admin/simulador': typeof AdminSimuladorRoute
@@ -361,6 +368,7 @@ export interface FileRoutesByTo {
   '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/historico': typeof AdminHistoricoRoute
+  '/admin/insights': typeof AdminInsightsRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/remarketing': typeof AdminRemarketingRoute
   '/admin/simulador': typeof AdminSimuladorRoute
@@ -411,6 +419,7 @@ export interface FileRoutesById {
   '/admin/checklist': typeof AdminChecklistRoute
   '/admin/cortesias': typeof AdminCortesiasRoute
   '/admin/historico': typeof AdminHistoricoRoute
+  '/admin/insights': typeof AdminInsightsRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/remarketing': typeof AdminRemarketingRoute
   '/admin/simulador': typeof AdminSimuladorRoute
@@ -462,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/historico'
+    | '/admin/insights'
     | '/admin/relatorios'
     | '/admin/remarketing'
     | '/admin/simulador'
@@ -509,6 +519,7 @@ export interface FileRouteTypes {
     | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/historico'
+    | '/admin/insights'
     | '/admin/relatorios'
     | '/admin/remarketing'
     | '/admin/simulador'
@@ -558,6 +569,7 @@ export interface FileRouteTypes {
     | '/admin/checklist'
     | '/admin/cortesias'
     | '/admin/historico'
+    | '/admin/insights'
     | '/admin/relatorios'
     | '/admin/remarketing'
     | '/admin/simulador'
@@ -726,6 +738,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/admin/historico'
       preLoaderRoute: typeof AdminHistoricoRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/insights': {
+      id: '/admin/insights'
+      path: '/insights'
+      fullPath: '/admin/insights'
+      preLoaderRoute: typeof AdminInsightsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/relatorios': {
@@ -953,6 +972,7 @@ interface AdminRouteRouteChildren {
   AdminChecklistRoute: typeof AdminChecklistRoute
   AdminCortesiasRoute: typeof AdminCortesiasRoute
   AdminHistoricoRoute: typeof AdminHistoricoRoute
+  AdminInsightsRoute: typeof AdminInsightsRoute
   AdminRelatoriosRoute: typeof AdminRelatoriosRoute
   AdminRemarketingRoute: typeof AdminRemarketingRoute
   AdminSimuladorRoute: typeof AdminSimuladorRoute
@@ -979,6 +999,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminChecklistRoute: AdminChecklistRoute,
   AdminCortesiasRoute: AdminCortesiasRoute,
   AdminHistoricoRoute: AdminHistoricoRoute,
+  AdminInsightsRoute: AdminInsightsRoute,
   AdminRelatoriosRoute: AdminRelatoriosRoute,
   AdminRemarketingRoute: AdminRemarketingRoute,
   AdminSimuladorRoute: AdminSimuladorRoute,

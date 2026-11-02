@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useRouterState, useNavigate, useLocation, useRouter } from "@tanstack/react-router";
-import { CalendarDays, Gift, LayoutDashboard, Receipt, Settings, ShieldCheck, Ticket, Users, UsersRound, Wrench, Menu, X, LogOut, Sun, Moon } from "lucide-react";
+import { BarChart3, CalendarDays, Gift, LayoutDashboard, Receipt, Settings, ShieldCheck, Ticket, Users, UsersRound, Wrench, Menu, X, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Brandmark } from "@/components/Brandmark";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,12 @@ import { MpReconcileButton } from "@/components/admin/MpReconcileButton";
 import { useSaleAlertSound } from "@/hooks/use-sale-alert-sound";
 
 const pageTitles: Record<string, string> = {
-  "/admin": "Dashboard", "/admin/eventos": "Eventos", "/admin/vendas": "Vendas", "/admin/cortesias": "Cortesias", "/admin/clientes": "Clientes", "/checkin": "Check-in", "/admin/relatorios": "Relatórios", "/admin/ferramentas": "Ferramentas", "/admin/ferramentas/vitrine": "Vitrine", "/admin/ferramentas/historico-eventos": "Histórico de Eventos", "/admin/historico": "Histórico de Check-in", "/admin/usuarios": "Usuários", "/admin/configuracoes": "Configurações", "/admin/checklist": "Checklist", "/admin/remarketing": "Remarketing", "/admin/simulador": "Simulador",
+  "/admin": "Dashboard", "/admin/insights": "Insights", "/admin/eventos": "Eventos", "/admin/vendas": "Vendas", "/admin/cortesias": "Cortesias", "/admin/clientes": "Clientes", "/checkin": "Check-in", "/admin/relatorios": "Relatórios", "/admin/ferramentas": "Ferramentas", "/admin/ferramentas/vitrine": "Vitrine", "/admin/ferramentas/historico-eventos": "Histórico de Eventos", "/admin/historico": "Histórico de Check-in", "/admin/usuarios": "Usuários", "/admin/configuracoes": "Configurações", "/admin/checklist": "Checklist", "/admin/remarketing": "Remarketing", "/admin/simulador": "Simulador",
 };
 
 const menu: { to: string; label: string; icon: typeof Ticket; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/insights", label: "Insights", icon: BarChart3 },
   { to: "/admin/eventos", label: "Eventos", icon: CalendarDays },
   { to: "/admin/vendas", label: "Vendas", icon: Receipt },
   { to: "/admin/cortesias", label: "Cortesias", icon: Gift },

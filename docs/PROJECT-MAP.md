@@ -70,6 +70,7 @@ TanStack Start usa roteamento baseado em arquivos. O shell global está em `src/
 - `/admin/vendas`
 - `/admin/vendas/nova`
 - `/admin/cortesias`
+- `/admin/insights` (exclusivo administrador)
 - `/admin/clientes`
 - `/admin/clientes/:id`
 - `/admin/checkin` → **alias/redirect** para `/checkin`

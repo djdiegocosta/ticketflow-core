@@ -66,6 +66,7 @@ Acesso: `admin` e `colaborador`. Layout: `src/components/layouts/AdminLayout.tsx
 | `/admin/cortesias` | `admin.cortesias.tsx` | Emissão e lista de cortesias |
 | `/admin/checklist` | `admin.checklist.tsx` | Checklist operacional do evento |
 | `/admin/relatorios` | `admin.relatorios.tsx` | Relatórios e análises |
+| `/admin/insights` | `admin.insights.tsx` | TicketFlow Insights: BI de vendas (exclusivo administrador) |
 | `/admin/remarketing` | `admin.remarketing.tsx` | Recuperação de checkout abandonado |
 | `/admin/simulador` | `admin.simulador.tsx` | Simulador de cenário financeiro |
 | `/admin/usuarios` | `admin.usuarios.tsx` | Gestão de usuários da organização |

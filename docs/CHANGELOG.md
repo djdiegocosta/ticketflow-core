@@ -1,3 +1,11 @@
+## 31/10/2026 — Insights, Etapas 3+4: fundação de dados e primeiro painel (NA BRANCH, NÃO APLICADO)
+
+- ✨ **Branch `feat/insights-painel-v1`** (migration `20261031150000`, ainda **não aplicada** no banco): nova página **`/admin/insights`** (exclusiva para administrador; colaborador e demais papéis são redirecionados; as funções do banco também recusam quem não é admin) com os indicadores 1 a 8: vendas por dia da semana, faixa de horário (4 h), período do mês, antes/depois do 5º dia útil, virada do mês, antecedência D-20 a D0 (janela de 20, 30, 45 ou 60 dias), evolução diária (por dia ou acumulada) e cruzamento antecedência x dia da semana x período do mês. Filtros: evento ou consolidado, período (tudo, 30 dias, 90 dias, datas), origem (online, bilheteria, todas), medida (vendas, ingressos, receita) e sábado como dia útil.
+- 🗄️ Banco: tabela `br_holidays` (feriados nacionais 2026-2030), `br_is_business_day`, `br_nth_business_day`, funções `insights_sales_facts/breakdown/daily/cross/summary` (SECURITY INVOKER, exigem admin, sem dado pessoal) e dois índices por data em vendas pagas.
+- 📏 Regras: venda = paga, sem cortesia e sem teste; data da compra = pagamento, senão criação; receita desconta reembolso parcial; tudo no horário de Brasília; antecedência por dia de calendário (venda na noite do evento = D0); 5º dia útil contando sábado (parâmetro).
+- 🧪 `supabase/tests/insights_foundation.sql` (26 verificações no banco real, em simulação desfeita: 26 PASS / 0 FAIL, com resultados esperados contados à mão, limites de fuso e de feriado e segurança pelo papel `authenticated`) e `tests/insights-format.test.ts` (12). Suíte inteira: 123 testes passam; typecheck limpo; build ok.
+- ⚠️ A tela ainda não foi vista renderizada num navegador (sem acesso durante o desenvolvimento): conferir visual e celular depois de publicar.
+
 ## 31/10/2026 — Insights, Etapa 2: rastreamento de visitantes (APLICADA)
 
 - ✨ **Migration `20261029190000` aplicada no banco em 31/10/2026 (autorizada pelo dono)** e código publicado na main: a página pública do evento passa a registrar um identificador anônimo do visitante (`visitor_id`), o site de origem, `utm_*` e o código `?ref=`. Nova função `track_event_visit(...)`; `track_event_view(uuid)` continua e usa a mesma validação. Definições em `docs/INSIGHTS-PLANEJAMENTO.md`.

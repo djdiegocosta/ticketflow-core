@@ -33,3 +33,13 @@ Painel BI **exclusivo para administradores** (colaborador, operador e cliente n�
 7. Acabamento: desempenho, celular, acessibilidade, documentação.
 
 Testes: `tests/visitor-tracking.test.ts` (navegador) e `supabase/tests/event_visit_tracking.sql` (banco, termina em erro de propósito = tudo desfeito).
+
+## Definições dos indicadores 1 a 8 (painel v1)
+- **Faixa de horário:** 6 faixas de 4 horas (00–03h ... 20–23h).
+- **Período do mês:** dias 1–5, 6–10, 11–15, 16–20, 21–25 e 26–31.
+- **5º dia útil:** compras até o 5º dia útil do mês x depois; conta sábado por padrão (parâmetro); domingos e feriados nacionais não contam.
+- **Virada do mês:** início (dias 1–3), meio e fim (últimos 3 dias); a virada é início + fim.
+- **Antecedência:** D0 (dia do evento) até D-N, N = 20, 30, 45 ou 60; mais "Antes de D-N" e "Pós-evento".
+- **Cruzamento:** faixas D-20 a D-15, D-14 a D-8, D-7 a D-4, D-3 a D-1 e D0 x dia da semana, filtrável por período do mês.
+- **Medidas:** vendas (pedidos), ingressos e receita líquida (desconta reembolso parcial).
+- **Amostra:** com menos de 30 vendas o painel avisa que é tendência, não regra.
