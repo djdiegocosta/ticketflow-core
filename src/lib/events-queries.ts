@@ -112,6 +112,7 @@ export interface EventInput {
   location: string;
   slug: string;
   status: Database["public"]["Enums"]["event_status"];
+  sales_open_at?: string | null;
 }
 
 export async function createEventWithBatches(

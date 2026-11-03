@@ -244,9 +244,16 @@ O código criptografa a credencial do Mercado Pago (`access_token`, `webhook_sec
 - 🔴 Conversão e visitantes únicos só terão dados a partir de 31/10/2026; o histórico anterior não permite.
 - 🔴 Próximas etapas do Insights dependem de: marcar vendas de teste, data de abertura das vendas, calendário de feriados.
 
+## Rodada — TicketFlow Insights, Etapa 1 (31/10/2026)
+- ✅ Etapa 1 aplicada no banco e publicada em 31/10/2026 (autorizada): `sales.is_test`, `events.sales_open_at`, `event_sales_open_at()`, campo "Abertura das vendas" nos formulários. Testes: 16/16 no banco real (desfeitos), suíte do navegador 116/116.
+- ✅ Vendas manuais `9D0B1DB1` e `D35674F0` são reais (cliente ligado, Pix manual, ingressos); só `TEST1D58EE2D` é teste.
+- ✅ Dono confirmou: e-o-beat abriu as vendas em 08/09/2026, ao criar o evento.
+- ✅ Decisão do dono: XP do e-o-beat fica como está (bônus de primeiro dia pela data dos lotes).
+- 🔴 Dashboard e financeiro ainda contam a venda de teste (R$ 0,01); só o Insights usará `is_test`.
+- 🔴 `create_mp_test_sale` sempre usa o evento mais antigo; os testes futuros cairão no e-o-beat, que está encerrado (os próximos testes podem falhar por causa do bloqueio de evento encerrado).
 ## Rodada — TicketFlow Insights, Etapas 3+4 unidas (31/10/2026)
-- ⏳ Fundação de dados + primeiro painel (indicadores 1 a 8) prontos na branch `feat/insights-painel-v1`, testados em simulação (26/26 no banco, 12/12 das funções da tela, suíte 123/123). **Aguardando autorização para aplicar a migration e publicar.**
-- 🔴 Conferir visual e celular da página `/admin/insights` depois de publicada (não foi possível ver renderizada).
+- ✅ Fundação de dados + primeiro painel (indicadores 1 a 8) aplicados no banco e publicados em 31/10/2026 (autorizado): 26/26 no banco real (desfeitos), 12/12 das funções da tela, suíte 128/128. Item próprio no menu, após Dashboard.
+- ⏳ Conferir visual e celular da página `/admin/insights` (não foi possível ver renderizada durante o desenvolvimento).
 - 🔴 O cruzamento (indicador 8) usa sempre a janela D-20 a D0; a janela escolhida vale para o gráfico de antecedência.
 - 🔴 Feriados estaduais e municipais não entram (só nacionais); para incluir, inserir linhas em `br_holidays`. Carnaval e Corpus Christi (pontos facultativos) ficaram de fora.
 - 🔴 Indicadores 9 a 14 (público, ranking, visitas e conversão) são as próximas etapas.

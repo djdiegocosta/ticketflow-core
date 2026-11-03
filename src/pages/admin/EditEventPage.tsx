@@ -67,6 +67,7 @@ export function EditEventPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
+  const [salesOpenAt, setSalesOpenAt] = useState("");
   const [status, setStatus] = useState<"publicado" | "rascunho" | "cancelado">("rascunho");
   const [draft, setDraft] = useState<BatchDraft | null>(null);
   const [saving, setSaving] = useState(false);
@@ -92,6 +93,7 @@ export function EditEventPage() {
     setTime(localTime || "");
     setLocation(event.location);
     setStatus(event.status);
+    setSalesOpenAt(utcIsoToBrtInput(event.sales_open_at));
   }, [event]);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["events"] });
@@ -116,6 +118,7 @@ export function EditEventPage() {
         event_date: eventDateIso,
         location: location.trim(),
         status,
+        sales_open_at: brtInputToUtcIso(salesOpenAt),
       });
       await refresh();
       toast.success("Alterações salvas com sucesso!");
@@ -480,6 +483,23 @@ export function EditEventPage() {
                     className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
                   />
                 </div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-small font-medium text-text-secondary">Abertura das vendas</label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-2.5 w-4 h-4 text-text-disabled pointer-events-none" />
+                  <input
+                    type="datetime-local"
+                    value={salesOpenAt}
+                    onChange={(e) => setSalesOpenAt(e.target.value)}
+                    className="w-full bg-bg-primary border border-border-default rounded-sm p-2 pl-10 outline-none focus:border-accent"
+                  />
+                </div>
+                <p className="text-micro text-text-secondary">
+                  Quando o público pôde começar a comprar (horário de Brasília). Alimenta os relatórios de antecedência
+                  das vendas. Se ficar em branco, usamos o início do primeiro lote ou o momento da criação do evento. Não
+                  muda sozinha quando você edita um lote.
+                </p>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-small font-medium text-text-secondary">
