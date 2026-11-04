@@ -25,30 +25,8 @@ import {
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { formatCurrency } from "@/lib/sales-queries";
-import { calcBar, clampMarginPct } from "@/lib/simulador-calc";
-const EVENTS: any[] = [
-  {
-    id: "1",
-    name: "Festa de Verão",
-    lots: [
-      { id: "1a", name: "1º Lote", price: 90 },
-      { id: "1b", name: "2º Lote", price: 110 },
-    ],
-  },
-  {
-    id: "2",
-    name: "Show do Ano",
-    lots: [
-      { id: "2a", name: "Pista", price: 90 },
-      { id: "2b", name: "VIP", price: 180 },
-    ],
-  },
-  {
-    id: "3",
-    name: "Festival Outono",
-    lots: [{ id: "3a", name: "Ingresso único", price: 70 }],
-  },
-];
+import { calcBar, clampMarginPct, lotsFromBatches } from "@/lib/simulador-calc";
+import { fetchEventWithBatches, useEvents } from "@/lib/events-queries";
 import { formatName } from "@/lib/form-format";
 
 /* -------------------------------------------------------------------------- */
@@ -231,6 +209,9 @@ export function SimuladorPage() {
   const [lots, setLots] = React.useState<Lot[]>(INITIAL_LOTS);
   const [courtesies, setCourtesies] = React.useState(0);
   const [importEventId, setImportEventId] = React.useState("");
+  const [isImporting, setIsImporting] = React.useState(false);
+  const importRequestRef = React.useRef(0);
+  const { data: events = [], isLoading: isLoadingEvents } = useEvents();
   const [otherRevenue, setOtherRevenue] = React.useState<Amounts>(() =>
     emptyAmounts(OTHER_REVENUE_FIELDS),
   );
@@ -268,19 +249,33 @@ export function SimuladorPage() {
 
   const removeLot = (id: string) => setLots((prev) => prev.filter((l) => l.id !== id));
 
-  const importLots = (eventId: string) => {
+  // Importa do evento real só o que é projeção: nome do evento e nome/preço dos lotes pagos.
+  // Vendas estimadas começam em zero (o simulador nunca usa vendas reais) e o lote de
+  // cortesia não vira lote pago.
+  const importLots = async (eventId: string) => {
     setImportEventId(eventId);
-    const event = EVENTS.find((e) => e.id === eventId);
-    if (!event) return;
-    setEventName(event.name);
-    setLots(
-      event.lots.map((lot: any, i: number) => ({
-        id: `${event.id}-${lot.id}-${i}`,
-        name: lot.name,
-        price: lot.price,
-        sold: 0,
-      })),
-    );
+    if (!eventId) return;
+    const requestId = ++importRequestRef.current;
+    setIsImporting(true);
+    try {
+      const { event, batches } = await fetchEventWithBatches(eventId);
+      if (requestId !== importRequestRef.current) return;
+      if (!event) throw new Error("Evento não encontrado");
+      const importedLots = lotsFromBatches(event.id, batches);
+      if (importedLots.length === 0) {
+        toast.info("Este evento ainda não tem lotes de ingresso pagos para importar");
+        return;
+      }
+      setEventName(event.title);
+      setLots(importedLots);
+      toast.success("Lotes importados. Agora estime quantos ingressos vai vender em cada um");
+    } catch (error) {
+      if (requestId !== importRequestRef.current) return;
+      console.error("Erro ao importar lotes:", error);
+      toast.error("Não foi possível importar os lotes deste evento");
+    } finally {
+      if (requestId === importRequestRef.current) setIsImporting(false);
+    }
   };
 
   /* ----------------------------- cálculos ao vivo -------------------------- */
@@ -462,13 +457,14 @@ export function SimuladorPage() {
           <select
             aria-label="Importar lotes de um evento"
             value={importEventId}
-            onChange={(e) => importLots(e.target.value)}
+            disabled={isLoadingEvents || isImporting}
+            onChange={(e) => void importLots(e.target.value)}
             className={cn(filterFieldClass, "sm:w-[260px]")}
           >
             <option value="">Importar lotes de um evento</option>
-            {EVENTS.map((e) => (
+            {events.map((e) => (
               <option key={e.id} value={e.id}>
-                {e.name}
+                {e.title}
               </option>
             ))}
           </select>

@@ -42,3 +42,30 @@ export function calcBar(input: BarInput): BarResult {
   const profit = round2(revenue - cost);
   return { totalAudience, revenue, cost, profit, marginPct };
 }
+
+/** Lote como o simulador usa (projeção: nunca carrega vendas reais). */
+export type SimulatorLot = { id: string; name: string; price: number; sold: number };
+
+/** Parte mínima de um lote real (`ticket_batches`) necessária para importar. */
+export type ImportableBatch = {
+  id: string;
+  name: string;
+  price: number | string | null;
+  is_courtesy: boolean;
+};
+
+/**
+ * Converte os lotes de um evento real em lotes do simulador.
+ * - só lotes pagos: o lote de cortesia não vira lote de ingresso;
+ * - vendas estimadas começam em zero: o simulador nunca usa vendas reais.
+ */
+export function lotsFromBatches(eventId: string, batches: ImportableBatch[]): SimulatorLot[] {
+  return batches
+    .filter((b) => !b.is_courtesy)
+    .map((b) => ({
+      id: `${eventId}-${b.id}`,
+      name: b.name,
+      price: Math.max(0, Number(b.price) || 0),
+      sold: 0,
+    }));
+}

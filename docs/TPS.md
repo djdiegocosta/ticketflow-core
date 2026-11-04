@@ -623,7 +623,7 @@ Formato: etapas numeradas em sequência (não wizard bloqueante — todas visív
 - Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, preço (R$), quantidade vendida estimada. (Não existe campo de "quantidade disponível": removido em 04/11/2026 para simplificar.)
 - Receita por lote calculada automaticamente (preço × quantidade vendida estimada).
 - Linha de total: soma de quantidade vendida e receita.
-- Opção de importar lotes de um evento já cadastrado.
+- Opção de importar lotes de um evento **real já cadastrado** (lista vem dos eventos da organização; antes de 04/11/2026 usava eventos de exemplo fixos no código, removidos). Importa só o nome do evento e o nome e preço dos lotes **pagos** — o lote de cortesia não vira lote de ingresso e as vendas estimadas começam em zero (o simulador nunca usa vendas reais). Se o evento não tiver lote pago, nada é substituído e o produtor é avisado. Regra em `lotsFromBatches` (`src/lib/simulador-calc.ts`).
 - Nota fixa: "A receita mostrada é o valor de face dos ingressos, sem descontos."
 - **Quantidade de cortesias** (número) fica nesta etapa, logo abaixo da tabela de lotes — cortesias não entram na receita de ingressos, mas contam como público presente. Vale com ou sem bar.
 - **Público total estimado** = quantidade vendida total + cortesias (exibido ao lado do campo de cortesias).
