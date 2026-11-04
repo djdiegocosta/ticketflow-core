@@ -25,6 +25,7 @@ import {
 } from "@/components/admin/DataTable";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { formatCurrency } from "@/lib/sales-queries";
+import { calcBar, clampMarginPct } from "@/lib/simulador-calc";
 const EVENTS: any[] = [
   {
     id: "1",
@@ -175,15 +176,14 @@ const cellInputClass =
 type Lot = {
   id: string;
   name: string;
-  available: number;
   price: number;
   sold: number;
 };
 
 const INITIAL_LOTS: Lot[] = [
-  { id: "l1", name: "Lote 1", available: 100, price: 80, sold: 100 },
-  { id: "l2", name: "Lote 2", available: 150, price: 100, sold: 120 },
-  { id: "l3", name: "Lote 3", available: 150, price: 115, sold: 80 },
+  { id: "l1", name: "Lote 1", price: 80, sold: 100 },
+  { id: "l2", name: "Lote 2", price: 100, sold: 120 },
+  { id: "l3", name: "Lote 3", price: 115, sold: 80 },
 ];
 
 type Artist = { id: string; name: string; fee: number };
@@ -200,14 +200,7 @@ const FIXED_COST_FIELDS = [
   { key: "aluguel", label: "Aluguel do espaço" },
   { key: "estrutura", label: "Estrutura — som, luz, palco" },
   { key: "marketing", label: "Marketing e divulgação" },
-  { key: "decoracao", label: "Decoração" },
   { key: "outros", label: "Outros custos fixos" },
-] as const;
-
-const VARIABLE_COST_FIELDS = [
-  { key: "copos", label: "Copos / kit de entrada" },
-  { key: "seguro", label: "Seguro por pessoa" },
-  { key: "outros", label: "Outros variáveis por pessoa" },
 ] as const;
 
 type Amounts = Record<string, number>;
@@ -236,6 +229,7 @@ export function SimuladorPage() {
   const [eventName, setEventName] = React.useState("");
   const [capacity, setCapacity] = React.useState(400);
   const [lots, setLots] = React.useState<Lot[]>(INITIAL_LOTS);
+  const [courtesies, setCourtesies] = React.useState(0);
   const [importEventId, setImportEventId] = React.useState("");
   const [otherRevenue, setOtherRevenue] = React.useState<Amounts>(() =>
     emptyAmounts(OTHER_REVENUE_FIELDS),
@@ -243,18 +237,13 @@ export function SimuladorPage() {
   const [fixedCosts, setFixedCosts] = React.useState<Amounts>(() =>
     emptyAmounts(FIXED_COST_FIELDS),
   );
-  const [variableCosts, setVariableCosts] = React.useState<Amounts>(() =>
-    emptyAmounts(VARIABLE_COST_FIELDS),
-  );
   const [artists, setArtists] = React.useState<Artist[]>(INITIAL_ARTISTS);
   const [securityQty, setSecurityQty] = React.useState(0);
   const [securityUnit, setSecurityUnit] = React.useState(0);
   const [staffQty, setStaffQty] = React.useState(0);
   const [staffUnit, setStaffUnit] = React.useState(0);
   const [hasBar, setHasBar] = React.useState(false);
-  const [barCourtesies, setBarCourtesies] = React.useState(0);
   const [barAvgSpend, setBarAvgSpend] = React.useState(0);
-  const [barProductsCost, setBarProductsCost] = React.useState(0);
   const [barExpectedMargin, setBarExpectedMargin] = React.useState(0);
 
   const updateArtist = (id: string, patch: Partial<Artist>) =>
@@ -272,7 +261,6 @@ export function SimuladorPage() {
       {
         id: `l${Date.now()}`,
         name: `Lote ${prev.length + 1}`,
-        available: 0,
         price: 0,
         sold: 0,
       },
@@ -289,7 +277,6 @@ export function SimuladorPage() {
       event.lots.map((lot: any, i: number) => ({
         id: `${event.id}-${lot.id}-${i}`,
         name: lot.name,
-        available: 100,
         price: lot.price,
         sold: 0,
       })),
@@ -298,7 +285,6 @@ export function SimuladorPage() {
 
   /* ----------------------------- cálculos ao vivo -------------------------- */
 
-  const totalAvailable = lots.reduce((acc, l) => acc + l.available, 0);
   const totalSold = lots.reduce((acc, l) => acc + l.sold, 0);
   const ticketRevenue = lots.reduce((acc, l) => acc + l.price * l.sold, 0);
   const otherRevenueTotal = sumAmounts(otherRevenue);
@@ -308,16 +294,21 @@ export function SimuladorPage() {
   const staffTotal = staffQty * staffUnit;
   const fixedTotal = sumAmounts(fixedCosts) + artistsTotal + securityTotal + staffTotal;
 
-  const barAudience = hasBar ? totalSold + barCourtesies : 0;
-  const barRevenue = hasBar ? barAvgSpend * barAudience : 0;
-  const barCost = hasBar ? barProductsCost : 0;
-  const barProfit = barRevenue - barCost;
-  const barRealMargin = barRevenue > 0 ? (barProfit / barRevenue) * 100 : 0;
+  // Bar: o custo dos produtos sai de Público total × Consumo médio × (100% − Margem bruta).
+  const bar = calcBar({
+    hasBar,
+    totalSold,
+    courtesies,
+    avgSpend: barAvgSpend,
+    expectedMarginPct: barExpectedMargin,
+  });
+  const totalAudience = bar.totalAudience;
+  const barRevenue = bar.revenue;
+  const barCost = bar.cost;
+  const barProfit = bar.profit;
 
   const totalRevenue = ticketRevenue + otherRevenueTotal + barRevenue;
-  const variablePerPerson = sumAmounts(variableCosts);
-  const variableTotal = variablePerPerson * totalSold;
-  const totalCosts = fixedTotal + variableTotal + barCost;
+  const totalCosts = fixedTotal + barCost;
   const result = totalRevenue - totalCosts;
   const margin = totalRevenue > 0 ? (result / totalRevenue) * 100 : 0;
   const avgTicket = totalSold > 0 ? ticketRevenue / totalSold : 0;
@@ -341,17 +332,16 @@ export function SimuladorPage() {
       const input_data = {
         capacity,
         lots,
+        courtesies,
         otherRevenue,
         fixedCosts,
-        variableCosts,
         artists,
         security: { qty: securityQty, unit: securityUnit },
         staff: { qty: staffQty, unit: staffUnit },
         bar: {
           hasBar,
-          courtesies: barCourtesies,
           avgSpend: barAvgSpend,
-          productsCost: barProductsCost,
+          expectedMargin: barExpectedMargin,
         },
       };
 
@@ -401,19 +391,25 @@ export function SimuladorPage() {
     const data = sim.input_data as any;
     setEventName(sim.event_name);
     setCapacity(data.capacity || 0);
-    setLots(data.lots || []);
+    setLots(
+      ((data.lots || []) as Partial<Lot>[]).map((l) => ({
+        id: l.id ?? `l${Date.now()}`,
+        name: l.name ?? "",
+        price: l.price || 0,
+        sold: l.sold || 0,
+      })),
+    );
+    setCourtesies(data.courtesies ?? data.bar?.courtesies ?? 0);
     setOtherRevenue(data.otherRevenue || emptyAmounts(OTHER_REVENUE_FIELDS));
-    setFixedCosts(data.fixedCosts || emptyAmounts(FIXED_COST_FIELDS));
-    setVariableCosts(data.variableCosts || emptyAmounts(VARIABLE_COST_FIELDS));
+    setFixedCosts({ ...emptyAmounts(FIXED_COST_FIELDS), ...(data.fixedCosts || {}) });
     setArtists(data.artists || []);
     setSecurityQty(data.security?.qty || 0);
     setSecurityUnit(data.security?.unit || 0);
     setStaffQty(data.staff?.qty || 0);
     setStaffUnit(data.staff?.unit || 0);
     setHasBar(data.bar?.hasBar || false);
-    setBarCourtesies(data.bar?.courtesies || 0);
     setBarAvgSpend(data.bar?.avgSpend || 0);
-    setBarProductsCost(data.bar?.productsCost || 0);
+    setBarExpectedMargin(clampMarginPct(data.bar?.expectedMargin || 0));
     setIsHistoryOpen(false);
     toast.success("Simulação carregada!");
   };
@@ -481,14 +477,7 @@ export function SimuladorPage() {
         <DataTableShell>
           <DataTable>
             <DataTableHeadRow
-              columns={[
-                "Lote",
-                "Qtd. disponível",
-                "Preço (R$)",
-                "Qtd. vendida (estimada)",
-                "Receita",
-                "",
-              ]}
+              columns={["Lote", "Preço (R$)", "Qtd. vendida (estimada)", "Receita", ""]}
             />
             <tbody>
               {lots.map((lot) => (
@@ -499,17 +488,6 @@ export function SimuladorPage() {
                       value={lot.name}
                       onChange={(e) => updateLot(lot.id, { name: formatName(e.target.value) })}
                       className={cn(cellInputClass, "min-w-[140px]")}
-                    />
-                  </DataTableCell>
-                  <DataTableCell>
-                    <input
-                      aria-label="Quantidade disponível"
-                      type="number"
-                      min={0}
-                      value={lot.available === 0 ? "" : lot.available}
-                      placeholder="0"
-                      onChange={(e) => updateLot(lot.id, { available: toNumber(e.target.value) })}
-                      className={cn(cellInputClass, "w-[110px]")}
                     />
                   </DataTableCell>
                   <DataTableCell>
@@ -551,16 +529,13 @@ export function SimuladorPage() {
               ))}
               {lots.length === 0 && (
                 <DataTableRow>
-                  <DataTableCell colSpan={6} variant="muted" className="text-center">
+                  <DataTableCell colSpan={5} variant="muted" className="text-center">
                     Nenhum lote adicionado.
                   </DataTableCell>
                 </DataTableRow>
               )}
               <tr className="border-t border-border-default bg-bg-tertiary">
                 <td className="px-4 py-3 text-small font-semibold text-text-primary">Total</td>
-                <td className="px-4 py-3 text-small font-semibold text-text-primary">
-                  {totalAvailable}
-                </td>
                 <td className="px-4 py-3" />
                 <td className="px-4 py-3 text-small font-semibold text-text-primary">
                   {totalSold}
@@ -586,6 +561,22 @@ export function SimuladorPage() {
         <p className="mt-3 text-micro text-text-disabled">
           A receita mostrada é o valor de face dos ingressos, sem descontos.
         </p>
+
+        <div className="mt-6 grid grid-cols-1 gap-5 border-t border-border-subtle pt-5 sm:grid-cols-2">
+          <NumberField
+            label="Quantidade de cortesias"
+            value={courtesies}
+            onChange={setCourtesies}
+            help="Cortesias não entram na receita de ingressos, mas contam como público presente (usado no cálculo do bar)"
+          />
+          <div className="space-y-1.5">
+            <span className="block text-small text-text-secondary">Público total estimado</span>
+            <div className="text-heading-1 text-text-primary">{totalAudience}</div>
+            <p className="text-micro text-text-disabled">
+              Ingressos vendidos ({totalSold}) + cortesias ({courtesies})
+            </p>
+          </div>
+        </div>
       </StepSection>
 
       {/* Etapa 3 — Bar do evento */}
@@ -616,13 +607,7 @@ export function SimuladorPage() {
 
         {hasBar && (
           <>
-            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-              <NumberField
-                label="Quantidade de cortesias"
-                value={barCourtesies}
-                onChange={setBarCourtesies}
-                help="Cortesias não entram na receita de ingressos, mas contam como público presente para o cálculo do bar"
-              />
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
               <NumberField
                 label="Consumo médio por pessoa"
                 prefix="R$"
@@ -630,77 +615,38 @@ export function SimuladorPage() {
                 onChange={setBarAvgSpend}
               />
               <NumberField
-                label="Custo total dos produtos do bar"
-                prefix="R$"
-                value={barProductsCost}
-                onChange={setBarProductsCost}
-              />
-              <NumberField
                 label="Margem bruta esperada"
                 suffix="%"
                 value={barExpectedMargin}
-                onChange={setBarExpectedMargin}
+                onChange={(v) => setBarExpectedMargin(clampMarginPct(v))}
+                help="De 0 a 100%. É a parte da receita do bar que sobra depois de pagar os produtos"
               />
             </div>
 
-            <div className="mt-5 bg-bg-tertiary p-4">
-              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-                <div>
-                  <span className="text-small text-text-secondary">Público presente (bar)</span>
-                  <div className="text-heading-2 text-text-primary">{barAudience}</div>
-                </div>
-                <div>
-                  <span className="text-small text-text-secondary">Receita bruta do bar</span>
-                  <div className="text-heading-2 text-text-primary">
-                    {formatCurrency(barRevenue)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-small text-text-secondary">Lucro do bar</span>
-                  <div
-                    className="text-heading-2"
-                    style={{ color: barProfit >= 0 ? "var(--accent-text)" : "var(--error)" }}
-                  >
-                    {formatCurrency(barProfit)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-small text-text-secondary">Margem esperada vs. real</span>
-                  <div className="text-heading-2 text-text-primary">
-                    {barExpectedMargin.toFixed(1)}%{" "}
-                    <span
-                      style={{
-                        color:
-                          barRealMargin < barExpectedMargin ? "var(--error)" : "var(--accent-text)",
-                      }}
-                    >
-                      / {barRealMargin.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MiniMetricGrid className="mt-5">
+              <MiniMetricCard
+                title="Público total"
+                value={totalAudience}
+                subtext="Vendidos + cortesias"
+              />
+              <MiniMetricCard title="Receita bruta do bar" value={formatCurrency(barRevenue)} />
+              <MiniMetricCard
+                title="Custo total dos produtos do bar"
+                value={formatCurrency(barCost)}
+                subtext="Calculado automaticamente"
+              />
+              <MiniMetricCard title="Lucro do bar" value={formatCurrency(barProfit)} />
+            </MiniMetricGrid>
+
+            <p className="mt-3 text-micro text-text-disabled">
+              Custo dos produtos = público total × consumo médio × (100% − margem bruta esperada).
+            </p>
           </>
         )}
       </StepSection>
 
       {/* Etapa 4 */}
-      <StepSection step={4} title="Outras receitas">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {OTHER_REVENUE_FIELDS.map((f) => (
-            <NumberField
-              key={f.key}
-              label={f.label}
-              prefix="R$"
-              value={otherRevenue[f.key] ?? 0}
-              onChange={(v) => setOtherRevenue((prev) => ({ ...prev, [f.key]: v }))}
-            />
-          ))}
-        </div>
-      </StepSection>
-
-      {/* Etapa 5 */}
-      <StepSection step={5} title="Custos fixos">
+      <StepSection step={4} title="Custos fixos">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {FIXED_COST_FIELDS.map((f) => (
             <NumberField
@@ -817,23 +763,19 @@ export function SimuladorPage() {
         </p>
       </StepSection>
 
-      {/* Etapa 6 */}
-      <StepSection step={6} title="Custos variáveis (por pessoa presente)">
+      {/* Etapa 5 */}
+      <StepSection step={5} title="Outras receitas">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {VARIABLE_COST_FIELDS.map((f) => (
+          {OTHER_REVENUE_FIELDS.map((f) => (
             <NumberField
               key={f.key}
               label={f.label}
               prefix="R$"
-              suffix="/pessoa"
-              value={variableCosts[f.key] ?? 0}
-              onChange={(v) => setVariableCosts((prev) => ({ ...prev, [f.key]: v }))}
+              value={otherRevenue[f.key] ?? 0}
+              onChange={(v) => setOtherRevenue((prev) => ({ ...prev, [f.key]: v }))}
             />
           ))}
         </div>
-        <p className="mt-3 text-micro text-text-disabled">
-          Custo variável total = soma destes valores × quantidade total vendida (Etapa 2).
-        </p>
       </StepSection>
 
       {/* Resultado financeiro */}
@@ -882,7 +824,6 @@ export function SimuladorPage() {
             { label: "(+) Outras receitas", value: otherRevenueTotal },
             { label: "(−) Custos fixos", value: -fixedTotal },
             ...(hasBar ? [{ label: "(−) Custo do bar", value: -barCost }] : []),
-            { label: "(−) Custos variáveis", value: -variableTotal },
           ].map((row) => (
             <div
               key={row.label}
@@ -911,19 +852,11 @@ export function SimuladorPage() {
             <MiniMetricCard title="Receita bruta do bar" value={formatCurrency(barRevenue)} />
             <MiniMetricCard title="Custo do bar" value={formatCurrency(barCost)} />
             <MiniMetricCard title="Lucro do bar" value={formatCurrency(barProfit)} />
-            <MiniMetricCard title="Margem esperada vs. real">
-              <div className="text-heading-1 text-text-primary">
-                {barExpectedMargin.toFixed(1)}%
-              </div>
-              <div
-                className="mt-0.5 text-small"
-                style={{
-                  color: barRealMargin < barExpectedMargin ? "var(--error)" : "var(--accent-text)",
-                }}
-              >
-                Margem real calculada: {barRealMargin.toFixed(1)}%
-              </div>
-            </MiniMetricCard>
+            <MiniMetricCard
+              title="Margem bruta esperada"
+              value={`${bar.marginPct.toFixed(1)}%`}
+              subtext="Define o custo dos produtos"
+            />
           </MiniMetricGrid>
         </BlockSection>
       )}

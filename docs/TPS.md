@@ -619,63 +619,63 @@ Formato: etapas numeradas em sequência (não wizard bloqueante — todas visív
 - Nome do evento (referência, texto livre).
 - Capacidade total (pessoas) — limite máximo de ingressos do evento simulado.
 
-**Etapa 2 — Lotes de ingressos:**
-- Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, quantidade disponível, preço (R$), quantidade vendida estimada.
+**Etapa 2 — Lotes de ingressos e cortesias:**
+- Tabela com linhas adicionáveis ("+ Adicionar lote"): nome do lote, preço (R$), quantidade vendida estimada. (Não existe campo de "quantidade disponível": removido em 04/11/2026 para simplificar.)
 - Receita por lote calculada automaticamente (preço × quantidade vendida estimada).
-- Linha de total: soma de quantidade disponível, quantidade vendida e receita.
+- Linha de total: soma de quantidade vendida e receita.
 - Opção de importar lotes de um evento já cadastrado.
 - Nota fixa: "A receita mostrada é o valor de face dos ingressos, sem descontos."
+- **Quantidade de cortesias** (número) fica nesta etapa, logo abaixo da tabela de lotes — cortesias não entram na receita de ingressos, mas contam como público presente. Vale com ou sem bar.
+- **Público total estimado** = quantidade vendida total + cortesias (exibido ao lado do campo de cortesias).
 
 **Etapa 3 — Bar do evento:**
 - Toggle: "Este evento terá bar próprio?" (Sim / Não). Se "Não", etapa encerra aqui, sem influenciar nenhum cálculo.
-- Se "Sim":
-  - Quantidade de cortesias (número) — cortesias não entram na receita de ingressos, mas contam como público presente para o cálculo do bar.
+- Se "Sim", o produtor informa apenas:
   - Consumo médio por pessoa (R$).
-  - Custo total dos produtos do bar (R$) — valor informado pelo produtor, entra diretamente como despesa.
-  - Margem bruta esperada do bar (%) — usada apenas como comparação/validação, não entra no cálculo do lucro (evita contar a mesma coisa duas vezes).
+  - Margem bruta esperada do bar (%) — limitada a 0–100%.
+- O **custo total dos produtos do bar não é digitado**: é um card calculado automaticamente.
 - Cálculos desta etapa:
-  - Público presente (bar) = quantidade vendida total (soma da Etapa 2) + quantidade de cortesias.
-  - Receita bruta do bar = Consumo médio por pessoa × Público presente (bar).
-  - Lucro do bar = Receita bruta do bar − Custo total dos produtos do bar (valor real, usado no Resultado Financeiro).
-  - Margem real calculada = Lucro do bar ÷ Receita bruta do bar (%) — exibida ao lado da margem esperada informada, para o produtor comparar.
+  - Público total = quantidade vendida total + cortesias (Etapa 2).
+  - Receita bruta do bar = Consumo médio por pessoa × Público total.
+  - **Custo total dos produtos do bar = Receita bruta do bar × (100% − Margem bruta esperada)** — entra como despesa no Resultado Financeiro.
+  - Lucro do bar = Receita bruta do bar − Custo total dos produtos do bar.
+- Cards exibidos: Público total, Receita bruta do bar, Custo total dos produtos do bar ("Calculado automaticamente"), Lucro do bar.
+- Cálculo isolado em `src/lib/simulador-calc.ts` (testes em `tests/simulador-calc.test.ts`).
+- Histórico: antes de 04/11/2026 o custo era digitado e a margem esperada era só comparação com a "margem real". Como agora o custo vem da margem, as duas são sempre iguais e a comparação foi removida.
 
-**Etapa 4 — Outras receitas:**
-- Patrocínios (R$).
-- Camarotes / VIP (R$).
-- Outras receitas (R$, campo livre).
-- (Bar removido desta etapa — tratado integralmente na Etapa 3.)
-
-**Etapa 5 — Custos fixos:**
+**Etapa 4 — Custos fixos:**
 - Aluguel do espaço (R$).
 - Artistas / DJs / bandas — lista dinâmica ("+ Adicionar artista"): nome (referência) + cachê (R$) por linha; soma automática do total de cachês.
 - Segurança — quantidade de seguranças (número) × custo por unidade (R$); total calculado automaticamente.
 - Estrutura — som, luz, palco (R$).
 - Equipe operacional — quantidade de pessoas (número) × custo por unidade (R$); total calculado automaticamente.
 - Marketing e divulgação (R$).
-- Decoração (R$).
 - Outros custos fixos (R$, campo livre).
 - Custos fixos totais = soma de todos os itens acima (usando os totais calculados de artistas, segurança e equipe).
+- (Campo "Decoração" removido em 04/11/2026.)
 
-**Etapa 6 — Custos variáveis (por pessoa presente):**
-- Copos / kit de entrada (R$/pessoa).
-- Seguro por pessoa (R$/pessoa).
-- Outros variáveis por pessoa (R$, campo livre).
-- Custo variável total = soma dos campos × quantidade total vendida (soma da Etapa 2).
+**Etapa 5 — Outras receitas (última etapa de preenchimento, logo antes do Resultado Financeiro):**
+- Patrocínios (R$).
+- Camarotes / VIP (R$).
+- Outras receitas (R$, campo livre).
+- (Bar tratado integralmente na Etapa 3.)
+
+**Custos variáveis:** removidos do simulador em 04/11/2026 (não há mais etapa nem linha no detalhamento).
 
 ---
 
 **Resultado Financeiro (calculado ao vivo, sempre visível conforme rola a tela):**
 
 - **Card de destaque (hero):** "Resultado estimado (Lucro/Prejuízo)" — valor grande, com badge "Projeção de lucro" (verde, var(--accent)) ou "Projeção de prejuízo" (vermelho, var(--error)) conforme o sinal do resultado. Tratamento visual de alto contraste (fundo escuro/destacado), mesmo no tema light.
-- 3 cards de apoio: "Receita total" (ingressos + bar + outras receitas), "Custos totais" (fixos + bar + variáveis), "Margem" (% sobre receita total).
+- 3 cards de apoio: "Receita total" (ingressos + bar + outras receitas), "Custos totais" (fixos + bar), "Margem" (% sobre receita total).
 - Detalhamento tipo DRE (lista, não tabela):
-  Receita de ingressos → (+) Receita bruta do bar (se houver) → (+) Outras receitas → (−) Custos fixos → (−) Custo do bar (se houver) → (−) Custos variáveis → **Lucro/Prejuízo** (linha final destacada).
+  Receita de ingressos → (+) Receita bruta do bar (se houver) → (+) Outras receitas → (−) Custos fixos → (−) Custo do bar (se houver) → **Lucro/Prejuízo** (linha final destacada).
 
 **Painel do Bar (exibido apenas se "Este evento terá bar próprio?" = Sim):**
 - Card "Receita bruta do bar"
-- Card "Custo do bar" (valor informado)
+- Card "Custo do bar" (calculado a partir da margem bruta esperada)
 - Card "Lucro do bar" (receita − custo)
-- Comparação lado a lado: "Margem esperada" (informada) vs. "Margem real calculada" (a partir do custo informado)
+- Card "Margem bruta esperada" (a informada na Etapa 3, que define o custo dos produtos)
 
 **Ponto de Equilíbrio (dois números lado a lado — com e sem o bar):**
 - "Ticket médio líquido atual" (R$) = receita de ingressos ÷ quantidade vendida total (Etapa 2) — "por ingresso vendido".
@@ -688,7 +688,7 @@ Formato: etapas numeradas em sequência (não wizard bloqueante — todas visív
 - 🔹 Realista — 70% da capacidade total.
 - 🔺 Otimista — 85% da capacidade total.
 - ⬆️ Lotação total — 100% da capacidade total.
-- Cada card: percentual + receita de ingressos projetada nesse cenário = ticket médio × (capacidade total × percentual do cenário). Nota pequena: "Os cenários consideram apenas a receita de ingressos — a receita do bar depende do público presente estimado na Etapa 3."
+- Cada card: percentual + receita de ingressos projetada nesse cenário = ticket médio × (capacidade total × percentual do cenário). Nota pequena: "Os cenários consideram apenas a receita de ingressos — a receita do bar depende do público total estimado (Etapas 2 e 3)."
 - Sem emojis de rosto ou paleta laranja/amarela — usar iconografia Lucide neutra (ex: TrendingDown, Minus, TrendingUp, Rocket) e indicador de cor sutil (borda superior ou lateral fina), consistente com o Design System.
 
 Regra visível na tela (texto pequeno, var(--text-secondary)): "Esta ferramenta trabalha apenas com projeções — não usa nem altera dados reais de vendas."
