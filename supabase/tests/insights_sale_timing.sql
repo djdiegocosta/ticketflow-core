@@ -42,6 +42,8 @@ declare
   d0_orders bigint;
   d0_daily bigint;
   daily_orders bigint;
+  advance_breakdown bigint;
+  advance_daily bigint;
   d0_breakdown bigint;
   total_breakdown bigint;
   average_total numeric;
@@ -98,8 +100,17 @@ begin
     case when advance_orders = 2 then 'PASS' else 'FAIL' end, advance_orders);
   results := results || format('%s T2 D0 considera a data do evento, sábado ou quarta (esperado 2, recebeu %s)',
     case when event_day_orders = 2 then 'PASS' else 'FAIL' end, event_day_orders);
-  results := results || format('%s T3 todas mantém o comportamento integral (esperado 6, recebeu %s)',
+  results := results || format('%s T3 todas mantém o comportamento integral (esperado 7, recebeu %s)',
     case when all_orders = 7 then 'PASS' else 'FAIL' end, all_orders);
+  select coalesce(sum(b.orders), 0) into advance_breakdown
+  from public.insights_sales_breakdown('dow', ids, null, null, 'online', true, 20, 'advance') b;
+  results := results || format('%s T3b gráfico de dias antecipados respeita D-20 a D-1 (esperado 2, recebeu %s)',
+    case when advance_breakdown = 2 then 'PASS' else 'FAIL' end, advance_breakdown);
+
+  select coalesce(sum(d.orders), 0) into advance_daily
+  from public.insights_sales_daily(ids, null, null, 'online', true, 'advance', 20) d;
+  results := results || format('%s T3c evolução diária respeita D-20 a D-1 (esperado 2, recebeu %s)',
+    case when advance_daily = 2 then 'PASS' else 'FAIL' end, advance_daily);
 
   select coalesce(sum(b.orders), 0), coalesce(sum(b.event_day_orders), 0), coalesce(sum(b.avg_orders_share), 0)
     into total_breakdown, d0_breakdown, average_total
