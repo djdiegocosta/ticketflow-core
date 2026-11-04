@@ -186,6 +186,9 @@ begin
   if _timing not in ('advance', 'event_day', 'all') then
     raise exception 'Tipo de análise inválido: %', _timing;
   end if;
+  if _lead_max < 1 or _lead_max > 120 then
+    raise exception 'Janela de antecedência inválida: %', _lead_max;
+  end if;
 
   return query
   with facts as (
@@ -194,7 +197,7 @@ begin
   f as (
     select * from facts
     where _timing = 'all'
-       or (_timing = 'advance' and lead_days > 0)
+       or (_timing = 'advance' and lead_days between 1 and _lead_max)
        or (_timing = 'event_day' and lead_days = 0)
   ),
   r as (select min(f.purchase_date) as a, max(f.purchase_date) as z from f),
@@ -314,6 +317,9 @@ begin
   if _timing not in ('advance', 'event_day', 'all') then
     raise exception 'Tipo de análise inválido: %', _timing;
   end if;
+  if _lead_max < 1 or _lead_max > 120 then
+    raise exception 'Janela de antecedência inválida: %', _lead_max;
+  end if;
 
   return query
   with facts as (
@@ -322,7 +328,7 @@ begin
   f as (
     select * from facts
     where _timing = 'all'
-       or (_timing = 'advance' and lead_days > 0)
+       or (_timing = 'advance' and lead_days between 1 and _lead_max)
        or (_timing = 'event_day' and lead_days = 0)
   ),
   x as (
