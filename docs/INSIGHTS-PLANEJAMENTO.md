@@ -42,3 +42,14 @@ Testes: `tests/visitor-tracking.test.ts` (navegador) e `supabase/tests/event_vis
 - **Cruzamento:** faixas D-20 a D-15, D-14 a D-8, D-7 a D-4, D-3 a D-1 e D0 x dia da semana, filtrável por período do mês.
 - **Medidas:** vendas (pedidos), ingressos e receita líquida (desconta reembolso parcial).
 - **Amostra:** com menos de 30 vendas o painel avisa que é tendência, não regra.
+
+## Separação de compras antecipadas e dia do evento
+
+- **D0** é a data local do evento em America/Sao_Paulo, independentemente do dia da semana.
+- O filtro principal do painel tem três modos: **Antecipadas** (D-N a D-1, respeitando a janela selecionada de 20/30/45/60 dias), **Dia do evento** (D0) e **Todas as vendas** (inclui pré-evento, D0 e pós-evento).
+- O modo padrão é **Antecipadas**, para que o dia da festa não distorça a leitura dos melhores dias e horários de compra prévia.
+- Em **Todas as vendas**, gráficos de barras e evolução diária separam a parcela D0 em tom laranja. O mapa de calor também destaca a linha D0.
+- No consolidado, o gráfico por dia da semana oferece **Volume total** e **Média por evento**. A média calcula a participação percentual de cada dia dentro de cada evento e depois dá o mesmo peso a cada evento com vendas no filtro; assim, um evento maior não domina sozinho a leitura.
+- O cruzamento de antecedência x dia da semana mantém sua janela fixa D-20 a D0, conforme a definição original do indicador 8. O filtro de modo separa D0, mas o seletor D-30/D-45/D-60 não altera a janela fixa desse cruzamento.
+- As vendas continuam obedecendo às regras originais: somente pagas, não cortesia e não teste; data do pagamento quando disponível, senão data de criação; horário de Brasília.
+- A implementação adiciona sobrecargas das RPCs do Insights para compatibilidade com chamadas antigas. A migration deve ser aplicada antes de publicar a interface atualizada.
