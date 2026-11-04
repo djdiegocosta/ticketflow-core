@@ -1,3 +1,13 @@
+## 04/11/2026 — Simulador de Evento: ajustes de estrutura e bar automático
+
+- ✨ **Cortesias** passam para a Etapa 2, junto dos lotes (valem com ou sem bar). Novo indicador **Público total estimado** = ingressos vendidos + cortesias.
+- ✂️ Lotes: removido o campo "Qtd. disponível" (e a soma dele no total).
+- ✨ **Bar:** o custo total dos produtos deixou de ser digitado e virou card automático = receita bruta do bar × (100% − margem bruta esperada), com receita = público total × consumo médio. Margem limitada a 0–100% (nunca gera custo negativo). A margem esperada agora é salva e recarregada com a simulação (antes se perdia). A comparação "esperada vs. real" foi removida: com o custo vindo da margem, as duas seriam sempre iguais.
+- ✂️ Removidos o campo **Decoração** (custos fixos) e toda a etapa **Custos variáveis** (inclusive a linha no detalhamento do resultado).
+- 🔀 **Outras receitas** passou a ser a última etapa de preenchimento (Etapa 5), antes do Resultado Financeiro. Ordem final: Dados gerais → Lotes e cortesias → Bar → Custos fixos → Outras receitas.
+- 🧪 Cálculo do bar isolado em `src/lib/simulador-calc.ts` + `tests/simulador-calc.test.ts` (6 testes). Suíte inteira: 134 passam; typecheck limpo; `smoke:ssr` ok (8 páginas). TPS 8.10 atualizado.
+- 🗄️ Banco **não alterado** (a tabela `simulations` guarda JSON livre; estava vazia — 0 simulações salvas — então nenhuma simulação antiga é afetada). Commit `24acf19`.
+
 ## 31/10/2026 — Insights, Etapas 3+4: fundação de dados e primeiro painel (APLICADA)
 
 - ✨ **Migration `20261031150000` aplicada no banco em 31/10/2026 (autorizada pelo dono)** e código publicado na main: nova página **`/admin/insights`** (exclusiva para administrador; colaborador e demais papéis são redirecionados; as funções do banco também recusam quem não é admin) com os indicadores 1 a 8: vendas por dia da semana, faixa de horário (4 h), período do mês, antes/depois do 5º dia útil, virada do mês, antecedência D-20 a D0 (janela de 20, 30, 45 ou 60 dias), evolução diária (por dia ou acumulada) e cruzamento antecedência x dia da semana x período do mês. Filtros: evento ou consolidado, período (tudo, 30 dias, 90 dias, datas), origem (online, bilheteria, todas), medida (vendas, ingressos, receita) e sábado como dia útil.
