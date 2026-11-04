@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Clock3, Lock, Receipt, Ticket } from "lucide-react";
+import { CalendarDays, Lock, Receipt, Ticket } from "lucide-react";
 import { MiniMetricCard, MiniMetricGrid } from "@/components/admin/MiniMetricCard";
 import { BreakdownBarChart, CrossHeatmap, DailyChart, InsightsCard } from "@/components/admin/insights/InsightsCharts";
 import { InsightsFilters, type InsightsFilterState } from "@/components/admin/insights/InsightsFilters";
@@ -197,21 +197,21 @@ export default function InsightsPage() {
   const sampleNote = lowSampleNote(result?.orders ?? 0);
 
   const calendarExtra = (rows: ReadonlyArray<BreakdownRow>) => {
-    const total = rows.reduce((sum, row) => sum + row.orders, 0);
+    const total = rows.reduce((sum, row) => sum + row[measure], 0);
     if (total <= 0) return null;
 
     if (calendarDimension === "business_day_5") {
-      const before = rows.find((row) => row.bucket.startsWith("Até"))?.orders ?? 0;
+      const before = rows.find((row) => row.bucket.startsWith("Até"))?.[measure] ?? 0;
       return `${sharePercent(before, total)} das compras acontecem até o 5º dia útil; ${sharePercent(total - before, total)} depois.`;
     }
 
     if (calendarDimension === "month_turn") {
-      const turn = rows.filter((row) => !row.bucket.startsWith("Meio")).reduce((sum, row) => sum + row.orders, 0);
+      const turn = rows.filter((row) => !row.bucket.startsWith("Meio")).reduce((sum, row) => sum + row[measure], 0);
       return `${sharePercent(turn, total)} das compras se concentram na virada do mês (3 primeiros e 3 últimos dias).`;
     }
 
-    const top = topBucket(rows, "orders");
-    return top ? `Maior concentração observada: dias ${top.bucket} do mês (${sharePercent(top.orders, total)} das compras).` : null;
+    const top = topBucket(rows, measure);
+    return top ? `Maior concentração observada: dias ${top.bucket} do mês (${sharePercent(top[measure], total)} das compras).` : null;
   };
 
   const calendarTitle: Record<CalendarDimension, string> = {
@@ -359,7 +359,9 @@ export default function InsightsPage() {
             Veja se as compras se concentram em determinados dias do mês, perto do 5º dia útil ou na virada.
           </p>
         </div>
-        <InsightsCard
+        <CalendarDimensionTabs value={calendarDimension} onChange={setCalendarDimension} />
+        <BreakdownSection
+          dimension={calendarDimension}
           title={calendarTitle[calendarDimension]}
           hint={
             calendarDimension === "business_day_5"
@@ -370,16 +372,10 @@ export default function InsightsPage() {
                 ? "Considera os três primeiros e os três últimos dias de cada mês."
                 : "Agrupa a data da compra em intervalos de cinco dias."
           }
-        >
-          <CalendarDimensionTabs value={calendarDimension} onChange={setCalendarDimension} />
-          <BreakdownSection
-            dimension={calendarDimension}
-            title={calendarTitle[calendarDimension]}
-            filters={filters}
-            measure={measure}
-            extra={calendarExtra}
-          />
-        </InsightsCard>
+          filters={filters}
+          measure={measure}
+          extra={calendarExtra}
+        />
       </section>
 
       <section className="space-y-3">
