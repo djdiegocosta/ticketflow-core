@@ -295,6 +295,7 @@ export default function InsightsPage() {
           >
             <div className="flex h-8 flex-wrap items-center gap-2">
               {consolidated && (
+                <>
                 <button
                   type="button"
                   aria-pressed={!weekdayAverage}
@@ -319,6 +320,7 @@ export default function InsightsPage() {
                 >
                   Média por evento
                 </button>
+                </>
               )}
             </div>
             <BreakdownBarChart rows={weekdayRows} measure={measure} timing={state.timing} normalized={consolidated && weekdayAverage} />
