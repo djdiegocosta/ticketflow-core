@@ -100,16 +100,16 @@ begin
     from f left join fifth fi on fi.m = date_trunc('month', f.purchase_date)::date
   ),
   event_totals as (
-    select event_id, count(*)::numeric as orders, sum(quantity)::numeric as tickets, sum(revenue)::numeric as revenue
-    from f group by event_id
+    select f.event_id, count(*)::numeric as orders, sum(f.quantity)::numeric as tickets, sum(f.revenue)::numeric as revenue
+    from f f group by f.event_id
   ),
   event_dows as (
-    select event_id, dow, count(*)::numeric as orders, sum(quantity)::numeric as tickets, sum(revenue)::numeric as revenue
-    from f group by event_id, dow
+    select f.event_id, f.dow, count(*)::numeric as orders, sum(f.quantity)::numeric as tickets, sum(f.revenue)::numeric as revenue
+    from f f group by f.event_id, f.dow
   ),
   event_day_dows as (
-    select event_id, dow, count(*)::numeric as orders, sum(quantity)::numeric as tickets, sum(revenue)::numeric as revenue
-    from f where lead_days = 0 group by event_id, dow
+    select f.event_id, f.dow, count(*)::numeric as orders, sum(f.quantity)::numeric as tickets, sum(f.revenue)::numeric as revenue
+    from f f where f.lead_days = 0 group by f.event_id, f.dow
   ),
   average_by_dow as (
     select g.dow,
