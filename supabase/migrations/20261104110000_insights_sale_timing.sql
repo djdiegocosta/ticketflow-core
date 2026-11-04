@@ -54,7 +54,7 @@ begin
   f as (
     select * from facts
     where _timing = 'all'
-       or (_timing = 'advance' and lead_days > 0)
+       or (_timing = 'advance' and lead_days between 1 and _lead_max)
        or (_timing = 'event_day' and lead_days = 0)
   ),
   fifth as (
@@ -162,7 +162,8 @@ create or replace function public.insights_sales_daily(
   _to date,
   _origin text,
   _count_saturday boolean,
-  _timing text
+  _timing text,
+  _lead_max integer
 )
 returns table (
   day date,
@@ -292,7 +293,8 @@ create or replace function public.insights_sales_summary(
   _to date,
   _origin text,
   _count_saturday boolean,
-  _timing text
+  _timing text,
+  _lead_max integer
 )
 returns table (
   orders bigint,
@@ -334,7 +336,7 @@ begin
       and (_to is null or l.ts::date <= _to)
       and (
         _timing = 'all'
-        or (_timing = 'advance' and (e.event_date at time zone 'America/Sao_Paulo')::date > l.ts::date)
+        or (_timing = 'advance' and (e.event_date at time zone 'America/Sao_Paulo')::date - l.ts::date between 1 and _lead_max)
         or (_timing = 'event_day' and (e.event_date at time zone 'America/Sao_Paulo')::date = l.ts::date)
       )
   )
@@ -355,11 +357,11 @@ $fn$;
 -- As novas sobrecargas continuam SECURITY INVOKER (padrão) e acessíveis apenas a authenticated.
 -- A autorização administrativa é aplicada pela função interna insights_sales_facts().
 revoke all on function public.insights_sales_breakdown(text, uuid[], date, date, text, boolean, integer, text) from public, anon;
-revoke all on function public.insights_sales_daily(uuid[], date, date, text, boolean, text) from public, anon;
+revoke all on function public.insights_sales_daily(uuid[], date, date, text, boolean, text, integer) from public, anon;
 revoke all on function public.insights_sales_cross(uuid[], date, date, text, boolean, text) from public, anon;
-revoke all on function public.insights_sales_summary(uuid[], date, date, text, boolean, text) from public, anon;
+revoke all on function public.insights_sales_summary(uuid[], date, date, text, boolean, text, integer) from public, anon;
 
 grant execute on function public.insights_sales_breakdown(text, uuid[], date, date, text, boolean, integer, text) to authenticated;
-grant execute on function public.insights_sales_daily(uuid[], date, date, text, boolean, text) to authenticated;
+grant execute on function public.insights_sales_daily(uuid[], date, date, text, boolean, text, integer) to authenticated;
 grant execute on function public.insights_sales_cross(uuid[], date, date, text, boolean, text) to authenticated;
-grant execute on function public.insights_sales_summary(uuid[], date, date, text, boolean, text) to authenticated;
+grant execute on function public.insights_sales_summary(uuid[], date, date, text, boolean, text, integer) to authenticated;
