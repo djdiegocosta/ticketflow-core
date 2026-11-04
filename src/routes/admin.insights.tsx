@@ -1,14 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import InsightsPage from "@/pages/admin/InsightsPage";
 
-// Exclusivo para administradores: qualquer outro papel volta para Vendas (colaborador) ou para o painel.
+// A autorização é feita no componente, via useAuth(), pois o contexto do
+// TanStack Router contém apenas queryClient e não expõe context.auth.
+// O InsightsPage bloqueia os demais papéis, e as RPCs do banco também exigem admin.
 export const Route = createFileRoute("/admin/insights")({
-  beforeLoad: ({ context }) => {
-    const ctx = (context as any).auth;
-    if (ctx?.role !== "admin") {
-      throw redirect({ to: "/admin/vendas" });
-    }
-  },
   head: () => ({
     meta: [{ title: "Insights — TicketFlow" }],
   }),
