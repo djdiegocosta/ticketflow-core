@@ -29,7 +29,10 @@ returns table (
   event_day_revenue numeric,
   avg_orders_share numeric,
   avg_tickets_share numeric,
-  avg_revenue_share numeric
+  avg_revenue_share numeric,
+  avg_event_day_orders_share numeric,
+  avg_event_day_tickets_share numeric,
+  avg_event_day_revenue_share numeric
 )
 language plpgsql stable set search_path = public
 as $fn$
@@ -104,14 +107,22 @@ begin
     select event_id, dow, count(*)::numeric as orders, sum(quantity)::numeric as tickets, sum(revenue)::numeric as revenue
     from f group by event_id, dow
   ),
+  event_day_dows as (
+    select event_id, dow, count(*)::numeric as orders, sum(quantity)::numeric as tickets, sum(revenue)::numeric as revenue
+    from f where lead_days = 0 group by event_id, dow
+  ),
   average_by_dow as (
     select g.dow,
       round(avg(coalesce(ed.orders, 0) / et.orders * 100), 2) as avg_orders_share,
       round(avg(coalesce(ed.tickets, 0) / et.tickets * 100), 2) as avg_tickets_share,
-      round(avg(case when et.revenue <> 0 then coalesce(ed.revenue, 0) / et.revenue * 100 else 0 end), 2) as avg_revenue_share
+      round(avg(case when et.revenue <> 0 then coalesce(ed.revenue, 0) / et.revenue * 100 else 0 end), 2) as avg_revenue_share,
+      round(avg(coalesce(evd.orders, 0) / et.orders * 100), 2) as avg_event_day_orders_share,
+      round(avg(coalesce(evd.tickets, 0) / et.tickets * 100), 2) as avg_event_day_tickets_share,
+      round(avg(case when et.revenue <> 0 then coalesce(evd.revenue, 0) / et.revenue * 100 else 0 end), 2) as avg_event_day_revenue_share
     from event_totals et
     cross join generate_series(1, 7) as g(dow)
     left join event_dows ed on ed.event_id = et.event_id and ed.dow = g.dow
+    left join event_day_dows evd on evd.event_id = et.event_id and evd.dow = g.dow
     group by g.dow
   ),
   aggregated as (
@@ -134,7 +145,10 @@ begin
     coalesce(a.event_day_revenue, 0)::numeric,
     case when _dimension = 'dow' then coalesce(av.avg_orders_share, 0) else 0 end::numeric,
     case when _dimension = 'dow' then coalesce(av.avg_tickets_share, 0) else 0 end::numeric,
-    case when _dimension = 'dow' then coalesce(av.avg_revenue_share, 0) else 0 end::numeric
+    case when _dimension = 'dow' then coalesce(av.avg_revenue_share, 0) else 0 end::numeric,
+    case when _dimension = 'dow' then coalesce(av.avg_event_day_orders_share, 0) else 0 end::numeric,
+    case when _dimension = 'dow' then coalesce(av.avg_event_day_tickets_share, 0) else 0 end::numeric,
+    case when _dimension = 'dow' then coalesce(av.avg_event_day_revenue_share, 0) else 0 end::numeric
   from labels l
   left join aggregated a on a.bucket = l.bucket
   left join average_by_dow av on _dimension = 'dow' and av.dow = l.ord
