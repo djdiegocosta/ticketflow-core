@@ -143,8 +143,9 @@ export function useInsightsBreakdown(dimension: BreakdownDimension, f: InsightsF
   });
 }
 
-export function useInsightsDaily(f: InsightsFilters) {
+export function useInsightsDaily(f: InsightsFilters, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: ["insights", "daily", f],
     staleTime: STALE,
     queryFn: async (): Promise<DailyRow[]> => {
@@ -168,8 +169,9 @@ export function useInsightsDaily(f: InsightsFilters) {
   });
 }
 
-export function useInsightsCross(f: InsightsFilters) {
+export function useInsightsCross(f: InsightsFilters, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: ["insights", "cross", f],
     staleTime: STALE,
     queryFn: async (): Promise<CrossRow[]> => {
