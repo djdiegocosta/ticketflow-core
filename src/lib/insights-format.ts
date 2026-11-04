@@ -2,6 +2,7 @@
 // Os cálculos pesados (dia da semana, horário, 5º dia útil, antecedência...) ficam no banco; aqui só se apresenta.
 
 export type Measure = "orders" | "tickets" | "revenue";
+export type SaleTiming = "advance" | "event_day" | "all";
 export type PeriodPreset = "all" | "30d" | "90d" | "custom";
 export type InsightsOrigin = "online" | "manual" | "all";
 
