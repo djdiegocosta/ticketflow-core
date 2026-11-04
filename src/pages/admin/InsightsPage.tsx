@@ -28,6 +28,9 @@ function BreakdownSection({
   measure,
   extra,
   className,
+  showNormalizedToggle = false,
+  normalized = false,
+  onNormalizedChange,
 }: {
   dimension: BreakdownDimension;
   title: string;
@@ -36,11 +39,15 @@ function BreakdownSection({
   measure: Measure;
   extra?: (rows: ReadonlyArray<BreakdownRow>) => string | null;
   className?: string;
+  showNormalizedToggle?: boolean;
+  normalized?: boolean;
+  onNormalizedChange?: (next: boolean) => void;
 }) {
   const q = useInsightsBreakdown(dimension, filters);
   const rows = q.data ?? [];
-  const total = rows.reduce((s, r) => s + r.orders, 0);
+  const total = rows.reduce((sum, row) => sum + row.orders, 0);
   const note = extra ? extra(rows) : null;
+
   return (
     <InsightsCard
       title={title}
@@ -51,7 +58,38 @@ function BreakdownSection({
       empty={!q.isLoading && !q.isError && total === 0}
       {...(className ? { className } : {})}
     >
-      <BreakdownBarChart rows={rows} measure={measure} />
+      {showNormalizedToggle && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onNormalizedChange?.(false)}
+            className={
+              !normalized
+                ? "rounded-[var(--radius-sm)] bg-accent-muted px-3 py-1.5 text-small font-semibold text-accent-text"
+                : "rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-3 py-1.5 text-small text-text-primary"
+            }
+          >
+            Volume total
+          </button>
+          <button
+            type="button"
+            onClick={() => onNormalizedChange?.(true)}
+            className={
+              normalized
+                ? "rounded-[var(--radius-sm)] bg-accent-muted px-3 py-1.5 text-small font-semibold text-accent-text"
+                : "rounded-[var(--radius-sm)] border border-border-default bg-bg-tertiary px-3 py-1.5 text-small text-text-primary"
+            }
+          >
+            Média por evento
+          </button>
+        </div>
+      )}
+      <BreakdownBarChart rows={rows} measure={measure} timing={filters.timing} normalized={normalized} />
+      {normalized && (
+        <p className="text-micro text-text-secondary">
+          Cada evento com vendas no filtro tem o mesmo peso. Os valores mostram a participação média de cada dia da semana; D0 continua destacado.
+        </p>
+      )}
       {note && <p className="pt-2 text-small font-medium text-text-primary">{note}</p>}
     </InsightsCard>
   );
@@ -69,7 +107,9 @@ export default function InsightsPage() {
     countSaturday: true,
     leadMax: 20,
     measure: "orders",
+    timing: "advance",
   });
+  const [weekdayAverage, setWeekdayAverage] = useState(false);
 
   const filters: QueryFilters = useMemo(() => {
     const range =
@@ -83,6 +123,7 @@ export default function InsightsPage() {
       origin: state.origin,
       countSaturday: state.countSaturday,
       leadMax: state.leadMax,
+      timing: state.timing,
     };
   }, [state]);
 
@@ -100,18 +141,21 @@ export default function InsightsPage() {
   }
 
   const s = summary.data;
-  const eventList = (events ?? []).map((e) => ({ id: e.id, title: e.title }));
+  const eventList = (events ?? []).map((event) => ({ id: event.id, title: event.title }));
   const ticketAvg = s && s.orders > 0 ? s.revenue / s.orders : 0;
   const m = state.measure;
+  const showWeekdayAverage = state.eventSel === "all";
 
   const bd5Extra = (rows: ReadonlyArray<BreakdownRow>) => {
-    const total = rows.reduce((a, r) => a + r.orders, 0);
-    const before = rows.find((r) => r.bucket.startsWith("Até"))?.orders ?? 0;
-    return total > 0 ? `${sharePercent(before, total)} das vendas acontecem até o 5º dia útil e ${sharePercent(total - before, total)} depois.` : null;
+    const total = rows.reduce((sum, row) => sum + row.orders, 0);
+    const before = rows.find((row) => row.bucket.startsWith("Até"))?.orders ?? 0;
+    return total > 0
+      ? `${sharePercent(before, total)} das vendas acontecem até o 5º dia útil e ${sharePercent(total - before, total)} depois.`
+      : null;
   };
   const turnExtra = (rows: ReadonlyArray<BreakdownRow>) => {
-    const total = rows.reduce((a, r) => a + r.orders, 0);
-    const turn = rows.filter((r) => !r.bucket.startsWith("Meio")).reduce((a, r) => a + r.orders, 0);
+    const total = rows.reduce((sum, row) => sum + row.orders, 0);
+    const turn = rows.filter((row) => !row.bucket.startsWith("Meio")).reduce((sum, row) => sum + row.orders, 0);
     return total > 0 ? `${sharePercent(turn, total)} das vendas acontecem na virada do mês (últimos 3 e primeiros 3 dias).` : null;
   };
 
@@ -124,7 +168,7 @@ export default function InsightsPage() {
         </p>
       </header>
 
-      <InsightsFilters state={state} onChange={(patch) => setState((prev) => ({ ...prev, ...patch }))} events={eventList} />
+      <InsightsFilters state={state} onChange={(patch) => setState((previous) => ({ ...previous, ...patch }))} events={eventList} />
 
       {s && (
         <p className="rounded-[var(--radius-md)] bg-bg-secondary px-4 py-3 text-small text-text-secondary">
@@ -150,7 +194,22 @@ export default function InsightsPage() {
       </MiniMetricGrid>
 
       <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
-        <BreakdownSection dimension="dow" title="Vendas por dia da semana" filters={filters} measure={m} />
+        <BreakdownSection
+          dimension="dow"
+          title="Vendas por dia da semana"
+          hint={
+            state.timing === "all"
+              ? "D0 aparece em cor própria. No consolidado, compare volume total ou participação média por evento."
+              : state.timing === "event_day"
+                ? "Somente vendas realizadas na data de cada evento, seja sábado ou outro dia."
+                : "Somente compras antecipadas, de D-N até D-1; o dia do evento não entra."
+          }
+          filters={filters}
+          measure={m}
+          showNormalizedToggle={showWeekdayAverage}
+          normalized={showWeekdayAverage && weekdayAverage}
+          onNormalizedChange={setWeekdayAverage}
+        />
         <BreakdownSection dimension="hour_band" title="Vendas por faixa de horário" hint="Faixas de 4 horas." filters={filters} measure={m} />
         <BreakdownSection dimension="month_period" title="Vendas por período do mês" hint="Dia do mês em que a compra foi feita." filters={filters} measure={m} />
         <BreakdownSection
@@ -167,25 +226,25 @@ export default function InsightsPage() {
       <BreakdownSection
         dimension="lead_time"
         title={`Vendas por antecedência do evento (D-${state.leadMax} a D0)`}
-        hint="D0 é o dia do evento; D-7, uma semana antes. Conta por dia de calendário."
+        hint="D0 é a data do evento; D-7, uma semana antes. Conta por dia de calendário."
         filters={filters}
         measure={m}
       />
 
       <InsightsCard
         title="Evolução diária das vendas"
-        hint="Todos os dias entre a primeira e a última compra, inclusive os sem venda."
+        hint="Compras em D0 recebem destaque próprio. No histórico consolidado, o destaque segue a data de cada evento."
         sampleN={s?.orders ?? 0}
         loading={daily.isLoading}
         error={daily.isError}
         empty={!daily.isLoading && !daily.isError && (daily.data?.length ?? 0) === 0}
       >
-        <DailyChart rows={daily.data ?? []} measure={m} />
+        <DailyChart rows={daily.data ?? []} measure={m} timing={state.timing} />
       </InsightsCard>
 
       <InsightsCard
         title="Antecedência x dia da semana x período do mês"
-        hint="Quanto mais forte o verde, mais vendas. Escolha um período do mês para cruzar com ele."
+        hint="D0 ocupa uma faixa própria. Quanto mais forte o verde, maior o volume."
         sampleN={s?.orders ?? 0}
         loading={cross.isLoading}
         error={cross.isError}
