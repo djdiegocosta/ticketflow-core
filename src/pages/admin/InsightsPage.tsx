@@ -293,8 +293,9 @@ export default function InsightsPage() {
             error={weekdayQuery.isError}
             empty={!weekdayQuery.isLoading && !weekdayQuery.isError && weekdayRows.every((row) => row.orders === 0)}
           >
-            {consolidated && (
-              <div className="flex flex-wrap gap-2">
+            <div className="flex h-8 flex-wrap items-center gap-2">
+              {consolidated && (
+                <>
                 <button
                   type="button"
                   aria-pressed={!weekdayAverage}
@@ -319,8 +320,9 @@ export default function InsightsPage() {
                 >
                   Média por evento
                 </button>
-              </div>
-            )}
+                </>
+              )}
+            </div>
             <BreakdownBarChart rows={weekdayRows} measure={measure} timing={state.timing} normalized={consolidated && weekdayAverage} />
           </InsightsCard>
 
@@ -332,6 +334,7 @@ export default function InsightsPage() {
             error={hourQuery.isError}
             empty={!hourQuery.isLoading && !hourQuery.isError && hourRows.every((row) => row.orders === 0)}
           >
+            <div className="hidden h-8 lg:block" aria-hidden="true" />
             <BreakdownBarChart rows={hourRows} measure={measure} timing={state.timing} />
           </InsightsCard>
         </div>
