@@ -225,8 +225,14 @@ export default function InsightsPage() {
 
       <BreakdownSection
         dimension="lead_time"
-        title={`Vendas por antecedência do evento (D-${state.leadMax} a D0)`}
-        hint="D0 é a data do evento; D-7, uma semana antes. Conta por dia de calendário."
+        title={
+          state.timing === "advance"
+            ? `Antecedência das compras (D-${state.leadMax} a D-1)`
+            : state.timing === "event_day"
+              ? "Compras na data do evento (D0)"
+              : `Antecedência das compras (D-${state.leadMax} a D0)`
+        }
+        hint="D0 é a data local de cada evento, independentemente do dia da semana. A janela é contada por dias de calendário."
         filters={filters}
         measure={m}
       />
@@ -244,7 +250,7 @@ export default function InsightsPage() {
 
       <InsightsCard
         title="Antecedência x dia da semana x período do mês"
-        hint="D0 ocupa uma faixa própria. Quanto mais forte o verde, maior o volume."
+        hint="D0 ocupa uma faixa própria em laranja. As demais faixas usam intensidade de verde conforme o volume."
         sampleN={s?.orders ?? 0}
         loading={cross.isLoading}
         error={cross.isError}
