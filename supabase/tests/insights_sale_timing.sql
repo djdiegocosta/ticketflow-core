@@ -99,25 +99,25 @@ begin
   results := results || format('%s T3 todas mantém o comportamento integral (esperado 6, recebeu %s)',
     case when all_orders = 6 then 'PASS' else 'FAIL' end, all_orders);
 
-  select coalesce(sum(orders), 0), coalesce(sum(event_day_orders), 0), coalesce(sum(avg_orders_share), 0)
+  select coalesce(sum(b.orders), 0), coalesce(sum(b.event_day_orders), 0), coalesce(sum(b.avg_orders_share), 0)
     into total_breakdown, d0_breakdown, average_total
-  from public.insights_sales_breakdown('dow', ids, null, null, 'online', true, 20, 'all');
+  from public.insights_sales_breakdown('dow', ids, null, null, 'online', true, 20, 'all') b;
 
   results := results || format('%s T4 gráfico por dia da semana soma 6 vendas e isola 2 D0 (total %s / D0 %s)',
     case when total_breakdown = 6 and d0_breakdown = 2 then 'PASS' else 'FAIL' end, total_breakdown, d0_breakdown);
   results := results || format('%s T5 média normalizada dá o mesmo peso aos dois eventos (soma aproximada 100%%, recebeu %s%%)',
     case when average_total between 99.8 and 100.2 then 'PASS' else 'FAIL' end, average_total);
 
-  select coalesce(sum(orders), 0) into d0_orders
-  from public.insights_sales_cross(ids, null, null, 'online', true, 'all')
-  where lead_band = 'D0';
+  select coalesce(sum(c.orders), 0) into d0_orders
+  from public.insights_sales_cross(ids, null, null, 'online', true, 'all') c
+  where c.lead_band = 'D0';
 
   results := results || format('%s T6 cruzamento mantém D0 separado (esperado 2, recebeu %s)',
     case when d0_orders = 2 then 'PASS' else 'FAIL' end, d0_orders);
 
-  select coalesce(sum(orders), 0), coalesce(sum(event_day_orders), 0)
+  select coalesce(sum(d.orders), 0), coalesce(sum(d.event_day_orders), 0)
     into daily_orders, d0_daily
-  from public.insights_sales_daily(ids, null, null, 'online', true, 'all', 20);
+  from public.insights_sales_daily(ids, null, null, 'online', true, 'all', 20) d;
 
   results := results || format('%s T7 evolução diária soma 6 vendas e separa 2 D0 (total %s / D0 %s)',
     case when daily_orders = 6 and d0_daily = 2 then 'PASS' else 'FAIL' end, daily_orders, d0_daily);
