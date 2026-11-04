@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MEASURE_LABEL, type InsightsOrigin, type Measure, type PeriodPreset } from "@/lib/insights-format";
+import { MEASURE_LABEL, type InsightsOrigin, type Measure, type PeriodPreset, type SaleTiming } from "@/lib/insights-format";
 
 export interface InsightsFilterState {
   eventSel: string; // "all" ou id do evento
@@ -12,6 +12,7 @@ export interface InsightsFilterState {
   countSaturday: boolean;
   leadMax: number;
   measure: Measure;
+  timing: SaleTiming;
 }
 
 function Segmented<T extends string | number>({
@@ -82,6 +83,19 @@ export function InsightsFilters({
             </SelectContent>
           </Select>
         </Field>
+
+        <Field label="Analisar compras">
+          <Segmented<SaleTiming>
+            value={state.timing}
+            onChange={(timing) => onChange({ timing })}
+            options={[
+              { value: "advance", label: "Antecipadas (D-N a D-1)" },
+              { value: "event_day", label: "Dia do evento (D0)" },
+              { value: "all", label: "Todas as vendas" },
+            ]}
+          />
+        </Field>
+
         <Field label="Medir por">
           <Segmented<Measure>
             value={state.measure}
@@ -89,6 +103,7 @@ export function InsightsFilters({
             options={(Object.keys(MEASURE_LABEL) as Measure[]).map((m) => ({ value: m, label: MEASURE_LABEL[m] }))}
           />
         </Field>
+
         <Field label="Período das compras">
           <Segmented<PeriodPreset>
             value={state.preset}
@@ -107,6 +122,7 @@ export function InsightsFilters({
             </div>
           )}
         </Field>
+
         <Field label="Origem das vendas">
           <Segmented<InsightsOrigin>
             value={state.origin}
@@ -118,6 +134,7 @@ export function InsightsFilters({
             ]}
           />
         </Field>
+
         <Field label="Janela de antecedência">
           <Segmented<number>
             value={state.leadMax}
@@ -125,6 +142,7 @@ export function InsightsFilters({
             options={[20, 30, 45, 60].map((n) => ({ value: n, label: `D-${n} a D0` }))}
           />
         </Field>
+
         <Field label="5º dia útil">
           <label className="flex items-center gap-3 text-small text-text-primary">
             <Switch checked={state.countSaturday} onCheckedChange={(countSaturday) => onChange({ countSaturday })} />
@@ -132,6 +150,9 @@ export function InsightsFilters({
           </label>
         </Field>
       </div>
+      <p className="text-micro text-text-secondary">
+        D0 é a data do evento, independentemente do dia da semana. “Antecipadas” considera somente D-N até D-1 e exclui compras no próprio dia e após o evento.
+      </p>
     </section>
   );
 }
