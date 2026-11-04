@@ -125,10 +125,10 @@ begin
   begin
     perform * from public.insights_sales_summary(ids, null, null, 'online', true, 'invalid', 20);
     error_message := 'Tipo de análise inválido foi aceito';
-    results := results || 'FAIL T8 validação do tipo de análise';
+    results := array_append(results, 'FAIL T8 validação do tipo de análise');
   exception when others then
     if sqlerrm like 'Tipo de análise inválido:%' then
-      results := results || 'PASS T8 tipo de análise inválido é recusado';
+      results := array_append(results, 'PASS T8 tipo de análise inválido é recusado');
     else
       raise;
     end if;
