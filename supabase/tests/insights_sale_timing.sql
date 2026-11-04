@@ -1,6 +1,6 @@
 -- Testes das novas RPCs de separação entre vendas antecipadas e D0.
 -- Execute depois de aplicar 20261104110000_insights_sale_timing.sql.
--- O bloco termina com RAISE EXCEPTION de propósito para desfazer todos os dados criados.
+-- Termina com RAISE EXCEPTION de propósito para desfazer todos os dados criados.
 
 create function pg_temp.t_insights_d0_sale(
   _event uuid,
@@ -45,7 +45,7 @@ declare
   d0_breakdown bigint;
   total_breakdown bigint;
   average_total numeric;
-  r record;
+  error_message text;
 begin
   select id into org from public.organizations limit 1;
 
@@ -122,24 +122,22 @@ begin
   results := results || format('%s T7 evolução diária soma 6 vendas e separa 2 D0 (total %s / D0 %s)',
     case when daily_orders = 6 and d0_daily = 2 then 'PASS' else 'FAIL' end, daily_orders, d0_daily);
 
-  select * into r from public.insights_sales_summary(ids, null, null, 'online', true, 'invalid');
-  results := results || 'FAIL T8 tipo de análise inválido foi aceito';
-exception
-  when others then
+  begin
+    perform * from public.insights_sales_summary(ids, null, null, 'online', true, 'invalid');
+    error_message := 'Tipo de análise inválido foi aceito';
+    results := results || 'FAIL T8 validação do tipo de análise';
+  exception when others then
     if sqlerrm like 'Tipo de análise inválido:%' then
       results := results || 'PASS T8 tipo de análise inválido é recusado';
     else
       raise;
     end if;
+  end;
+
+  reset role;
+  raise exception E'RESULTADOS Insights D0 (tudo desfeito): % PASS / % FAIL\n%',
+    (select count(*) from unnest(results) x where x like 'PASS%'),
+    (select count(*) from unnest(results) x where x like 'FAIL%'),
+    array_to_string(results, E'\n');
 end;
 $test$;
-
-do $result$
-declare
-  results text[] := '{}';
-begin
-  -- As verificações são repetidas no bloco final para que o erro abaixo desfaça o ensaio inteiro.
-  -- O resultado real das verificações está registrado na tabela temporária criada pela sessão.
-  raise exception 'RESULTADOS Insights D0 (tudo desfeito). Revise os PASS/FAIL no bloco de teste acima.';
-end;
-$result$;
