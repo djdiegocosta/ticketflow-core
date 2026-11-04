@@ -22,10 +22,6 @@ const axisTick = { fontSize: 11, fill: "var(--text-secondary)" } as const;
 const MUTED_BAR = "color-mix(in srgb, var(--accent) 40%, transparent)";
 const EVENT_DAY_COLOR = "#D97745";
 
-function selectedValue(row: BreakdownRow | DailyRow, measure: Measure): number {
-  return measure === "orders" ? row.orders : measure === "tickets" ? row.tickets : row.revenue;
-}
-
 function eventDayValue(row: BreakdownRow | DailyRow, measure: Measure): number {
   return measure === "orders"
     ? row.event_day_orders
@@ -110,6 +106,8 @@ function TooltipBox({
   const value = Number(p["value"] ?? 0);
   const d0 = Number(p["eventDayValue"] ?? 0);
   const other = Math.max(0, value - d0);
+  const measure: Measure =
+    p["measure"] === "revenue" ? "revenue" : p["measure"] === "tickets" ? "tickets" : "orders";
 
   return (
     <div className="rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-3 py-2 text-small text-text-primary shadow-md">
@@ -131,8 +129,8 @@ function TooltipBox({
           <p>{formatMeasure(Number(p["revenue"]), "revenue")}</p>
           {showTiming && (
             <>
-              <p className="mt-1 text-text-secondary">Dia do evento (D0): {formatMeasure(d0, String(p["measure"]) as Measure || "orders")}</p>
-              <p className="text-text-secondary">Outras datas: {formatMeasure(other, String(p["measure"]) as Measure || "orders")}</p>
+              <p className="mt-1 text-text-secondary">Dia do evento (D0): {formatMeasure(d0, measure)}</p>
+              <p className="text-text-secondary">Outras datas: {formatMeasure(other, measure)}</p>
             </>
           )}
         </>
@@ -242,12 +240,12 @@ export function DailyChart({ rows, measure, timing }: { rows: ReadonlyArray<Dail
       value,
       otherValue: Math.max(0, value - d0),
       eventDayValue: d0,
-      orders: r.orders,
-      tickets: r.tickets,
-      revenue: r.revenue,
-      eventDayOrders: r.event_day_orders,
-      eventDayTickets: r.event_day_tickets,
-      eventDayRevenue: r.event_day_revenue,
+      orders: cumulative ? r.cum_orders : r.orders,
+      tickets: cumulative ? r.cum_tickets : r.tickets,
+      revenue: cumulative ? r.cum_revenue : r.revenue,
+      eventDayOrders: cumulative ? r.cum_event_day_orders : r.event_day_orders,
+      eventDayTickets: cumulative ? r.cum_event_day_tickets : r.event_day_tickets,
+      eventDayRevenue: cumulative ? r.cum_event_day_revenue : r.event_day_revenue,
       measure,
     };
   });
@@ -341,7 +339,7 @@ export function CrossHeatmap({ rows, measure }: { rows: ReadonlyArray<CrossRow>;
           <tbody>
             {LEAD_BANDS.map((band, i) => (
               <tr key={band}>
-                <th className="whitespace-nowrap p-1 text-left text-small font-medium text-text-primary">{band}</th>
+                <th className={`whitespace-nowrap p-1 text-left text-small font-medium ${i === 4 ? "text-[#D97745]" : "text-text-primary"}`}>{i === 4 ? "D0 · Evento" : band}</th>
                 {DOW_LABELS.map((d, j) => {
                   const v = h.cells[i]?.[j] ?? 0;
                   return (
@@ -349,7 +347,12 @@ export function CrossHeatmap({ rows, measure }: { rows: ReadonlyArray<CrossRow>;
                       key={d}
                       title={`${band} · ${d}: ${v} ${unit}`}
                       className="h-10 rounded-[var(--radius-sm)] font-semibold text-text-primary"
-                      style={{ background: heatBackground(v, h.max) }}
+                      style={{
+                        background:
+                          i === 4 && v > 0 && h.max > 0
+                            ? `color-mix(in srgb, ${EVENT_DAY_COLOR} ${Math.round(15 + (v / h.max) * 70)}%, transparent)`
+                            : heatBackground(v, h.max),
+                      }}
                     >
                       {v > 0 ? v : <span className="text-text-disabled">·</span>}
                     </td>
