@@ -96,7 +96,7 @@ export function useInsightsSummary(f: InsightsFilters) {
     queryKey: ["insights", "summary", f],
     staleTime: STALE,
     queryFn: async (): Promise<InsightsSummary> => {
-      const [r] = await call<Record<string, unknown>>("insights_sales_summary", baseArgs(f));
+      const [r] = await call<Record<string, unknown>>("insights_sales_summary", { ...baseArgs(f), _lead_max: f.leadMax });
       return {
         orders: num(r?.["orders"]),
         tickets: num(r?.["tickets"]),
@@ -148,7 +148,7 @@ export function useInsightsDaily(f: InsightsFilters) {
     queryKey: ["insights", "daily", f],
     staleTime: STALE,
     queryFn: async (): Promise<DailyRow[]> => {
-      const rows = await call<Record<string, unknown>>("insights_sales_daily", baseArgs(f));
+      const rows = await call<Record<string, unknown>>("insights_sales_daily", { ...baseArgs(f), _lead_max: f.leadMax });
       return rows.map((r) => ({
         day: String(r["day"]),
         orders: num(r["orders"]),
