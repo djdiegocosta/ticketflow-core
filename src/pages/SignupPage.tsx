@@ -82,8 +82,9 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (data: SignupFormValues) => {
+    const normalizedEmail = data.email.trim().toLowerCase();
     const { data: result, error } = await supabase.auth.signUp({
-      email: data.email,
+      email: normalizedEmail,
       password: data.password,
       options: {
         // Se veio do checkout, o link de confirmação do e-mail leva de volta a ele.
@@ -103,6 +104,17 @@ export default function SignupPage() {
         message: error.message.toLowerCase().includes("already")
           ? "Este e-mail já está cadastrado"
           : error.message,
+      });
+      return;
+    }
+
+    // O Supabase pode retornar um usuário simulado com identities vazio quando
+    // o e-mail já pertence a uma conta confirmada e a confirmação por e-mail está ativa.
+    // Nesse caso, nenhuma conta nova foi criada: não podemos exibir sucesso.
+    if (result.user && result.user.identities?.length === 0) {
+      form.setError("email", {
+        type: "manual",
+        message: "Este e-mail já está associado a uma conta. Faça login ou recupere sua senha.",
       });
       return;
     }
@@ -191,7 +203,7 @@ export default function SignupPage() {
                         label="E-mail"
                         icon={Mail}
                         value={field.value}
-                        onChange={(v) => field.onChange(v.trim())}
+                        onChange={(v) => field.onChange(v.trim().toLowerCase())}
                         isValid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)}
                         placeholder="seu@email.com"
                         type="email"
