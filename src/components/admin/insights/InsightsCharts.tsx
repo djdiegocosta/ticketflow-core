@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BreakdownRow, DailyRow } from "@/lib/insights-queries";
 import {
@@ -15,10 +15,40 @@ import {
   topBucketIndex,
   type CrossRow,
   type Measure,
+  type SaleTiming,
 } from "@/lib/insights-format";
 
 const axisTick = { fontSize: 11, fill: "var(--text-secondary)" } as const;
 const MUTED_BAR = "color-mix(in srgb, var(--accent) 40%, transparent)";
+const EVENT_DAY_COLOR = "#D97745";
+
+function selectedValue(row: BreakdownRow | DailyRow, measure: Measure): number {
+  return measure === "orders" ? row.orders : measure === "tickets" ? row.tickets : row.revenue;
+}
+
+function eventDayValue(row: BreakdownRow | DailyRow, measure: Measure): number {
+  return measure === "orders"
+    ? row.event_day_orders
+    : measure === "tickets"
+      ? row.event_day_tickets
+      : row.event_day_revenue;
+}
+
+function averageShare(row: BreakdownRow, measure: Measure): number {
+  return measure === "orders"
+    ? row.avg_orders_share
+    : measure === "tickets"
+      ? row.avg_tickets_share
+      : row.avg_revenue_share;
+}
+
+function averageEventDayShare(row: BreakdownRow, measure: Measure): number {
+  return measure === "orders"
+    ? row.avg_event_day_orders_share
+    : measure === "tickets"
+      ? row.avg_event_day_tickets_share
+      : row.avg_event_day_revenue_share;
+}
 
 /** Cartão padrão dos gráficos: título, explicação, aviso de amostra pequena e estados de carregando/erro/vazio. */
 export function InsightsCard({
@@ -61,30 +91,90 @@ export function InsightsCard({
   );
 }
 
-function TooltipBox({ active, payload, label }: { active?: boolean; payload?: ReadonlyArray<{ payload: Record<string, unknown> }>; label?: string }) {
+function TooltipBox({
+  active,
+  payload,
+  label,
+  normalized = false,
+  showTiming = false,
+}: {
+  active?: boolean;
+  payload?: ReadonlyArray<{ payload: Record<string, unknown> }>;
+  label?: string;
+  normalized?: boolean;
+  showTiming?: boolean;
+}) {
   const p = active ? payload?.[0]?.payload : undefined;
   if (!p) return null;
+
+  const value = Number(p["value"] ?? 0);
+  const d0 = Number(p["eventDayValue"] ?? 0);
+  const other = Math.max(0, value - d0);
+
   return (
     <div className="rounded-[var(--radius-sm)] border border-border-default bg-bg-secondary px-3 py-2 text-small text-text-primary shadow-md">
       <p className="mb-1 font-semibold">{label}</p>
-      <p>{formatMeasure(Number(p["orders"]), "orders")} vendas</p>
-      <p>{formatMeasure(Number(p["tickets"]), "tickets")} ingressos</p>
-      <p>{formatMeasure(Number(p["revenue"]), "revenue")}</p>
+      {normalized ? (
+        <>
+          <p>Participação média: {value.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%</p>
+          {showTiming && (
+            <>
+              <p className="text-text-secondary">D0: {d0.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%</p>
+              <p className="text-text-secondary">Outras datas: {other.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%</p>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <p>{formatMeasure(Number(p["orders"]), "orders")} vendas</p>
+          <p>{formatMeasure(Number(p["tickets"]), "tickets")} ingressos</p>
+          <p>{formatMeasure(Number(p["revenue"]), "revenue")}</p>
+          {showTiming && (
+            <>
+              <p className="mt-1 text-text-secondary">Dia do evento (D0): {formatMeasure(d0, String(p["measure"]) as Measure || "orders")}</p>
+              <p className="text-text-secondary">Outras datas: {formatMeasure(other, String(p["measure"]) as Measure || "orders")}</p>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-/** Barras por balde (dia da semana, horário, período do mês...). O maior balde fica em destaque. */
-export function BreakdownBarChart({ rows, measure }: { rows: ReadonlyArray<BreakdownRow>; measure: Measure }) {
-  const data = rows.map((r) => ({
-    name: r.bucket,
-    value: measureValue(r, measure),
-    orders: r.orders,
-    tickets: r.tickets,
-    revenue: r.revenue,
-  }));
+/** Barras por balde. Em "Todas", D0 fica separado; no consolidado, também permite média normalizada por evento. */
+export function BreakdownBarChart({
+  rows,
+  measure,
+  timing,
+  normalized = false,
+}: {
+  rows: ReadonlyArray<BreakdownRow>;
+  measure: Measure;
+  timing: SaleTiming;
+  normalized?: boolean;
+}) {
+  const data = rows.map((r) => {
+    const total = normalized ? averageShare(r, measure) : measureValue(r, measure);
+    const d0 = normalized ? averageEventDayShare(r, measure) : eventDayValue(r, measure);
+    return {
+      name: r.bucket,
+      value: total,
+      otherValue: Math.max(0, total - d0),
+      eventDayValue: d0,
+      orders: r.orders,
+      tickets: r.tickets,
+      revenue: r.revenue,
+      eventDayOrders: r.event_day_orders,
+      eventDayTickets: r.event_day_tickets,
+      eventDayRevenue: r.event_day_revenue,
+      measure,
+    };
+  });
   const top = topBucketIndex(data.map((d) => d.value));
   const wide = data.length > 8;
+  const hasD0 = timing === "all" && data.some((d) => d.eventDayValue > 0);
+  const singleColor = timing === "event_day" ? EVENT_DAY_COLOR : undefined;
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="h-[260px]" style={wide ? { minWidth: data.length * 42 } : undefined}>
@@ -92,13 +182,31 @@ export function BreakdownBarChart({ rows, measure }: { rows: ReadonlyArray<Break
           <BarChart data={data} margin={{ top: 16, right: 8, left: -16, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} interval={0} dy={8} />
-            <YAxis axisLine={false} tickLine={false} tick={axisTick} allowDecimals={false} />
-            <Tooltip cursor={{ fill: "var(--bg-tertiary)" }} content={<TooltipBox />} />
-            <Bar dataKey="value" name={MEASURE_LABEL[measure]} radius={[4, 4, 0, 0]}>
-              {data.map((_, i) => (
-                <Cell key={i} fill={i === top ? "var(--accent)" : MUTED_BAR} />
-              ))}
-            </Bar>
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={axisTick}
+              allowDecimals={normalized}
+              tickFormatter={normalized ? (v: number) => `${v}%` : undefined}
+            />
+            <Tooltip cursor={{ fill: "var(--bg-tertiary)" }} content={<TooltipBox normalized={normalized} showTiming={hasD0} />} />
+            {hasD0 ? (
+              <>
+                <Legend />
+                <Bar dataKey="otherValue" name="Outras datas" stackId="timing" radius={[0, 0, 0, 0]}>
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={i === top ? "var(--accent)" : MUTED_BAR} />
+                  ))}
+                </Bar>
+                <Bar dataKey="eventDayValue" name="Dia do evento (D0)" stackId="timing" fill={EVENT_DAY_COLOR} radius={[4, 4, 0, 0]} />
+              </>
+            ) : (
+              <Bar dataKey="value" name={normalized ? "Participação média" : MEASURE_LABEL[measure]} fill={singleColor}>
+                {data.map((_, i) => (
+                  <Cell key={i} fill={singleColor ?? (i === top ? "var(--accent)" : MUTED_BAR)} />
+                ))}
+              </Bar>
+            )}
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -110,8 +218,8 @@ function ddmm(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 }
 
-/** Evolução diária: por dia ou acumulada. */
-export function DailyChart({ rows, measure }: { rows: ReadonlyArray<DailyRow>; measure: Measure }) {
+/** Evolução diária, com a parcela D0 destacada no modo Todas. */
+export function DailyChart({ rows, measure, timing }: { rows: ReadonlyArray<DailyRow>; measure: Measure; timing: SaleTiming }) {
   const [cumulative, setCumulative] = useState(false);
   const pick = (r: DailyRow): number =>
     measure === "orders"
@@ -119,7 +227,33 @@ export function DailyChart({ rows, measure }: { rows: ReadonlyArray<DailyRow>; m
       : measure === "tickets"
         ? cumulative ? r.cum_tickets : r.tickets
         : cumulative ? r.cum_revenue : r.revenue;
-  const data = rows.map((r) => ({ name: ddmm(r.day), value: pick(r), orders: r.orders, tickets: r.tickets, revenue: r.revenue }));
+  const pickD0 = (r: DailyRow): number =>
+    measure === "orders"
+      ? cumulative ? r.cum_event_day_orders : r.event_day_orders
+      : measure === "tickets"
+        ? cumulative ? r.cum_event_day_tickets : r.event_day_tickets
+        : cumulative ? r.cum_event_day_revenue : r.event_day_revenue;
+
+  const data = rows.map((r) => {
+    const value = pick(r);
+    const d0 = pickD0(r);
+    return {
+      name: ddmm(r.day),
+      value,
+      otherValue: Math.max(0, value - d0),
+      eventDayValue: d0,
+      orders: r.orders,
+      tickets: r.tickets,
+      revenue: r.revenue,
+      eventDayOrders: r.event_day_orders,
+      eventDayTickets: r.event_day_tickets,
+      eventDayRevenue: r.event_day_revenue,
+      measure,
+    };
+  });
+  const hasD0 = timing === "all" && data.some((d) => d.eventDayValue > 0);
+  const color = timing === "event_day" ? EVENT_DAY_COLOR : "var(--accent)";
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -143,15 +277,27 @@ export function DailyChart({ rows, measure }: { rows: ReadonlyArray<DailyRow>; m
           <AreaChart data={data} margin={{ top: 10, right: 8, left: -16, bottom: 0 }}>
             <defs>
               <linearGradient id="insightsDaily" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+                <stop offset="5%" stopColor={color} stopOpacity={0.25} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="insightsDailyD0" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={EVENT_DAY_COLOR} stopOpacity={0.35} />
+                <stop offset="95%" stopColor={EVENT_DAY_COLOR} stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} minTickGap={24} dy={8} />
             <YAxis axisLine={false} tickLine={false} tick={axisTick} allowDecimals={false} />
-            <Tooltip content={<TooltipBox />} />
-            <Area type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={1.5} fill="url(#insightsDaily)" />
+            <Tooltip content={<TooltipBox showTiming={hasD0} />} />
+            {hasD0 ? (
+              <>
+                <Legend />
+                <Area type="monotone" dataKey="otherValue" name="Outras datas" stackId="sales" stroke="var(--accent)" strokeWidth={1.5} fill="url(#insightsDaily)" />
+                <Area type="monotone" dataKey="eventDayValue" name="Dia do evento (D0)" stackId="sales" stroke={EVENT_DAY_COLOR} strokeWidth={1.5} fill="url(#insightsDailyD0)" />
+              </>
+            ) : (
+              <Area type="monotone" dataKey="value" name={MEASURE_LABEL[measure]} stroke={color} strokeWidth={1.5} fill="url(#insightsDaily)" />
+            )}
           </AreaChart>
         </ResponsiveContainer>
       </div>
