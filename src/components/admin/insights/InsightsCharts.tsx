@@ -19,7 +19,6 @@ import {
 } from "@/lib/insights-format";
 
 const axisTick = { fontSize: 11, fill: "var(--text-secondary)" } as const;
-const MUTED_BAR = "color-mix(in srgb, var(--accent) 40%, transparent)";
 const EVENT_DAY_COLOR = "#D97745";
 
 function eventDayValue(row: BreakdownRow | DailyRow, measure: Measure): number {
@@ -191,11 +190,7 @@ export function BreakdownBarChart({
             {hasD0 ? (
               <>
                 <Legend />
-                <Bar dataKey="otherValue" name="Outras datas" stackId="timing" radius={[0, 0, 0, 0]}>
-                  {data.map((_, i) => (
-                    <Cell key={i} fill={i === top ? "var(--accent)" : MUTED_BAR} />
-                  ))}
-                </Bar>
+                <Bar dataKey="otherValue" name="Outras datas" stackId="timing" fill="var(--accent)" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="eventDayValue" name="Dia do evento (D0)" stackId="timing" fill={EVENT_DAY_COLOR} radius={[4, 4, 0, 0]} />
               </>
             ) : (
