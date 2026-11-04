@@ -1,3 +1,11 @@
+## 04/11/2026 — Simulador de Evento: importação de lotes agora usa os eventos reais
+
+- 🐛 O botão "Importar lotes de um evento" listava 3 eventos de exemplo fixos no código ("Festa de Verão", "Show do Ano", "Festival Outono") — dados da época do desenvolvimento. Agora lista os eventos reais da organização.
+- ✨ Ao escolher um evento, importa o nome do evento e o nome e preço dos **lotes pagos**. O lote de cortesia fica de fora e as vendas estimadas começam em zero (o simulador continua sem usar vendas reais). Evento sem lote pago: nada é substituído e aparece um aviso. Se a busca falhar, aparece mensagem de erro. Trocar de evento rapidamente não mistura os lotes.
+- 🧪 Regra em `lotsFromBatches` (`src/lib/simulador-calc.ts`) com 5 testes novos. Suíte inteira: 139 passam; typecheck limpo; `smoke:ssr` ok (8 páginas). TPS 8.10 atualizado.
+- 🗄️ Banco não alterado (só leitura de eventos e lotes). Commit `b961645`.
+- 📌 Pendência: `src/lib/sales-data.ts` (eventos e vendas de exemplo, sem nenhum uso) e `src/lib/public-data.tsx` (provedor de vendas de exemplo ligado no `__root.tsx`, sem nenhuma tela que o use) são resquícios de dados fictícios. Remoção aguarda decisão do dono.
+
 ## 04/11/2026 — Simulador de Evento: ajustes de estrutura e bar automático
 
 - ✨ **Cortesias** passam para a Etapa 2, junto dos lotes (valem com ou sem bar). Novo indicador **Público total estimado** = ingressos vendidos + cortesias.
