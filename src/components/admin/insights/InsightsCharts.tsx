@@ -19,6 +19,7 @@ import {
 } from "@/lib/insights-format";
 
 const axisTick = { fontSize: 11, fill: "var(--text-secondary)" } as const;
+const MUTED_BAR = "color-mix(in srgb, var(--accent) 40%, transparent)";
 const EVENT_DAY_COLOR = "#D97745";
 
 function eventDayValue(row: BreakdownRow | DailyRow, measure: Measure): number {
