@@ -185,7 +185,7 @@ export function BreakdownBarChart({
               tickLine={false}
               tick={axisTick}
               allowDecimals={normalized}
-              tickFormatter={normalized ? (v: number) => `${v}%` : undefined}
+              {...(normalized ? { tickFormatter: (v: number) => `${v}%` } : {})}
             />
             <Tooltip cursor={{ fill: "var(--bg-tertiary)" }} content={<TooltipBox normalized={normalized} showTiming={hasD0} />} />
             {hasD0 ? (
