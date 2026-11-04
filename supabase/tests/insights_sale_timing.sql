@@ -84,13 +84,13 @@ begin
   set local role authenticated;
 
   select orders into advance_orders
-  from public.insights_sales_summary(ids, null, null, 'online', true, 'advance');
+  from public.insights_sales_summary(ids, null, null, 'online', true, 'advance', 20);
 
   select orders into event_day_orders
-  from public.insights_sales_summary(ids, null, null, 'online', true, 'event_day');
+  from public.insights_sales_summary(ids, null, null, 'online', true, 'event_day', 20);
 
   select orders into all_orders
-  from public.insights_sales_summary(ids, null, null, 'online', true, 'all');
+  from public.insights_sales_summary(ids, null, null, 'online', true, 'all', 20);
 
   results := results || format('%s T1 antecipadas excluem D0 e pós-evento (esperado 2, recebeu %s)',
     case when advance_orders = 2 then 'PASS' else 'FAIL' end, advance_orders);
@@ -117,13 +117,13 @@ begin
 
   select coalesce(sum(orders), 0), coalesce(sum(event_day_orders), 0)
     into daily_orders, d0_daily
-  from public.insights_sales_daily(ids, null, null, 'online', true, 'all');
+  from public.insights_sales_daily(ids, null, null, 'online', true, 'all', 20);
 
   results := results || format('%s T7 evolução diária soma 6 vendas e separa 2 D0 (total %s / D0 %s)',
     case when daily_orders = 6 and d0_daily = 2 then 'PASS' else 'FAIL' end, daily_orders, d0_daily);
 
   begin
-    perform * from public.insights_sales_summary(ids, null, null, 'online', true, 'invalid');
+    perform * from public.insights_sales_summary(ids, null, null, 'online', true, 'invalid', 20);
     error_message := 'Tipo de análise inválido foi aceito';
     results := results || 'FAIL T8 validação do tipo de análise';
   exception when others then
