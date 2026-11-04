@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { CrossRow, InsightsOrigin } from "@/lib/insights-format";
+import type { CrossRow, InsightsOrigin, SaleTiming } from "@/lib/insights-format";
 
 // Consultas do painel TicketFlow Insights. As funções do banco (insights_sales_*) exigem papel admin
 // e devolvem números já somados, sem dado pessoal.
@@ -15,6 +15,8 @@ export interface InsightsFilters {
   countSaturday: boolean;
   /** janela de antecedência: D-N até D0 */
   leadMax: number;
+  /** advance = D-N..D-1; event_day = D0; all = todas (inclui pós-evento) */
+  timing: SaleTiming;
 }
 
 export type BreakdownDimension = "dow" | "hour_band" | "month_period" | "business_day_5" | "month_turn" | "lead_time";
@@ -25,6 +27,15 @@ export interface BreakdownRow {
   orders: number;
   tickets: number;
   revenue: number;
+  event_day_orders: number;
+  event_day_tickets: number;
+  event_day_revenue: number;
+  avg_orders_share: number;
+  avg_tickets_share: number;
+  avg_revenue_share: number;
+  avg_event_day_orders_share: number;
+  avg_event_day_tickets_share: number;
+  avg_event_day_revenue_share: number;
 }
 
 export interface DailyRow {
@@ -35,6 +46,12 @@ export interface DailyRow {
   cum_orders: number;
   cum_tickets: number;
   cum_revenue: number;
+  event_day_orders: number;
+  event_day_tickets: number;
+  event_day_revenue: number;
+  cum_event_day_orders: number;
+  cum_event_day_tickets: number;
+  cum_event_day_revenue: number;
 }
 
 export interface InsightsSummary {
@@ -57,6 +74,7 @@ function baseArgs(f: InsightsFilters) {
     _to: f.to,
     _origin: f.origin,
     _count_saturday: f.countSaturday,
+    _timing: f.timing,
   };
 }
 
@@ -111,6 +129,15 @@ export function useInsightsBreakdown(dimension: BreakdownDimension, f: InsightsF
         orders: num(r["orders"]),
         tickets: num(r["tickets"]),
         revenue: num(r["revenue"]),
+        event_day_orders: num(r["event_day_orders"]),
+        event_day_tickets: num(r["event_day_tickets"]),
+        event_day_revenue: num(r["event_day_revenue"]),
+        avg_orders_share: num(r["avg_orders_share"]),
+        avg_tickets_share: num(r["avg_tickets_share"]),
+        avg_revenue_share: num(r["avg_revenue_share"]),
+        avg_event_day_orders_share: num(r["avg_event_day_orders_share"]),
+        avg_event_day_tickets_share: num(r["avg_event_day_tickets_share"]),
+        avg_event_day_revenue_share: num(r["avg_event_day_revenue_share"]),
       }));
     },
   });
@@ -130,6 +157,12 @@ export function useInsightsDaily(f: InsightsFilters) {
         cum_orders: num(r["cum_orders"]),
         cum_tickets: num(r["cum_tickets"]),
         cum_revenue: num(r["cum_revenue"]),
+        event_day_orders: num(r["event_day_orders"]),
+        event_day_tickets: num(r["event_day_tickets"]),
+        event_day_revenue: num(r["event_day_revenue"]),
+        cum_event_day_orders: num(r["cum_event_day_orders"]),
+        cum_event_day_tickets: num(r["cum_event_day_tickets"]),
+        cum_event_day_revenue: num(r["cum_event_day_revenue"]),
       }));
     },
   });
