@@ -1,3 +1,11 @@
+## 04/11/2026 — Vendas: indicador de cliente com conta / sem conta
+
+- ✨ Na listagem de vendas (`/admin/vendas`), à frente do nome do cliente, aparece uma bolinha: **verde** = o cliente tem conta (login) no TicketFlow; **laranja** = comprou sem criar conta. Passar o mouse mostra a explicação em texto, e o leitor de tela também lê (a cor sozinha não é a única informação). Cores via `--success` e `--warning`, que não mudam com o tema de cor da organização.
+- 🔎 Regra: conta existe quando a venda está ligada a um cliente (`sales.customer_id`) cujo `customers.user_id` está preenchido. Dados reais na hora da implementação: 82 vendas com conta, 1 ligada a cliente sem login, 35 sem ligação nenhuma.
+- ⚠️ **Colaborador não vê a bolinha** de propósito: a regra de acesso do banco só deixa o admin ler a tabela `customers`. Para o colaborador todas ficariam laranja (informação falsa). Para liberar seria preciso mudar o banco (decisão do dono).
+- 📌 Pendência: 3 vendas sem ligação a cliente têm e-mail igual ao de uma conta existente (provável compra feita antes de criar a conta). Hoje aparecem laranja; o vínculo retroativo ficou fora deste escopo.
+- 🧪 `typecheck` limpo; suíte inteira: 139 passam; `smoke:ssr` ok (8 páginas). Banco não alterado (só leitura). Commit `b0ed1b5`.
+
 ## 04/11/2026 — Simulador de Evento: importação de lotes agora usa os eventos reais
 
 - 🐛 O botão "Importar lotes de um evento" listava 3 eventos de exemplo fixos no código ("Festa de Verão", "Show do Ano", "Festival Outono") — dados da época do desenvolvimento. Agora lista os eventos reais da organização.
