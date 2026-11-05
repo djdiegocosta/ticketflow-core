@@ -62,6 +62,26 @@ function StatusBadge({ sale }: { sale: any }) {
   );
 }
 
+// Bolinha ao lado do nome: verde = cliente com conta no TicketFlow; laranja = comprou sem criar conta.
+// Cor sempre por variável do tema (--success / --warning); nunca valor fixo.
+function AccountDot({ hasAccount }: { hasAccount: boolean }) {
+  const label = hasAccount ? "Cliente com conta no TicketFlow" : "Comprou sem criar conta";
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          role="img"
+          aria-label={label}
+          className={`mr-2 inline-block h-2 w-2 shrink-0 rounded-full align-middle ${
+            hasAccount ? "bg-success" : "bg-warning"
+          }`}
+        />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function SalesListPage() {
   usePreloadCheckinPdf();
   const { event: operationalEvent } = useOperationalEvent();
@@ -220,6 +240,7 @@ export function SalesListPage() {
           }}
         />
       </div>
+      <TooltipProvider delayDuration={300}>
       <DataTableShell>
         <DataTable className="min-w-[1000px]">
           <DataTableHeadRow
@@ -245,13 +266,16 @@ export function SalesListPage() {
                 <DataTableRow key={sale.id}>
                   <DataTableCell variant="primary">
                     <div className="min-w-0">
-                      <Link
-                        to="/admin/vendas/$id"
-                        params={{ id: sale.id }}
-                        className="block truncate hover:text-accent-text"
-                      >
-                        {sale.buyer_name}
-                      </Link>
+                      <div className="flex min-w-0 items-center">
+                        {!isColab && <AccountDot hasAccount={!!sale.customers?.user_id} />}
+                        <Link
+                          to="/admin/vendas/$id"
+                          params={{ id: sale.id }}
+                          className="block min-w-0 truncate hover:text-accent-text"
+                        >
+                          {sale.buyer_name}
+                        </Link>
+                      </div>
                       {sale.sale_code && (
                         <span className="font-mono-token text-text-secondary">
                           {sale.sale_code}
@@ -324,6 +348,7 @@ export function SalesListPage() {
           </tbody>
         </DataTable>
       </DataTableShell>
+      </TooltipProvider>
       <DataTablePagination
         pageSize={pageSize}
         onPageSizeChange={(n) => {

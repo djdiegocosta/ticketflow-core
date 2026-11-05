@@ -20,6 +20,10 @@ export interface Sale {
   is_courtesy: boolean;
   created_at: string;
   event_id: string;
+  customer_id?: string | null;
+  // user_id preenchido = o cliente tem conta (login) no TicketFlow.
+  // Atenção: a regra de acesso do banco só deixa admin ler esta tabela; para colaborador vem sempre vazio.
+  customers?: { user_id: string | null } | null;
   events: { title: string };
   ticket_batches: { name: string };
   tickets?: { ticket_code: string; participant_name: string; checked_in_at: string | null }[];
@@ -43,6 +47,8 @@ export async function fetchSales(organizationId: string): Promise<Sale[]> {
       is_courtesy,
       created_at,
       event_id,
+      customer_id,
+      customers (user_id),
       events (title),
       ticket_batches (name)
     `)
