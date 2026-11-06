@@ -119,6 +119,27 @@ const XP_REASON_LABELS: Record<string, string> = {
   fidelidade: "Fidelidade: 3 eventos consecutivos",
 };
 
+export interface CustomerXpRule {
+  reason: string;
+  label: string;
+  description: string;
+  points: number;
+  sort_order: number;
+}
+
+/** Regras oficiais de XP; consulta somente leitura ao catálogo do banco. */
+export function useCustomerXpRules() {
+  return useQuery({
+    queryKey: ["customer-xp-rules"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_customer_xp_rules");
+      if (error) throw error;
+      return (data ?? []) as CustomerXpRule[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useCustomerXp() {
   const { data: customers } = useMyCustomerRecords();
   const customerId = customers?.[0]?.id;
