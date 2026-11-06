@@ -1,13 +1,63 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useCustomerXp } from "@/lib/customer-queries";
-import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { createFileRoute } from '@tanstack/react-router';
+import { useCustomerXp, useCustomerXpRules } from "@/lib/customer-queries";
+import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute('/cliente/pontos')({
   component: Page_cliente_pontos,
 });
 
 function Page_cliente_pontos() {
+  const [showRules, setShowRules] = useState(false);
   const { data: xp, isLoading } = useCustomerXp();
+  const { data: rules = [], isLoading: rulesLoading, isError: rulesError } = useCustomerXpRules();
+
+  if (showRules) {
+    return (
+      <div className="space-y-5 p-4">
+        <button
+          type="button"
+          onClick={() => setShowRules(false)}
+          className="inline-flex items-center gap-2 text-small text-[var(--text-secondary)] hover:text-[var(--accent)]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para Pontos
+        </button>
+        <header className="space-y-1">
+          <h1 className="text-heading-2 font-bold text-[var(--text-primary)]">Tabela de Pontuação</h1>
+          <p className="text-small text-[var(--text-secondary)]">Veja como acumular XP no TicketFlow.</p>
+        </header>
+        {rulesLoading ? (
+          <div className="flex min-h-40 items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-[var(--accent)]" />
+          </div>
+        ) : rulesError ? (
+          <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] p-4 text-small text-[var(--text-secondary)]">
+            Não foi possível carregar a tabela agora. Tente novamente em instantes.
+          </div>
+        ) : (
+          <section className="divide-y divide-[var(--border-subtle)] rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-secondary)] px-4">
+            {rules.map((rule) => (
+              <article key={rule.reason} className="flex items-start justify-between gap-3 py-3.5">
+                <div className="min-w-0 space-y-1">
+                  <h2 className="text-body font-medium text-[var(--text-primary)]">{rule.label}</h2>
+                  <p className="text-small leading-relaxed text-[var(--text-secondary)]">{rule.description}</p>
+                </div>
+                <span className="shrink-0 whitespace-nowrap text-small font-semibold tabular-nums text-[var(--accent)]">
+                  +{rule.points.toLocaleString("pt-BR")} XP
+                </span>
+              </article>
+            ))}
+          </section>
+        )}
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          Os bônus são concedidos somente quando as condições de cada ação são atendidas.
+          Algumas ações podem acumular na mesma compra. Pontos não possuem resgate de benefícios
+          disponível neste momento.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -29,13 +79,14 @@ function Page_cliente_pontos() {
           <span className="text-small text-[var(--text-secondary)]">XP</span>
         </div>
         <p className="mt-3 text-small text-[var(--text-secondary)]">Acumule pontos em compras pagas e participação nos eventos. Benefícios para resgate poderão ser disponibilizados futuramente.</p>
-        <Link
-          to="/cliente/pontos/tabela"
-          className="mt-4 flex items-center justify-between border-t border-[var(--border-subtle)] pt-3 text-small font-medium text-[var(--accent)]"
+        <button
+          type="button"
+          onClick={() => setShowRules(true)}
+          className="mt-4 flex w-full items-center gap-2 border-t border-[var(--border-subtle)] pt-3 text-small font-medium text-[var(--accent)]"
         >
-          <span className="flex items-center gap-2"><BookOpen className="h-4 w-4" /> Tabela de Pontuação</span>
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+          <BookOpen className="h-4 w-4" />
+          Tabela de Pontuação
+        </button>
       </section>
 
       <section className="space-y-3">
