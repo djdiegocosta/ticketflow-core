@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useCustomerXp } from "@/lib/customer-queries";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute('/cliente/pontos')({
   component: Page_cliente_pontos,
@@ -29,6 +29,13 @@ function Page_cliente_pontos() {
           <span className="text-small text-[var(--text-secondary)]">XP</span>
         </div>
         <p className="mt-3 text-small text-[var(--text-secondary)]">Acumule pontos em compras pagas e participação nos eventos. Benefícios para resgate poderão ser disponibilizados futuramente.</p>
+        <Link
+          to="/cliente/pontos/tabela"
+          className="mt-4 flex items-center justify-between border-t border-[var(--border-subtle)] pt-3 text-small font-medium text-[var(--accent)]"
+        >
+          <span className="flex items-center gap-2"><BookOpen className="h-4 w-4" /> Tabela de Pontuação</span>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </section>
 
       <section className="space-y-3">
