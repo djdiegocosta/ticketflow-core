@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Brandmark } from "@/components/Brandmark";
-import { useApplyCustomerDesign } from "@/lib/customer-queries";
+import { useApplyCustomerDesign, useOrgActiveEvents } from "@/lib/customer-queries";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,8 @@ export function MobileLayout({
   useApplyCustomerDesign();
   const { logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { data: activeEvents = [] } = useOrgActiveEvents();
+  const hasActiveEvents = activeEvents.length > 0;
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -197,7 +199,12 @@ export function MobileLayout({
                     active && "text-[var(--accent)]"
                   )}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon
+                    className={cn(
+                      "h-5 w-5",
+                      item.to === "/cliente/eventos" && hasActiveEvents && "animate-pulse text-[var(--accent)] motion-reduce:animate-none"
+                    )}
+                  />
                   <span className="text-[10px]">{item.label}</span>
                 </Link>
               );
