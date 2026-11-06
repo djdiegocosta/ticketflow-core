@@ -132,9 +132,9 @@ export function useCustomerXpRules() {
   return useQuery({
     queryKey: ["customer-xp-rules"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_customer_xp_rules");
+      const { data, error } = await supabase.rpc("get_customer_xp_rules" as any);
       if (error) throw error;
-      return (data ?? []) as CustomerXpRule[];
+      return (data ?? []) as unknown as CustomerXpRule[];
     },
     staleTime: 5 * 60 * 1000,
   });
