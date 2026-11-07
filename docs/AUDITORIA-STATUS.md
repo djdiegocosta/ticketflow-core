@@ -5,7 +5,9 @@
 - ✅ Modo de chance por pessoa ou por ingresso, configurável em área avançada; snapshot dos participantes; ganhadores sem repetição; seleção final executada no banco. A criação bloqueia mais prêmios do que participantes únicos.
 - ✅ Acesso das RPCs limitado a administradores da própria organização; privilégios diretos nas tabelas revogados para `anon` e `authenticated`.
 - ℹ️ Nos check-ins, a estrutura atual não tem ID individual do portador além do ingresso; a deduplicação por pessoa usa nome normalizado do participante. Variações de nome podem representar a mesma pessoa como registros distintos.
-- ⏳ Branch `feat/admin-sorteador-20261107`: aguarda typecheck, testes, build/smoke SSR e revisão do PR. **Ainda não está em produção.** Nenhum dado de venda, ticket, check-in ou XP foi alterado.
+- ✅ CI do PR #57 aprovado: typecheck, testes automatizados, build e smoke SSR. Preview Vercel do head `425eef8` em estado READY.
+- ✅ Testes transacionais com admin cobriram contas cadastradas, compradores do evento, compradores por ingresso, compradores no período, recorrentes, rodadas sem repetição e rollback. Check-ins do evento ativo ainda não têm registros porque o evento futuro não ocorreu; a consulta retorna lista vazia conforme esperado.
+- ⏳ PR #57 segue aberto, não integrado à `main` e **não está em produção**. Nenhum dado de venda, ticket, check-in ou XP foi alterado.
 
 ## XP — regras v2 aplicadas ao banco (28/10/2026)
 - ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
