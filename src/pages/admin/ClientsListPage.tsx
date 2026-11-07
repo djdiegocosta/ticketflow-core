@@ -39,7 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type SortKey = "name" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent" | "totalXp";
+type SortKey = "name" | "createdAt" | "birthDate" | "age" | "city" | "totalTickets" | "totalSpent" | "totalXp";
 
 // Texto longo vira "…" depois de `max` caracteres, para a linha da tabela nunca crescer.
 // O texto completo continua disponível ao passar o mouse (atributo title).
@@ -207,6 +207,11 @@ export function ClientsListPage() {
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "name") return a.full_name.localeCompare(b.full_name, "pt-BR") * dir;
+      if (sortKey === "createdAt") {
+        const av = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bv = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return (av - bv) * dir;
+      }
       if (sortKey === "city") {
         return (a.city || "").localeCompare(b.city || "", "pt-BR") * dir;
       }
@@ -228,10 +233,20 @@ export function ClientsListPage() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = filtered.slice(start, start + pageSize);
   const toggleSort = (key: SortKey) => {
-    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    if (key === "name") {
+      // Coluna "Cliente": 1º clique A→Z, 2º clique data de cadastro (mais recentes primeiro),
+      // 3º clique volta para A→Z.
+      if (sortKey === "name") {
+        setSortKey("createdAt");
+        setSortDir("desc");
+      } else {
+        setSortKey("name");
+        setSortDir("asc");
+      }
+    } else if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
-      setSortDir(key === "name" ? "asc" : "desc");
+      setSortDir("desc");
     }
     setPage(1);
   };
@@ -306,11 +321,15 @@ export function ClientsListPage() {
                   onClick={() => toggleSort(col.key as SortKey)}
                   className={cn(
                     "flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary",
-                    sortKey === col.key && "text-text-primary",
+                    (sortKey === col.key || (col.key === "name" && sortKey === "createdAt")) &&
+                      "text-text-primary",
                   )}
                 >
                   {col.label}
-                  {sortKey === col.key &&
+                  {col.key === "name" && sortKey === "createdAt" && (
+                    <span className="text-small font-normal text-text-secondary">· cadastro</span>
+                  )}
+                  {(sortKey === col.key || (col.key === "name" && sortKey === "createdAt")) &&
                     (sortDir === "asc" ? (
                       <ArrowUp className="h-3 w-3" />
                     ) : (
