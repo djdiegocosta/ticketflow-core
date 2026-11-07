@@ -649,7 +649,7 @@ export function SorteadorPage() {
       "--text-primary": "#F5F5F7",
       "--text-secondary": "#A1A1AA",
       "--icon-brand": "var(--accent)",
-    } as CSSProperties;
+    } as unknown as CSSProperties;
 
     return (
       <div className="mx-auto max-w-5xl space-y-5 animate-in fade-in duration-300">
