@@ -3,7 +3,7 @@
 - ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, configuração avançada por pessoa/ingresso, prêmios dinâmicos, histórico, animação de nomes por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
 - 🗄️ Reaproveita as tabelas legadas `raffles`, `raffle_participants` e `raffle_winners`; adiciona `raffle_prizes` para múltiplas rodadas. RPCs exclusivas de admin criam snapshot dos participantes e registram ganhadores no servidor. Sorteados não se repetem; a criação recusa mais prêmios do que participantes únicos.
 - 🔒 Sem alterações em vendas, pagamentos, check-in, tickets ou XP. As estruturas antigas estavam vazias; tabelas do Sorteador não têm leitura/escrita direta por `anon` ou `authenticated`, operações passam pelas RPCs com validação de administrador.
-- 🧪 Teste transacional executado com contexto de administrador: criar sorteio, executar duas rodadas com ganhadores diferentes, confirmar conclusão e reverter a transação. Após rollback: 0 sorteios, 0 participantes, 0 ganhadores e 0 prêmios de teste. Interface ainda aguarda CI e revisão; não publicada em produção. Código-base: `e1580a4`.
+- 🧪 Testes transacionais no banco com contexto de administrador: critérios de contas, compradores do evento, compradores por ingresso, compradores no período e recorrentes; duas rodadas com ganhadores distintos e conclusão; rollback confirmado (0 linhas de teste residuais). Check-in do evento ativo ainda sem participantes porque o evento não ocorreu. CI completo aprovado (typecheck, testes, build e smoke SSR); preview Vercel READY. Não publicada em produção. Head revisado: `425eef8`.
 
 ## 07/11/2026 — Dashboard: gráfico "Picos de venda por horário" com números cortados
 
