@@ -74,6 +74,7 @@ Acesso: `admin` e `colaborador`. Layout: `src/components/layouts/AdminLayout.tsx
 | `/admin/configuracoes/mercado-pago` | `admin.configuracoes.mercado-pago.tsx` | Integração de pagamento |
 | `/admin/ferramentas` | `admin.ferramentas.index.tsx` | Hub de ferramentas (cards) |
 | `/admin/ferramentas/vitrine` | `admin.ferramentas.vitrine.tsx` | Banners da área do cliente |
+| `/admin/ferramentas/sorteador` | `admin.ferramentas.sorteador.tsx` | Sorteios administrativos, participantes e rodadas de prêmios |
 | `/admin/ferramentas/links-de-venda` | `admin.ferramentas.links-de-venda.tsx` | Links de venda personalizados |
 | `/admin/ferramentas/historico-eventos` | `admin.ferramentas.historico-eventos.index.tsx` | Histórico de Eventos — lista |
 | `/admin/ferramentas/historico-eventos/:id` | `admin.ferramentas.historico-eventos.$id.tsx` | Histórico de Eventos — resultado do evento |

@@ -1,3 +1,12 @@
+## 07/11/2026 — Ferramentas: Sorteador (PR #57 — em revisão)
+
+- ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, modo avançado por pessoa/ingresso, prêmios adicionados dinamicamente, histórico, nomes embaralhando por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
+- 🗄️ Reaproveita as estruturas originais `raffles`, `raffle_participants` e `raffle_winners`; adiciona `raffle_prizes` para múltiplas rodadas. As tabelas legadas estavam vazias antes da conversão. Participantes ficam congelados no momento da criação; ganhadores são sorteados no servidor e não se repetem.
+- 🔎 Compradores: somente vendas pagas, sem cortesia, teste ou reembolso integral; inclui compras sem cadastro. Quando existe `customer_id`, ele identifica a pessoa; sem vínculo, usa a combinação exata de nome e WhatsApp, sem agrupar apenas pelo telefone. Recorrência exige vínculo confirmado (`customer_id`) e compras em eventos distintos. Por ingresso, cada ticket gera uma chance e usa o nome do participante no ingresso.
+- 🎟️ Check-in: somente tickets utilizados, com `checked_in_at`, no evento operacional. A identidade por pessoa usa o nome normalizado do participante, pois a estrutura de check-in não tem um identificador pessoal próprio além do ingresso.
+- 🔒 RPCs validam administrador e organização; privilégios diretos nas tabelas foram revogados para `anon` e `authenticated`. Não altera vendas, pagamentos, tickets, check-in ou XP.
+- 🧪 Testes transacionais no banco: clientes cadastrados com duas rodadas e sem repetição; compradores do evento por pessoa e ingresso; compradores no período; recorrentes; check-in vazio recusado (evento futuro). Rollback confirmado, sem registros de teste residuais. CI do PR #57 passou (run #313, head `91f968bb`): typecheck, testes, build e smoke SSR. Preview Vercel READY no mesmo head. PR ainda não integrado à main nem publicado em produção.
+
 ## 07/11/2026 — Dashboard: gráfico "Picos de venda por horário" com números cortados
 
 - 🐛 No gráfico do `/admin` (Dashboard), os números do eixo esquerdo apareciam cortados e o número em cima da barra mais alta ficava escondido. Causa: margem esquerda negativa (`-20`) maior que o espaço do eixo, e pouca folga no topo. Corrigido: margem esquerda `0` e topo `24`. Só visual, sem mudar dados; o gráfico "Vendas diárias" não foi alterado.

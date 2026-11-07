@@ -48,6 +48,7 @@ import { Route as AdminEventosNovoRouteImport } from './routes/admin.eventos.nov
 import { Route as AdminFerramentasIndexRouteImport } from './routes/admin.ferramentas.index'
 import { Route as AdminFerramentasLinksDeVendaRouteImport } from './routes/admin.ferramentas.links-de-venda'
 import { Route as AdminFerramentasVitrineRouteImport } from './routes/admin.ferramentas.vitrine'
+import { Route as AdminFerramentasSorteadorRouteImport } from './routes/admin.ferramentas.sorteador'
 import { Route as AdminVendasIndexRouteImport } from './routes/admin.vendas.index'
 import { Route as AdminVendasIdRouteImport } from './routes/admin.vendas.$id'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
@@ -255,6 +256,11 @@ const AdminFerramentasVitrineRoute = AdminFerramentasVitrineRouteImport.update({
   path: '/ferramentas/vitrine',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminFerramentasSorteadorRoute = AdminFerramentasSorteadorRouteImport.update({
+  id: '/ferramentas/sorteador',
+  path: '/ferramentas/sorteador',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminVendasIndexRoute = AdminVendasIndexRouteImport.update({
   id: '/vendas/',
   path: '/vendas/',
@@ -340,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
+  '/admin/ferramentas/sorteador': typeof AdminFerramentasSorteadorRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
@@ -388,6 +395,7 @@ export interface FileRoutesByTo {
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
+  '/admin/ferramentas/sorteador': typeof AdminFerramentasSorteadorRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes': typeof AdminClientesIndexRoute
@@ -439,6 +447,7 @@ export interface FileRoutesById {
   '/admin/eventos/novo': typeof AdminEventosNovoRoute
   '/admin/ferramentas/links-de-venda': typeof AdminFerramentasLinksDeVendaRoute
   '/admin/ferramentas/vitrine': typeof AdminFerramentasVitrineRoute
+  '/admin/ferramentas/sorteador': typeof AdminFerramentasSorteadorRoute
   '/admin/vendas/$id': typeof AdminVendasIdRoute
   '/e/$slug/checkout': typeof ESlugCheckoutRoute
   '/admin/clientes/': typeof AdminClientesIndexRoute
@@ -491,6 +500,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/novo'
     | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
+    | '/admin/ferramentas/sorteador'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
@@ -539,6 +549,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/novo'
     | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
+    | '/admin/ferramentas/sorteador'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes'
@@ -589,6 +600,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/novo'
     | '/admin/ferramentas/links-de-venda'
     | '/admin/ferramentas/vitrine'
+    | '/admin/ferramentas/sorteador'
     | '/admin/vendas/$id'
     | '/e/$slug/checkout'
     | '/admin/clientes/'
@@ -901,6 +913,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFerramentasVitrineRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/ferramentas/sorteador': {
+      id: '/admin/ferramentas/sorteador'
+      path: '/ferramentas/sorteador'
+      fullPath: '/admin/ferramentas/sorteador'
+      preLoaderRoute: typeof AdminFerramentasSorteadorRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/vendas/': {
       id: '/admin/vendas/'
       path: '/vendas'
@@ -984,6 +1003,7 @@ interface AdminRouteRouteChildren {
   AdminEventosNovoRoute: typeof AdminEventosNovoRoute
   AdminFerramentasLinksDeVendaRoute: typeof AdminFerramentasLinksDeVendaRoute
   AdminFerramentasVitrineRoute: typeof AdminFerramentasVitrineRoute
+  AdminFerramentasSorteadorRoute: typeof AdminFerramentasSorteadorRoute
   AdminVendasIdRoute: typeof AdminVendasIdRoute
   AdminClientesIndexRoute: typeof AdminClientesIndexRoute
   AdminConfiguracoesIndexRoute: typeof AdminConfiguracoesIndexRoute
@@ -1011,6 +1031,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminEventosNovoRoute: AdminEventosNovoRoute,
   AdminFerramentasLinksDeVendaRoute: AdminFerramentasLinksDeVendaRoute,
   AdminFerramentasVitrineRoute: AdminFerramentasVitrineRoute,
+  AdminFerramentasSorteadorRoute: AdminFerramentasSorteadorRoute,
   AdminVendasIdRoute: AdminVendasIdRoute,
   AdminClientesIndexRoute: AdminClientesIndexRoute,
   AdminConfiguracoesIndexRoute: AdminConfiguracoesIndexRoute,

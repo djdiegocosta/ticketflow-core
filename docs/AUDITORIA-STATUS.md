@@ -1,3 +1,16 @@
+## Ferramentas — Sorteador (07/11/2026)
+
+- ✅ Estrutura original reaproveitada: `raffles`, `raffle_participants`, `raffle_winners`; `raffle_prizes` permite várias rodadas. Antes da conversão, as tabelas legadas estavam vazias.
+- ✅ Cinco públicos: contas cadastradas; compradores do evento operacional; check-ins do evento operacional; compradores no período; recorrentes com vínculo confirmado e compras em ao menos dois eventos.
+- ✅ Compras filtradas por status pago, sem cortesia, teste ou reembolso integral. Compras sem conta são incluídas; `customer_id` é a chave quando disponível, e visitantes são identificados pela combinação exata de nome e WhatsApp. Não se agrupam pessoas apenas por telefone. Recorrência exige `customer_id` confirmado.
+- ✅ Modo por pessoa ou por ingresso configurável. No modo por ingresso, o nome do portador do ticket define a identidade individual; o participante não ganha mais de uma rodada.
+- ✅ Check-ins exigem ticket utilizado e `checked_in_at`; por pessoa, nomes normalizados. O evento operacional atual é futuro e ainda não tem check-ins; o critério recusa corretamente a criação quando não encontra presentes.
+- ✅ Snapshot de participantes no cadastro do sorteio, prêmios dinâmicos, histórico, animação de 5 segundos, modo de apresentação 9:16 e exportação PNG 1080×1920.
+- 🔒 Tabelas sem privilégios diretos para `anon`/`authenticated`; RPCs acessíveis a usuários autenticados, com validação interna de admin e organização.
+- 🧪 Testes transacionais no Supabase: cadastro com duas rodadas, sem ganhador repetido; compradores de evento por pessoa/ingresso; compras no período; recorrentes; check-in vazio recusado; rollback verificado (0 registros temporários).
+- ✅ CI do PR #57 no run #313 / head `91f968bb`: typecheck, testes, build e smoke SSR aprovados. Preview Vercel READY para o mesmo head.
+- ⏳ PR #57 está aberto para integração; ainda não está na `main` nem em produção. Sem alterações em vendas, tickets, check-in ou XP.
+
 ## XP — regras v2 aplicadas ao banco (28/10/2026)
 - ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
 - ✅ Os 342 registros anteriores foram preservados em `customer_xp_events_archive`; o ledger ativo foi recalculado do zero.
