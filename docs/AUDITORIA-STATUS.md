@@ -10,6 +10,7 @@
 - 🔒 RLS ativo nas quatro tabelas; acesso direto revogado para `anon` e `authenticated`. RPCs disponíveis a usuários autenticados com validação interna de administrador e organização; `anon` não pode executá-las. O advisor do Supabase classifica as funções `SECURITY DEFINER` como executáveis por `authenticated` (padrão usado para mediar acesso às tabelas sem privilégios diretos); cada função valida `auth.uid()` e a role de admin.
 - 🧪 Testes transacionais: cadastro com duas rodadas sem repetição; compradores do evento por pessoa/ingresso; compras no período; recorrentes; check-in vazio recusado; rollback verificado (0 registros temporários).
 - ✅ CI do push à `main` aprovado: typecheck, testes, build e smoke SSR. Sem mudanças em vendas, pagamentos, tickets, check-in ou XP.
+- ✅ Exclusão pelo histórico com confirmação: RPC `delete_raffle` valida administrador e organização, remove os registros dependentes na ordem correta e não oferece execução a `anon`. Teste transacional com ganhador registrado confirmou remoção de sorteio, prêmios, participantes e ganhadores; rollback deixou 0 registros temporários.
 
 ## XP — regras v2 aplicadas ao banco (28/10/2026)
 - ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
