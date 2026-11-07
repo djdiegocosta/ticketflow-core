@@ -1,3 +1,9 @@
+## 07/11/2026 — Ferramentas: excluir sorteios pelo histórico
+
+- ✨ Adicionado botão de exclusão em cada item do histórico do Sorteador, com confirmação explícita antes de apagar.
+- 🗄️ Nova RPC `delete_raffle`: valida administrador e organização e remove, em uma única operação, ganhadores, prêmios, participantes e sorteio. Sem alterações em vendas, ingressos ou check-ins.
+- 🔒 Execução bloqueada para `anon`; as tabelas continuam sem acesso direto pelo navegador.
+- 🧪 Teste transacional com sorteio que já tinha ganhador: os quatro conjuntos de registros foram removidos; rollback deixou zero dados de teste. `anon` não pode executar a RPC. CI em execução.
 ## 07/11/2026 — Ferramentas: Sorteador (PUBLICADO)
 
 - ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, modo avançado por pessoa/ingresso, prêmios adicionados dinamicamente, histórico, nomes embaralhando por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
