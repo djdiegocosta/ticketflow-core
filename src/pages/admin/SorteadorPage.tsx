@@ -774,17 +774,17 @@ export function SorteadorPage() {
 
               <div className="w-full max-w-[380px]">
                 {drawing ? (
-                  <Button type="button" block disabled>Contagem regressiva em andamento...</Button>
+                  <Button type="button" disabled>Contagem regressiva em andamento...</Button>
                 ) : visibleWinner && nextPrize ? (
-                  <Button type="button" block onClick={startNextRound}>
+                  <Button type="button" onClick={startNextRound}>
                     Próxima rodada <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : nextPrize ? (
-                  <Button type="button" block onClick={startDraw} disabled={!names.length}>
+                  <Button type="button" onClick={startDraw} disabled={!names.length}>
                     <Shuffle className="mr-2 h-4 w-4" /> Iniciar sorteio
                   </Button>
                 ) : (
-                  <Button type="button" variant="outline" block onClick={backToList}>
+                  <Button type="button" variant="outline" onClick={backToList}>
                     <Check className="mr-2 h-4 w-4" /> Sorteio concluído
                   </Button>
                 )}
