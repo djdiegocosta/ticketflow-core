@@ -522,7 +522,7 @@ export function SorteadorPage() {
               {source === "compradores_evento" && "Compras pagas e confirmadas no evento operacional."}
               {source === "checkins_evento" && "Somente ingressos utilizados e com check-in registrado no evento operacional."}
               {source === "compradores_periodo" && "Compras pagas de qualquer evento dentro do período selecionado."}
-              {source === "clientes_recorrentes" && "Compradores com compras pagas em pelo menos dois eventos diferentes no período."}
+              {source === "clientes_recorrentes" && "Clientes com cadastro confirmado e compras pagas em pelo menos dois eventos diferentes no período."}
             </p>
           </div>
 
@@ -585,7 +585,7 @@ export function SorteadorPage() {
                         Cada ingresso elegível gera uma chance. Mesmo no modo por ingresso, a mesma pessoa não pode ganhar mais de uma rodada.
                       </p>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        Nas compras, usamos a conta vinculada quando existe; em compras sem cadastro, o WhatsApp do comprador. No check-in, usamos o nome registrado no ingresso.
+                        Nas compras, usamos a conta vinculada; sem conta, nome e WhatsApp em conjunto. Recorrência considera apenas compras ligadas a um cadastro confirmado. No check-in, usamos o nome registrado no ingresso.
                       </p>
                     </>
                   )}
