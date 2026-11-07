@@ -25,6 +25,7 @@ const paths = [
   "/e/modo-revoada/checkout",
   "/cliente",
   "/admin",
+  "/admin/ferramentas/sorteador",
   "/checkin",
 ];
 
