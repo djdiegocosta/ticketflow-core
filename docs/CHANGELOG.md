@@ -1,9 +1,11 @@
-## 07/11/2026 — Ferramentas: Sorteador (em revisão)
+## 07/11/2026 — Ferramentas: Sorteador (PR #57 — em revisão)
 
-- ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, configuração avançada por pessoa/ingresso, prêmios dinâmicos, histórico, animação de nomes por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
-- 🗄️ Reaproveita as tabelas legadas `raffles`, `raffle_participants` e `raffle_winners`; adiciona `raffle_prizes` para múltiplas rodadas. RPCs exclusivas de admin criam snapshot dos participantes e registram ganhadores no servidor. Sorteados não se repetem; a criação recusa mais prêmios do que participantes únicos.
-- 🔒 Sem alterações em vendas, pagamentos, check-in, tickets ou XP. As estruturas antigas estavam vazias; tabelas do Sorteador não têm leitura/escrita direta por `anon` ou `authenticated`, operações passam pelas RPCs com validação de administrador.
-- 🧪 Testes transacionais no banco com contexto de administrador: critérios de contas, compradores do evento, compradores por ingresso, compradores no período e recorrentes; duas rodadas com ganhadores distintos e conclusão; rollback confirmado (0 linhas de teste residuais). Check-in do evento ativo ainda sem participantes porque o evento não ocorreu. CI completo aprovado (typecheck, testes, build e smoke SSR); preview Vercel READY. Não publicada em produção. Head revisado: `425eef8`.
+- ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, modo avançado por pessoa/ingresso, prêmios adicionados dinamicamente, histórico, nomes embaralhando por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
+- 🗄️ Reaproveita as estruturas originais `raffles`, `raffle_participants` e `raffle_winners`; adiciona `raffle_prizes` para múltiplas rodadas. As tabelas legadas estavam vazias antes da conversão. Participantes ficam congelados no momento da criação; ganhadores são sorteados no servidor e não se repetem.
+- 🔎 Compradores: somente vendas pagas, sem cortesia, teste ou reembolso integral; inclui compras sem cadastro. Quando existe `customer_id`, ele identifica a pessoa; sem vínculo, usa WhatsApp. Por ingresso, cada ticket gera uma chance e usa o nome do participante no ingresso para evitar tratar o comprador como portador.
+- 🎟️ Check-in: somente tickets utilizados, com `checked_in_at`, no evento operacional. A identidade por pessoa usa o nome normalizado do participante, pois a estrutura de check-in não tem um identificador pessoal próprio além do ingresso.
+- 🔒 RPCs validam administrador e organização; privilégios diretos nas tabelas foram revogados para `anon` e `authenticated`. Não altera vendas, pagamentos, tickets, check-in ou XP.
+- 🧪 Testes transacionais no banco: clientes cadastrados com duas rodadas e sem repetição; compradores do evento por pessoa e ingresso; compradores no período; recorrentes; check-in vazio recusado (evento futuro). Rollback confirmado, sem registros de teste residuais. CI do PR #57 passou: typecheck, testes, build e smoke SSR. Preview Vercel READY. Ainda não publicada em produção. Commit da última migration: `3340a371`.
 
 ## 07/11/2026 — Dashboard: gráfico "Picos de venda por horário" com números cortados
 
