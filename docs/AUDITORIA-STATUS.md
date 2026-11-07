@@ -1,13 +1,15 @@
 ## Ferramentas — Sorteador (07/11/2026)
 
-- ✅ Estrutura original reaproveitada: `raffles`, `raffle_participants`, `raffle_winners`; tabela filha `raffle_prizes` para rodadas. Antes da mudança, as três tabelas legadas estavam vazias.
-- ✅ Cinco critérios: contas cadastradas, compradores do evento operacional, check-ins do evento operacional, compradores no período e clientes recorrentes com compras em dois ou mais eventos. Data aplicada conforme origem (cadastro, pagamento ou check-in).
-- ✅ Modo de chance por pessoa ou por ingresso, configurável em área avançada; snapshot dos participantes; ganhadores sem repetição; seleção final executada no banco. A criação bloqueia mais prêmios do que participantes únicos.
-- ✅ Acesso das RPCs limitado a administradores da própria organização; privilégios diretos nas tabelas revogados para `anon` e `authenticated`.
-- ℹ️ Nos check-ins, a estrutura atual não tem ID individual do portador além do ingresso; a deduplicação por pessoa usa nome normalizado do participante. Variações de nome podem representar a mesma pessoa como registros distintos.
-- ✅ CI do PR #57 aprovado: typecheck, testes automatizados, build e smoke SSR. Preview Vercel do head `425eef8` em estado READY.
-- ✅ Testes transacionais com admin cobriram contas cadastradas, compradores do evento, compradores por ingresso, compradores no período, recorrentes, rodadas sem repetição e rollback. Check-ins do evento ativo ainda não têm registros porque o evento futuro não ocorreu; a consulta retorna lista vazia conforme esperado.
-- ⏳ PR #57 segue aberto, não integrado à `main` e **não está em produção**. Nenhum dado de venda, ticket, check-in ou XP foi alterado.
+- ✅ Estrutura original reaproveitada: `raffles`, `raffle_participants`, `raffle_winners`; `raffle_prizes` permite várias rodadas. Antes da conversão, as tabelas legadas estavam vazias.
+- ✅ Cinco públicos: contas cadastradas; compradores do evento operacional; check-ins do evento operacional; compradores no período; recorrentes com compras em ao menos dois eventos.
+- ✅ Compras filtradas por status pago, sem cortesia, teste ou reembolso integral. Compras sem conta são incluídas; `customer_id` é a chave quando disponível, com WhatsApp como fallback.
+- ✅ Modo por pessoa ou por ingresso configurável. No modo por ingresso, o nome do portador do ticket define a identidade individual; o participante não ganha mais de uma rodada.
+- ✅ Check-ins exigem ticket utilizado e `checked_in_at`; por pessoa, nomes normalizados. O evento operacional atual é futuro e ainda não tem check-ins; o critério recusa corretamente a criação quando não encontra presentes.
+- ✅ Snapshot de participantes no cadastro do sorteio, prêmios dinâmicos, histórico, animação de 5 segundos, modo de apresentação 9:16 e exportação PNG 1080×1920.
+- 🔒 Tabelas sem privilégios diretos para `anon`/`authenticated`; RPCs acessíveis a usuários autenticados, com validação interna de admin e organização.
+- 🧪 Testes transacionais no Supabase: cadastro com duas rodadas, sem ganhador repetido; compradores de evento por pessoa/ingresso; compras no período; recorrentes; check-in vazio recusado; rollback verificado (0 registros temporários).
+- ✅ CI do PR #57 no commit `3340a371`: typecheck, testes, build e smoke SSR aprovados. Preview Vercel READY.
+- ⏳ PR #57 está aberto para integração; ainda não está na `main` nem em produção. Sem alterações em vendas, tickets, check-in ou XP.
 
 ## XP — regras v2 aplicadas ao banco (28/10/2026)
 - ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
