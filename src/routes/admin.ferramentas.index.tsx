@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, ScanLine, BarChart3, Link2 } from "lucide-react";
+import { Calculator, Target, Wrench, CheckSquare, ImageIcon, History, ScanLine, BarChart3, Link2, Shuffle } from "lucide-react";
 
 const tools = [
+  {
+    name: "Sorteador",
+    description: "Realize sorteios com participantes dos seus eventos e compartilhe os resultados.",
+    icon: Shuffle,
+    href: "/admin/ferramentas/sorteador",
+  },
   {
     name: "Histórico de Eventos",
     description: "Consulte os resultados, indicadores e dados históricos dos eventos realizados.",
