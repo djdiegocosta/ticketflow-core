@@ -426,6 +426,7 @@ export function SorteadorPage() {
         await queryClient.invalidateQueries({ queryKey: ["raffles"] });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Não foi possível concluir o sorteio.";
+        setShowPreviousWinner(true);
         toast.error(message);
       } finally {
         setDrawing(false);
@@ -581,7 +582,10 @@ export function SorteadorPage() {
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        Cada ingresso elegível gera uma chance. Mesmo no modo por ingresso, o ganhador não se repete nas próximas rodadas.
+                        Cada ingresso elegível gera uma chance. Mesmo no modo por ingresso, a mesma pessoa não pode ganhar mais de uma rodada.
+                      </p>
+                      <p className="text-xs text-[var(--text-secondary)]">
+                        Nas compras, usamos a conta vinculada quando existe; em compras sem cadastro, o WhatsApp do comprador. No check-in, usamos o nome registrado no ingresso.
                       </p>
                     </>
                   )}
