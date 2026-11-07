@@ -1,3 +1,10 @@
+## 07/11/2026 — Ferramentas: Sorteador (em revisão)
+
+- ✨ Nova ferramenta em **Admin → Ferramentas → Sorteador**: cinco critérios de público, período opcional, configuração avançada por pessoa/ingresso, prêmios dinâmicos, histórico, animação de nomes por 5 segundos, apresentação 9:16 e exportação PNG 1080×1920.
+- 🗄️ Reaproveita as tabelas legadas `raffles`, `raffle_participants` e `raffle_winners`; adiciona `raffle_prizes` para múltiplas rodadas. RPCs exclusivas de admin criam snapshot dos participantes e registram ganhadores no servidor. Sorteados não se repetem; a criação recusa mais prêmios do que participantes únicos.
+- 🔒 Sem alterações em vendas, pagamentos, check-in, tickets ou XP. As estruturas antigas estavam vazias; tabelas do Sorteador não têm leitura/escrita direta por `anon` ou `authenticated`, operações passam pelas RPCs com validação de administrador.
+- 🧪 Teste transacional executado com contexto de administrador: criar sorteio, executar duas rodadas com ganhadores diferentes, confirmar conclusão e reverter a transação. Após rollback: 0 sorteios, 0 participantes, 0 ganhadores e 0 prêmios de teste. Interface ainda aguarda CI e revisão; não publicada em produção. Código-base: `e1580a4`.
+
 ## 07/11/2026 — Dashboard: gráfico "Picos de venda por horário" com números cortados
 
 - 🐛 No gráfico do `/admin` (Dashboard), os números do eixo esquerdo apareciam cortados e o número em cima da barra mais alta ficava escondido. Causa: margem esquerda negativa (`-20`) maior que o espaço do eixo, e pouca folga no topo. Corrigido: margem esquerda `0` e topo `24`. Só visual, sem mudar dados; o gráfico "Vendas diárias" não foi alterado.
