@@ -1,3 +1,8 @@
+## 06/11/2026 — Clientes (admin): ordenação da coluna "Cliente" alterna nome e data de cadastro
+
+- ✨ Em `/admin/clientes`, clicar em "Cliente" ordena de A a Z; no segundo clique ordena pela data de cadastro, dos mais recentes para os mais antigos (aparece "· cadastro" ao lado do título); no terceiro volta para A a Z. As outras colunas continuam alternando crescente/decrescente como antes.
+- 🧪 Só a tela mudou (a data de cadastro já vinha carregada); banco não alterado. `typecheck` limpo; suíte inteira: 139 passam; `smoke:ssr` ok (8 páginas). Commit `6a62fe4`.
+
 ## 04/11/2026 — Vendas: indicador de cliente com conta / sem conta
 
 - ✨ Na listagem de vendas (`/admin/vendas`), à frente do nome do cliente, aparece uma bolinha: **verde** = o cliente tem conta (login) no TicketFlow; **laranja** = comprou sem criar conta. Passar o mouse mostra a explicação em texto, e o leitor de tela também lê (a cor sozinha não é a única informação). Cores via `--success` e `--warning`, que não mudam com o tema de cor da organização.
