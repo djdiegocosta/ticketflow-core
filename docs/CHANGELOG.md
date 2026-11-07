@@ -1,3 +1,8 @@
+## 07/11/2026 — Dashboard: gráfico "Picos de venda por horário" com números cortados
+
+- 🐛 No gráfico do `/admin` (Dashboard), os números do eixo esquerdo apareciam cortados e o número em cima da barra mais alta ficava escondido. Causa: margem esquerda negativa (`-20`) maior que o espaço do eixo, e pouca folga no topo. Corrigido: margem esquerda `0` e topo `24`. Só visual, sem mudar dados; o gráfico "Vendas diárias" não foi alterado.
+- 🧪 `typecheck` limpo; suíte inteira: 139 passam; `smoke:ssr` ok (8 páginas). Banco não alterado. Commit `dc22f09`.
+
 ## 06/11/2026 — Clientes (admin): ordenação da coluna "Cliente" alterna nome e data de cadastro
 
 - ✨ Em `/admin/clientes`, clicar em "Cliente" ordena de A a Z; no segundo clique ordena pela data de cadastro, dos mais recentes para os mais antigos (aparece "· cadastro" ao lado do título); no terceiro volta para A a Z. As outras colunas continuam alternando crescente/decrescente como antes.
