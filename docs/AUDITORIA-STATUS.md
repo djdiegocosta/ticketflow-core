@@ -1,8 +1,8 @@
 ## Ferramentas — Sorteador (07/11/2026)
 
 - ✅ Estrutura original reaproveitada: `raffles`, `raffle_participants`, `raffle_winners`; `raffle_prizes` permite várias rodadas. Antes da conversão, as tabelas legadas estavam vazias.
-- ✅ Cinco públicos: contas cadastradas; compradores do evento operacional; check-ins do evento operacional; compradores no período; recorrentes com compras em ao menos dois eventos.
-- ✅ Compras filtradas por status pago, sem cortesia, teste ou reembolso integral. Compras sem conta são incluídas; `customer_id` é a chave quando disponível, com WhatsApp como fallback.
+- ✅ Cinco públicos: contas cadastradas; compradores do evento operacional; check-ins do evento operacional; compradores no período; recorrentes com vínculo confirmado e compras em ao menos dois eventos.
+- ✅ Compras filtradas por status pago, sem cortesia, teste ou reembolso integral. Compras sem conta são incluídas; `customer_id` é a chave quando disponível, e visitantes são identificados pela combinação exata de nome e WhatsApp. Não se agrupam pessoas apenas por telefone.
 - ✅ Modo por pessoa ou por ingresso configurável. No modo por ingresso, o nome do portador do ticket define a identidade individual; o participante não ganha mais de uma rodada.
 - ✅ Check-ins exigem ticket utilizado e `checked_in_at`; por pessoa, nomes normalizados. O evento operacional atual é futuro e ainda não tem check-ins; o critério recusa corretamente a criação quando não encontra presentes.
 - ✅ Snapshot de participantes no cadastro do sorteio, prêmios dinâmicos, histórico, animação de 5 segundos, modo de apresentação 9:16 e exportação PNG 1080×1920.
