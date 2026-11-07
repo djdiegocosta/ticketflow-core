@@ -1,3 +1,12 @@
+## Ferramentas — Sorteador (07/11/2026)
+
+- ✅ Estrutura original reaproveitada: `raffles`, `raffle_participants`, `raffle_winners`; tabela filha `raffle_prizes` para rodadas. Antes da mudança, as três tabelas legadas estavam vazias.
+- ✅ Cinco critérios: contas cadastradas, compradores do evento operacional, check-ins do evento operacional, compradores no período e clientes recorrentes com compras em dois ou mais eventos. Data aplicada conforme origem (cadastro, pagamento ou check-in).
+- ✅ Modo de chance por pessoa ou por ingresso, configurável em área avançada; snapshot dos participantes; ganhadores sem repetição; seleção final executada no banco. A criação bloqueia mais prêmios do que participantes únicos.
+- ✅ Acesso das RPCs limitado a administradores da própria organização; privilégios diretos nas tabelas revogados para `anon` e `authenticated`.
+- ℹ️ Nos check-ins, a estrutura atual não tem ID individual do portador além do ingresso; a deduplicação por pessoa usa nome normalizado do participante. Variações de nome podem representar a mesma pessoa como registros distintos.
+- ⏳ Branch `feat/admin-sorteador-20261107`: aguarda typecheck, testes, build/smoke SSR e revisão do PR. **Ainda não está em produção.** Nenhum dado de venda, ticket, check-in ou XP foi alterado.
+
 ## XP — regras v2 aplicadas ao banco (28/10/2026)
 - ✅ Migration `refactor_customer_xp_rules_v2` aplicada ao projeto Supabase `ywcdopjqfhisopipqxgq`.
 - ✅ Os 342 registros anteriores foram preservados em `customer_xp_events_archive`; o ledger ativo foi recalculado do zero.
