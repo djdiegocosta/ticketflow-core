@@ -17,6 +17,10 @@ import {
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type ParticipantSource =
   | "clientes_cadastrados"
@@ -236,6 +240,8 @@ export function SorteadorPage() {
   const [drawResult, setDrawResult] = useState<DrawResult | null>(null);
   const [showPreviousWinner, setShowPreviousWinner] = useState(true);
   const [sharing, setSharing] = useState(false);
+  const [raffleToDelete, setRaffleToDelete] = useState<RaffleSummary | null>(null);
+  const [deletingRaffle, setDeletingRaffle] = useState(false);
 
   const animationRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -465,6 +471,31 @@ export function SorteadorPage() {
       }
     } finally {
       setSharing(false);
+    }
+  };
+
+  const confirmDeleteRaffle = async () => {
+    if (!raffleToDelete || deletingRaffle) return;
+
+    const raffleId = raffleToDelete.id;
+    const raffleTitle = raffleToDelete.title;
+    setDeletingRaffle(true);
+
+    try {
+      const { error } = await (supabase as any).rpc("delete_raffle", {
+        _raffle_id: raffleId,
+      });
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["raffles"] });
+      queryClient.removeQueries({ queryKey: ["raffle-detail", raffleId] });
+      setRaffleToDelete(null);
+      toast.success('Sorteio "' + raffleTitle + '" excluído do histórico.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Não foi possível excluir o sorteio.";
+      toast.error(message);
+    } finally {
+      setDeletingRaffle(false);
     }
   };
 
@@ -861,34 +892,77 @@ export function SorteadorPage() {
         ) : (
           <div className="divide-y divide-[var(--border-subtle)]">
             {rafflesQuery.data.map((item) => (
-              <button
+              <div
                 key={item.id}
-                type="button"
-                onClick={() => openRaffle(item.id)}
-                className="flex w-full flex-col gap-3 py-4 text-left transition-colors hover:bg-[var(--bg-tertiary)] sm:flex-row sm:items-center sm:justify-between sm:px-2"
+                className="flex items-center gap-2 rounded-md py-2 transition-colors hover:bg-[var(--bg-tertiary)] sm:px-2"
               >
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
-                    {item.status === "completed" ? <Badge>Concluído</Badge> : <Badge variant="secondary">Em andamento</Badge>}
+                <button
+                  type="button"
+                  onClick={() => openRaffle(item.id)}
+                  className="flex min-w-0 flex-1 flex-col gap-3 py-2 text-left sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
+                      {item.status === "completed" ? <Badge>Concluído</Badge> : <Badge variant="secondary">Em andamento</Badge>}
+                    </div>
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {SOURCE_LABELS[item.participant_source]}{item.event_title ? " · " + item.event_title : ""}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">{formatDateTime(item.created_at)}</p>
                   </div>
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                    {SOURCE_LABELS[item.participant_source]}{item.event_title ? " · " + item.event_title : ""}
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">{formatDateTime(item.created_at)}</p>
-                </div>
-                <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
-                  <div className="flex gap-4 text-xs text-[var(--text-secondary)]">
-                    <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {item.participant_count}</span>
-                    <span>{item.winner_count}/{item.prize_count} prêmios</span>
+                  <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
+                    <div className="flex gap-4 text-xs text-[var(--text-secondary)]">
+                      <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {item.participant_count}</span>
+                      <span>{item.winner_count}/{item.prize_count} prêmios</span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-[var(--text-secondary)]" />
                   </div>
-                  <ChevronRight className="h-4 w-4 text-[var(--text-secondary)]" />
-                </div>
-              </button>
+                </button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-[var(--text-secondary)] hover:text-[var(--error)]"
+                  onClick={() => setRaffleToDelete(item)}
+                  aria-label={'Excluir sorteio ' + item.title}
+                  title="Excluir sorteio"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             ))}
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={Boolean(raffleToDelete)}
+        onOpenChange={(open) => {
+          if (!open && !deletingRaffle) setRaffleToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este sorteio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O sorteio "{raffleToDelete?.title}" será removido permanentemente, incluindo seus prêmios,
+              participantes e resultados. Esta ação não pode ser desfeita. Vendas e ingressos não serão alterados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingRaffle}>Cancelar</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmDeleteRaffle}
+              disabled={deletingRaffle}
+            >
+              {deletingRaffle ? "Excluindo..." : "Excluir definitivamente"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="flex items-start gap-2 text-xs text-[var(--text-secondary)]">
         <Shuffle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
