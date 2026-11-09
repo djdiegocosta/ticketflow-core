@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { formatName, isFullName, maskWhatsApp, onlyDigits } from '@/lib/form-format';
 import { suggestEmailCorrection } from '@/lib/email-typo-check';
+import { setMetaAdvancedMatching } from '@/lib/meta-pixel';
 import { useNavigate, useSearch, useParams, Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
@@ -227,6 +228,9 @@ export default function CheckoutPage() {
   const handleBuyerContinue = async () => {
     const valid = await form.trigger(['buyerName', 'buyerWhatsApp', 'buyerEmail']);
     if (!valid) return;
+    // Meta Pixel: correspondência avançada (nunca bloqueia nem falha o checkout).
+    const buyer = form.getValues();
+    setMetaAdvancedMatching({ email: buyer.buyerEmail, phone: buyer.buyerWhatsApp, name: buyer.buyerName });
     setStep('participants');
     window.scrollTo(0, 0);
   };
@@ -238,7 +242,8 @@ export default function CheckoutPage() {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (!event || !batch || isCreatingSale) return;
-    
+
+    setMetaAdvancedMatching({ email: values.buyerEmail, phone: values.buyerWhatsApp, name: values.buyerName });
     setIsCreatingSale(true);
     setPixData(null);
     try {

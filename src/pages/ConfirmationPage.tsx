@@ -6,6 +6,7 @@ import { CheckCircle2, QrCode, Download, UserPlus, Loader2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react';
 import { useSaleConfirmation, useApplyPublicDesign } from '@/lib/customer-queries';
 import { useEffect, useState } from 'react';
+import { setMetaAdvancedMatching } from '@/lib/meta-pixel';
 
 export default function ConfirmationPage() {
   // O parâmetro da rota continua se chamando sale_code, mas agora carrega o ID (uuid) da venda.
@@ -25,6 +26,10 @@ export default function ConfirmationPage() {
     }).fbq;
 
     if (typeof fbq !== 'function') return;
+
+    // Meta Pixel: a confirmação só traz nome e WhatsApp; o e-mail (se o comprador acabou
+    // de passar pelo checkout nesta aba) é completado automaticamente pelo módulo.
+    setMetaAdvancedMatching({ name: sale.buyer_name, phone: sale.buyer_whatsapp });
 
     fbq('track', 'Purchase', {
       content_name: (sale as any).event_title || 'Ingresso',
