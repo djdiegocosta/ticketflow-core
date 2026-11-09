@@ -1,3 +1,10 @@
+## Meta Pixel — correspondência avançada (08/11/2026)
+
+- ✅ Dados do comprador (e-mail, WhatsApp, nome) passam a ser enviados ao Pixel no checkout e antes do `Purchase`, via `src/lib/meta-pixel.ts` (commit `2e45dfc`). Sem mudança no banco.
+- ⏳ O aviso da Meta só some depois que eventos reais chegarem com esses dados (em geral 24–48 h). Conferir em Events Manager → Pixel → Testar eventos / Qualidade da correspondência.
+- ⚠️ `PrivacyPolicyPage.tsx` não menciona Pixel, Meta nem uso de dados para publicidade. Como agora dados de contato (com hash) vão à Meta, convém incluir esse trecho na política. Decisão e texto do dono.
+- ⚠️ `InitiateCheckout` dispara ao abrir o checkout, antes de o comprador digitar os dados: esse evento específico segue sem correspondência avançada (limitação do fluxo; os eventos seguintes já levam).
+
 ## Ferramentas — Sorteador (07/11/2026)
 
 - ✅ Publicado em produção pela PR #57, merge commit `9e633334`; deployment `dpl_3fa1B7qsiqP7YPbHDBEGLq4ynBvi` READY, alias `ticketflow-core.vercel.app`.

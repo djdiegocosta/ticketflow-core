@@ -438,6 +438,11 @@ Exportação:
 
 Não confundir exportação com CRM/remarketing automático.
 
+Pixel no site (Pixel `2269701520646682`):
+- iniciado uma vez em `src/routes/__root.tsx` (PageView em toda navegação);
+- eventos: `ViewContent` (página do evento), `InitiateCheckout` (abrir checkout), `Purchase` (confirmação paga);
+- correspondência avançada manual em `src/lib/meta-pixel.ts`: reenvia `fbq('init', ID, {em, ph, fn, ln})` no checkout e na confirmação; nunca bloqueia o fluxo e não grava dado pessoal em storage.
+
 ## 19. Ferramentas
 
 Rota principal: `src/routes/admin.ferramentas.index.tsx`.

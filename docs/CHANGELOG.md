@@ -1,3 +1,12 @@
+## 08/11/2026 — Meta Pixel: correspondência avançada manual
+
+- 🐛 A Meta apontou "correspondência avançada manual não configurada" (Pixel 2269701520646682). O Pixel só era iniciado na abertura da página, sem nenhum dado do comprador.
+- ✨ Novo `src/lib/meta-pixel.ts`: quando o comprador informa seus dados, o site reenvia `fbq('init', ID, {em, ph, fn, ln})` (e-mail, WhatsApp com DDI 55, primeiro nome e sobrenome, já normalizados; o Pixel faz o hash SHA-256 sozinho). Isso só atualiza os dados do usuário: não dispara PageView nem outro evento.
+- 📍 Onde: checkout (ao continuar a etapa do comprador e ao finalizar a reserva) e confirmação (antes do evento `Purchase`; a confirmação não recebe e-mail, então o e-mail vem da mesma aba quando o comprador acabou de passar pelo checkout, só se for a mesma pessoa — mesmo WhatsApp).
+- 🔒 Nunca lança erro nem trava o checkout; não grava dado pessoal em localStorage/sessionStorage/cookie; outra pessoa no mesmo aparelho substitui tudo, sem misturar dados. Nenhuma mudança no banco, na página de confirmação pública ou nas variáveis de ambiente.
+- 🧪 12 testes novos. Suíte inteira: 151 passam; typecheck limpo; `smoke:ssr` ok (9 páginas). Commit `2e45dfc`.
+- ⚠️ A política de privacidade não cita o Pixel/Meta (ver AUDITORIA-STATUS).
+
 ## 07/11/2026 — Ferramentas: excluir sorteios pelo histórico
 
 - ✨ Adicionado botão de exclusão em cada item do histórico do Sorteador, com confirmação explícita antes de apagar.
