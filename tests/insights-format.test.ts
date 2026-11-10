@@ -114,23 +114,23 @@ describe("mapa de calor antecedência x dia da semana", () => {
 });
 
 describe("número no topo das barras", () => {
-  test("ingressos e vendas: número inteiro; zero não mostra nada", () => {
+  test("ingressos e vendas: número inteiro; zero mostra \"0\"", () => {
     expect(formatBarLabel(37, "tickets")).toBe("37");
     expect(formatBarLabel(1234, "tickets")).toBe("1.234");
     expect(formatBarLabel(5, "orders")).toBe("5");
-    expect(formatBarLabel(0, "tickets")).toBe("");
+    expect(formatBarLabel(0, "tickets")).toBe("0");
   });
 
   test("receita usa forma compacta para caber sobre barras estreitas", () => {
     expect(formatBarLabel(850, "revenue")).toBe("850");
     expect(formatBarLabel(1234, "revenue")).toBe("1,2\u00a0mil");
     expect(formatBarLabel(12500, "revenue")).toBe("12,5\u00a0mil");
-    expect(formatBarLabel(0, "revenue")).toBe("");
+    expect(formatBarLabel(0, "revenue")).toBe("0");
   });
 
   test("média por evento mostra porcentagem", () => {
     expect(formatBarLabel(14.285, "tickets", true)).toBe("14,3%");
-    expect(formatBarLabel(0, "tickets", true)).toBe("");
+    expect(formatBarLabel(0, "tickets", true)).toBe("0%");
   });
 
   test("valores inválidos ou negativos não geram texto", () => {

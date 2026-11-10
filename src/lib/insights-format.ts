@@ -65,13 +65,14 @@ const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFra
 
 /**
  * Número exibido no topo de cada barra (o tooltip continua mostrando o detalhe completo).
- * - zero (ou inválido) não mostra nada, como no gráfico de picos de venda do Dashboard;
+ * - zero mostra "0" (barra vazia fica explícita); valor inválido ou negativo não mostra nada;
  * - ingressos/vendas: número inteiro;
  * - receita: forma compacta ("1,2 mil"), para caber em cima de barras estreitas;
  * - média por evento: porcentagem com até 1 casa decimal.
  */
 export function formatBarLabel(value: number, measure: Measure, normalized = false): string {
-  if (!Number.isFinite(value) || value <= 0) return "";
+  if (!Number.isFinite(value) || value < 0) return "";
+  if (value === 0) return normalized ? "0%" : "0";
   if (normalized) return `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
   if (measure === "revenue") return compact.format(value);
   return nf.format(value);

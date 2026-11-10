@@ -3,11 +3,12 @@ import {
   Area,
   AreaChart,
   Bar,
-  BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Legend,
   LabelList,
+  Line,
   Rectangle,
   ResponsiveContainer,
   Tooltip,
@@ -40,6 +41,8 @@ const EVENT_DAY_COLOR = "#D97745";
 // Mesmo padrão das barras do Dashboard (gráfico "Picos de venda por horário"): cantos de cima arredondados e número no topo.
 const BAR_RADIUS: [number, number, number, number] = [6, 6, 0, 0];
 const BAR_LABEL_STYLE = { fill: "var(--text-secondary)", fontSize: 11, fontWeight: 600 } as const;
+// Barra vazia mostra "0" mais apagado, para ficar claro que é zero (e não um número que faltou).
+const BAR_LABEL_ZERO_STYLE = { fill: "var(--text-disabled)", fontSize: 11, fontWeight: 400 } as const;
 
 function eventDayValue(row: BreakdownRow | DailyRow, measure: Measure): number {
   return measure === "orders"
@@ -189,19 +192,21 @@ export function BreakdownBarChart({
   });
   const top = topBucketIndex(data.map((d) => d.value));
 
-  // Número do topo da pilha (Outras datas + D0) = total do dia. Quem desenha é sempre o segmento
-  // que está no topo: o D0 quando há venda no dia do evento, senão "Outras datas". (Segmento
-  // com valor zero não tem rótulo próprio, por isso os dois precisam saber se são o topo.)
-  const renderStackTotal = (isD0Segment: boolean) => (props: unknown) => {
-    const { x, y, width, index } = props as { x?: number; y?: number; width?: number; index?: number };
-    const row = data[index ?? -1];
-    if (!row) return null;
-    const hasD0Segment = row.eventDayValue > 0;
-    if (isD0Segment !== hasD0Segment) return null;
-    const text = formatBarLabel(row.value, measure, normalized);
+  // Número no topo de cada barra. Usa só o valor entregue pelo gráfico (nunca a posição na lista,
+  // que a biblioteca numera só entre as barras não vazias). Em pilha, quem carrega o número é uma
+  // linha invisível no ponto do total (ver abaixo), então o total sempre aparece no topo do dia.
+  const renderBarTotal = (props: unknown) => {
+    const { x, y, width, value } = props as { x?: number; y?: number; width?: number; value?: unknown };
+    const amount = Number(value);
+    const text = formatBarLabel(amount, measure, normalized);
     if (!text) return null;
     return (
-      <text x={Number(x) + Number(width) / 2} y={Number(y) - 6} textAnchor="middle" style={BAR_LABEL_STYLE}>
+      <text
+        x={Number(x) + (Number(width) || 0) / 2}
+        y={Number(y) - 6}
+        textAnchor="middle"
+        style={amount > 0 ? BAR_LABEL_STYLE : BAR_LABEL_ZERO_STYLE}
+      >
         {text}
       </text>
     );
@@ -214,7 +219,7 @@ export function BreakdownBarChart({
     <div className="w-full overflow-x-auto">
       <div className="h-[260px]" style={wide ? { minWidth: data.length * 42 } : undefined}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 24, right: 8, left: -16, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 24, right: 8, left: -16, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} interval={0} dy={8} />
             <YAxis
@@ -237,27 +242,23 @@ export function BreakdownBarChart({
                   shape={(props: BarShapeProps) => (
                     <Rectangle {...props} radius={Number(props.payload?.eventDayValue) > 0 ? 0 : BAR_RADIUS} />
                   )}
-                >
-                  <LabelList dataKey="value" position="top" content={renderStackTotal(false)} />
-                </Bar>
-                <Bar dataKey="eventDayValue" name="Dia do evento (D0)" stackId="timing" fill={EVENT_DAY_COLOR} radius={BAR_RADIUS}>
-                  <LabelList dataKey="value" position="top" content={renderStackTotal(true)} />
-                </Bar>
+                />
+                <Bar dataKey="eventDayValue" name="Dia do evento (D0)" stackId="timing" fill={EVENT_DAY_COLOR} radius={BAR_RADIUS} />
+
               </>
             ) : (
               <Bar dataKey="value" name={normalized ? "Participação média" : MEASURE_LABEL[measure]} fill={singleColor} radius={BAR_RADIUS}>
                 {data.map((_, i) => (
                   <Cell key={i} fill={singleColor ?? (i === top ? "var(--accent)" : MUTED_BAR)} />
                 ))}
-                <LabelList
-                  dataKey="value"
-                  position="top"
-                  formatter={((value: number) => formatBarLabel(value, measure, normalized)) as never}
-                  style={BAR_LABEL_STYLE}
-                />
               </Bar>
             )}
-          </BarChart>
+            {/* Linha invisível no ponto do total de cada barra: só serve para carregar o número do topo.
+                (A biblioteca não gera rótulo para barra de altura zero; a linha gera, e assim o "0" aparece.) */}
+            <Line dataKey="value" stroke="none" dot={false} activeDot={false} legendType="none" isAnimationActive={false} tooltipType="none">
+              <LabelList dataKey="value" position="top" content={renderBarTotal} />
+            </Line>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>
