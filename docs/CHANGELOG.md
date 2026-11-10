@@ -1,3 +1,10 @@
+## 09/11/2026 — Insights: número do D0 e barras vazias
+
+- 🐛 **Falha real corrigida:** no modo "Todas as vendas", a barra do D0 (dia do evento) podia ficar sem número ou com o total errado. A causa era minha: o número do topo da pilha usava a posição entregue pela biblioteca de gráficos, que só numera as barras não vazias. Agora o número vem de uma linha invisível no ponto do total de cada dia, sem depender de posição.
+- ✨ **Barras vazias mostram "0"** em tom apagado. No modo padrão "Antecipadas", D0, "Pós-evento" e "Antes de D-N" são sempre zero por definição (D0 não entra em compras antecipadas), e antes ficavam em branco, o que parecia falha.
+- Mapa de calor (números dentro dos quadrados) e Evolução diária (gráfico de área) não têm barras e não foram alterados.
+- 🧪 Verificado em navegador simulado em 6 cenários (barra simples, pilha mista, D0 só, receita, média por evento, legenda e tooltip). Suíte inteira: 155 passam; typecheck limpo; `smoke:ssr` ok (9 páginas). Sem mudança no banco. Commit `9fec610`.
+
 ## 09/11/2026 — Insights: número no topo das barras e cantos arredondados
 
 - ✨ Os gráficos de barras do Insights agora mostram **no topo de cada barra** o número da medida escolhida, como o gráfico "Picos de venda por horário" do Dashboard. O tooltip (passar o mouse) continua igual.
