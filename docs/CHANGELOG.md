@@ -1,3 +1,11 @@
+## 09/11/2026 — Insights: número no topo das barras e cantos arredondados
+
+- ✨ Os gráficos de barras do Insights agora mostram **no topo de cada barra** o número da medida escolhida, como o gráfico "Picos de venda por horário" do Dashboard. O tooltip (passar o mouse) continua igual.
+- 🔀 A medida padrão do painel passou de **Vendas** para **Ingressos**, para o número do topo ser o total de ingressos vendidos. Dá para trocar para Vendas ou Receita no filtro, e o número do topo acompanha a barra.
+- 🎨 Barras com os cantos de cima arredondados (raio 6), no mesmo padrão do Dashboard. Na pilha "Outras datas + Dia do evento (D0)", só o segmento do topo arredonda e o número do topo é o total do dia (corrigido durante o teste: nos dias sem D0 o total não aparecia).
+- Detalhes: zero não mostra número; receita em forma compacta ("1,2 mil") para caber em barras estreitas; "Média por evento" mostra a porcentagem. A evolução diária (gráfico de área) não tem barras e não foi alterada.
+- 🧪 `formatBarLabel` com 4 testes novos; gráficos renderizados em navegador simulado nos 4 cenários (simples, receita, pilha com D0, média por evento). Suíte inteira: 155 passam; typecheck limpo; `smoke:ssr` ok (9 páginas). Sem mudança no banco. Commit `6fc886b`.
+
 ## 08/11/2026 — Meta Pixel: correspondência avançada manual
 
 - 🐛 A Meta apontou "correspondência avançada manual não configurada" (Pixel 2269701520646682). O Pixel só era iniciado na abertura da página, sem nenhum dado do comprador.
