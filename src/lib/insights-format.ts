@@ -61,6 +61,22 @@ export function formatMeasure(value: number, measure: Measure): string {
   return measure === "revenue" ? brl.format(value) : nf.format(value);
 }
 
+const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+
+/**
+ * Número exibido no topo de cada barra (o tooltip continua mostrando o detalhe completo).
+ * - zero (ou inválido) não mostra nada, como no gráfico de picos de venda do Dashboard;
+ * - ingressos/vendas: número inteiro;
+ * - receita: forma compacta ("1,2 mil"), para caber em cima de barras estreitas;
+ * - média por evento: porcentagem com até 1 casa decimal.
+ */
+export function formatBarLabel(value: number, measure: Measure, normalized = false): string {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (normalized) return `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+  if (measure === "revenue") return compact.format(value);
+  return nf.format(value);
+}
+
 /** Posição do maior valor (o primeiro, em empate); -1 se tudo for zero. */
 export function topBucketIndex(values: ReadonlyArray<number>): number {
   let best = -1;

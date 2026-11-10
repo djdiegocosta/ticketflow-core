@@ -148,7 +148,7 @@ export default function InsightsPage() {
     origin: "online",
     countSaturday: true,
     leadMax: 20,
-    measure: "orders",
+    measure: "tickets",
     timing: "advance",
   });
   const [weekdayAverage, setWeekdayAverage] = useState(false);

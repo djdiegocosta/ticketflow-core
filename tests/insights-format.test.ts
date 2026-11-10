@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   brtDateString,
   buildHeatmap,
+  formatBarLabel,
   formatMeasure,
   heatBackground,
   lowSampleNote,
@@ -109,5 +110,31 @@ describe("mapa de calor antecedência x dia da semana", () => {
     expect(heatBackground(3, 0)).toBe("transparent");
     expect(heatBackground(5, 5)).toContain("85%");
     expect(heatBackground(1, 5)).toContain("29%");
+  });
+});
+
+describe("número no topo das barras", () => {
+  test("ingressos e vendas: número inteiro; zero não mostra nada", () => {
+    expect(formatBarLabel(37, "tickets")).toBe("37");
+    expect(formatBarLabel(1234, "tickets")).toBe("1.234");
+    expect(formatBarLabel(5, "orders")).toBe("5");
+    expect(formatBarLabel(0, "tickets")).toBe("");
+  });
+
+  test("receita usa forma compacta para caber sobre barras estreitas", () => {
+    expect(formatBarLabel(850, "revenue")).toBe("850");
+    expect(formatBarLabel(1234, "revenue")).toBe("1,2\u00a0mil");
+    expect(formatBarLabel(12500, "revenue")).toBe("12,5\u00a0mil");
+    expect(formatBarLabel(0, "revenue")).toBe("");
+  });
+
+  test("média por evento mostra porcentagem", () => {
+    expect(formatBarLabel(14.285, "tickets", true)).toBe("14,3%");
+    expect(formatBarLabel(0, "tickets", true)).toBe("");
+  });
+
+  test("valores inválidos ou negativos não geram texto", () => {
+    expect(formatBarLabel(Number.NaN, "tickets")).toBe("");
+    expect(formatBarLabel(-3, "tickets")).toBe("");
   });
 });
