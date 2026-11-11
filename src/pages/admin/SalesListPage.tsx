@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Ban, Download, Eye, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useSales, formatCurrency } from "@/lib/sales-queries";
+import { saleMatchesSearch } from "@/lib/sales-search";
 import { generateCheckinListPdf, usePreloadCheckinPdf } from "@/lib/checkin-pdf";
 import { useOperationalPreferences } from "@/lib/settings-queries";
 import { ManualSaleModal } from "@/components/admin/sales/ManualSaleModal";
@@ -102,18 +103,11 @@ export function SalesListPage() {
   );
 
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
     return sales.filter((sale) => {
       const eventMatch = !!operationalEvent && sale.event_id === operationalEvent.id;
       const statusValue = statusFilter === "Devolvido" ? "reembolsado" : statusFilter.toLowerCase();
       const statusMatch = statusFilter === "Todos" || sale.status === statusValue;
-      const normalizedPhone = sale.buyer_whatsapp.replace(/\D/g, "");
-      const searchMatch =
-        !term ||
-        sale.buyer_name.toLowerCase().includes(term) ||
-        normalizedPhone.includes(term.replace(/\D/g, "")) ||
-        (sale.sale_code || "").toLowerCase().includes(term);
-      return eventMatch && statusMatch && searchMatch;
+      return eventMatch && statusMatch && saleMatchesSearch(sale, search);
     });
   }, [sales, operationalEvent, statusFilter, search]);
 
