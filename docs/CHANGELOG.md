@@ -1,3 +1,10 @@
+## 11/11/2026 — Vendas: busca por nome corrigida
+
+- 🐛 **Causa:** na busca de Admin → Vendas, o trecho do WhatsApp tirava os números do texto digitado. Ao digitar um nome (sem número), sobrava um texto vazio, e "qualquer coisa contém vazio" é sempre verdadeiro: toda venda passava no filtro. A busca por nome nunca estreitava a lista.
+- ✨ Nova regra em `src/lib/sales-search.ts`: ignora maiúsculas e acentos ("joao" acha "João"); com várias palavras, todas precisam aparecer ("maria silva" acha "Maria da Silva"); WhatsApp só entra quando o texto parece telefone (com ou sem máscara, inteiro ou parcial); código da venda continua funcionando; venda sem WhatsApp não quebra a tela.
+- A busca da tela Clientes já tinha a proteção correta (`digits.length > 0`) e não foi alterada.
+- 🧪 10 testes novos (um deles reproduz o defeito antigo). Suíte inteira: 165 passam; typecheck limpo; `smoke:ssr` ok (9 páginas). Sem mudança no banco. Commit `8a34711`.
+
 ## 09/11/2026 — Insights: número do D0 e barras vazias
 
 - 🐛 **Falha real corrigida:** no modo "Todas as vendas", a barra do D0 (dia do evento) podia ficar sem número ou com o total errado. A causa era minha: o número do topo da pilha usava a posição entregue pela biblioteca de gráficos, que só numera as barras não vazias. Agora o número vem de uma linha invisível no ponto do total de cada dia, sem depender de posição.

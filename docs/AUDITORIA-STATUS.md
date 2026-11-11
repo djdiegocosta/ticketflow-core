@@ -1,3 +1,10 @@
+## Vendas — checkup da busca (11/11/2026)
+
+- ✅ Busca por nome corrigida (commit `8a34711`).
+- ⚠️ A aba **Expirado** da lista de Vendas nunca mostra nada: `fetchSales` exclui vendas expiradas (`.neq("status","expirado")`, desde 02/09/2026, sem decisão documentada). Efeito colateral: quem teve a reserva expirada não aparece na busca. Hoje são 74 vendas expiradas (17 no evento aberto). Decisão do dono: mostrar só na aba Expirado (mantendo "Todos" sem elas) ou manter como está e remover a aba.
+- ⚠️ A lista carrega todas as vendas de uma vez; o Supabase limita a 1.000 linhas por consulta. Hoje são 276 no total (sem risco), mas vale paginar antes de chegar perto.
+- 🎨 A busca de Clientes ainda diferencia acentos ("joao" não acha "João"); cosmético.
+
 ## Meta Pixel — correspondência avançada (08/11/2026)
 
 - ✅ Dados do comprador (e-mail, WhatsApp, nome) passam a ser enviados ao Pixel no checkout e antes do `Purchase`, via `src/lib/meta-pixel.ts` (commit `2e45dfc`). Sem mudança no banco.
