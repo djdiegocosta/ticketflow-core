@@ -1,3 +1,11 @@
+## 13/11/2026 — Recuperação automática após perda de conexão
+
+- 🐛 **Causa:** a mensagem "Esta página não carregou" é renderizada pelo Error Boundary global do TanStack Router. Quando uma rota falha durante uma desconexão, o Error Boundary permanece montado mesmo depois do retorno da internet. O Service Worker atual (public/sw.js) não intercepta requisições nem mantém páginas em cache, portanto não era a origem direta do estado persistente.
+- ✨ O Error Boundary agora escuta o evento `online` e recarrega a página inteira ao restabelecer a conexão, buscando novamente o HTML e os arquivos atuais do app.
+- 🔁 O botão de recuperação também passa a fazer uma recarga completa, em vez de apenas invalidar o estado interno do roteador.
+- 🔒 Nenhuma alteração no Supabase, autenticação, dados locais ou regras de negócio.
+- 🧪 Verificação automatizada e teste real em dispositivo ainda precisam ser executados após o deploy. Commit: c0986b6.
+
 ## 13/11/2026 — Página pública: lotes em ordem crescente de preço
 
 - 🐛 A tela pública de evento exibia os lotes na ordem retornada pelo banco, o que podia colocar um lote mais caro antes do mais barato.
