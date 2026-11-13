@@ -1,3 +1,10 @@
+## 13/11/2026 — Página pública: lotes em ordem crescente de preço
+
+- 🐛 A tela pública de evento exibia os lotes na ordem retornada pelo banco, o que podia colocar um lote mais caro antes do mais barato.
+- ✨ A listagem agora ordena os lotes disponíveis pelo menor preço primeiro. O lote mais barato também passa a ser selecionado por padrão; lotes com preços iguais preservam a ordem recebida.
+- 🔒 Sem alteração no Supabase, estoque, reservas, preços ou regras do checkout. A ordenação é apenas de apresentação.
+- 🧪 Adicionados testes para ordem crescente, empate, imutabilidade da lista e entrada vazia. Commit de implementação: `a6d01d4`.
+
 ## 11/11/2026 — Vendas: busca por nome corrigida
 
 - 🐛 **Causa:** na busca de Admin → Vendas, o trecho do WhatsApp tirava os números do texto digitado. Ao digitar um nome (sem número), sobrava um texto vazio, e "qualquer coisa contém vazio" é sempre verdadeiro: toda venda passava no filtro. A busca por nome nunca estreitava a lista.
