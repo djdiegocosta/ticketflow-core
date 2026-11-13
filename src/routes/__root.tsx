@@ -80,7 +80,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error: rawError, reset }: ErrorComponentProps) {
+function ErrorComponent({ error: rawError }: ErrorComponentProps) {
   const error = rawError instanceof Error ? rawError : new Error(String(rawError));
   const router = useRouter();
 
@@ -101,6 +101,16 @@ function ErrorComponent({ error: rawError, reset }: ErrorComponentProps) {
       error,
       { routerState: JSON.stringify(router.state).slice(0, 500) },
     );
+
+    // Uma falha enquanto o dispositivo está offline deixa este Error Boundary
+    // montado mesmo depois que a rede volta. Recarregar a navegação completa
+    // busca novamente o HTML e os bundles atuais, em vez de reutilizar o estado
+    // do roteador que falhou durante a desconexão.
+    const handleOnline = () => {
+      window.location.reload();
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
   }, [error, router]);
 
   return (
@@ -110,17 +120,14 @@ function ErrorComponent({ error: rawError, reset }: ErrorComponentProps) {
           Esta página não carregou
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Ocorreu um erro interno. Tente atualizar ou voltar ao início.
+          Verifique sua conexão com a internet. Quando ela voltar, o TicketFlow tentará carregar novamente. Se já estiver conectado, recarregue a página.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
+            onClick={() => window.location.reload()}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Tentar novamente
+            Recarregar página
           </button>
           <a
             href="/"
