@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Loader2 } from 'lucide-react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { usePublicEvent, useApplyPublicDesign, useAvailableBatches } from '@/lib/customer-queries';
+import { sortBatchesByPrice } from '@/lib/sort-batches';
 import { setLastVisitedOrg } from '@/lib/org-context';
 import { captureRef } from '@/lib/attribution';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,16 +16,17 @@ export default function EventPage() {
   const search = useSearch({ from: '/e/$slug/' }) as { ref?: string };
   const { data: event, isLoading, error } = usePublicEvent(slug);
   const { data: availableBatches } = useAvailableBatches(event?.id);
+  const sortedAvailableBatches = useMemo(() => sortBatchesByPrice(availableBatches), [availableBatches]);
   useApplyPublicDesign(slug);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Seleciona o primeiro lote por padrão quando carregar
-  useMemo(() => {
-    if (availableBatches && availableBatches.length > 0 && !selectedBatchId) {
-      setSelectedBatchId(availableBatches[0]?.id || null);
+  // Seleciona o lote mais barato por padrão quando carregar.
+  useEffect(() => {
+    if (sortedAvailableBatches.length > 0 && !selectedBatchId) {
+      setSelectedBatchId(sortedAvailableBatches[0]?.id || null);
     }
-  }, [availableBatches, selectedBatchId]);
+  }, [sortedAvailableBatches, selectedBatchId]);
 
   useEffect(() => {
     if (event?.id) captureRef(event.id, search.ref);
@@ -98,7 +100,7 @@ export default function EventPage() {
     );
   }
 
-  const selectedBatch = availableBatches?.find(b => b.id === selectedBatchId) || availableBatches?.[0];
+  const selectedBatch = sortedAvailableBatches.find(b => b.id === selectedBatchId) || sortedAvailableBatches[0];
   // availableBatches undefined = ainda carregando; array vazio = carregou e não achou
   // nenhum lote (esgotado agora, ou preso em reservas pendentes de outros clientes —
   // nesse caso volta sozinho em pouco tempo).
@@ -166,7 +168,7 @@ export default function EventPage() {
               </div>
             ) : (
             <div className="flex flex-col gap-3">
-              {availableBatches?.map((batch) => (
+              {sortedAvailableBatches.map((batch) => (
                 <button
                   key={batch.id}
                   onClick={() => setSelectedBatchId(batch.id)}
